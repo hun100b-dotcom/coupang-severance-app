@@ -1,0 +1,36 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.so
+.env
+.env.local
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Node
+node_modules/
+frontend/dist/
+npm-debug.log*
+.yarn-error.log*
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.swo
+
+# Logs / debug
+*.log
+.cursor/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/

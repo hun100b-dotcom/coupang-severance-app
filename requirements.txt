@@ -1,0 +1,17 @@
+# 쿠팡 일용직 퇴직금 계산기 - 필요한 라이브러리
+# 설치 방법: 터미널에서 아래 명령어를 실행하세요.
+#   pip install -r requirements.txt
+
+streamlit>=1.28.0
+streamlit-autorefresh>=0.0.6
+pandas>=2.0.0
+openpyxl>=3.1.0
+plotly>=5.18.0
+pdfplumber>=0.10.0
+reportlab>=4.0.0
+
+# PDF(근로복지공단 일용근로내역서) 읽기: pdfplumber
+# 테스트 PDF 생성: scripts/generate_test_pdfs.py (reportlab)
+# 엑셀(.xlsx) 읽기: openpyxl
+# CSV 읽기: pandas 기본 지원
+# 그래프: plotly (미설치 시 Streamlit 기본 bar_chart 사용)

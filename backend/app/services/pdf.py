@@ -1,0 +1,144 @@
+# -*- coding: utf-8 -*-
+"""근로복지공단 일용근로내역서 PDF 파싱 서비스"""
+import re
+import io
+from datetime import datetime
+import pandas as pd
+
+try:
+    import pdfplumber
+    HAS_PDFPLUMBER = True
+except ImportError:
+    HAS_PDFPLUMBER = False
+
+COMPANY_KEYWORDS: dict[str, list[str]] = {
+    "쿠팡":     ["쿠팡", "(주)쿠팡", "주식회사쿠팡", "쿠팡물류", "쿠팡로짓", "쿠팡에이브이", "쿠팡씨엔에스", "(n)nn"],
+    "마켓컬리": ["컬리", "마켓컬리", "(주)마켓컬리", "마켓컬리(주)", "주식회사마켓컬리", "주식회사컬리", "nnnn(n)"],
+    "CJ대한통운": ["CJ", "대한통운", "CJ대한통운", "(주)CJ대한통운", "CJ대한통운(주)", "주식회사CJ대한통운", "CJnnnn"],
+}
+
+
+def _norm(s: str) -> str:
+    return (s or "").replace(" ", "").replace("\u3000", "")
+
+
+def filter_df_by_company(df: pd.DataFrame, company: str, company_other: str = "") -> pd.DataFrame:
+    if df.empty or "사업장" not in df.columns:
+        return df
+    company = (company or "").strip()
+    company_other = (company_other or "").strip()
+    keywords = COMPANY_KEYWORDS.get(company)
+    if keywords is None:
+        if company == "기타" and company_other:
+            keywords = [company_other]
+        else:
+            return df
+    pattern = "|".join(re.escape(k) for k in keywords)
+    mask = df["사업장"].astype(str).str.strip().str.contains(pattern, case=False, na=False)
+    return df.loc[mask].reset_index(drop=True)
+
+
+def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
+    out = df.copy()
+    if "근무일" in out.columns:
+        out["근무일"] = pd.to_datetime(out["근무일"], errors="coerce")
+        out = out.dropna(subset=["근무일"])
+    if "지급액" in out.columns:
+        out["지급액"] = pd.to_numeric(
+            out["지급액"].astype(str).str.replace(",", ""), errors="coerce"
+        )
+        out = out.dropna(subset=["지급액"])
+    out = out.sort_values("근무일").reset_index(drop=True)
+    return out
+
+
+def parse_welcomwel_pdf(file_bytes: bytes) -> pd.DataFrame:
+    """근로복지공단 일용근로·노무제공내역서 PDF → 일별 DataFrame"""
+    if not HAS_PDFPLUMBER:
+        return pd.DataFrame()
+    rows_out: list[dict] = []
+    with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+        for page in pdf.pages:
+            tables = page.extract_tables()
+            for table in tables or []:
+                if not table or len(table) < 2:
+                    continue
+                header = [str(c).strip() if c else "" for c in table[0]]
+                idx_ym = idx_site = idx_dates = idx_days = idx_pay = -1
+                for i, h in enumerate(header):
+                    n = _norm(h)
+                    if "근로년월" in n or ("근로" in n and "년월" in n) or "근로년" in n:
+                        idx_ym = i
+                    if "사업장" in h and ("명" in h or "명" in n):
+                        idx_site = i
+                    if "근로일자" in n or "근로일자" in h or ("일자" in h and "근로" in n):
+                        idx_dates = i
+                    if "근로일수" in n or "근로일수" in h or ("일수" in h and "근로" in n):
+                        idx_days = i
+                    if "임금총액" in n or "보수총액" in n or "임금총액" in h or "보수총액" in h:
+                        idx_pay = i
+                    if idx_pay < 0 and ("임금" in h or "보수" in h) and ("총액" in h or "금액" in h):
+                        idx_pay = i
+                # 5열 표에서 헤더 미인식 시 표준 순서 적용
+                if len(header) >= 5 and idx_ym < 0 and idx_pay < 0:
+                    idx_ym, idx_site, idx_dates, idx_days, idx_pay = 0, 1, 2, 3, 4
+                if idx_ym < 0:
+                    idx_ym = 1
+                if idx_pay < 0:
+                    idx_pay = 6 if len(header) > 6 else len(header) - 1
+                if idx_dates < 0:
+                    idx_dates = 4 if len(header) > 4 else 3
+                if idx_days < 0:
+                    idx_days = 5 if len(header) > 5 else 4
+                if idx_site < 0:
+                    idx_site = 2 if len(header) > 2 else 0
+
+                for row in table[1:]:
+                    if not row or len(row) <= max(idx_ym, idx_pay):
+                        continue
+                    ym_raw    = str(row[idx_ym]    or "").strip()
+                    site      = str(row[idx_site]   or "").strip()
+                    dates_raw = str(row[idx_dates] or "").strip()
+                    days_raw  = str(row[idx_days]  or "").strip()
+                    pay_raw   = re.sub(r"[^\d.]", "", str(row[idx_pay] or "0").replace(",", ""))
+                    if not ym_raw or not pay_raw:
+                        continue
+                    try:
+                        pay = float(pay_raw)
+                    except ValueError:
+                        continue
+                    try:
+                        n_days = int(float(days_raw)) if days_raw else 0
+                    except ValueError:
+                        n_days = 0
+                    if n_days <= 0:
+                        n_days = 1
+                    day_list: list[int] = []
+                    for part in re.split(r"[,,\s]+", dates_raw):
+                        part = part.strip()
+                        if part.isdigit():
+                            day_list.append(int(part))
+                    if not day_list and n_days > 0:
+                        day_list = list(range(1, n_days + 1))
+                    ym_match = re.match(r"(\d{4})[/\-.]?\s*(\d{1,2})\s*$", ym_raw) or \
+                               re.match(r"^(\d{4})(\d{2})$", _norm(ym_raw))
+                    if not ym_match:
+                        continue
+                    y, m = int(ym_match.group(1)), int(ym_match.group(2))
+                    daily_pay = pay / n_days
+                    for d in day_list:
+                        if 1 <= d <= 31:
+                            try:
+                                dt = datetime(y, m, d)
+                                rows_out.append({"근무일": dt, "지급액": daily_pay, "사업장": site or ""})
+                            except ValueError:
+                                pass
+    if not rows_out:
+        return pd.DataFrame()
+    df = pd.DataFrame(rows_out)
+    df = (
+        df.sort_values("근무일")
+        .drop_duplicates(subset=["근무일", "사업장"], keep="first")
+        .reset_index(drop=True)
+    )
+    return df
