@@ -19,20 +19,25 @@ Vercel은 프론트엔드 배포에, Render는 백엔드 API 무료 호스팅에
    - **Region**: Singapore 또는 가까운 지역
    - **Branch**: `main` (기본)
    - **Runtime**: **Python 3**
-   - **Build Command**:  
-     `pip install -r backend/requirements.txt`
-   - **Start Command**:  
-     `uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`
+   - **Build Command** (가상환경 사용 권장):
+     ```bash
+     python -m venv .venv && .venv/bin/pip install -r backend/requirements.txt
+     ```
+   - **Start Command**:
+     ```bash
+     .venv/bin/python -m uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+     ```
    - **Root Directory**: 비워두기 (레포 루트 기준)
+   - **Environment Variables**: 백엔드는 별도 환경 변수 없이 동작합니다. 비워두고 배포해도 됩니다.
 
 4. **생성**  
    **Create Web Service** 클릭 후 빌드·배포 완료될 때까지 대기.
 
 5. **백엔드 URL 확인**  
-   배포 후 상단에 표시되는 URL 복사 (예: `https://coupang-severance-api.onrender.com`).  
-   API 기준 주소는 **`https://<서비스이름>.onrender.com/api`** 입니다.
+   배포 후 상단에 표시되는 URL 복사 (예: `https://coupang-severance-app.onrender.com`).  
+   Vercel에 넣을 값은 **`https://<서비스이름>.onrender.com/api`** 입니다.
 
-> ⚠️ Render 무료 티어는 약 15분 미사용 시 슬립됩니다. 첫 요청 시 콜드 스타트로 30초~1분 정도 걸릴 수 있습니다.
+> ⚠️ Render 무료 티어는 약 15분 미사용 시 슬립됩니다. 첫 요청 시 콜드 스타트로 30초~1분 정도 걸릴 수 있습니다. 프론트엔드에서는 90초 타임아웃이 설정되어 있어 대기 후 재시도할 수 있습니다.
 
 ---
 
@@ -46,9 +51,8 @@ Vercel은 프론트엔드 배포에, Render는 백엔드 API 무료 호스팅에
    - 이 프로젝트 GitHub 레포 선택 → **Import**
 
 3. **빌드 설정 (이미 vercel.json에 반영됨)**
-   - **Build Command**: `cd frontend && npm ci && npm run build`
+   - **Build Command**: `cd frontend && npm install && npm run build`
    - **Output Directory**: `frontend/dist`
-   - **Install Command**: 없음 (빌드 명령에서 `npm ci` 실행)
 
 4. **환경 변수 설정**  
    Project → **Settings** → **Environment Variables** 에서 추가:

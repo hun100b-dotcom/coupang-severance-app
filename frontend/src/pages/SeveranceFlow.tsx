@@ -118,7 +118,20 @@ export default function SeveranceFlow() {
     if (res.status === 'fulfilled') {
       setS(p => ({ ...p, result: res.value, resultType: 'precise', step: 4 }))
     } else {
-      const msg = (res.reason as { response?: { data?: { detail?: string } } })?.response?.data?.detail || '계산 중 오류가 발생했어요.'
+      const err = res.reason as {
+        response?: { status?: number; data?: { detail?: string | Array<{ msg?: string }> } }
+        message?: string
+      }
+      const detail = err?.response?.data?.detail
+      const msg = typeof detail === 'string'
+        ? detail
+        : Array.isArray(detail) && detail[0]?.msg
+          ? detail[0].msg
+          : err?.message === 'Network Error'
+            ? '서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.'
+            : err?.response?.status === 504 || (err?.message ?? '').includes('timeout')
+              ? '요청 시간이 초과됐어요. 잠시 후 다시 시도해 주세요.'
+              : '계산 중 오류가 발생했어요.'
       setError(msg)
     }
   }

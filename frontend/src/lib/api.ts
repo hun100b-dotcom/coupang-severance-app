@@ -4,7 +4,10 @@ const baseURL = typeof import.meta.env.VITE_API_URL === 'string' && import.meta.
   ? import.meta.env.VITE_API_URL.replace(/\/$/, '') // 끝 슬래시 제거
   : '/api'
 
-const api = axios.create({ baseURL })
+const api = axios.create({
+  baseURL,
+  timeout: 90000, // Render 무료 티어 콜드스타트 대기 (최대 50초+)
+})
 
 // ── 카운터 ──────────────────────────────────────
 export const getClickCount = () =>

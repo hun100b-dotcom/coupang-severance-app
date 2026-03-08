@@ -1,12 +1,13 @@
 # Render Blueprint — 백엔드 API만 배포 (프론트는 Vercel에서 서빙)
+# Build/Start는 가상환경을 명시해 uvicorn 인식 오류 방지
 services:
   - type: web
     name: coupang-severance-api
     runtime: python
     region: singapore
 
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: python -m venv .venv && .venv/bin/pip install -r backend/requirements.txt
+    startCommand: .venv/bin/python -m uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
 
     envVars:
       - key: PYTHON_VERSION
