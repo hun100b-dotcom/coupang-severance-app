@@ -30,6 +30,22 @@ app.include_router(severance.router,    prefix="/api/severance",   tags=["퇴직
 app.include_router(unemployment.router, prefix="/api/unemployment", tags=["실업급여"])
 
 
+# API 문서 경로 — catch-all보다 먼저 등록해 항상 문서가 응답되도록
+@app.get("/docs", include_in_schema=False)
+async def swagger_ui():
+    return get_swagger_ui_html(openapi_url="/openapi.json", title=f"{app.title} - API 문서")
+
+
+@app.get("/redoc", include_in_schema=False)
+async def redoc_ui():
+    return get_redoc_html(openapi_url="/openapi.json", title=f"{app.title} - API 문서")
+
+
+@app.get("/openapi.json", include_in_schema=False)
+async def openapi_schema():
+    return JSONResponse(content=app.openapi())
+
+
 # React 빌드 정적 에셋 서빙 (JS/CSS/이미지)
 if STATIC_DIR.exists():
     app.mount("/assets", StaticFiles(directory=str(STATIC_DIR / "assets")), name="assets")
@@ -38,14 +54,7 @@ if STATIC_DIR.exists():
     async def favicon():
         return FileResponse(str(STATIC_DIR / "favicon.svg"))
 
-    # /api 가 아닌 모든 경로 → React index.html (SPA 라우팅)
-    # /docs, /redoc, /openapi.json 은 catch-all에 걸리지 않도록 여기서 직접 응답
+    # /api, /docs, /redoc, /openapi.json 가 아닌 모든 경로 → React index.html (SPA 라우팅)
     @app.get("/{full_path:path}")
     async def serve_spa(request: Request, full_path: str):
-        if full_path in ("docs", "docs/") or full_path.startswith("docs/"):
-            return get_swagger_ui_html(openapi_url="/openapi.json", title=f"{app.title} - API 문서")
-        if full_path in ("redoc", "redoc/") or full_path.startswith("redoc/"):
-            return get_redoc_html(openapi_url="/openapi.json", title=f"{app.title} - API 문서")
-        if full_path == "openapi.json":
-            return JSONResponse(content=app.openapi())
         return FileResponse(str(STATIC_DIR / "index.html"))

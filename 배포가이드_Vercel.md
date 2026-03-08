@@ -34,8 +34,9 @@ Vercel은 프론트엔드 배포에, Render는 백엔드 API 무료 호스팅에
    **Create Web Service** 클릭 후 빌드·배포 완료될 때까지 대기.
 
 5. **백엔드 URL 확인**  
-   배포 후 상단에 표시되는 URL 복사 (예: `https://coupang-severance-app.onrender.com`).  
-   Vercel에 넣을 값은 **`https://<서비스이름>.onrender.com/api`** 입니다.
+   배포 후 상단에 표시되는 URL 복사 (예: `https://coupang-severance-api.onrender.com`).  
+   Vercel에 넣을 값은 **`https://<서비스이름>.onrender.com/api`** 입니다.  
+   API 문서(Swagger)는 **`https://<서비스이름>.onrender.com/docs`** 로 접속 (반드시 `https://` 포함).
 
 > ⚠️ Render 무료 티어는 약 15분 미사용 시 슬립됩니다. 첫 요청 시 콜드 스타트로 30초~1분 정도 걸릴 수 있습니다. 프론트엔드에서는 90초 타임아웃이 설정되어 있어 대기 후 재시도할 수 있습니다.
 
