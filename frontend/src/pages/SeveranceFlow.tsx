@@ -122,16 +122,26 @@ export default function SeveranceFlow() {
         response?: { status?: number; data?: { detail?: string | Array<{ msg?: string }> } }
         message?: string
       }
+      // 디버깅: 브라우저 콘솔에서 전체 오류 확인
+      console.error('[퇴직금 정밀계산 오류]', err?.response?.data ?? err?.message ?? err)
+
       const detail = err?.response?.data?.detail
-      const msg = typeof detail === 'string'
-        ? detail
-        : Array.isArray(detail) && detail[0]?.msg
-          ? detail[0].msg
-          : err?.message === 'Network Error'
-            ? '서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.'
-            : err?.response?.status === 504 || (err?.message ?? '').includes('timeout')
-              ? '요청 시간이 초과됐어요. 잠시 후 다시 시도해 주세요.'
-              : '계산 중 오류가 발생했어요.'
+      let msg: string
+      if (typeof detail === 'string') {
+        msg = detail
+      } else if (Array.isArray(detail) && detail[0]?.msg) {
+        msg = detail[0].msg
+      } else if (err?.message === 'Network Error') {
+        msg = '서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.'
+      } else if (err?.response?.status === 504 || (err?.message ?? '').includes('timeout')) {
+        msg = '요청 시간이 초과됐어요. 잠시 후 다시 시도해 주세요.'
+      } else {
+        const status = err?.response?.status
+        const extra = typeof detail === 'object' && detail !== null
+          ? ` (${JSON.stringify(detail).slice(0, 80)}…)`
+          : status ? ` (HTTP ${status})` : ''
+        msg = `계산 중 오류가 발생했어요.${extra}`
+      }
       setError(msg)
     }
   }
