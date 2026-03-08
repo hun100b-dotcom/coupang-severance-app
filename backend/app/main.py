@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """FastAPI 메인 애플리케이션 — React 빌드 정적 파일 서빙 포함"""
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 
 from .api import common, severance, unemployment
 
@@ -38,6 +39,13 @@ if STATIC_DIR.exists():
         return FileResponse(str(STATIC_DIR / "favicon.svg"))
 
     # /api 가 아닌 모든 경로 → React index.html (SPA 라우팅)
+    # /docs, /redoc, /openapi.json 은 catch-all에 걸리지 않도록 여기서 직접 응답
     @app.get("/{full_path:path}")
-    async def serve_spa(full_path: str):
+    async def serve_spa(request: Request, full_path: str):
+        if full_path in ("docs", "docs/") or full_path.startswith("docs/"):
+            return get_swagger_ui_html(openapi_url="/openapi.json", title=f"{app.title} - API 문서")
+        if full_path in ("redoc", "redoc/") or full_path.startswith("redoc/"):
+            return get_redoc_html(openapi_url="/openapi.json", title=f"{app.title} - API 문서")
+        if full_path == "openapi.json":
+            return JSONResponse(content=app.openapi())
         return FileResponse(str(STATIC_DIR / "index.html"))
