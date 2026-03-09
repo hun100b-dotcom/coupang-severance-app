@@ -231,6 +231,14 @@ html, body, #root {
   font-weight: 700;
   letter-spacing: -0.02em;
 }
+/* 인트로 메인 카피 전용: Pretendard, 읽기 편한 크기 */
+.heading-intro {
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--toss-text);
+}
 /* 금액 히어로 숫자 — 숫자와 단위(원)를 분리해서 사용 */
 .num-hero {
   font-family: 'Inter', 'Pretendard', sans-serif;

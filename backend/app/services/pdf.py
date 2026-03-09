@@ -12,9 +12,17 @@ except ImportError:
     HAS_PDFPLUMBER = False
 
 COMPANY_KEYWORDS: dict[str, list[str]] = {
-    "쿠팡":     ["쿠팡", "(주)쿠팡", "주식회사쿠팡", "쿠팡물류", "쿠팡로짓", "쿠팡에이브이", "쿠팡씨엔에스", "(n)nn"],
-    "마켓컬리": ["컬리", "마켓컬리", "(주)마켓컬리", "마켓컬리(주)", "주식회사마켓컬리", "주식회사컬리", "nnnn(n)"],
-    "CJ대한통운": ["CJ", "대한통운", "CJ대한통운", "(주)CJ대한통운", "CJ대한통운(주)", "주식회사CJ대한통운", "CJnnnn"],
+    "쿠팡": [
+        "쿠팡", "(주)쿠팡", "주식회사쿠팡", "쿠팡물류", "쿠팡로짓", "쿠팡에이브이", "쿠팡씨엔에스",
+        "쿠팡풀필먼트서비스", "쿠팡풀필먼트서비스 유한회사", "쿠팡로지스틱스",
+    ],
+    "마켓컬리": [
+        "컬리", "마켓컬리", "(주)마켓컬리", "마켓컬리(주)", "주식회사마켓컬리", "주식회사컬리",
+        "이음이앤지", "라온이엔지",
+    ],
+    "CJ대한통운": [
+        "CJ", "대한통운", "CJ대한통운", "(주)CJ대한통운", "CJ대한통운(주)", "주식회사CJ대한통운",
+    ],
 }
 
 
@@ -79,8 +87,11 @@ def parse_welcomwel_pdf(file_bytes: bytes) -> pd.DataFrame:
                         idx_pay = i
                     if idx_pay < 0 and ("임금" in h or "보수" in h) and ("총액" in h or "금액" in h):
                         idx_pay = i
+                # 실제 근로내역서 9열: 일련번호, 근로년월, 사업장명, 직종명, 근로일자, 근로일수, 임금총액, 보수총액, 근로자구분
+                if len(header) == 9 and (idx_ym < 0 or idx_dates < 0 or idx_days < 0 or idx_pay < 0):
+                    idx_ym, idx_site, idx_dates, idx_days, idx_pay = 1, 2, 4, 5, 6
                 # 5열 표에서 헤더 미인식 시 표준 순서 적용
-                if len(header) >= 5 and idx_ym < 0 and idx_pay < 0:
+                elif len(header) >= 5 and idx_ym < 0 and idx_pay < 0:
                     idx_ym, idx_site, idx_dates, idx_days, idx_pay = 0, 1, 2, 3, 4
                 if idx_ym < 0:
                     idx_ym = 1
@@ -100,6 +111,7 @@ def parse_welcomwel_pdf(file_bytes: bytes) -> pd.DataFrame:
                     site      = str(row[idx_site]   or "").strip()
                     dates_raw = str(row[idx_dates] or "").strip()
                     days_raw  = str(row[idx_days]  or "").strip()
+                    # 실제 근로내역서: "1,541,300원" 형식 (쉼표·원 제거)
                     pay_raw   = re.sub(r"[^\d.]", "", str(row[idx_pay] or "0").replace(",", ""))
                     if not ym_raw or not pay_raw:
                         continue
@@ -107,8 +119,10 @@ def parse_welcomwel_pdf(file_bytes: bytes) -> pd.DataFrame:
                         pay = float(pay_raw)
                     except ValueError:
                         continue
+                    # 실제 근로내역서: "12일" 형식 지원 (숫자만 추출)
+                    days_clean = re.sub(r"[^\d]", "", str(days_raw or ""))
                     try:
-                        n_days = int(float(days_raw)) if days_raw else 0
+                        n_days = int(days_clean) if days_clean else 0
                     except ValueError:
                         n_days = 0
                     if n_days <= 0:
