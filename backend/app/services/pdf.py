@@ -142,3 +142,13 @@ def parse_welcomwel_pdf(file_bytes: bytes) -> pd.DataFrame:
         .reset_index(drop=True)
     )
     return df
+
+
+def extract_unique_companies(file_bytes: bytes) -> list[str]:
+    """PDF에서 사업장명 컬럼의 고유 법인명 리스트 추출 (정렬)"""
+    df = parse_welcomwel_pdf(file_bytes)
+    if df.empty or "사업장" not in df.columns:
+        return []
+    names = df["사업장"].astype(str).str.strip()
+    names = names[names.str.len() > 0]
+    return sorted(names.unique().tolist(), key=str)

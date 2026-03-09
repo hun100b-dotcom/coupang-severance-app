@@ -29,6 +29,7 @@ export default {
         glass: '25px',
       },
       animation: {
+        'gradient-slow': 'gradientShift 20s ease infinite',
         'mesh-flow':    'meshFlow 20s ease infinite',
         'bubble-1':     'bubble1 18s ease-in-out infinite',
         'bubble-2':     'bubble2 22s ease-in-out infinite',
@@ -41,6 +42,10 @@ export default {
         'page-enter':   'pageEnter 0.45s cubic-bezier(0.22,1,0.36,1) forwards',
       },
       keyframes: {
+        gradientShift: {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
         meshFlow: {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%':      { backgroundPosition: '100% 50%' },

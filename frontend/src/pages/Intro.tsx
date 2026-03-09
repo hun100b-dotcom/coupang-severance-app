@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import GlassCard from '../components/GlassCard'
 import { PrimaryButton } from '../components/Button'
 import { getClickCount, registerClick } from '../lib/api'
@@ -8,10 +9,9 @@ import { INTRO_COPIES } from '../lib/constants'
 export default function Intro() {
   const navigate = useNavigate()
   const [copyIdx, setCopyIdx] = useState(0)
-  const [animating, setAnimating] = useState(false)
   const [count, setCount] = useState(0)
 
-  // 카운트 로드
+  // 실시간 카운트 (확인하기 클릭 누적)
   useEffect(() => {
     getClickCount().then(d => setCount(d.total)).catch(() => {})
   }, [])
@@ -19,11 +19,7 @@ export default function Intro() {
   // 7초마다 카피 교체
   useEffect(() => {
     const timer = setInterval(() => {
-      setAnimating(true)
-      setTimeout(() => {
-        setCopyIdx(i => (i + 1) % INTRO_COPIES.length)
-        setAnimating(false)
-      }, 450)
+      setCopyIdx(i => (i + 1) % INTRO_COPIES.length)
     }, 7000)
     return () => clearInterval(timer)
   }, [])
@@ -76,23 +72,28 @@ export default function Intro() {
             </p>
           </div>
 
-          {/* 7초 회전 카피 */}
-          <div style={{ minHeight: 90, marginBottom: 28, overflow: 'hidden' }}>
-            <div
-              key={copyIdx}
-              className={animating ? 'copy-slide-exit' : 'copy-slide-enter'}
-              style={{ textAlign: 'center' }}
-            >
-              {lines.map((line, i) => (
-                <p
-                  key={i}
-                  className="heading-xl"
-                  style={{ textAlign: 'center', lineHeight: 1.25, marginBottom: i < lines.length - 1 ? 4 : 0 }}
-                >
-                  {line}
-                </p>
-              ))}
-            </div>
+          {/* 7초 슬라이드 카피 (AnimatePresence) */}
+          <div style={{ minHeight: 90, marginBottom: 28, overflow: 'hidden', position: 'relative' }}>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={copyIdx}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -18 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                style={{ textAlign: 'center', position: 'absolute', left: 0, right: 0 }}
+              >
+                {lines.map((line, i) => (
+                  <p
+                    key={i}
+                    className="heading-xl font-sans"
+                    style={{ textAlign: 'center', lineHeight: 1.25, marginBottom: i < lines.length - 1 ? 4 : 0 }}
+                  >
+                    {line}
+                  </p>
+                ))}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* 누적 카운트 */}

@@ -4,7 +4,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 
 from .api import common, severance, unemployment
@@ -30,13 +30,26 @@ app.include_router(severance.router,    prefix="/api/severance",   tags=["퇴직
 app.include_router(unemployment.router, prefix="/api/unemployment", tags=["실업급여"])
 
 
+# 루트: API 안내 + /docs 로 이동 링크 (404 대신)
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+async def root():
+    return """<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>퇴직금 한번에 API</title></head>
+<body style="font-family:sans-serif;max-width:600px;margin:2rem auto;padding:1rem;">
+  <h1>퇴직금 한번에 API</h1>
+  <p>일용직 퇴직금·실업급여 계산 API가 동작 중입니다.</p>
+  <p><a href="/docs">API 문서 (Swagger)</a> · <a href="/redoc">ReDoc</a></p>
+  <p><a href="/openapi.json">openapi.json</a></p>
+</body></html>"""
+
+
 # API 문서 경로 — catch-all보다 먼저 등록해 항상 문서가 응답되도록
-@app.get("/docs", include_in_schema=False)
+@app.get("/docs", response_class=HTMLResponse, include_in_schema=False)
 async def swagger_ui():
     return get_swagger_ui_html(openapi_url="/openapi.json", title=f"{app.title} - API 문서")
 
 
-@app.get("/redoc", include_in_schema=False)
+@app.get("/redoc", response_class=HTMLResponse, include_in_schema=False)
 async def redoc_ui():
     return get_redoc_html(openapi_url="/openapi.json", title=f"{app.title} - API 문서")
 

@@ -37,7 +37,7 @@ html, body, #root {
 .app-bg {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #dde9ff 0%, #c9d9f0 30%, #e8f4ff 60%, #f0ecff 100%);
+  background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 30%, #e8f4ff 60%, #f5f3ff 100%);
   background-size: 300% 300%;
   animation: meshFlow 20s ease infinite;
   z-index: 0;
@@ -102,14 +102,23 @@ html, body, #root {
 }
 
 /* ─────────────────────────────────────────────
-   글래스 카드
+   글래스 카드 (Glassmorphism)
 ───────────────────────────────────────────── */
+/* 강조 문구 그라데이션 (Pretendard + 토스 블루~인디고) */
+.text-gradient-emphasis {
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: transparent;
+  background: linear-gradient(90deg, #2563eb, #6366f1);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
 .glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  border: 0.5px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.03);
   border-radius: 24px;
 }
 
@@ -625,15 +634,31 @@ input:focus {
   margin-bottom: 8px;
 }
 
-/* 노무사 코멘트 박스 */
-.attorney-box {
-  background: linear-gradient(135deg, rgba(49,130,246,0.04), rgba(49,130,246,0.08));
-  border: 1px solid rgba(49,130,246,0.18);
+/* AI 정밀 분석 결과 박스 (차분한 그레이 + 토스 블루) */
+.ai-analysis-box {
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.04), rgba(49, 130, 246, 0.06));
+  border: 1px solid rgba(107, 114, 128, 0.15);
   border-radius: 14px;
   padding: 18px 20px;
   font-size: 0.875rem;
   line-height: 1.85;
-  color: var(--toss-text);
+  color: #374151;
+  white-space: pre-line;
+}
+.ai-analysis-box .attorney-highlight {
+  font-weight: 700;
+  color: var(--toss-blue);
+}
+
+/* 하위 호환 */
+.attorney-box {
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.04), rgba(49, 130, 246, 0.06));
+  border: 1px solid rgba(107, 114, 128, 0.15);
+  border-radius: 14px;
+  padding: 18px 20px;
+  font-size: 0.875rem;
+  line-height: 1.85;
+  color: #374151;
   white-space: pre-line;
 }
 .attorney-box .attorney-highlight {

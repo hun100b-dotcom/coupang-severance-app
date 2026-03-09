@@ -37,7 +37,7 @@ function AccordionHeader({ open, onClick }: { open: boolean; onClick: () => void
             상세 분석 리포트
           </p>
           <p style={{ fontSize: '0.75rem', color: 'var(--toss-text-3)', marginTop: 2 }}>
-            근로 기간 · 평균임금 산정 · 수급 자격 · 노무사 코멘트
+            근로 기간 · 평균임금 산정 · 수급 자격 · AI 정밀 분석 결과
           </p>
         </div>
       </div>
@@ -390,21 +390,22 @@ function Section4Eligibility({ r, eligible }: { r: EmploymentReport; eligible: b
   )
 }
 
-// ── [5] 동적 노무사 코멘트 ─────────────────────────────────
-function Section5Attorney({ comment }: { comment: string }) {
+// ── [5] AI 정밀 분석 결과 ─────────────────────────────────
+function Section5AIAnalysis({ comment }: { comment: string }) {
   return (
     <div className="report-section">
-      <div className="report-section-title">
-        <span className="section-num">5</span>
-        노무사 코멘트
-        <span style={{ fontSize: '0.72rem', fontWeight: 500, color: 'var(--toss-text-3)', textTransform: 'none' }}>
-          (데이터 기반 자동 생성)
+      <div className="report-section-title" style={{ color: 'var(--toss-text)', alignItems: 'center' }}>
+        <span className="section-num" style={{ background: 'var(--toss-blue)', color: '#fff' }}>5</span>
+        <span style={{ marginRight: 6 }}>✨</span>
+        AI 정밀 분석 결과
+        <span style={{ fontSize: '0.72rem', fontWeight: 500, color: 'var(--toss-text-2)', textTransform: 'none', marginLeft: 6 }}>
+          고용보험 내역을 바탕으로 분석한 예상 결과예요.
         </span>
       </div>
-      <div className="attorney-box">{comment}</div>
-      <p style={{ fontSize: '0.72rem', color: 'var(--toss-text-3)', marginTop: 10, lineHeight: 1.5 }}>
-        ※ 이 코멘트는 업로드된 PDF 데이터를 분석하여 자동 생성된 참고 의견입니다.
-        법적 효력이 없으며, 정확한 판단은 전문 노무사 상담을 통해 확인하세요.
+      <div className="ai-analysis-box">{comment}</div>
+      <p style={{ fontSize: '0.72rem', color: 'var(--toss-text-2)', marginTop: 10, lineHeight: 1.5 }}>
+        ※ 이 내용은 업로드된 PDF 데이터를 분석하여 자동 생성된 참고 결과입니다.
+        법적 효력이 없으며, 정확한 판단은 전문 상담을 통해 확인하세요.
       </p>
     </div>
   )
@@ -570,7 +571,7 @@ export default function ResultSeverance({ result, resultType, company, onReset }
                 severance={severance}
               />
               <Section4Eligibility r={report} eligible={eligible} />
-              <Section5Attorney comment={report.attorney_comment} />
+              <Section5AIAnalysis comment={report.attorney_comment} />
             </div>
           </div>
         )}

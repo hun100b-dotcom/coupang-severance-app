@@ -5,8 +5,9 @@ import { PrimaryButton, SecondaryButton, ChoiceButton } from '../components/Butt
 import ProgressSummary from '../components/ProgressSummary'
 import LoadingOverlay from '../components/LoadingOverlay'
 import ResultUnemployment from './ResultUnemployment'
-import { calcUBPrecise, calcUBSimple, UBResult } from '../lib/api'
+import { calcUBPrecise, calcUBSimple, extractUnemploymentCompanies, UBResult } from '../lib/api'
 import { COMPANIES, Company } from '../lib/constants'
+import { Check } from 'lucide-react'
 
 type Step = 1 | 2 | 3 | 4
 type CalcMode = 'precise' | 'simple'
@@ -15,9 +16,10 @@ interface State {
   step: Step
   company: Company | ''
   companyOther: string
-  q1: boolean | null  // 18개월 내 180일 이상
-  q2: boolean | null  // 비자발적 퇴사 / 최근 1개월 10일 미만
-  q3: boolean | null  // 이직 확인서 제출 예정
+  displayCompany?: string
+  q1: boolean | null
+  q2: boolean | null
+  q3: boolean | null
   calcMode: CalcMode | null
   failed: boolean
   failReason: string
@@ -30,8 +32,10 @@ const INIT: State = {
   calcMode: null, failed: false, failReason: '', result: null, age50: false,
 }
 
-function buildSteps(s: State) {
-  const compLabel = s.company === '기타' && s.companyOther ? s.companyOther.slice(0, 10) : s.company || '회사 선택'
+function buildSteps(s: State, selectedPdfCompany: string | null) {
+  const compLabel = selectedPdfCompany
+    ? (selectedPdfCompany.length > 10 ? selectedPdfCompany.slice(0, 10) + '…' : selectedPdfCompany)
+    : s.company === '기타' && s.companyOther ? s.companyOther.slice(0, 10) : s.company || '회사 선택'
   const modeLabel = s.calcMode === 'precise' ? '정밀 계산' : s.calcMode === 'simple' ? '쉬운 계산' : '계산 방식'
   return [
     { label: `① ${compLabel}`, done: !!s.company && s.step > 1, current: s.step === 1 },
@@ -50,16 +54,29 @@ export default function UnemploymentFlow() {
   const [endDate, setEndDate] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [pdfCompanies, setPdfCompanies] = useState<string[]>([])
+  const [selectedPdfCompany, setSelectedPdfCompany] = useState<string | null>(null)
+  const [extractLoading, setExtractLoading] = useState(false)
 
   const [insuredDays, setInsuredDays] = useState('')
   const [avgWage, setAvgWage] = useState('')
 
   const go = (step: Step) => setS(p => ({ ...p, step, failed: false, failReason: '' }))
-  const reset = () => { setS(INIT); setFile(null); setEndDate(''); setInsuredDays(''); setAvgWage(''); setError('') }
+  const reset = () => {
+    setS(INIT)
+    setFile(null)
+    setEndDate('')
+    setInsuredDays('')
+    setAvgWage('')
+    setError('')
+    setPdfCompanies([])
+    setSelectedPdfCompany(null)
+  }
 
   // ── 결과 화면 ──
   if (s.result) {
-    return <ResultUnemployment result={s.result} company={s.company} onReset={reset} />
+    const companyLabel = s.displayCompany || (s.company === '기타' ? s.companyOther : s.company) || ''
+    return <ResultUnemployment result={s.result} company={companyLabel} onReset={reset} />
   }
 
   // ── 실패 화면 ──
@@ -69,7 +86,7 @@ export default function UnemploymentFlow() {
         {loading && <LoadingOverlay />}
         <div style={{ width: '100%', maxWidth: 480 }}>
           <GlassCard className="p-8">
-            <ProgressSummary steps={buildSteps(s)} totalSteps={4} currentStep={2} />
+            <ProgressSummary steps={buildSteps(s, selectedPdfCompany)} totalSteps={4} currentStep={2} />
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ fontSize: '3rem', marginBottom: 16 }}>😔</div>
               <h2 className="heading-lg" style={{ marginBottom: 12 }}>아직은 실업급여를 받기 어려워요</h2>
@@ -87,14 +104,35 @@ export default function UnemploymentFlow() {
     )
   }
 
+  async function onPdfSelect(f: File) {
+    setFile(f)
+    setPdfCompanies([])
+    setSelectedPdfCompany(null)
+    setExtractLoading(true)
+    setError('')
+    try {
+      const { companies } = await extractUnemploymentCompanies(f)
+      setPdfCompanies(companies)
+      if (companies.length === 1) setSelectedPdfCompany(companies[0])
+      if (companies.length === 0) setError('PDF에서 사업장을 찾지 못했어요.')
+    } catch {
+      setError('PDF 분석에 실패했어요. 다시 시도해 주세요.')
+      setPdfCompanies([])
+    } finally {
+      setExtractLoading(false)
+    }
+  }
+
   // ── 계산 실행 ──
   async function runPrecise() {
     if (!file) { setError('PDF 파일을 업로드해 주세요.'); return }
+    const usePdfCompany = selectedPdfCompany !== null
+    if (!usePdfCompany && pdfCompanies.length > 1) { setError('사업장을 선택해 주세요.'); return }
     setError(''); setLoading(true)
     const fd = new FormData()
     fd.append('file', file)
-    fd.append('company', s.company)
-    fd.append('company_other', s.companyOther)
+    fd.append('company', usePdfCompany ? '기타' : s.company)
+    fd.append('company_other', usePdfCompany ? selectedPdfCompany! : s.companyOther)
     if (endDate) fd.append('end_date', endDate)
     fd.append('age_50', String(s.age50))
     const [res] = await Promise.allSettled([
@@ -103,7 +141,7 @@ export default function UnemploymentFlow() {
     ])
     setLoading(false)
     if (res.status === 'fulfilled') {
-      setS(p => ({ ...p, result: res.value }))
+      setS(p => ({ ...p, result: res.value, displayCompany: usePdfCompany ? selectedPdfCompany || undefined : undefined }))
     } else {
       const msg = (res.reason as { response?: { data?: { detail?: string } } })?.response?.data?.detail || '계산 중 오류가 발생했어요.'
       setError(msg)
@@ -132,7 +170,7 @@ export default function UnemploymentFlow() {
       {loading && <LoadingOverlay message="실업급여를 계산하고 있어요.." />}
       <div style={{ width: '100%', maxWidth: 480 }}>
         <GlassCard className="p-8">
-          <ProgressSummary steps={buildSteps(s)} totalSteps={4} currentStep={stepN} />
+          <ProgressSummary steps={buildSteps(s, selectedPdfCompany)} totalSteps={4} currentStep={stepN} />
           {content}
         </GlassCard>
       </div>
@@ -218,8 +256,37 @@ export default function UnemploymentFlow() {
         ) : (
           <><div style={{ fontSize: '2.5rem', marginBottom: 8 }}>📤</div><p style={{ fontWeight: 700 }}>PDF 업로드</p><p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginTop: 4 }}>PDF 파일만 가능해요</p></>
         )}
-        <input ref={fileRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) setFile(f) }} />
+        <input ref={fileRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) onPdfSelect(f) }} />
       </div>
+      {extractLoading && (
+        <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-3xl p-6 max-w-md mx-auto mt-4 text-center" style={{ color: 'var(--toss-text-2)' }}>PDF 분석 중…</div>
+      )}
+      {!extractLoading && pdfCompanies.length > 1 && (
+        <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-3xl p-6 max-w-md mx-auto mt-4 transition-all duration-300">
+          <p className="font-sans font-semibold mb-3" style={{ fontSize: '0.95rem', color: 'var(--toss-text)' }}>계산할 사업장을 선택하세요</p>
+          <div className="flex flex-wrap gap-2">
+            {pdfCompanies.map(name => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => setSelectedPdfCompany(prev => prev === name ? null : name)}
+                className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${
+                  selectedPdfCompany === name ? 'ring-2 ring-[#3182f6] bg-blue-50 text-[#3182f6]' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}
+              >
+                {selectedPdfCompany === name && <Check size={16} strokeWidth={2.5} />}
+                <span className="truncate max-w-[200px]">{name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {!extractLoading && pdfCompanies.length === 1 && selectedPdfCompany && (
+        <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-3xl p-4 max-w-md mx-auto mt-4 flex items-center gap-2">
+          <Check size={20} className="text-[#3182f6] shrink-0" />
+          <span className="font-medium text-sm" style={{ color: 'var(--toss-text)' }}>선택된 사업장: {selectedPdfCompany}</span>
+        </div>
+      )}
       <div style={{ marginTop: 16, marginBottom: 4 }}>
         <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: 8 }}>마지막 근무일 (선택)</label>
         <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
@@ -229,7 +296,7 @@ export default function UnemploymentFlow() {
         <span style={{ fontSize: '0.95rem', fontWeight: 600 }}>50세 이상이에요 (수급일수 더 길어요)</span>
       </label>
       {error && <div style={{ padding: '12px 16px', background: 'rgba(240,68,82,0.08)', border: '1px solid rgba(240,68,82,0.2)', borderRadius: 12, marginBottom: 16, color: '#cc2233', fontSize: '0.9rem', fontWeight: 600 }}>⚠️ {error}</div>}
-      <PrimaryButton onClick={runPrecise} disabled={!file}>계산하기</PrimaryButton>
+      <PrimaryButton onClick={runPrecise} disabled={!file || extractLoading || (pdfCompanies.length > 1 && !selectedPdfCompany)}>계산하기</PrimaryButton>
       <SecondaryButton style={{ marginTop: 10 }} onClick={() => go(3)}>← 이전으로</SecondaryButton>
     </>,
     4,

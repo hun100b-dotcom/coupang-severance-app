@@ -5,8 +5,9 @@ import { PrimaryButton, SecondaryButton, ChoiceButton } from '../components/Butt
 import ProgressSummary from '../components/ProgressSummary'
 import LoadingOverlay from '../components/LoadingOverlay'
 import ResultSeverance from './ResultSeverance'
-import { calcSeverancePrecise, calcSeveranceSimple, SeverancePreciseResult, SeveranceSimpleResult } from '../lib/api'
+import { calcSeverancePrecise, calcSeveranceSimple, extractSeveranceCompanies, SeverancePreciseResult, SeveranceSimpleResult } from '../lib/api'
 import { COMPANIES, Company } from '../lib/constants'
+import { Check } from 'lucide-react'
 
 type Step = 1 | 2 | 3 | 4
 type CalcMode = 'precise' | 'simple'
@@ -15,8 +16,10 @@ interface State {
   step: Step
   company: Company | ''
   companyOther: string
-  q1: boolean | null  // 1년 이상
-  q2: boolean | null  // 주 15시간
+  /** PDF 추출 후 선택한 사업장명 (정밀 계산 시 결과 화면 표시용) */
+  displayCompany?: string
+  q1: boolean | null
+  q2: boolean | null
   calcMode: CalcMode | null
   failed: boolean
   result: SeverancePreciseResult | SeveranceSimpleResult | null
@@ -29,10 +32,12 @@ const INIT: State = {
 }
 
 // 스텝별 진행도 빌더
-function buildSteps(s: State) {
-  const compLabel = s.company === '기타' && s.companyOther
-    ? s.companyOther.slice(0, 12)
-    : s.company || '회사 선택'
+function buildSteps(s: State, selectedPdfCompany: string | null) {
+  const compLabel = selectedPdfCompany
+    ? (selectedPdfCompany.length > 12 ? selectedPdfCompany.slice(0, 12) + '…' : selectedPdfCompany)
+    : s.company === '기타' && s.companyOther
+      ? s.companyOther.slice(0, 12)
+      : s.company || '회사 선택'
   const modeLabel = s.calcMode === 'precise' ? '정밀 계산' : s.calcMode === 'simple' ? '쉬운 계산' : '계산 방식'
   const steps: { label: string; done?: boolean; current?: boolean }[] = [
     { label: `① ${compLabel}`, done: !!s.company && s.step > 1, current: s.step === 1 },
@@ -53,21 +58,34 @@ export default function SeveranceFlow() {
   const [endDate, setEndDate] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [pdfCompanies, setPdfCompanies] = useState<string[]>([])
+  const [selectedPdfCompany, setSelectedPdfCompany] = useState<string | null>(null)
+  const [extractLoading, setExtractLoading] = useState(false)
 
   // Simple inputs
   const [workDays, setWorkDays] = useState('')
   const [avgWage, setAvgWage] = useState('')
 
   const go = (step: Step) => setS(p => ({ ...p, step, failed: false }))
-  const reset = () => { setS(INIT); setFile(null); setEndDate(''); setWorkDays(''); setAvgWage(''); setError('') }
+  const reset = () => {
+    setS(INIT)
+    setFile(null)
+    setEndDate('')
+    setWorkDays('')
+    setAvgWage('')
+    setError('')
+    setPdfCompanies([])
+    setSelectedPdfCompany(null)
+  }
 
   // ── 결과 화면 ──────────────────────────────────
   if (s.result) {
+    const companyLabel = s.displayCompany || (s.company === '기타' ? s.companyOther : s.company) || ''
     return (
       <ResultSeverance
         result={s.result}
         resultType={s.resultType!}
-        company={s.company}
+        company={companyLabel}
         onReset={reset}
       />
     )
@@ -80,7 +98,7 @@ export default function SeveranceFlow() {
         {loading && <LoadingOverlay />}
         <div style={{ width: '100%', maxWidth: 480 }}>
           <GlassCard className="p-8">
-            <ProgressSummary steps={buildSteps(s)} totalSteps={4} currentStep={2} />
+            <ProgressSummary steps={buildSteps(s, selectedPdfCompany)} totalSteps={4} currentStep={2} />
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ fontSize: '3rem', marginBottom: 16 }}>😔</div>
               <h2 className="heading-lg" style={{ marginBottom: 12 }}>아직은 퇴직금을 받기 어려워요</h2>
@@ -103,11 +121,16 @@ export default function SeveranceFlow() {
   // ── 계산 실행 ──────────────────────────────────
   async function runPrecise() {
     if (!file) { setError('PDF 파일을 업로드해 주세요.'); return }
+    const usePdfCompany = selectedPdfCompany !== null
+    if (!usePdfCompany && pdfCompanies.length > 1) {
+      setError('사업장을 선택해 주세요.')
+      return
+    }
     setError(''); setLoading(true)
     const fd = new FormData()
     fd.append('file', file)
-    fd.append('company', s.company)
-    fd.append('company_other', s.companyOther)
+    fd.append('company', usePdfCompany ? '기타' : s.company)
+    fd.append('company_other', usePdfCompany ? selectedPdfCompany! : s.companyOther)
     if (endDate) fd.append('end_date', endDate)
     // 최소 3초 로딩
     const [res] = await Promise.allSettled([
@@ -116,7 +139,13 @@ export default function SeveranceFlow() {
     ])
     setLoading(false)
     if (res.status === 'fulfilled') {
-      setS(p => ({ ...p, result: res.value, resultType: 'precise', step: 4 }))
+      setS(p => ({
+        ...p,
+        result: res.value,
+        resultType: 'precise',
+        step: 4,
+        displayCompany: usePdfCompany ? selectedPdfCompany || undefined : undefined,
+      }))
     } else {
       const err = res.reason as {
         response?: { status?: number; data?: { detail?: string | Array<{ msg?: string }> } }
@@ -168,7 +197,7 @@ export default function SeveranceFlow() {
       {loading && <LoadingOverlay message="퇴직금을 계산하고 있어요.." />}
       <div style={{ width: '100%', maxWidth: 480 }}>
         <GlassCard className="p-8">
-          <ProgressSummary steps={buildSteps(s)} totalSteps={4} currentStep={stepN} />
+          <ProgressSummary steps={buildSteps(s, selectedPdfCompany)} totalSteps={4} currentStep={stepN} />
           {content}
         </GlassCard>
       </div>
@@ -290,6 +319,26 @@ export default function SeveranceFlow() {
     3,
   )
 
+  // PDF 업로드 시 사업장 추출
+  async function onPdfSelect(f: File) {
+    setFile(f)
+    setPdfCompanies([])
+    setSelectedPdfCompany(null)
+    setExtractLoading(true)
+    setError('')
+    try {
+      const { companies } = await extractSeveranceCompanies(f)
+      setPdfCompanies(companies)
+      if (companies.length === 1) setSelectedPdfCompany(companies[0])
+      if (companies.length === 0) setError('PDF에서 사업장을 찾지 못했어요.')
+    } catch {
+      setError('PDF 분석에 실패했어요. 다시 시도해 주세요.')
+      setPdfCompanies([])
+    } finally {
+      setExtractLoading(false)
+    }
+  }
+
   // ── STEP 4A: 정밀 계산 ───────────────────────
   if (s.step === 4 && s.calcMode === 'precise') return wrap(
     <>
@@ -322,9 +371,44 @@ export default function SeveranceFlow() {
           type="file"
           accept=".pdf"
           style={{ display: 'none' }}
-          onChange={e => { const f = e.target.files?.[0]; if (f) setFile(f) }}
+          onChange={e => { const f = e.target.files?.[0]; if (f) onPdfSelect(f) }}
         />
       </div>
+
+      {/* 사업장 선택 카드 (토스 스타일 칩) */}
+      {extractLoading && (
+        <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-3xl p-6 max-w-md mx-auto mt-4" style={{ textAlign: 'center', color: 'var(--toss-text-2)' }}>
+          PDF 분석 중…
+        </div>
+      )}
+      {!extractLoading && pdfCompanies.length > 1 && (
+        <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-3xl p-6 max-w-md mx-auto mt-4 transition-all duration-300">
+          <p className="font-sans font-semibold text-toss-text mb-3" style={{ fontSize: '0.95rem' }}>계산할 사업장을 선택하세요</p>
+          <div className="flex flex-wrap gap-2">
+            {pdfCompanies.map(name => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => setSelectedPdfCompany(prev => prev === name ? null : name)}
+                className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${
+                  selectedPdfCompany === name
+                    ? 'ring-2 ring-[#3182f6] bg-blue-50 text-[#3182f6]'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}
+              >
+                {selectedPdfCompany === name && <Check size={16} strokeWidth={2.5} />}
+                <span className="truncate max-w-[200px]">{name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {!extractLoading && pdfCompanies.length === 1 && selectedPdfCompany && (
+        <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-3xl p-4 max-w-md mx-auto mt-4 flex items-center gap-2">
+          <Check size={20} className="text-[#3182f6] shrink-0" />
+          <span className="font-medium text-toss-text text-sm">선택된 사업장: {selectedPdfCompany}</span>
+        </div>
+      )}
 
       <div style={{ marginTop: 20, marginBottom: 20 }}>
         <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: 'var(--toss-text)', marginBottom: 8 }}>
@@ -342,7 +426,10 @@ export default function SeveranceFlow() {
         </div>
       )}
 
-      <PrimaryButton onClick={runPrecise} disabled={!file}>
+      <PrimaryButton
+        onClick={runPrecise}
+        disabled={!file || extractLoading || (pdfCompanies.length > 1 && !selectedPdfCompany)}
+      >
         계산하기
       </PrimaryButton>
       <SecondaryButton style={{ marginTop: 10 }} onClick={() => go(3)}>← 이전으로</SecondaryButton>

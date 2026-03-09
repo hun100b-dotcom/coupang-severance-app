@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 import pandas as pd
 
-from ..services.pdf import parse_welcomwel_pdf, filter_df_by_company, preprocess_data
+from ..services.pdf import parse_welcomwel_pdf, filter_df_by_company, preprocess_data, extract_unique_companies
 from ..services.unemployment import (
     compute_unemployment_estimate,
     compute_insured_days_from_df,
@@ -17,6 +17,17 @@ from ..schemas.unemployment import (
 )
 
 router = APIRouter()
+
+
+@router.post("/extract-companies")
+async def extract_companies(file: UploadFile = File(...)):
+    """PDF 업로드 시 사업장명 고유 리스트 추출"""
+    try:
+        raw = await file.read()
+        companies = extract_unique_companies(raw)
+        return {"companies": companies}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"PDF 처리 중 오류: {str(e)}")
 
 
 @router.post("/precise", response_model=UBPreciseResponse)

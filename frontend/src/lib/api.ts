@@ -16,6 +16,20 @@ export const getClickCount = () =>
 export const registerClick = (service: 'severance' | 'unemployment') =>
   api.post(`/click/${service}`).then(r => r.data)
 
+/** PDF에서 사업장 고유 리스트 추출 (퇴직금 정밀 계산용) */
+export const extractSeveranceCompanies = (file: File) => {
+  const fd = new FormData()
+  fd.append('file', file)
+  return api.post<{ companies: string[] }>('/severance/extract-companies', fd).then(r => r.data)
+}
+
+/** PDF에서 사업장 고유 리스트 추출 (실업급여 정밀 계산용) */
+export const extractUnemploymentCompanies = (file: File) => {
+  const fd = new FormData()
+  fd.append('file', file)
+  return api.post<{ companies: string[] }>('/unemployment/extract-companies', fd).then(r => r.data)
+}
+
 // ── 퇴직금 리포트 세부 타입 ───────────────────────
 export interface WeeklyDetailItem {
   week: string
