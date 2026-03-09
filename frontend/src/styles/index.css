@@ -32,73 +32,98 @@ html, body, #root {
 }
 
 /* ─────────────────────────────────────────────
-   애니메이션 배경
+   초고화질 Liquid Mesh 배경
 ───────────────────────────────────────────── */
 .app-bg {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 30%, #e8f4ff 60%, #f5f3ff 100%);
-  background-size: 300% 300%;
-  animation: meshFlow 20s ease infinite;
+  background: radial-gradient(ellipse at 20% 30%, #dbeafe 0%, #e0e7ff 35%, #f0f9ff 60%, #f5f3ff 100%);
+  background-size: 400% 400%;
+  animation: liquidBase 20s ease infinite;
+  overflow: hidden;
   z-index: 0;
 }
 
-@keyframes meshFlow {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+@keyframes liquidBase {
+  0%   { background-position: 0% 30%; }
+  50%  { background-position: 100% 70%; }
+  100% { background-position: 0% 30%; }
 }
 
-/* 플로팅 버블 */
-.bubble {
+/* Liquid Blob — 공통 */
+.liquid-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.65;
   pointer-events: none;
-}
-.bubble-1 {
-  width: 500px; height: 500px;
-  background: #b8d4ff;
-  top: -120px; left: -100px;
-  animation: bubble1 18s ease-in-out infinite;
-}
-.bubble-2 {
-  width: 400px; height: 400px;
-  background: #d4c5ff;
-  top: 40%; right: -80px;
-  animation: bubble2 22s ease-in-out infinite;
-}
-.bubble-3 {
-  width: 350px; height: 350px;
-  background: #a8d5e2;
-  bottom: -100px; left: 30%;
-  animation: bubble3 26s ease-in-out infinite;
-}
-.bubble-4 {
-  width: 280px; height: 280px;
-  background: #ffd6e8;
-  top: 60%; left: 10%;
-  animation: bubble4 15s ease-in-out infinite;
+  will-change: transform;
 }
 
-@keyframes bubble1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%       { transform: translate(60px, -80px) scale(1.1); }
-  66%       { transform: translate(-40px, 50px) scale(0.95); }
+/* Blob 1 — 대형 파란 */
+.blob-1 {
+  width: 780px; height: 780px;
+  background: radial-gradient(circle, rgba(96,165,250,0.55) 0%, rgba(147,197,253,0.25) 60%, transparent 80%);
+  filter: blur(72px);
+  top: -200px; left: -180px;
+  animation: liquid1 22s ease-in-out infinite;
 }
-@keyframes bubble2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  40%       { transform: translate(-70px, 60px) scale(1.05); }
-  80%       { transform: translate(50px, -40px) scale(0.9); }
+/* Blob 2 — 대형 인디고 */
+.blob-2 {
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(129,140,248,0.5) 0%, rgba(167,139,250,0.25) 60%, transparent 80%);
+  filter: blur(80px);
+  top: 30%; right: -180px;
+  animation: liquid2 28s ease-in-out infinite;
 }
-@keyframes bubble3 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%       { transform: translate(80px, 70px) scale(1.15); }
+/* Blob 3 — 중형 하늘색 */
+.blob-3 {
+  width: 580px; height: 580px;
+  background: radial-gradient(circle, rgba(125,211,252,0.45) 0%, rgba(186,230,253,0.2) 60%, transparent 80%);
+  filter: blur(64px);
+  bottom: -120px; left: 15%;
+  animation: liquid3 25s ease-in-out infinite;
 }
-@keyframes bubble4 {
+/* Blob 4 — 소형 퍼플 */
+.blob-4 {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, rgba(196,181,253,0.5) 0%, rgba(221,214,254,0.2) 60%, transparent 80%);
+  filter: blur(56px);
+  top: 55%; left: -100px;
+  animation: liquid4 19s ease-in-out infinite;
+}
+/* Blob 5 — 소형 핑크-블루 혼합 */
+.blob-5 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(186,230,253,0.4) 0%, rgba(237,233,254,0.2) 60%, transparent 80%);
+  filter: blur(68px);
+  top: 10%; right: 20%;
+  animation: liquid5 32s ease-in-out infinite;
+}
+
+@keyframes liquid1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  60%       { transform: translate(-50px, -60px) scale(1.08); }
+  25%  { transform: translate(140px, -100px) scale(1.15); }
+  50%  { transform: translate(80px,  160px) scale(0.9); }
+  75%  { transform: translate(-100px, 80px) scale(1.08); }
+}
+@keyframes liquid2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  30%  { transform: translate(-160px, 120px) scale(1.1); }
+  60%  { transform: translate(-80px, -150px) scale(0.88); }
+  80%  { transform: translate(120px, -60px) scale(1.05); }
+}
+@keyframes liquid3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%  { transform: translate(180px, -130px) scale(1.2); }
+  70%  { transform: translate(-90px, -80px) scale(0.92); }
+}
+@keyframes liquid4 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(130px, -160px) scale(1.12); }
+}
+@keyframes liquid5 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(-130px, 100px) scale(1.1); }
+  66%  { transform: translate(160px, 120px) scale(0.9); }
 }
 
 /* ─────────────────────────────────────────────
@@ -249,6 +274,71 @@ html, body, #root {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* ── 사업장 선택 카드 (스크롤 세로 리스트) ─────────────────── */
+.company-select-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  padding: 18px 16px;
+  box-shadow: 0 8px 32px rgba(49, 130, 246, 0.08);
+}
+.company-list-scroll {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* 부드러운 스크롤바 */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(49,130,246,0.25) transparent;
+}
+.company-list-scroll::-webkit-scrollbar { width: 4px; }
+.company-list-scroll::-webkit-scrollbar-track { background: transparent; }
+.company-list-scroll::-webkit-scrollbar-thumb { background: rgba(49,130,246,0.25); border-radius: 4px; }
+.company-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.9);
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+  text-align: left;
+}
+.company-item:hover {
+  background: rgba(226, 232, 240, 0.9);
+}
+.company-item.selected {
+  background: rgba(219, 234, 254, 0.9);
+  box-shadow: inset 0 0 0 1.5px #3182f6;
+}
+.company-item-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #3182f6;
+  width: 18px;
+}
+.company-item-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--toss-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.company-item.selected .company-item-name {
+  color: #1d4ed8;
+  font-weight: 600;
 }
 
 /* 특징 칩 — glassmorphism + hover */

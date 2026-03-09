@@ -49,9 +49,10 @@ async def ub_precise(
     company_found = not filtered.empty
 
     if not company_found:
+        display_name = company_other if company_other else company
         raise HTTPException(
             status_code=422,
-            detail=f"PDF에서 '{company}' 관련 근무 이력을 찾지 못했어요.",
+            detail=f"PDF에서 '{display_name}' 관련 근무 이력을 찾지 못했어요. 사업장 선택이 PDF 내용과 일치하는지 확인해 주세요.",
         )
 
     end_dt: datetime | None = None

@@ -215,10 +215,20 @@ export default function Intro() {
         </div>
 
         {/* 푸터 */}
-        <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'rgba(120,130,150,0.65)', marginTop: 20, lineHeight: 1.6 }}>
+        <p
+          style={{
+            textAlign: 'center',
+            fontSize: '10px',
+            fontWeight: 300,
+            color: 'rgba(156,163,175,0.85)',
+            marginTop: 20,
+            lineHeight: 1.7,
+            letterSpacing: '0.01em',
+          }}
+        >
           © 2026 CATCH by LEAF-MASTER. All rights reserved.
           <br />
-          <span style={{ fontSize: '0.68rem' }}>이 결과는 참고용이에요. 정확한 금액은 노무사 상담을 받으세요.</span>
+          <span style={{ fontSize: '9px' }}>이 결과는 참고용이에요. 정확한 금액은 노무사 상담을 받으세요.</span>
         </p>
 
       </div>

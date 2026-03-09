@@ -67,11 +67,13 @@ async def precise_calculation(
         filtered = filter_df_by_company(df, company, company_other)
 
         if filtered.empty:
+            # 실제 사업장명을 오류 메시지에 표시
+            display_name = company_other if company_other else company
             raise HTTPException(
                 status_code=422,
                 detail=(
-                    f"PDF에서 '{company}' 관련 근무 이력을 찾지 못했어요. "
-                    "PDF 파일이 맞는지 또는 '기타' 옵션으로 회사명을 직접 입력해 주세요."
+                    f"PDF에서 '{display_name}' 관련 근무 이력을 찾지 못했어요. "
+                    "사업장 선택이 PDF 내용과 일치하는지 확인해 주세요."
                 ),
             )
 

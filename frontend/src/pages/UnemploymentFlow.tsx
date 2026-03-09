@@ -126,13 +126,13 @@ export default function UnemploymentFlow() {
   // ── 계산 실행 ──
   async function runPrecise() {
     if (!file) { setError('PDF 파일을 업로드해 주세요.'); return }
-    const usePdfCompany = selectedPdfCompany !== null
-    if (!usePdfCompany && pdfCompanies.length > 1) { setError('사업장을 선택해 주세요.'); return }
+    // PDF 사업장이 추출됐으면 반드시 선택 필요 (step1 설문과 완전 분리)
+    if (pdfCompanies.length > 0 && !selectedPdfCompany) { setError('계산할 사업장을 선택해 주세요.'); return }
     setError(''); setLoading(true)
     const fd = new FormData()
     fd.append('file', file)
-    fd.append('company', usePdfCompany ? '기타' : s.company)
-    fd.append('company_other', usePdfCompany ? selectedPdfCompany! : s.companyOther)
+    fd.append('company', '기타')
+    fd.append('company_other', selectedPdfCompany ?? '')
     if (endDate) fd.append('end_date', endDate)
     fd.append('age_50', String(s.age50))
     const [res] = await Promise.allSettled([
@@ -141,7 +141,7 @@ export default function UnemploymentFlow() {
     ])
     setLoading(false)
     if (res.status === 'fulfilled') {
-      setS(p => ({ ...p, result: res.value, displayCompany: usePdfCompany ? selectedPdfCompany || undefined : undefined }))
+      setS(p => ({ ...p, result: res.value, displayCompany: selectedPdfCompany || undefined }))
     } else {
       const msg = (res.reason as { response?: { data?: { detail?: string } } })?.response?.data?.detail || '계산 중 오류가 발생했어요.'
       setError(msg)
@@ -259,32 +259,36 @@ export default function UnemploymentFlow() {
         <input ref={fileRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) onPdfSelect(f) }} />
       </div>
       {extractLoading && (
-        <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-3xl p-6 max-w-md mx-auto mt-4 text-center" style={{ color: 'var(--toss-text-2)' }}>PDF 분석 중…</div>
+        <div className="company-select-card mt-4" style={{ textAlign: 'center', color: 'var(--toss-text-2)' }}>
+          <p style={{ fontSize: '0.9rem' }}>📂 PDF 분석 중…</p>
+        </div>
       )}
-      {!extractLoading && pdfCompanies.length > 1 && (
-        <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-3xl p-6 max-w-md mx-auto mt-4 transition-all duration-300">
-          <p className="font-sans font-semibold mb-3" style={{ fontSize: '0.95rem', color: 'var(--toss-text)' }}>계산할 사업장을 선택하세요</p>
-          <div className="flex flex-wrap gap-2">
+      {!extractLoading && pdfCompanies.length > 0 && (
+        <div className="company-select-card mt-4">
+          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--toss-text)', marginBottom: 10 }}>
+            계산할 사업장을 선택하세요
+            <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--toss-text-3)', marginLeft: 6 }}>
+              ({pdfCompanies.length}개 추출됨)
+            </span>
+          </p>
+          <div className="company-list-scroll">
             {pdfCompanies.map(name => (
               <button
                 key={name}
                 type="button"
                 onClick={() => setSelectedPdfCompany(prev => prev === name ? null : name)}
-                className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${
-                  selectedPdfCompany === name ? 'ring-2 ring-[#3182f6] bg-blue-50 text-[#3182f6]' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                }`}
+                className={`company-item ${selectedPdfCompany === name ? 'selected' : ''}`}
               >
-                {selectedPdfCompany === name && <Check size={16} strokeWidth={2.5} />}
-                <span className="truncate max-w-[200px]">{name}</span>
+                <span className="company-item-dot">
+                  {selectedPdfCompany === name
+                    ? <Check size={14} strokeWidth={2.5} />
+                    : <span style={{ width: 14, height: 14, borderRadius: '50%', border: '1.5px solid #cbd5e1', display: 'inline-block' }} />
+                  }
+                </span>
+                <span className="company-item-name">{name}</span>
               </button>
             ))}
           </div>
-        </div>
-      )}
-      {!extractLoading && pdfCompanies.length === 1 && selectedPdfCompany && (
-        <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-3xl p-4 max-w-md mx-auto mt-4 flex items-center gap-2">
-          <Check size={20} className="text-[#3182f6] shrink-0" />
-          <span className="font-medium text-sm" style={{ color: 'var(--toss-text)' }}>선택된 사업장: {selectedPdfCompany}</span>
         </div>
       )}
       <div style={{ marginTop: 16, marginBottom: 4 }}>
@@ -296,7 +300,7 @@ export default function UnemploymentFlow() {
         <span style={{ fontSize: '0.95rem', fontWeight: 600 }}>50세 이상이에요 (수급일수 더 길어요)</span>
       </label>
       {error && <div style={{ padding: '12px 16px', background: 'rgba(240,68,82,0.08)', border: '1px solid rgba(240,68,82,0.2)', borderRadius: 12, marginBottom: 16, color: '#cc2233', fontSize: '0.9rem', fontWeight: 600 }}>⚠️ {error}</div>}
-      <PrimaryButton onClick={runPrecise} disabled={!file || extractLoading || (pdfCompanies.length > 1 && !selectedPdfCompany)}>계산하기</PrimaryButton>
+      <PrimaryButton onClick={runPrecise} disabled={!file || extractLoading || (pdfCompanies.length > 0 && !selectedPdfCompany)}>계산하기</PrimaryButton>
       <SecondaryButton style={{ marginTop: 10 }} onClick={() => go(3)}>← 이전으로</SecondaryButton>
     </>,
     4,
