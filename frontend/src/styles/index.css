@@ -34,20 +34,16 @@ html, body, #root {
 /* ─────────────────────────────────────────────
    초고화질 Liquid Mesh 배경
 ───────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════
+   초고화질 Liquid Mesh 배경 — 명확히 보이는 움직임
+════════════════════════════════════════════════════ */
 .app-bg {
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at 20% 30%, #dbeafe 0%, #e0e7ff 35%, #f0f9ff 60%, #f5f3ff 100%);
-  background-size: 400% 400%;
-  animation: liquidBase 20s ease infinite;
+  /* 연한 파스텔 베이스 — 블롭 색이 잘 보이도록 */
+  background: #eef2ff;
   overflow: hidden;
   z-index: 0;
-}
-
-@keyframes liquidBase {
-  0%   { background-position: 0% 30%; }
-  50%  { background-position: 100% 70%; }
-  100% { background-position: 0% 30%; }
 }
 
 /* Liquid Blob — 공통 */
@@ -55,75 +51,95 @@ html, body, #root {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
-  will-change: transform;
+  will-change: transform, opacity;
 }
 
-/* Blob 1 — 대형 파란 */
+/* ── Blob 1: 대형 딥 블루 ─────────── */
 .blob-1 {
-  width: 780px; height: 780px;
-  background: radial-gradient(circle, rgba(96,165,250,0.55) 0%, rgba(147,197,253,0.25) 60%, transparent 80%);
-  filter: blur(72px);
-  top: -200px; left: -180px;
-  animation: liquid1 22s ease-in-out infinite;
-}
-/* Blob 2 — 대형 인디고 */
-.blob-2 {
-  width: 700px; height: 700px;
-  background: radial-gradient(circle, rgba(129,140,248,0.5) 0%, rgba(167,139,250,0.25) 60%, transparent 80%);
-  filter: blur(80px);
-  top: 30%; right: -180px;
-  animation: liquid2 28s ease-in-out infinite;
-}
-/* Blob 3 — 중형 하늘색 */
-.blob-3 {
-  width: 580px; height: 580px;
-  background: radial-gradient(circle, rgba(125,211,252,0.45) 0%, rgba(186,230,253,0.2) 60%, transparent 80%);
-  filter: blur(64px);
-  bottom: -120px; left: 15%;
-  animation: liquid3 25s ease-in-out infinite;
-}
-/* Blob 4 — 소형 퍼플 */
-.blob-4 {
-  width: 450px; height: 450px;
-  background: radial-gradient(circle, rgba(196,181,253,0.5) 0%, rgba(221,214,254,0.2) 60%, transparent 80%);
-  filter: blur(56px);
-  top: 55%; left: -100px;
-  animation: liquid4 19s ease-in-out infinite;
-}
-/* Blob 5 — 소형 핑크-블루 혼합 */
-.blob-5 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(186,230,253,0.4) 0%, rgba(237,233,254,0.2) 60%, transparent 80%);
-  filter: blur(68px);
-  top: 10%; right: 20%;
-  animation: liquid5 32s ease-in-out infinite;
+  width: 860px; height: 860px;
+  background: radial-gradient(circle at 40% 40%,
+    rgba(59, 130, 246, 0.65) 0%,
+    rgba(96, 165, 250, 0.35) 45%,
+    transparent 72%);
+  filter: blur(60px);
+  top: -260px; left: -220px;
+  animation: blob1 20s ease-in-out infinite;
 }
 
-@keyframes liquid1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25%  { transform: translate(140px, -100px) scale(1.15); }
-  50%  { transform: translate(80px,  160px) scale(0.9); }
-  75%  { transform: translate(-100px, 80px) scale(1.08); }
+/* ── Blob 2: 대형 인디고-퍼플 ─────── */
+.blob-2 {
+  width: 760px; height: 760px;
+  background: radial-gradient(circle at 55% 45%,
+    rgba(99, 102, 241, 0.6) 0%,
+    rgba(167, 139, 250, 0.32) 45%,
+    transparent 72%);
+  filter: blur(65px);
+  top: 35%; right: -200px;
+  animation: blob2 24s ease-in-out infinite;
 }
-@keyframes liquid2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  30%  { transform: translate(-160px, 120px) scale(1.1); }
-  60%  { transform: translate(-80px, -150px) scale(0.88); }
-  80%  { transform: translate(120px, -60px) scale(1.05); }
+
+/* ── Blob 3: 중형 하늘색 ─────────── */
+.blob-3 {
+  width: 620px; height: 620px;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(14, 165, 233, 0.5) 0%,
+    rgba(125, 211, 252, 0.25) 50%,
+    transparent 75%);
+  filter: blur(55px);
+  bottom: -150px; left: 10%;
+  animation: blob3 22s ease-in-out infinite;
 }
-@keyframes liquid3 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  40%  { transform: translate(180px, -130px) scale(1.2); }
-  70%  { transform: translate(-90px, -80px) scale(0.92); }
+
+/* ── Blob 4: 퍼플-바이올렛 ─────────── */
+.blob-4 {
+  width: 520px; height: 520px;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(168, 85, 247, 0.5) 0%,
+    rgba(216, 180, 254, 0.25) 50%,
+    transparent 75%);
+  filter: blur(58px);
+  top: 50%; left: -80px;
+  animation: blob4 18s ease-in-out infinite;
 }
-@keyframes liquid4 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%  { transform: translate(130px, -160px) scale(1.12); }
+
+/* ── Blob 5: 라이트 블루 ─────────── */
+.blob-5 {
+  width: 560px; height: 560px;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(56, 189, 248, 0.45) 0%,
+    rgba(186, 230, 253, 0.22) 50%,
+    transparent 75%);
+  filter: blur(62px);
+  top: 5%; right: 5%;
+  animation: blob5 27s ease-in-out infinite;
 }
-@keyframes liquid5 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%  { transform: translate(-130px, 100px) scale(1.1); }
-  66%  { transform: translate(160px, 120px) scale(0.9); }
+
+/* 키프레임 — 확실한 이동 거리 */
+@keyframes blob1 {
+  0%, 100% { transform: translate(0,    0)    scale(1);    opacity: 0.9; }
+  20%       { transform: translate(180px, -120px) scale(1.18); opacity: 1;   }
+  50%       { transform: translate(100px,  200px) scale(0.88); opacity: 0.8; }
+  75%       { transform: translate(-140px, 100px) scale(1.1);  opacity: 0.95;}
+}
+@keyframes blob2 {
+  0%, 100% { transform: translate(0,    0)     scale(1);    opacity: 0.85;}
+  25%       { transform: translate(-200px, 150px) scale(1.12); opacity: 1;   }
+  55%       { transform: translate(-100px,-180px) scale(0.85); opacity: 0.75;}
+  80%       { transform: translate(160px, -80px)  scale(1.07); opacity: 0.95;}
+}
+@keyframes blob3 {
+  0%, 100% { transform: translate(0,    0)     scale(1);    opacity: 0.85;}
+  40%       { transform: translate(220px,-160px) scale(1.22); opacity: 1;   }
+  70%       { transform: translate(-110px,-90px) scale(0.9);  opacity: 0.8; }
+}
+@keyframes blob4 {
+  0%, 100% { transform: translate(0,    0)     scale(1);    opacity: 0.8; }
+  50%       { transform: translate(160px,-200px) scale(1.15); opacity: 1;   }
+}
+@keyframes blob5 {
+  0%, 100% { transform: translate(0,    0)     scale(1);    opacity: 0.8; }
+  30%       { transform: translate(-160px,120px) scale(1.12); opacity: 1;   }
+  65%       { transform: translate(200px, 140px) scale(0.88); opacity: 0.75;}
 }
 
 /* ─────────────────────────────────────────────

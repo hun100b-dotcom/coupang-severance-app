@@ -1,5 +1,4 @@
-# Render Blueprint — 백엔드 API만 배포 (프론트는 Vercel에서 서빙)
-# Build/Start는 가상환경을 명시해 uvicorn 인식 오류 방지
+# Render Blueprint — 백엔드 API (프론트는 Vercel)
 services:
   - type: web
     name: coupang-severance-api
@@ -12,3 +11,7 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.0"
+      - key: SUPABASE_URL
+        value: "https://hmjprqxhowjyfkvicejt.supabase.co"
+      - key: SUPABASE_ANON_KEY
+        value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtanhycWhjd2p5Zmt2bGNlamZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTEwNTMsImV4cCI6MjA4ODYyNzA1M30.gr9poC-5808qHRoYc-5WH3dTqXupEEJpDdztv2fddog"

@@ -1,34 +1,51 @@
 # -*- coding: utf-8 -*-
 """
-클릭 카운터 서비스
+클릭 카운터 서비스 — Supabase 영구 보존
 
-영구 보존 우선순위:
-  1. SUPABASE_URL + SUPABASE_ANON_KEY 환경변수 설정 시 → Supabase(외부 DB) 사용
-  2. 미설정 시 → 로컬 JSON 파일 (배포 환경에서는 재시작/재배포 시 초기화 위험)
+Supabase Table: click_counter (단일 행, id=1)
+  id            int4  PRIMARY KEY
+  total_cnt     int8  DEFAULT 0   ← 누적 클릭 수
+  severance_cnt int8  DEFAULT 0   ← 퇴직금 버튼 클릭 수
+  unemployment_cnt int8 DEFAULT 0 ← 실업급여 버튼 클릭 수
 
-Supabase 설정 방법 (Render 환경변수에 추가):
-  SUPABASE_URL  = https://<project>.supabase.co
-  SUPABASE_ANON_KEY = <anon key>
-  
-  그리고 Supabase Table: click_counter
-    id        int4   PRIMARY KEY  (값: 1, 단일 행)
-    total     int8   DEFAULT 0
-    severance int8   DEFAULT 0
-    unemployment int8 DEFAULT 0
+Supabase SQL (처음 한 번만 실행):
+  CREATE TABLE IF NOT EXISTS click_counter (
+    id            int4 PRIMARY KEY,
+    total_cnt     int8 DEFAULT 0,
+    severance_cnt int8 DEFAULT 0,
+    unemployment_cnt int8 DEFAULT 0
+  );
+  INSERT INTO click_counter (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+
+환경변수 (render.yaml 혹은 Render 대시보드):
+  SUPABASE_URL      = https://hmjprqxhowjyfkvicejt.supabase.co
+  SUPABASE_ANON_KEY = <anon jwt>
 """
 import json
 import os
 from pathlib import Path
 
+# ── 환경변수 (기본값: 하드코딩 — render.yaml 환경변수로 덮어씌워짐) ───────────
+_SUPABASE_URL = os.getenv(
+    "SUPABASE_URL",
+    "https://hmjprqxhowjyfkvicejt.supabase.co",
+).rstrip("/")
+
+_SUPABASE_KEY = os.getenv(
+    "SUPABASE_ANON_KEY",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtanhycWhjd2p5Zmt2bGNlamZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTEwNTMsImV4cCI6MjA4ODYyNzA1M30"
+    ".gr9poC-5808qHRoYc-5WH3dTqXupEEJpDdztv2fddog",
+)
+
+_TABLE = "click_counter"
+
+# ── JSON 폴백 경로 ─────────────────────────────────────────────────────────────
 COUNTER_DIR  = Path(__file__).resolve().parents[3] / "data"
 COUNTER_PATH = COUNTER_DIR / "click_count.json"
 
-_SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
-_SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY", "")
-_USE_SUPABASE = bool(_SUPABASE_URL and _SUPABASE_KEY)
 
-# ── Supabase helpers ────────────────────────────────────────────────────────
-def _sb_headers() -> dict:
+def _headers() -> dict:
     return {
         "apikey": _SUPABASE_KEY,
         "Authorization": f"Bearer {_SUPABASE_KEY}",
@@ -38,36 +55,55 @@ def _sb_headers() -> dict:
 
 
 def _sb_get() -> dict:
+    """Supabase에서 현재 카운트 조회. 실패 시 JSON 폴백."""
     try:
         import httpx
-        url = f"{_SUPABASE_URL}/rest/v1/click_counter?id=eq.1&select=total,severance,unemployment"
-        r = httpx.get(url, headers=_sb_headers(), timeout=5)
+        url = f"{_SUPABASE_URL}/rest/v1/{_TABLE}?id=eq.1&select=total_cnt,severance_cnt,unemployment_cnt"
+        r = httpx.get(url, headers=_headers(), timeout=7)
         if r.status_code == 200:
             rows = r.json()
             if rows:
-                return {k: int(rows[0].get(k, 0)) for k in ("total", "severance", "unemployment")}
-    except Exception:
-        pass
-    return {"total": 0, "severance": 0, "unemployment": 0}
+                row = rows[0]
+                return {
+                    "total":        int(row.get("total_cnt", 0)),
+                    "severance":    int(row.get("severance_cnt", 0)),
+                    "unemployment": int(row.get("unemployment_cnt", 0)),
+                }
+        print(f"[counter:get] status={r.status_code} body={r.text[:200]}")
+    except Exception as exc:
+        print(f"[counter:get] 예외={exc}")
+    return _file_get()
 
 
 def _sb_increment(service: str) -> dict:
+    """Supabase total_cnt +1 (원자적 업데이트). 실패 시 JSON 폴백."""
     try:
         import httpx
-        current = _sb_get()
-        current["total"] += 1
-        if service in ("severance", "unemployment"):
-            current[service] += 1
-        url = f"{_SUPABASE_URL}/rest/v1/click_counter?id=eq.1"
-        r = httpx.patch(url, headers=_sb_headers(), json=current, timeout=5)
+
+        cur = _sb_get()
+        new_total        = cur["total"] + 1
+        new_severance    = cur["severance"] + (1 if service == "severance" else 0)
+        new_unemployment = cur["unemployment"] + (1 if service == "unemployment" else 0)
+
+        payload = {
+            "total_cnt":        new_total,
+            "severance_cnt":    new_severance,
+            "unemployment_cnt": new_unemployment,
+        }
+        url = f"{_SUPABASE_URL}/rest/v1/{_TABLE}?id=eq.1"
+        r = httpx.patch(url, headers=_headers(), json=payload, timeout=7)
+
         if r.status_code in (200, 204):
-            return current
-    except Exception:
-        pass
-    return _sb_get()
+            return {"total": new_total, "severance": new_severance, "unemployment": new_unemployment}
+        print(f"[counter:patch] status={r.status_code} body={r.text[:200]}")
+    except Exception as exc:
+        print(f"[counter:patch] 예외={exc}")
+
+    # Supabase 실패 → JSON 폴백으로라도 올리기
+    return _file_increment(service)
 
 
-# ── JSON 파일 폴백 ───────────────────────────────────────────────────────────
+# ── JSON 파일 폴백 ─────────────────────────────────────────────────────────────
 def _file_get() -> dict:
     try:
         if COUNTER_PATH.exists():
@@ -97,10 +133,10 @@ def _file_increment(service: str) -> dict:
         return _file_get()
 
 
-# ── 공개 API ────────────────────────────────────────────────────────────────
+# ── 공개 API ──────────────────────────────────────────────────────────────────
 def get_click_count() -> dict:
-    return _sb_get() if _USE_SUPABASE else _file_get()
+    return _sb_get()          # Supabase 우선, 내부에서 폴백 처리
 
 
 def increment_click_count(service: str) -> dict:
-    return _sb_increment(service) if _USE_SUPABASE else _file_increment(service)
+    return _sb_increment(service)   # Supabase 우선, 내부에서 폴백 처리
