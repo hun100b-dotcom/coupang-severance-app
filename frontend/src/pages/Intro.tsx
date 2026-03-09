@@ -86,8 +86,12 @@ export default function Intro() {
                 {lines.map((line, i) => (
                   <p
                     key={i}
-                    className="heading-xl font-sans"
-                    style={{ textAlign: 'center', lineHeight: 1.25, marginBottom: i < lines.length - 1 ? 4 : 0 }}
+                    className="heading-lg font-sans"
+                    style={{
+                      textAlign: 'center',
+                      lineHeight: 1.25,
+                      marginBottom: i < lines.length - 1 ? 4 : 0,
+                    }}
                   >
                     {line}
                   </p>
