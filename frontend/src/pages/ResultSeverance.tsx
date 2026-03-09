@@ -396,12 +396,11 @@ function Section5AIAnalysis({ comment }: { comment: string }) {
     <div className="report-section">
       <div className="report-section-title" style={{ color: 'var(--toss-text)', alignItems: 'center' }}>
         <span className="section-num" style={{ background: 'var(--toss-blue)', color: '#fff' }}>5</span>
-        <span style={{ marginRight: 6 }}>✨</span>
-        AI 정밀 분석 결과
-        <span style={{ fontSize: '0.72rem', fontWeight: 500, color: 'var(--toss-text-2)', textTransform: 'none', marginLeft: 6 }}>
-          고용보험 내역을 바탕으로 분석한 예상 결과예요.
-        </span>
+        AI 정밀 분석 결과 ✨
       </div>
+      <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginBottom: 10 }}>
+        고용보험 데이터를 분석한 예상 결과입니다.
+      </p>
       <div className="ai-analysis-box">{comment}</div>
       <p style={{ fontSize: '0.72rem', color: 'var(--toss-text-2)', marginTop: 10, lineHeight: 1.5 }}>
         ※ 이 내용은 업로드된 PDF 데이터를 분석하여 자동 생성된 참고 결과입니다.
