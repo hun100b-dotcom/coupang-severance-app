@@ -313,18 +313,44 @@ def _process_table(table: list[list], rows_out: list[dict]) -> None:
     if idx_site < 0:
         idx_site = 2 if n_cols > 2 else 0
 
-    for row in table[1:]:
-        if not row or len(row) <= max(idx_ym, idx_pay, idx_site):
+    required_len = max(idx_ym, idx_site, idx_dates, idx_days, idx_pay) + 1
+    # 셀 병합 등으로 열 수가 적은 행용 폴백 (최소 5열: 일련번호+근로년월,사업장,근로일자,근로일수,임금)
+    short_row_indices = (1, 2, 3, 4, 5)  # ym, site, dates, days, pay
+    MIN_ROW_COLS = 5
+
+    # 첫 행이 헤더가 아니라 데이터면 포함 (2·3페이지 연속 테이블)
+    data_rows = list(table[1:])
+    if table[0] and not _is_header_row(table[0], header):
+        first = table[0]
+        if len(first) >= MIN_ROW_COLS:
+            use_ym = first[short_row_indices[0]] if len(first) < required_len else first[idx_ym]
+            use_pay_raw = first[short_row_indices[4]] if len(first) < required_len else first[idx_pay]
+            pay_clean = re.sub(r"[^\d.]", "", str(use_pay_raw or "0").replace(",", ""))
+            try:
+                if _parse_ym(str(use_ym or "").strip()) and pay_clean and float(pay_clean) > 0:
+                    data_rows.insert(0, first)
+            except ValueError:
+                pass
+
+    for row in data_rows:
+        if not row:
             continue
-        # 반복 헤더 행 스킵
+        # 행 열 수 부족 시 짧은 행용 인덱스 사용 (병합/깨진 셀 대응)
+        if len(row) < required_len:
+            if len(row) < MIN_ROW_COLS:
+                continue
+            i_ym, i_site, i_dates, i_days, i_pay = short_row_indices
+        else:
+            i_ym, i_site, i_dates, i_days, i_pay = idx_ym, idx_site, idx_dates, idx_days, idx_pay
+
         if _is_header_row(row, header):
             continue
 
-        ym_raw    = str(row[idx_ym]    or "").strip()
-        site      = _normalize_company(str(row[idx_site] or ""))
-        dates_raw = str(row[idx_dates] or "").strip() if idx_dates < len(row) else ""
-        days_raw  = str(row[idx_days]  or "").strip() if idx_days < len(row) else ""
-        pay_raw   = re.sub(r"[^\d.]", "", str(row[idx_pay] or "0").replace(",", ""))
+        ym_raw    = str(row[i_ym]    or "").strip()
+        site      = _normalize_company(str(row[i_site] or ""))
+        dates_raw = str(row[i_dates] or "").strip() if i_dates < len(row) else ""
+        days_raw  = str(row[i_days]  or "").strip() if i_days < len(row) else ""
+        pay_raw   = re.sub(r"[^\d.]", "", str(row[i_pay] or "0").replace(",", ""))
 
         if not ym_raw or not pay_raw:
             continue
@@ -342,12 +368,19 @@ def _process_table(table: list[list], rows_out: list[dict]) -> None:
         if pay <= 0:
             continue
 
-        # 근로일수: "12일" 형식 지원
+        # 근로일수: "12일" 형식 지원 + 행 전체에서 "N일" 패턴 스캔 (열 어긋남 대응)
         days_clean = re.sub(r"[^\d]", "", str(days_raw or ""))
         try:
             n_days = int(days_clean) if days_clean else 0
         except ValueError:
             n_days = 0
+        if n_days <= 0:
+            for cell in row:
+                if cell:
+                    m = re.search(r"(\d{1,2})\s*일", str(cell))
+                    if m:
+                        n_days = min(31, max(1, int(m.group(1))))
+                        break
         if n_days <= 0:
             n_days = 1
 
