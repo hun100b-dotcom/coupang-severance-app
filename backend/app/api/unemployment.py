@@ -27,7 +27,8 @@ async def extract_companies(file: UploadFile = File(...)):
         companies = extract_unique_companies(raw)
         return {"companies": companies}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"PDF 처리 중 오류: {str(e)}")
+        # 회사 추출 실패 시에도 프론트엔드가 graceful 하게 동작하도록 빈 리스트 반환
+        return {"companies": []}
 
 
 @router.post("/precise", response_model=UBPreciseResponse)
@@ -38,11 +39,14 @@ async def ub_precise(
     end_date: Optional[str] = Form(None),
     age_50: bool = Form(False),
 ):
-    raw = await file.read()
-    df = parse_welcomwel_pdf(raw)
+    try:
+        raw = await file.read()
+        df = parse_welcomwel_pdf(raw)
+    except Exception:
+        df = pd.DataFrame()
 
     if df.empty:
-        raise HTTPException(status_code=422, detail="PDF에서 데이터를 추출할 수 없어요.")
+        raise HTTPException(status_code=422, detail="PDF에서 데이터를 추출할 수 없어요. 근로복지공단 일용근로내역서인지 확인해 주세요.")
 
     df = preprocess_data(df)
     filtered = filter_df_by_company(df, company, company_other)

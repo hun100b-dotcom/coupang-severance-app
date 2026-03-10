@@ -410,18 +410,30 @@ def parse_welcomwel_pdf(file_bytes: bytes) -> pd.DataFrame:
 
     rows_out: list[dict] = []
 
-    with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
-        for page_num, page in enumerate(pdf.pages):
-            # 다중 전략으로 테이블 추출
-            tables = _extract_tables_robust(page)
+    # pdfplumber / pdfminer가 손상된 PDF에서 예외를 던져도 전체 API가 죽지 않도록 방어
+    try:
+        with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+            for page_num, page in enumerate(pdf.pages):
+                # 다중 전략으로 테이블 추출
+                tables = _extract_tables_robust(page)
 
-            if tables:
-                for table in tables:
-                    _process_table(table, rows_out)
-            else:
-                # 테이블 추출 완전 실패 시 텍스트 직접 파싱
-                text_rows = _parse_rows_from_text(page)
-                rows_out.extend(text_rows)
+                if tables:
+                    for table in tables:
+                        try:
+                            _process_table(table, rows_out)
+                        except Exception:
+                            # 특정 테이블에서만 구조가 깨져도 나머지 페이지는 계속 처리
+                            continue
+                else:
+                    # 테이블 추출 완전 실패 시 텍스트 직접 파싱
+                    try:
+                        text_rows = _parse_rows_from_text(page)
+                        rows_out.extend(text_rows)
+                    except Exception:
+                        continue
+    except Exception:
+        # PDF 자체가 손상된 경우 전체를 빈 DataFrame으로 처리 (상위 레벨에서 422 응답)
+        return pd.DataFrame()
 
     if not rows_out:
         return pd.DataFrame()

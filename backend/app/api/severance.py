@@ -39,7 +39,8 @@ async def extract_companies(file: UploadFile = File(...)):
         return {"companies": companies}
     except Exception as e:
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"PDF 처리 중 오류: {str(e)}")
+        # 회사 추출 실패 시에도 프론트엔드가 gracefully 동작하도록 빈 리스트 반환
+        return {"companies": []}
 
 
 @router.post("/precise", response_model=SeverancePreciseResponse)
@@ -49,12 +50,13 @@ async def precise_calculation(
     company_other: str = Form(""),
     end_date: Optional[str] = Form(None),
 ):
+    # 파싱 중 예외가 발생해도 500이 아닌 422로 통일되도록 처리
     try:
         raw = await file.read()
         df  = parse_welcomwel_pdf(raw)
     except Exception as e:
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"PDF 처리 중 오류: {str(e)}")
+        df = pd.DataFrame()
 
     try:
         if df.empty:
