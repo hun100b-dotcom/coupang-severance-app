@@ -97,6 +97,11 @@ def filter_df_by_company(df: pd.DataFrame, company: str, company_other: str = ""
     return df.loc[mask].reset_index(drop=True)
 
 
+# 일당 지급액 합리적 범위 (원): 파싱 오류로 비정상적으로 큰/작은 값 제거
+MIN_DAILY_PAY = 1
+MAX_DAILY_PAY = 2_000_000  # 일당 200만원 상한 (이상치·잘못 파싱된 값 보정)
+
+
 def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
     if "근무일" in out.columns:
@@ -104,8 +109,11 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
         out = out.dropna(subset=["근무일"])
     if "지급액" in out.columns:
         out["지급액"] = pd.to_numeric(
-            out["지급액"].astype(str).str.replace(",", ""), errors="coerce"
+            out["지급액"].astype(str).str.replace(",", "").str.replace("원", ""),
+            errors="coerce",
         )
+        # 비정상적으로 큰/작은 일당 제거: 합리적 범위로 클리핑 후 범위 밖은 NaN 처리해 제외
+        out["지급액"] = out["지급액"].clip(lower=MIN_DAILY_PAY, upper=MAX_DAILY_PAY)
         out = out.dropna(subset=["지급액"])
     out = out.sort_values("근무일").reset_index(drop=True)
     return out

@@ -244,10 +244,20 @@ function BlockCard({ block }: { block: BlockItem }) {
   )
 }
 
-function Section4Eligibility({ r, eligible }: { r: EmploymentReport; eligible: boolean }) {
+function Section4Eligibility({
+  r,
+  eligible,
+  displayQualifyingDays,
+}: {
+  r: EmploymentReport
+  eligible: boolean
+  /** 구간 보정된 인정 근속일수(있으면 이 값으로 표시) */
+  displayQualifyingDays?: number
+}) {
   const [showAllBlocks, setShowAllBlocks] = useState(false)
-  const neededDays = Math.max(0, 365 - r.qualifying_days)
-  const pctQ = Math.min(100, (r.qualifying_days / 365) * 100)
+  const qualifyDays = displayQualifyingDays ?? r.qualifying_days
+  const neededDays = Math.max(0, 365 - qualifyDays)
+  const pctQ = Math.min(100, (qualifyDays / 365) * 100)
 
   const qualifyingBlocks    = r.blocks.filter(b => b.qualifies)
   const nonQualifyingBlocks = r.blocks.filter(b => !b.qualifies)
@@ -276,7 +286,7 @@ function Section4Eligibility({ r, eligible }: { r: EmploymentReport; eligible: b
           <div>
             <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginBottom: 2 }}>인정 근속기간</p>
             <p style={{ fontSize: '1.8rem', fontWeight: 900, fontFamily: "'Inter', sans-serif", lineHeight: 1, color: eligible ? '#00a876' : 'var(--toss-blue)' }}>
-              {r.qualifying_days}
+              {qualifyDays}
               <span style={{ fontSize: '0.9rem', fontWeight: 600, marginLeft: 4 }}>일</span>
             </p>
           </div>
@@ -420,12 +430,22 @@ export default function ResultSeverance({ result, resultType, company, onReset }
   const severance    = result.severance
   const workDays     = result.work_days
   const avgWage      = result.average_wage
-  const eligible     = precise ? result.eligible : true
-  const eligMsg      = precise ? result.eligibility_message : null
+  const report       = precise ? result.report      : undefined
   const weeklyData   = precise ? result.weekly_data : []
   const payData      = precise ? result.pay_data    : []
-  const report       = precise ? result.report      : undefined
-  const qualifyDays  = precise ? result.qualifying_days : null
+
+  // report.segments가 있으면 구간 데이터 기준으로 표시값 보정 (백엔드가 전체가 아닌 일부 구간만 반환하는 경우 대비)
+  const segments     = report?.segments ?? []
+  const derivedEligible = segments.length > 0
+    ? segments.some((s: { eligible: boolean }) => s.eligible)
+    : (precise ? result.eligible : true)
+  const derivedQualifyDays = segments.length > 0
+    ? Math.max(...segments.map((s: { qualifying_days: number }) => s.qualifying_days), precise ? result.qualifying_days : 0)
+    : (precise ? result.qualifying_days : null)
+
+  const eligible     = precise ? derivedEligible : true
+  const eligMsg      = precise ? result.eligibility_message : null
+  const qualifyDays  = precise ? derivedQualifyDays : null
 
   return (
     <div
@@ -572,7 +592,7 @@ export default function ResultSeverance({ result, resultType, company, onReset }
                 workDays={workDays}
                 severance={severance}
               />
-              <Section4Eligibility r={report} eligible={eligible} />
+              <Section4Eligibility r={report} eligible={eligible} displayQualifyingDays={qualifyDays ?? undefined} />
               <Section5AIAnalysis comment={report.attorney_comment} />
             </div>
           </div>
