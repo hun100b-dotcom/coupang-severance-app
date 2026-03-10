@@ -226,7 +226,7 @@ function BlockCard({ block }: { block: BlockItem }) {
       </span>
       <div style={{ flex: 1 }}>
         <span style={{ fontSize: '0.78rem', color: 'var(--toss-text-2)' }}>
-          {block.start.slice(5)} ~ {block.end.slice(5)}
+          {block.start} ~ {block.end}
         </span>
         <span style={{ fontSize: '0.75rem', color: 'var(--toss-text-3)', marginLeft: 8 }}>
           ({block.block_days}일)
@@ -448,7 +448,10 @@ export default function ResultSeverance({ result, resultType, company, onReset }
           </div>
 
           <div style={{ marginBottom: 4 }}>
-            <p className="label-sm" style={{ marginBottom: 8 }}>예상 퇴직금</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
+              <p className="label-sm">예상 퇴직금</p>
+              <span style={{ fontSize: '0.72rem', color: 'var(--toss-text-3)', fontWeight: 500 }}>세전</span>
+            </div>
             <p className="num-hero">
               <span className={`num-digits ${!eligible ? 'ineligible' : ''}`}>
                 {Math.round(severance).toLocaleString('ko-KR')}
@@ -479,7 +482,7 @@ export default function ResultSeverance({ result, resultType, company, onReset }
         <GlassCard className="p-6" style={{ marginBottom: 16 }}>
           <h3 className="heading-md" style={{ marginBottom: 14 }}>상세 내역</h3>
           {[
-            { label: '평균 일당', value: fmt(Math.round(avgWage)) },
+            { label: '평균 일당 (세전)', value: fmt(Math.round(avgWage)) },
             {
               label: '계속 근로 기간',
               value: `약 ${Math.floor(workDays / 365)}년 ${Math.floor((workDays % 365) / 30)}개월`,

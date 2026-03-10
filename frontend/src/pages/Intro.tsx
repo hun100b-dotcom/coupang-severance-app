@@ -187,7 +187,7 @@ export default function Intro() {
                 background: 'linear-gradient(135deg, #2d6fa8, #3182f6)',
               }}
             >
-              🔎 실업급여 확인하기
+              🔎 실업급여 캐치하기
             </PrimaryButton>
           </div>
         </GlassCard>

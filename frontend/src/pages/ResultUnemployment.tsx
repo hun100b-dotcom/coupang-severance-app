@@ -35,7 +35,10 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
           </div>
 
           <div style={{ marginBottom: 8 }}>
-            <p className="label-sm" style={{ marginBottom: 6 }}>예상 실업급여 총액</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 }}>
+              <p className="label-sm">예상 실업급여 총액</p>
+              {eligible && <span style={{ fontSize: '0.72rem', color: 'var(--toss-text-3)', fontWeight: 500 }}>세전</span>}
+            </div>
             <p className="num-hero" style={{ color: eligible ? 'var(--toss-blue)' : '#cc2233' }}>
               {eligible ? fmt(Math.round(total_estimate)) : '수급 불가'}
             </p>
@@ -52,8 +55,8 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
         <GlassCard className="p-6" style={{ marginBottom: 16 }}>
           <h3 className="heading-md" style={{ marginBottom: 16 }}>상세 내역</h3>
           {[
-            { label: '평균 일당', value: fmt(Math.round(avg_daily_wage)) },
-            { label: '실업급여 일당 (약 60%)', value: fmt(Math.round(daily_benefit)) },
+            { label: '평균 일당 (세전)', value: fmt(Math.round(avg_daily_wage)) },
+            { label: '실업급여 일당 약 60% (세전)', value: fmt(Math.round(daily_benefit)) },
             { label: '수급 가능 일수', value: `${days}일` },
             { label: '18개월 내 가입일수', value: `${insured_days_in_18m}일` },
             ...(days_last_month !== undefined ? [{ label: '최근 1개월 근로일수', value: `${days_last_month}일` }] : []),
