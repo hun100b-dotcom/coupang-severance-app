@@ -111,6 +111,25 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def _is_data_row_no_header(row: list) -> bool:
+    """2페이지 이후: 헤더 없이 데이터 행을 식별.
+
+    - 첫 번째 열이 '1', '2.', '3)' 같이 숫자로 시작하면 데이터로 간주
+    - 둘째 열이 '20XX/XX', '20XX-XX', '20XX.XX', '20XX년 XX월' 등 유효한 연월이면 데이터로 간주
+    """
+    if not row or len(row) < 2:
+        return False
+    c0 = str(row[0] or "").strip()
+    c1 = str(row[1] or "").strip()
+    # 일련번호: "1", "1.", "1)", "  12 " 등
+    if re.match(r"^\s*\d+\s*([).])?\s*$", c0):
+        return True
+    # 둘째 열이 연월이면 데이터 행
+    if _parse_ym(c1):
+        return True
+    return False
+
+
 def _is_header_row(row: list, header: list) -> bool:
     """반복 헤더 행 여부 감지 (다음 페이지에서 헤더가 데이터로 잡히는 경우)"""
     if not row:
@@ -264,181 +283,185 @@ def _parse_rows_from_text(page) -> list[dict]:
     return rows_out
 
 
-def _process_table(table: list[list], rows_out: list[dict]) -> None:
-    """추출된 테이블 데이터를 파싱하여 rows_out에 추가"""
-    if not table or len(table) < 2:
-        return
-
-    header = [str(c).strip() if c else "" for c in table[0]]
+def _infer_column_indices(header: list) -> tuple[int, int, int, int, int]:
+    """헤더 행에서 ym, site, dates, days, pay 열 인덱스 추론. 9열이면 (1,2,4,5,6) 사용."""
     n_cols = len(header)
-
     idx_ym = idx_site = idx_dates = idx_days = idx_pay = -1
     for i, h in enumerate(header):
-        n = _norm(h)
+        n = _norm(str(h or ""))
         if "근로년월" in n or ("근로" in n and "년월" in n) or "근로년" in n:
             idx_ym = i
-        if "사업장" in h and ("명" in h or "명" in n):
+        if "사업장" in str(h) and "명" in str(h):
             idx_site = i
-        if "근로일자" in n or "근로일자" in h or ("일자" in h and "근로" in n):
+        if "근로일자" in n or ("일자" in str(h) and "근로" in n):
             idx_dates = i
-        if "근로일수" in n or "근로일수" in h or ("일수" in h and "근로" in n):
+        if "근로일수" in n or ("일수" in str(h) and "근로" in n):
             idx_days = i
-        if "임금총액" in n or "보수총액" in n or "임금총액" in h or "보수총액" in h:
+        if "임금총액" in n or "보수총액" in n or ("임금" in str(h) and "총액" in str(h)):
             idx_pay = i
-        if idx_pay < 0 and ("임금" in h or "보수" in h) and ("총액" in h or "금액" in h):
-            idx_pay = i
-
-    # 실제 근로내역서 9열: 일련번호, 근로년월, 사업장명, 직종명, 근로일자, 근로일수, 임금총액, 보수총액, 근로자구분
-    if n_cols >= 7 and (idx_ym < 0 or idx_dates < 0 or idx_days < 0 or idx_pay < 0):
+    if n_cols >= 9 and (idx_ym < 0 or idx_pay < 0):
+        return (1, 2, 4, 5, 6)
+    if n_cols >= 7 and (idx_ym < 0 or idx_dates < 0 or idx_pay < 0):
         if n_cols == 9:
-            idx_ym, idx_site, idx_dates, idx_days, idx_pay = 1, 2, 4, 5, 6
-        elif n_cols == 8:
-            idx_ym, idx_site, idx_dates, idx_days, idx_pay = 1, 2, 3, 4, 5
-        elif n_cols == 7:
-            idx_ym, idx_site, idx_dates, idx_days, idx_pay = 0, 1, 2, 3, 4
-        elif n_cols >= 10:
-            idx_ym, idx_site, idx_dates, idx_days, idx_pay = 1, 2, 4, 5, 6
-    elif n_cols >= 5 and idx_ym < 0 and idx_pay < 0:
-        idx_ym, idx_site, idx_dates, idx_days, idx_pay = 0, 1, 2, 3, 4
-
-    # 최후 폴백
+            return (1, 2, 4, 5, 6)
+        if n_cols == 8:
+            return (1, 2, 3, 4, 5)
+        if n_cols == 7:
+            return (0, 1, 2, 3, 4)
     if idx_ym < 0:
         idx_ym = 1
-    if idx_pay < 0:
-        idx_pay = 6 if n_cols > 6 else n_cols - 1
+    if idx_site < 0:
+        idx_site = 2 if n_cols > 2 else 0
     if idx_dates < 0:
         idx_dates = 4 if n_cols > 4 else 3
     if idx_days < 0:
         idx_days = 5 if n_cols > 5 else 4
-    if idx_site < 0:
-        idx_site = 2 if n_cols > 2 else 0
+    if idx_pay < 0:
+        idx_pay = 6 if n_cols > 6 else n_cols - 1
+    return (idx_ym, idx_site, idx_dates, idx_days, idx_pay)
 
-    required_len = max(idx_ym, idx_site, idx_dates, idx_days, idx_pay) + 1
-    # 셀 병합 등으로 열 수가 적은 행용 폴백 (최소 5열: 일련번호+근로년월,사업장,근로일자,근로일수,임금)
-    short_row_indices = (1, 2, 3, 4, 5)  # ym, site, dates, days, pay
-    MIN_ROW_COLS = 5
 
-    # 첫 행이 헤더가 아니라 데이터면 포함 (2·3페이지 연속 테이블)
-    data_rows = list(table[1:])
-    if table[0] and not _is_header_row(table[0], header):
-        first = table[0]
-        if len(first) >= MIN_ROW_COLS:
-            use_ym = first[short_row_indices[0]] if len(first) < required_len else first[idx_ym]
-            use_pay_raw = first[short_row_indices[4]] if len(first) < required_len else first[idx_pay]
-            pay_clean = re.sub(r"[^\d.]", "", str(use_pay_raw or "0").replace(",", ""))
-            try:
-                if _parse_ym(str(use_ym or "").strip()) and pay_clean and float(pay_clean) > 0:
-                    data_rows.insert(0, first)
-            except ValueError:
-                pass
+def _parse_one_row(
+    row: list,
+    idx_ym: int,
+    idx_site: int,
+    idx_dates: int,
+    idx_days: int,
+    idx_pay: int,
+    rows_out: list[dict],
+) -> None:
+    """한 행을 파싱해 rows_out에 일별 레코드 추가.
+    - 근로년월 셀에 여러 연월이 개행(\\n)으로 함께 있을 경우 각 연월별로 분리해 기록
+    - 금액 셀의 '원'·콤마(,) 제거 후 숫자로 변환
+    """
+    n_cols = len(row)
+    if n_cols <= max(idx_ym, idx_site, idx_dates, idx_days, idx_pay):
+        return
+    i_ym, i_site, i_dates, i_days, i_pay = idx_ym, idx_site, idx_dates, idx_days, idx_pay
+    if n_cols <= idx_pay:
+        return
 
-    for row in data_rows:
-        if not row:
-            continue
-        # 행 열 수 부족 시 짧은 행용 인덱스 사용 (병합/깨진 셀 대응)
-        if len(row) < required_len:
-            if len(row) < MIN_ROW_COLS:
-                continue
-            i_ym, i_site, i_dates, i_days, i_pay = short_row_indices
-        else:
-            i_ym, i_site, i_dates, i_days, i_pay = idx_ym, idx_site, idx_dates, idx_days, idx_pay
+    site = _normalize_company(str(row[i_site] or ""))
+    dates_raw = str(row[i_dates] or "").strip() if i_dates < n_cols else ""
+    days_raw = str(row[i_days] or "").strip() if i_days < n_cols else ""
+    # 금액: '원'·콤마 제거 후 정수 변환
+    pay_str = str(row[i_pay] or "0").replace("원", "").replace(",", "").strip()
+    pay_str = re.sub(r"[^\d.]", "", pay_str)
+    try:
+        pay = float(pay_str) if pay_str else 0.0
+    except ValueError:
+        return
+    if pay <= 0:
+        return
 
-        if _is_header_row(row, header):
-            continue
+    days_clean = re.sub(r"[^\d]", "", str(days_raw or ""))
+    try:
+        n_days = int(days_clean) if days_clean else 0
+    except ValueError:
+        n_days = 0
+    if n_days <= 0:
+        for cell in row:
+            if cell:
+                mo = re.search(r"(\d{1,2})\s*일", str(cell))
+                if mo:
+                    n_days = min(31, max(1, int(mo.group(1))))
+                    break
+    if n_days <= 0:
+        n_days = 1
 
-        ym_raw    = str(row[i_ym]    or "").strip()
-        site      = _normalize_company(str(row[i_site] or ""))
-        dates_raw = str(row[i_dates] or "").strip() if i_dates < len(row) else ""
-        days_raw  = str(row[i_days]  or "").strip() if i_days < len(row) else ""
-        pay_raw   = re.sub(r"[^\d.]", "", str(row[i_pay] or "0").replace(",", ""))
+    day_list: list[int] = []
+    for part in re.split(r"[,,\s]+", dates_raw):
+        part = part.strip()
+        if part.isdigit():
+            day_list.append(int(part))
+    if not day_list and n_days > 0:
+        day_list = list(range(1, n_days + 1))
 
-        if not ym_raw or not pay_raw:
-            continue
+    daily_pay = pay / n_days
 
-        ym_parsed = _parse_ym(ym_raw)
+    # 근로년월: 한 셀에 "2021/08\n2021/07" 같이 있으면 개행 기준으로 분리해
+    # 각 연월(2021-08, 2021-07)에 대해 동일한 근로일자/금액을 별도 레코드로 생성
+    ym_raw = str(row[i_ym] or "").strip()
+    ym_parts = [p.strip() for p in ym_raw.split("\n") if p.strip()]
+    if not ym_parts:
+        return
+
+    for ym_part in ym_parts:
+        ym_parsed = _parse_ym(ym_part)
         if ym_parsed is None:
             continue
         y, m = ym_parsed
 
-        try:
-            pay = float(pay_raw)
-        except ValueError:
-            continue
-
-        if pay <= 0:
-            continue
-
-        # 근로일수: "12일" 형식 지원 + 행 전체에서 "N일" 패턴 스캔 (열 어긋남 대응)
-        days_clean = re.sub(r"[^\d]", "", str(days_raw or ""))
-        try:
-            n_days = int(days_clean) if days_clean else 0
-        except ValueError:
-            n_days = 0
-        if n_days <= 0:
-            for cell in row:
-                if cell:
-                    m = re.search(r"(\d{1,2})\s*일", str(cell))
-                    if m:
-                        n_days = min(31, max(1, int(m.group(1))))
-                        break
-        if n_days <= 0:
-            n_days = 1
-
-        # 근로일자: 쉼표/공백 구분 숫자 목록
-        day_list: list[int] = []
-        for part in re.split(r"[,,\s]+", dates_raw):
-            part = part.strip()
-            if part.isdigit():
-                day_list.append(int(part))
-        if not day_list and n_days > 0:
-            day_list = list(range(1, n_days + 1))
-
-        daily_pay = pay / n_days
         for d in day_list:
             if 1 <= d <= 31:
                 try:
                     dt = datetime(y, m, d)
                     rows_out.append({"근무일": dt, "지급액": daily_pay, "사업장": site or ""})
                 except ValueError:
-                    pass
+                    continue
 
 
 def parse_welcomwel_pdf(file_bytes: bytes) -> pd.DataFrame:
-    """근로복지공단 일용근로·노무제공내역서 PDF → 일별 DataFrame"""
+    """
+    근로복지공단 일용근로·노무제공내역서 PDF → 일별 DataFrame.
+    연속 누적: 1페이지는 헤더 기준, 2페이지부터는 헤더 없이
+    '첫 열 숫자(일련번호)' 또는 '둘째 열 날짜(20XX/XX)'인 행만 데이터로 수집.
+    """
     if not HAS_PDFPLUMBER:
         return pd.DataFrame()
 
-    rows_out: list[dict] = []
+    all_data: list[dict] = []
+    col_indices: tuple[int, int, int, int, int] | None = None
 
-    # pdfplumber / pdfminer가 손상된 PDF에서 예외를 던져도 전체 API가 죽지 않도록 방어
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             for page_num, page in enumerate(pdf.pages):
-                # 다중 전략으로 테이블 추출
                 tables = _extract_tables_robust(page)
 
                 if tables:
-                    for table in tables:
+                    for ti, table in enumerate(tables or []):
+                        if not table:
+                            continue
                         try:
-                            _process_table(table, rows_out)
+                            if page_num == 0 and ti == 0:
+                                # 1페이지 첫 테이블: 헤더로 열 인덱스 결정, table[1:] 이 데이터
+                                header = [str(c).strip() if c else "" for c in table[0]]
+                                col_indices = _infer_column_indices(header)
+                                data_rows = table[1:]
+                            else:
+                                # 2페이지 이후 또는 1페이지 추가 테이블: 헤더 없음 → 데이터 행만 사용
+                                # 우선 엄격한 패턴(_is_data_row_no_header)으로 필터링하고,
+                                # 아무 행도 남지 않으면 "열 순서만 동일한 일반 데이터 테이블"이라고 보고
+                                # 전체 행(빈 행 제외)을 사용하는 완화 전략으로 재시도.
+                                data_rows = [
+                                    row for row in table
+                                    if row and _is_data_row_no_header(row)
+                                ]
+                                if not data_rows:
+                                    data_rows = [row for row in table if row]
+
+                            idx_ym, idx_site, idx_dates, idx_days, idx_pay = col_indices
+                            for row in data_rows:
+                                if not row:
+                                    continue
+                                _parse_one_row(
+                                    row, idx_ym, idx_site, idx_dates, idx_days, idx_pay, all_data
+                                )
                         except Exception:
-                            # 특정 테이블에서만 구조가 깨져도 나머지 페이지는 계속 처리
                             continue
                 else:
-                    # 테이블 추출 완전 실패 시 텍스트 직접 파싱
                     try:
                         text_rows = _parse_rows_from_text(page)
-                        rows_out.extend(text_rows)
+                        all_data.extend(text_rows)
                     except Exception:
                         continue
     except Exception:
-        # PDF 자체가 손상된 경우 전체를 빈 DataFrame으로 처리 (상위 레벨에서 422 응답)
         return pd.DataFrame()
 
-    if not rows_out:
+    if not all_data:
         return pd.DataFrame()
 
-    df = pd.DataFrame(rows_out)
+    df = pd.DataFrame(all_data)
     df = (
         df.sort_values("근무일")
         .drop_duplicates(subset=["근무일", "사업장"], keep="first")
