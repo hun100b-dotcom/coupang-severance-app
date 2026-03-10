@@ -32,7 +32,8 @@ def _norm(s: str) -> str:
 
 def _normalize_company(s: str) -> str:
     """사업장명 정규화: 줄바꿈·연속공백 → 단일 공백, 앞뒤 공백 제거"""
-    return re.sub(r"\s+", " ", (s or "").strip())
+    s = (s or "").replace("\r", "").replace("\n", "")
+    return re.sub(r"\s+", " ", s.strip())
 
 
 def _parse_ym(ym_raw: str) -> tuple[int, int] | None:
@@ -156,6 +157,17 @@ def _is_header_row(row: list, header: list) -> bool:
             if third and len(third) <= 8:
                 return True
     return False
+
+
+def _looks_like_header_row(row: list) -> bool:
+    """실제 컬럼 헤더 행인지 판별."""
+    if not row:
+        return False
+    joined = _norm(" ".join(str(c or "") for c in row))
+    return all(
+        token in joined
+        for token in ("근로년월", "사업장명", "근로일자", "근로일수")
+    ) and ("임금총액" in joined or "보수총액" in joined)
 
 
 def _extract_tables_robust(page) -> list:
@@ -292,7 +304,7 @@ def _parse_rows_from_text(page) -> list[dict]:
 
 
 def _infer_column_indices(header: list) -> tuple[int, int, int, int, int]:
-    """헤더 행에서 ym, site, dates, days, pay 열 인덱스 추론. 9열이면 (1,2,4,5,6) 사용."""
+    """헤더 행에서 ym, site, dates, days, pay 열 인덱스 추론."""
     n_cols = len(header)
     idx_ym = idx_site = idx_dates = idx_days = idx_pay = -1
     for i, h in enumerate(header):
@@ -307,25 +319,26 @@ def _infer_column_indices(header: list) -> tuple[int, int, int, int, int]:
             idx_days = i
         if "임금총액" in n or "보수총액" in n or ("임금" in str(h) and "총액" in str(h)):
             idx_pay = i
-    if n_cols >= 9 and (idx_ym < 0 or idx_pay < 0):
+    if idx_ym >= 0 and idx_site >= 0 and idx_dates >= 0 and idx_days >= 0 and idx_pay >= 0:
+        return (idx_ym, idx_site, idx_dates, idx_days, idx_pay)
+    return _infer_column_indices_by_width(n_cols)
+
+
+def _infer_column_indices_by_width(n_cols: int) -> tuple[int, int, int, int, int]:
+    """헤더가 없을 때 열 개수로 기본 매핑 추론."""
+    if n_cols >= 15:
+        return (1, 3, 6, 8, 10)
+    if n_cols == 9:
         return (1, 2, 4, 5, 6)
-    if n_cols >= 7 and (idx_ym < 0 or idx_dates < 0 or idx_pay < 0):
-        if n_cols == 9:
-            return (1, 2, 4, 5, 6)
-        if n_cols == 8:
-            return (1, 2, 3, 4, 5)
-        if n_cols == 7:
-            return (0, 1, 2, 3, 4)
-    if idx_ym < 0:
-        idx_ym = 1
-    if idx_site < 0:
-        idx_site = 2 if n_cols > 2 else 0
-    if idx_dates < 0:
-        idx_dates = 4 if n_cols > 4 else 3
-    if idx_days < 0:
-        idx_days = 5 if n_cols > 5 else 4
-    if idx_pay < 0:
-        idx_pay = 6 if n_cols > 6 else n_cols - 1
+    if n_cols == 8:
+        return (1, 2, 3, 4, 5)
+    if n_cols == 7:
+        return (0, 1, 2, 3, 4)
+    idx_ym = 1 if n_cols > 1 else 0
+    idx_site = 2 if n_cols > 2 else 0
+    idx_dates = 3 if n_cols > 3 else max(0, n_cols - 3)
+    idx_days = 4 if n_cols > 4 else max(0, n_cols - 2)
+    idx_pay = 5 if n_cols > 5 else max(0, n_cols - 1)
     return (idx_ym, idx_site, idx_dates, idx_days, idx_pay)
 
 
@@ -367,6 +380,8 @@ def _parse_one_row(
         n_days = int(days_clean) if days_clean else 0
     except ValueError:
         n_days = 0
+    if n_days > 31:
+        n_days = 0
     if n_days <= 0:
         for cell in row:
             if cell:
@@ -381,7 +396,9 @@ def _parse_one_row(
     for part in re.split(r"[,,\s]+", dates_raw):
         part = part.strip()
         if part.isdigit():
-            day_list.append(int(part))
+            day = int(part)
+            if 1 <= day <= 31:
+                day_list.append(day)
     if not day_list and n_days > 0:
         day_list = list(range(1, n_days + 1))
 
@@ -419,7 +436,6 @@ def parse_welcomwel_pdf(file_bytes: bytes) -> pd.DataFrame:
         return pd.DataFrame()
 
     all_data: list[dict] = []
-    col_indices: tuple[int, int, int, int, int] | None = None
 
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
@@ -431,22 +447,32 @@ def parse_welcomwel_pdf(file_bytes: bytes) -> pd.DataFrame:
                         if not table:
                             continue
                         try:
-                            if page_num == 0 and ti == 0:
-                                # 1페이지 첫 테이블: 헤더로 열 인덱스 결정, table[1:] 이 데이터
-                                header = [str(c).strip() if c else "" for c in table[0]]
+                            non_empty_rows = [row for row in table if row and any(str(c or "").strip() for c in row)]
+                            if not non_empty_rows:
+                                continue
+
+                            header_idx = next(
+                                (idx for idx, row in enumerate(non_empty_rows) if _looks_like_header_row(row)),
+                                None,
+                            )
+
+                            if header_idx is not None:
+                                header = [str(c).strip() if c else "" for c in non_empty_rows[header_idx]]
                                 col_indices = _infer_column_indices(header)
-                                data_rows = table[1:]
-                            else:
-                                # 2페이지 이후 또는 1페이지 추가 테이블: 헤더 없음 → 데이터 행만 사용
-                                # 우선 엄격한 패턴(_is_data_row_no_header)으로 필터링하고,
-                                # 아무 행도 남지 않으면 "열 순서만 동일한 일반 데이터 테이블"이라고 보고
-                                # 전체 행(빈 행 제외)을 사용하는 완화 전략으로 재시도.
                                 data_rows = [
-                                    row for row in table
+                                    row for row in non_empty_rows[header_idx + 1:]
+                                    if not _is_header_row(row, non_empty_rows[header_idx])
+                                ]
+                            else:
+                                col_indices = _infer_column_indices_by_width(
+                                    max(len(row) for row in non_empty_rows)
+                                )
+                                data_rows = [
+                                    row for row in non_empty_rows
                                     if row and _is_data_row_no_header(row)
                                 ]
                                 if not data_rows:
-                                    data_rows = [row for row in table if row]
+                                    data_rows = non_empty_rows
 
                             idx_ym, idx_site, idx_dates, idx_days, idx_pay = col_indices
                             for row in data_rows:
