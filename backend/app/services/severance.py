@@ -14,6 +14,7 @@ def compute_average_wage(df: pd.DataFrame, end_date: datetime = None) -> dict:
             "average_wage": 0.0,
             "total_pay": 0.0,
             "total_days": 0,
+            "calendar_days": 0,
             "start_date": None,
             "end_date": None,
             "period_df": pd.DataFrame(),
@@ -22,16 +23,20 @@ def compute_average_wage(df: pd.DataFrame, end_date: datetime = None) -> dict:
         end_date = df["근무일"].max()
     if isinstance(end_date, pd.Timestamp):
         end_date = end_date.to_pydatetime()
-    start_date = end_date - timedelta(days=90)
-    mask = (df["근무일"] >= pd.Timestamp(start_date)) & (df["근무일"] <= pd.Timestamp(end_date))
+    period_start = end_date - timedelta(days=90)
+    mask = (df["근무일"] >= pd.Timestamp(period_start)) & (df["근무일"] <= pd.Timestamp(end_date))
     period_df = df.loc[mask].copy()
-    total_pay  = period_df["지급액"].sum()
-    total_days = len(period_df)
-    average_wage = (total_pay / total_days) if total_days > 0 else 0.0
+    total_pay = period_df["지급액"].sum()
+    # 퇴직금 산정 평균임금 = 최근 3개월 총 지급액 / 해당 기간의 총 달력 일수 (실제 출근일이 아님)
+    calendar_days = (end_date - period_start).days + 1  # 약 91일
+    average_wage = (total_pay / calendar_days) if calendar_days > 0 else 0.0
+    # total_days: 해당 기간 내 실제 근로 일수 (표시용)
+    total_days = int(period_df["근무일"].dt.normalize().nunique()) if not period_df.empty else 0
     return {
         "average_wage": average_wage,
         "total_pay": total_pay,
         "total_days": total_days,
+        "calendar_days": calendar_days,
         "start_date": period_df["근무일"].min() if not period_df.empty else None,
         "end_date":   period_df["근무일"].max() if not period_df.empty else None,
         "period_df":  period_df,
@@ -190,8 +195,10 @@ def compute_severance(df: pd.DataFrame, end_date: datetime = None) -> dict:
         return {"severance": 0.0, "work_days": 0, "average_wage": 0.0, "avg_result": None}
     if end_date is None:
         end_date = df["근무일"].max()
-    start_date = df["근무일"].min()
-    work_days  = (pd.Timestamp(end_date) - pd.Timestamp(start_date)).days
+    if isinstance(end_date, pd.Timestamp):
+        end_date = end_date.to_pydatetime()
+    # 총 근무일수 = PDF 기준 실제 근로 일수만 합산 (중복 제거, 달력 일수 아님)
+    work_days = int(df["근무일"].dt.normalize().nunique())
     avg_result = compute_average_wage(df, end_date)
     avg_wage   = avg_result["average_wage"]
     severance  = (avg_wage * 30 * (work_days / 365)) if work_days > 0 else 0.0
