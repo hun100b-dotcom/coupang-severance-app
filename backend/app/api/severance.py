@@ -92,6 +92,10 @@ async def precise_calculation(
         avg_res = result["avg_result"] or {}
         period_df: pd.DataFrame = avg_res.get("period_df", pd.DataFrame())
 
+        # 퇴직금 산정에 실제로 사용할 근속일수(인정 근속기간)와 평균임금
+        service_days = int(cont["qualifying_days"])
+        final_avg_wage = float(result["average_wage"])
+
         # ── 주별 근무일수 (3개월, 차트용) ─────────────────────────
         weekly_data: list[WeeklyData] = []
         if not period_df.empty and "근무일" in period_df.columns:
@@ -112,7 +116,7 @@ async def precise_calculation(
 
         avg_period_start = str(avg_res["start_date"])[:10] if avg_res.get("start_date") is not None else ""
         avg_period_end   = str(avg_res["end_date"])[:10]   if avg_res.get("end_date")   is not None else ""
-        avg_total_days   = int(avg_res.get("total_days", 0))
+        avg_total_days   = int(avg_res.get("calendar_days", 0))
         avg_total_pay    = float(avg_res.get("total_pay", 0))
 
         company_display = company if company != "기타" else (company_other or company)
@@ -121,7 +125,7 @@ async def precise_calculation(
         comment = generate_attorney_comment(
             company              = company_display,
             eligible             = cont["eligible"],
-            work_days            = int(result["work_days"]),
+            work_days            = service_days,
             effective_days       = detail["effective_days"],
             excluded_days        = detail["excluded_days"],
             qualifying_days      = cont["qualifying_days"],        # 28일 블록 기준
@@ -130,8 +134,8 @@ async def precise_calculation(
             monthly_summary      = detail["monthly_summary"],
             work_gaps            = detail["work_gaps"],
             segments             = cont["segments"],               # 구간 분리 정보
-            average_wage         = float(avg_res.get("average_wage", 0)),
-            severance            = float(result["severance"]),
+            average_wage         = final_avg_wage,
+            severance            = final_avg_wage * 30 * (service_days / 365) if service_days > 0 else 0.0,
             avg_period_start     = avg_period_start,
             avg_period_end       = avg_period_end,
             avg_total_days       = avg_total_days,
@@ -199,16 +203,19 @@ async def precise_calculation(
             attorney_comment         = comment,
         )
 
+        # 최종 퇴직금은 화면에 노출되는 근속일수(service_days)와 동일한 기준으로 계산
+        final_severance = float(result["severance"])
+
         return SeverancePreciseResponse(
             eligible             = cont["eligible"],
             qualifying_days      = cont["qualifying_days"],
             weeks_15h_plus       = cont["weeks_15h_plus"],
             eligibility_message  = cont["message"],
-            average_wage         = round(float(avg_res.get("average_wage", 0)), 0),
+            average_wage         = round(final_avg_wage, 0),
             total_pay            = round(avg_total_pay, 0),
             total_days_3m        = avg_total_days,
-            severance            = round(float(result["severance"]), 0),
-            work_days            = int(result["work_days"]),
+            severance            = round(final_severance, 0),
+            work_days            = service_days,
             is_ordinary_wage_applied = bool(result.get("is_ordinary_wage_applied", False)),
             applied_ordinary_wage    = (
                 float(result["applied_ordinary_wage"])

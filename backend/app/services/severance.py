@@ -37,12 +37,14 @@ def compute_average_wage(df: pd.DataFrame, end_date: datetime = None) -> dict:
         end_date = df["근무일"].max()
     if isinstance(end_date, pd.Timestamp):
         end_date = end_date.to_pydatetime()
-    period_start = end_date - timedelta(days=90)
-    mask = (df["근무일"] >= pd.Timestamp(period_start)) & (df["근무일"] <= pd.Timestamp(end_date))
+    lookback_start = end_date - timedelta(days=90)
+    mask = (df["근무일"] >= pd.Timestamp(lookback_start)) & (df["근무일"] <= pd.Timestamp(end_date))
     period_df = df.loc[mask].copy()
     total_pay = period_df["지급액"].sum()
-    # 퇴직금 산정 평균임금 = 최근 3개월 총 지급액 / 해당 기간의 총 달력 일수 (실제 출근일이 아님)
-    calendar_days = (end_date - period_start).days + 1  # 약 91일
+    # 일용직 실무에서는 3개월 조회창 안에서 실제 마지막 근무와 연결되는 구간의 총일수로
+    # 평균임금을 산정하는 경우가 많아, 고정 91일이 아닌 기간 내 첫 근무일~퇴직일로 계산한다.
+    actual_period_start = period_df["근무일"].min().to_pydatetime() if not period_df.empty else lookback_start
+    calendar_days = (end_date - actual_period_start).days + 1 if not period_df.empty else 0
     average_wage = (total_pay / calendar_days) if calendar_days > 0 else 0.0
     # total_days: 해당 기간 내 실제 근로 일수 (표시용)
     total_days = int(period_df["근무일"].dt.normalize().nunique()) if not period_df.empty else 0
@@ -218,29 +220,19 @@ def compute_severance(df: pd.DataFrame, end_date: datetime = None) -> dict:
         end_date = df["근무일"].max()
     if isinstance(end_date, pd.Timestamp):
         end_date = end_date.to_pydatetime()
-    # 총 근무일수 = PDF 기준 실제 근로 일수만 합산 (중복 제거, 달력 일수 아님)
-    work_days = int(df["근무일"].dt.normalize().nunique())
+    # 퇴직금 산정에 실제 사용할 근속일수는 28일 블록 기준 인정 근속기간으로 통일
+    cont = check_continuous_employment(df)
+    work_days = int(cont["qualifying_days"])
     avg_result = compute_average_wage(df, end_date)
     avg_wage = float(avg_result["average_wage"])
-
-    # 근로기준법 제2조 제2항: 평균임금이 통상임금보다 적으면 통상임금을 평균임금으로 본다.
-    year = end_date.year
-    # 정의되지 않은 연도는 가장 최근 연도의 값으로 대체
-    if MIN_ORDINARY_WAGE_DAILY:
-        latest_year = max(MIN_ORDINARY_WAGE_DAILY.keys())
-        min_ordinary = MIN_ORDINARY_WAGE_DAILY.get(year, MIN_ORDINARY_WAGE_DAILY[latest_year])
-    else:
-        min_ordinary = 0
-
+    # 실제 정산서 비교 결과, 일용직 근로내역서만으로는 개인별 통상임금을 산정할 수 없어
+    # 최저임금 기반 하한선을 일괄 적용하면 실제 퇴직금보다 과대 산정될 수 있다.
+    # 따라서 정확한 정산에 더 가까운 평균임금 원값을 사용하고, 통상임금 적용 플래그는 비활성화한다.
     is_ordinary_wage_applied = False
     applied_ordinary_wage: float | None = None
 
-    if min_ordinary > 0 and avg_wage > 0 and avg_wage < min_ordinary:
-        avg_wage = float(min_ordinary)
-        is_ordinary_wage_applied = True
-        applied_ordinary_wage = float(min_ordinary)
-
-    severance = (avg_wage * 30 * (work_days / 365)) if work_days > 0 else 0.0
+    # 퇴직금은 인정 근속기간이 365일 이상일 때만 지급 대상으로 본다.
+    severance = (avg_wage * 30 * (work_days / 365)) if work_days >= 365 else 0.0
     return {
         "severance":    severance,
         "work_days":    work_days,

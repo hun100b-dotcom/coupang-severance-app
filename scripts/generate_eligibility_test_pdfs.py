@@ -188,44 +188,38 @@ def main():
     count = 0
 
     # ── 퇴직금 (9열, 월별 1행) ─────────────────────────────────────────────
-    severance_cases = [
-        ("비대상", 3, DAYS_1),
-        ("아슬아슬_비대상", 14, DAYS_10),
-        ("아슬아슬_대상", 15, DAYS_10),
-        ("대상", 24, DAYS_12),
+    # 계획에 따라 총 10개의 퇴직금 테스트 PDF만 생성한다.
+    # - 비대상, 경계선, 장기근속, 단절 등 다양한 패턴을 회사별로 섞어서 구성.
+    severance_cases_explicit = [
+        # 쿠팡: 비대상(3개월), 경계선(약 1년), 장기근속(2년)
+        ("쿠팡", "비대상_3개월", 3, DAYS_1),
+        ("쿠팡", "경계선_약1년", 14, DAYS_10),
+        ("쿠팡", "장기근속_2년", 24, DAYS_12),
+        # 마켓컬리: 비대상, 경계선, 장기근속
+        ("마켓컬리", "비대상_3개월", 3, DAYS_1),
+        ("마켓컬리", "경계선_약1년", 14, DAYS_10),
+        ("마켓컬리", "장기근속_2년", 24, DAYS_12),
+        # CJ대한통운: 비대상, 경계선, 장기근속
+        ("CJ대한통운", "비대상_3개월", 3, DAYS_1),
+        ("CJ대한통운", "경계선_약1년", 14, DAYS_10),
+        ("CJ대한통운", "장기근속_2년", 24, DAYS_12),
+        # 혼합 패턴: 쿠팡, 월별 일수는 많지만 단절이 있을 수 있는 중간 케이스
+        ("쿠팡", "중간_1년반", 18, DAYS_10),
     ]
-    print("=" * 60)
-    print("퇴직금 테스트 PDF 생성 (실제 9열 양식)")
-    print("=" * 60)
-    for company_key, site_name in COMPANIES.items():
-        for label, months, pattern in severance_cases:
-            rows = build_severance_rows_9col(site_name, months, pattern)
-            name = f"test_퇴직금_{company_key}_{label}.pdf"
-            make_pdf_9col(OUT_DIR / name, rows, COL_WIDTHS_9)
-            count += 1
-            print(f"  ✓ {name}  ({months}개월, {len(rows)}행)")
 
-    # ── 실업급여 (9열, 월별 1행) ─────────────────────────────────────────────
-    unemployment_cases = [
-        ("비대상", 100),
-        ("아슬아슬_비대상", 179),
-        ("아슬아슬_대상", 180),
-        ("대상", 350),
-    ]
-    print()
     print("=" * 60)
-    print("실업급여 테스트 PDF 생성 (실제 9열 양식)")
+    print("퇴직금 테스트 PDF 생성 (실제 9열 양식, 총 10개)")
     print("=" * 60)
-    for company_key, site_name in COMPANIES.items():
-        for label, days in unemployment_cases:
-            rows = build_unemployment_rows_9col(site_name, days)
-            name = f"test_실업급여_{company_key}_{label}.pdf"
-            make_pdf_9col(OUT_DIR / name, rows, COL_WIDTHS_9)
-            count += 1
-            print(f"  ✓ {name}  (총 {days}일, {len(rows)}행)")
+    for company_key, label, months, pattern in severance_cases_explicit:
+        site_name = COMPANIES[company_key]
+        rows = build_severance_rows_9col(site_name, months, pattern)
+        name = f"test_퇴직금_{company_key}_{label}.pdf"
+        make_pdf_9col(OUT_DIR / name, rows, COL_WIDTHS_9)
+        count += 1
+        print(f"  ✓ {name}  ({months}개월, {len(rows)}행)")
 
     print()
-    print(f"총 {count}개 PDF 생성 완료 → {OUT_DIR}")
+    print(f"총 {count}개 퇴직금 테스트 PDF 생성 완료 → {OUT_DIR}")
     print("(실제 근로내역서와 동일한 9열: 일련번호, 근로년월, 사업장명, 직종명(코드), 근로일자, 근로일수, 임금총액, 보수총액, 근로자구분)")
 
 

@@ -161,7 +161,7 @@ function Section2Wage({
       <div className="formula-box" style={{ marginBottom: 14 }}>
         <div>산정 기간  {r.avg_period_start || '—'} ~ {r.avg_period_end || '—'}</div>
         <div>총 지급액  {fmt(Math.round(r.avg_total_pay_in_period))}</div>
-        <div>근무 일수  {r.avg_total_days_in_period}일</div>
+        <div>산정 일수  {r.avg_total_days_in_period}일</div>
         <div className="formula-result">
           ▶ 평균임금  {fmt(Math.round(avgWage))} / 일
         </div>

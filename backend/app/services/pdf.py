@@ -364,6 +364,9 @@ def _parse_one_row(
 
     site = _normalize_company(str(row[i_site] or ""))
     dates_raw = str(row[i_dates] or "").strip() if i_dates < n_cols else ""
+    # pdfplumber가 두 자리 날짜를 줄바꿈으로 쪼개는 경우가 있어 개행을 제거해 복원
+    # 예: "9,1\n0,13" -> "9,10,13", "21,2\n2,23" -> "21,22,23"
+    dates_raw = dates_raw.replace("\r", "").replace("\n", "")
     days_raw = str(row[i_days] or "").strip() if i_days < n_cols else ""
     # 금액: '원'·콤마 제거 후 정수 변환
     pay_str = str(row[i_pay] or "0").replace("원", "").replace(",", "").strip()
