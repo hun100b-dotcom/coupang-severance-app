@@ -551,6 +551,30 @@ html, body, #root {
   background: rgba(49,130,246,0.06);
 }
 
+/* PDF 발급 가이드 트리거 (토스 스타일 부드러운 링크 버튼) */
+.pdf-guide-trigger {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--toss-blue);
+  cursor: pointer;
+  transition: color 0.15s ease, opacity 0.15s ease;
+  text-align: center;
+  outline: none;
+}
+.pdf-guide-trigger:hover {
+  color: var(--toss-blue-dark);
+  opacity: 0.9;
+}
+.pdf-guide-trigger:active {
+  opacity: 0.85;
+}
+
 /* ─────────────────────────────────────────────
    유틸리티
 ───────────────────────────────────────────── */

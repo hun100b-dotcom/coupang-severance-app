@@ -4,6 +4,7 @@ import GlassCard from '../components/GlassCard'
 import { PrimaryButton, SecondaryButton, ChoiceButton } from '../components/Button'
 import ProgressSummary from '../components/ProgressSummary'
 import LoadingOverlay from '../components/LoadingOverlay'
+import PdfGuide from '../components/PdfGuide'
 import ResultSeverance from './ResultSeverance'
 import { calcSeverancePrecise, calcSeveranceSimple, extractSeveranceCompanies, SeverancePreciseResult, SeveranceSimpleResult } from '../lib/api'
 import { COMPANIES, Company } from '../lib/constants'
@@ -61,6 +62,7 @@ export default function SeveranceFlow() {
   const [pdfCompanies, setPdfCompanies] = useState<string[]>([])
   const [selectedPdfCompany, setSelectedPdfCompany] = useState<string | null>(null)
   const [extractLoading, setExtractLoading] = useState(false)
+  const [pdfGuideOpen, setPdfGuideOpen] = useState(false)
 
   // Simple inputs
   const [workDays, setWorkDays] = useState('')
@@ -376,6 +378,15 @@ export default function SeveranceFlow() {
         />
       </div>
 
+      {/* PDF 발급 가이드 트리거 */}
+      <button
+        type="button"
+        onClick={() => setPdfGuideOpen(true)}
+        className="pdf-guide-trigger"
+      >
+        ❓ 근로내역서 PDF는 어디서 받나요?
+      </button>
+
       {/* 사업장 선택 카드 — 세로 스크롤 리스트 */}
       {extractLoading && (
         <div className="company-select-card mt-4" style={{ textAlign: 'center', color: 'var(--toss-text-2)' }}>
@@ -434,6 +445,8 @@ export default function SeveranceFlow() {
         계산하기
       </PrimaryButton>
       <SecondaryButton style={{ marginTop: 10 }} onClick={() => go(3)}>← 이전으로</SecondaryButton>
+
+      {pdfGuideOpen && <PdfGuide onClose={() => setPdfGuideOpen(false)} />}
     </>,
     4,
   )

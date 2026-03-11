@@ -4,6 +4,7 @@ import GlassCard from '../components/GlassCard'
 import { PrimaryButton, SecondaryButton, ChoiceButton } from '../components/Button'
 import ProgressSummary from '../components/ProgressSummary'
 import LoadingOverlay from '../components/LoadingOverlay'
+import PdfGuide from '../components/PdfGuide'
 import ResultUnemployment from './ResultUnemployment'
 import { calcUBPrecise, calcUBSimple, extractUnemploymentCompanies, UBResult } from '../lib/api'
 import { COMPANIES, Company } from '../lib/constants'
@@ -56,6 +57,7 @@ export default function UnemploymentFlow() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [pdfCompanies, setPdfCompanies] = useState<string[]>([])
   const [selectedPdfCompany, setSelectedPdfCompany] = useState<string | null>(null)
+  const [pdfGuideOpen, setPdfGuideOpen] = useState(false)
   const [extractLoading, setExtractLoading] = useState(false)
 
   const [insuredDays, setInsuredDays] = useState('')
@@ -258,6 +260,16 @@ export default function UnemploymentFlow() {
         )}
         <input ref={fileRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) onPdfSelect(f) }} />
       </div>
+
+      {/* PDF 발급 가이드 트리거 */}
+      <button
+        type="button"
+        onClick={() => setPdfGuideOpen(true)}
+        className="pdf-guide-trigger"
+      >
+        ❓ 근로내역서 PDF는 어디서 받나요?
+      </button>
+
       {extractLoading && (
         <div className="company-select-card mt-4" style={{ textAlign: 'center', color: 'var(--toss-text-2)' }}>
           <p style={{ fontSize: '0.9rem' }}>📂 PDF 분석 중…</p>
@@ -302,6 +314,8 @@ export default function UnemploymentFlow() {
       {error && <div style={{ padding: '12px 16px', background: 'rgba(240,68,82,0.08)', border: '1px solid rgba(240,68,82,0.2)', borderRadius: 12, marginBottom: 16, color: '#cc2233', fontSize: '0.9rem', fontWeight: 600 }}>⚠️ {error}</div>}
       <PrimaryButton onClick={runPrecise} disabled={!file || extractLoading || (pdfCompanies.length > 0 && !selectedPdfCompany)}>계산하기</PrimaryButton>
       <SecondaryButton style={{ marginTop: 10 }} onClick={() => go(3)}>← 이전으로</SecondaryButton>
+
+      {pdfGuideOpen && <PdfGuide onClose={() => setPdfGuideOpen(false)} />}
     </>,
     4,
   )
