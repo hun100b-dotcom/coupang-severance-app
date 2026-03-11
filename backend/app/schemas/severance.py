@@ -102,6 +102,9 @@ class SeverancePreciseResponse(BaseModel):
     total_days_3m: int
     severance: float
     work_days: int
+    # 평균임금이 통상임금 하한선보다 낮아 통상임금을 적용했는지 여부 및 적용된 통상임금
+    is_ordinary_wage_applied: bool = False
+    applied_ordinary_wage: Optional[float] = None
     weekly_data: list[WeeklyData]
     pay_data: list[dict]
     company_found: bool

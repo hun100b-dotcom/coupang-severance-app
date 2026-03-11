@@ -133,9 +133,16 @@ function Section1Period({ r }: { r: EmploymentReport }) {
 }
 
 // ── [2] 평균임금 산정 내역 ─────────────────────────────────
-function Section2Wage({ r, avgWage }: {
+function Section2Wage({
+  r,
+  avgWage,
+  isOrdinaryApplied,
+  appliedOrdinaryWage,
+}: {
   r: EmploymentReport
   avgWage: number
+  isOrdinaryApplied?: boolean
+  appliedOrdinaryWage?: number
 }) {
   return (
     <div className="report-section">
@@ -159,6 +166,30 @@ function Section2Wage({ r, avgWage }: {
           ▶ 평균임금  {fmt(Math.round(avgWage))} / 일
         </div>
       </div>
+
+      {isOrdinaryApplied && appliedOrdinaryWage && (
+        <div
+          style={{
+            marginBottom: 10,
+            padding: '6px 10px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            borderRadius: 999,
+            background: 'rgba(49,130,246,0.08)',
+            color: 'var(--toss-blue)',
+            fontSize: '0.78rem',
+            fontWeight: 600,
+          }}
+        >
+          <span>✨</span>
+          <span>
+            근로기준법에 따라 더 유리한 최저 통상임금(
+            {fmt(Math.round(appliedOrdinaryWage))}
+            )이 적용되었습니다
+          </span>
+        </div>
+      )}
 
       <div style={{ fontSize: '0.78rem', color: 'var(--toss-text-3)', lineHeight: 1.6 }}>
         ※ 일용직의 경우 시간급이 아닌 일급 기준으로 산정하며,
@@ -430,6 +461,8 @@ export default function ResultSeverance({ result, resultType, company, onReset }
   const severance    = result.severance
   const workDays     = result.work_days
   const avgWage      = result.average_wage
+  const isOrdinaryApplied = precise ? result.is_ordinary_wage_applied : false
+  const appliedOrdinaryWage = precise ? result.applied_ordinary_wage : undefined
   const report       = precise ? result.report      : undefined
   const weeklyData   = precise ? result.weekly_data : []
   const payData      = precise ? result.pay_data    : []
@@ -586,7 +619,12 @@ export default function ResultSeverance({ result, resultType, company, onReset }
             <AccordionHeader open={reportOpen} onClick={() => setReportOpen(o => !o)} />
             <div className={`report-accordion-body ${reportOpen ? 'open' : ''}`}>
               <Section1Period r={report} />
-              <Section2Wage r={report} avgWage={avgWage} />
+              <Section2Wage
+                r={report}
+                avgWage={avgWage}
+                isOrdinaryApplied={isOrdinaryApplied}
+                appliedOrdinaryWage={appliedOrdinaryWage}
+              />
               <Section3Formula
                 avgWage={avgWage}
                 workDays={workDays}

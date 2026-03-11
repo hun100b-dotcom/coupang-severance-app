@@ -5,6 +5,20 @@ import pandas as pd
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# 퇴직 연도별 최저 통상임금 일급 (최저시급 × 8시간)
+#   - 근로기준법 제2조 제2항: 평균임금이 통상임금보다 적을 경우 통상임금을 평균임금으로 봄
+#   - 여기서는 연도별 최저 통상임금 일급을 기준으로 평균임금 하한선을 적용한다.
+# ──────────────────────────────────────────────────────────────────────────────
+MIN_ORDINARY_WAGE_DAILY: dict[int, int] = {
+    2021: 69_760,
+    2022: 73_280,
+    2023: 76_960,
+    2024: 78_880,
+    # 2025년 이후 값이 미정인 경우, 최신값을 그대로 사용한다.
+}
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # 기본 계산 함수
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -192,7 +206,14 @@ def estimate_allowance(df: pd.DataFrame, standard_rate: float = None) -> pd.Data
 
 def compute_severance(df: pd.DataFrame, end_date: datetime = None) -> dict:
     if df.empty or "근무일" not in df.columns:
-        return {"severance": 0.0, "work_days": 0, "average_wage": 0.0, "avg_result": None}
+        return {
+            "severance": 0.0,
+            "work_days": 0,
+            "average_wage": 0.0,
+            "avg_result": None,
+            "is_ordinary_wage_applied": False,
+            "applied_ordinary_wage": None,
+        }
     if end_date is None:
         end_date = df["근무일"].max()
     if isinstance(end_date, pd.Timestamp):
@@ -200,13 +221,33 @@ def compute_severance(df: pd.DataFrame, end_date: datetime = None) -> dict:
     # 총 근무일수 = PDF 기준 실제 근로 일수만 합산 (중복 제거, 달력 일수 아님)
     work_days = int(df["근무일"].dt.normalize().nunique())
     avg_result = compute_average_wage(df, end_date)
-    avg_wage   = avg_result["average_wage"]
-    severance  = (avg_wage * 30 * (work_days / 365)) if work_days > 0 else 0.0
+    avg_wage = float(avg_result["average_wage"])
+
+    # 근로기준법 제2조 제2항: 평균임금이 통상임금보다 적으면 통상임금을 평균임금으로 본다.
+    year = end_date.year
+    # 정의되지 않은 연도는 가장 최근 연도의 값으로 대체
+    if MIN_ORDINARY_WAGE_DAILY:
+        latest_year = max(MIN_ORDINARY_WAGE_DAILY.keys())
+        min_ordinary = MIN_ORDINARY_WAGE_DAILY.get(year, MIN_ORDINARY_WAGE_DAILY[latest_year])
+    else:
+        min_ordinary = 0
+
+    is_ordinary_wage_applied = False
+    applied_ordinary_wage: float | None = None
+
+    if min_ordinary > 0 and avg_wage > 0 and avg_wage < min_ordinary:
+        avg_wage = float(min_ordinary)
+        is_ordinary_wage_applied = True
+        applied_ordinary_wage = float(min_ordinary)
+
+    severance = (avg_wage * 30 * (work_days / 365)) if work_days > 0 else 0.0
     return {
         "severance":    severance,
         "work_days":    work_days,
         "average_wage": avg_wage,
         "avg_result":   avg_result,
+        "is_ordinary_wage_applied": is_ordinary_wage_applied,
+        "applied_ordinary_wage": applied_ordinary_wage,
     }
 
 

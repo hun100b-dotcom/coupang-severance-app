@@ -110,6 +110,9 @@ export interface SeverancePreciseResult {
   total_days_3m: number
   severance: number
   work_days: number
+   // 평균임금이 통상임금 하한선보다 낮아 통상임금을 적용했는지 여부 및 적용된 통상임금
+  is_ordinary_wage_applied?: boolean
+  applied_ordinary_wage?: number
   weekly_data: { week: string; days: number }[]
   pay_data: { date: string; pay: number }[]
   company_found: boolean

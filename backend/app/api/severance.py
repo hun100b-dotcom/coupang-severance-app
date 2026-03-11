@@ -209,6 +209,12 @@ async def precise_calculation(
             total_days_3m        = avg_total_days,
             severance            = round(float(result["severance"]), 0),
             work_days            = int(result["work_days"]),
+            is_ordinary_wage_applied = bool(result.get("is_ordinary_wage_applied", False)),
+            applied_ordinary_wage    = (
+                float(result["applied_ordinary_wage"])
+                if result.get("applied_ordinary_wage") is not None
+                else None
+            ),
             weekly_data          = weekly_data,
             pay_data             = pay_data,
             company_found        = True,
