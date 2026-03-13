@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Calendar } from 'lucide-react'
 import GlassCard from '../GlassCard'
 import { PrimaryButton, SecondaryButton } from '../Button'
 
@@ -41,12 +42,13 @@ function buildDateGrid(year: number, month: number): Date[] {
   return dates
 }
 
-function formatDate(date: Date | null): string {
+function formatKoreanDate(date: Date | null): string {
   if (!date) return ''
-  const y = date.getFullYear()
-  const m = `${date.getMonth() + 1}`.padStart(2, '0')
-  const d = `${date.getDate()}`.padStart(2, '0')
-  return `${y}-${m}-${d}`
+  return date.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 }
 
 function isSameDay(a: Date, b: Date) {
@@ -162,7 +164,8 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                     <span>진단 결과</span>
                   </div>
                   <h2 className="text-[26px] leading-[1.3] font-extrabold tracking-tight text-[#191F28] mb-2">
-                    아직은 퇴직금을 받기에는{' '}
+                    아직은 퇴직금을 받기에는
+                    <br />
                     <span className="text-toss-blue">조금 이른 상태예요</span>
                   </h2>
                   <p className="text-[13px] text-[#4E5968] mb-6">
@@ -187,16 +190,16 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                       "
                     >
                       <span className={selectedDate ? 'text-[#191F28]' : 'text-[#9CA3AF]'}>
-                        {selectedDate ? formatDate(selectedDate) : '날짜를 선택해 주세요'}
+                        {selectedDate ? formatKoreanDate(selectedDate) : '날짜를 선택해 주세요'}
                       </span>
-                      <span className="text-[#A0AEC0] text-lg">📅</span>
+                      <Calendar className="w-4 h-4 text-[#A0AEC0]" />
                     </button>
                     {errorMessage && (
                       <p className="mt-1 text-[11px] text-red-500">
                         {errorMessage}
                       </p>
                     )}
-                    <p className="mt-2 text-[12px] text-[#8B95A1]">
+                    <p className="mt-4 text-[13px] text-[#8B95A1]">
                       첫 출근일부터 1년이 되는 날을 기준으로, 계속근로 1년과 4주 평균 15시간 이상 근무 요건을 함께 살펴볼 수 있어요.
                     </p>
                     <div className="mt-5 flex flex-col gap-2">
@@ -225,7 +228,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                       <span>D-Day 계산</span>
                     </div>
                     <h2 className="text-[26px] leading-[1.3] font-extrabold tracking-tight text-[#191F28] mb-2">
-                      첫 출근일 기준 <span className="text-toss-blue">1년 D-Day</span> 에요
+                      첫 출근일 기준 <span className="text-toss-blue">1년 D-Day</span>입니다
                     </h2>
                     <p className="text-[13px] text-[#4E5968]">
                       퇴직금은 계속근로기간 1년 이상, 4주 평균 15시간 이상 근무해야 받을 수 있어요.
@@ -235,11 +238,11 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                   <div className="rounded-2xl bg-gradient-to-br from-[#e8f1ff] to-[#f4f7ff] px-4 py-3 mb-5">
                     <p className="text-[12px] text-[#8B95A1] mb-1">첫 출근일</p>
                     <p className="text-[15px] font-semibold text-[#191F28] mb-3">
-                      {formatDate(selectedDate)}
+                      {formatKoreanDate(selectedDate)}
                     </p>
-                    <p className="text-[12px] text-[#8B95A1] mb-1">첫 출근일 기준 1년이 되는 날</p>
+                    <p className="text-[12px] text-[#8B95A1] mb-1">목표 달성일</p>
                     <p className="text-[22px] font-extrabold text-toss-blue font-sans tracking-tight">
-                      {formatDate(dDayDate)}
+                      {formatKoreanDate(dDayDate)}
                     </p>
                   </div>
                   <div className="mb-5">
