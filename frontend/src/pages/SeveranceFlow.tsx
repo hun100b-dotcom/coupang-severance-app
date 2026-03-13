@@ -368,6 +368,8 @@ export default function SeveranceFlow() {
         className="pdf-guide-trigger"
       >
         ❓ 근로내역서 PDF는 어디서 받나요?
+        <br />
+        (클릭해서 발급 방법 보기)
       </button>
 
       {/* 사업장 선택 카드 — 세로 스크롤 리스트 */}

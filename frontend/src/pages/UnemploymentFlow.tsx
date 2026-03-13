@@ -268,6 +268,8 @@ export default function UnemploymentFlow() {
         className="pdf-guide-trigger"
       >
         ❓ 근로내역서 PDF는 어디서 받나요?
+        <br />
+        (클릭해서 발급 방법 보기)
       </button>
 
       {extractLoading && (
