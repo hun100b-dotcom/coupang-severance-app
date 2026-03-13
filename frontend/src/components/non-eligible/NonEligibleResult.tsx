@@ -146,20 +146,21 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
               rounded-[32px]
               shadow-[0_20px_60px_rgba(49,130,246,0.12)]
               px-6 py-7 md:px-8 md:py-8
-              relative overflow-x-hidden max-h-[85vh] overflow-y-auto
+              relative max-h-[85vh] overflow-y-auto
             "
           >
-            <motion.div
-              className="flex w-[300%]"
-              animate={{ x: `-${(step - 1) * 33.333}%` }}
-              transition={{ type: 'spring', stiffness: 260, damping: 30 }}
-            >
-              <div className="flex-[0_0_33.333%] min-w-0">
-                <div>
+            <AnimatePresence mode="wait">
+              {step === 1 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[11px] font-bold mb-3">
                     <span>진단 결과</span>
                   </div>
-
                   <h2 className="text-[26px] leading-[1.3] font-extrabold tracking-tight text-[#191F28] mb-2">
                     아직은 퇴직금을 받기에는{' '}
                     <span className="text-toss-blue">조금 이른 상태예요</span>
@@ -167,12 +168,10 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                   <p className="text-[13px] text-[#4E5968] mb-6">
                     {reason}
                   </p>
-
                   <div>
                     <p className="text-[13px] font-semibold text-[#191F28] mb-2">
                       첫 출근일을 알려주세요
                     </p>
-
                     <button
                       type="button"
                       onClick={() => setCalendarOpen(true)}
@@ -200,12 +199,8 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                     <p className="mt-2 text-[12px] text-[#8B95A1]">
                       첫 출근일부터 1년이 되는 날을 기준으로, 계속근로 1년과 4주 평균 15시간 이상 근무 요건을 함께 살펴볼 수 있어요.
                     </p>
-
                     <div className="mt-5 flex flex-col gap-2">
-                      <PrimaryButton
-                        onClick={handleNextStep}
-                        className="w-full"
-                      >
+                      <PrimaryButton onClick={handleNextStep} className="w-full">
                         이 날짜로 계산하기
                       </PrimaryButton>
                       <SecondaryButton onClick={onRestart}>
@@ -213,11 +208,18 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                       </SecondaryButton>
                     </div>
                   </div>
-                </div>
-              </div>
+                </motion.div>
+              )}
 
-              <div className="flex-[0_0_33.333%] min-w-0">
-                <div className="px-2 sm:px-3 md:px-4">
+              {step === 2 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="px-0 sm:px-1 md:px-2"
+                >
                   <div className="mb-4">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[11px] font-bold mb-3">
                       <span>D-Day 계산</span>
@@ -230,7 +232,6 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                       이 D-Day 전후로 근무 시간과 계약 상태를 한 번 더 점검해 보시면 좋아요.
                     </p>
                   </div>
-
                   <div className="rounded-2xl bg-gradient-to-br from-[#e8f1ff] to-[#f4f7ff] px-4 py-3 mb-5">
                     <p className="text-[12px] text-[#8B95A1] mb-1">첫 출근일</p>
                     <p className="text-[15px] font-semibold text-[#191F28] mb-3">
@@ -241,7 +242,6 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                       {formatDate(dDayDate)}
                     </p>
                   </div>
-
                   <div className="mb-5">
                     <p className="text-[13px] text-[#4E5968] mb-3">
                       이 날짜를 놓치지 않도록, 간편 로그인으로 알림을 받아보세요.
@@ -268,7 +268,6 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                             : '카카오로 로그인하고 알림받기'}
                         </span>
                       </button>
-
                       <button
                         type="button"
                         onClick={() => handleLoginMock('google')}
@@ -290,30 +289,32 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                             : 'Google로 로그인하고 알림받기'}
                         </span>
                       </button>
-
                       <button
                         type="button"
-                        onClick={() => {
-                          setSkipLogin(true)
-                          setStep(3)
-                        }}
+                        onClick={() => { setSkipLogin(true); setStep(3) }}
                         className="mt-1 text-[12px] text-[#8B95A1] underline self-center"
                       >
                         로그인은 나중에 할게요
                       </button>
                     </div>
                   </div>
-
                   {(authStatus.kakao === 'success' || authStatus.google === 'success') && (
                     <div className="mt-1 px-3 py-2 rounded-full bg-[rgba(0,196,140,0.08)] text-[#00a876] text-[12px] font-semibold text-center">
                       알림 신청이 완료되었어요. 잠시 후 혜택 안내로 이동합니다.
                     </div>
                   )}
-                </div>
-              </div>
+                </motion.div>
+              )}
 
-              <div className="flex-[0_0_33.333%] min-w-0">
-                <div className="px-2 sm:px-3 md:px-4">
+              {step === 3 && (
+                <motion.div
+                  key="step3"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="px-0 sm:px-1 md:px-2"
+                >
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[11px] font-bold mb-3">
                     <span>다른 혜택</span>
                   </div>
@@ -325,7 +326,6 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                   <p className="text-[13px] text-[#4E5968] mb-5">
                     퇴직금 외에도 근로장려금, 긴급복지 등 다양한 지원 제도가 있어요.
                   </p>
-
                   <div className="flex flex-col gap-3 mb-5">
                     <div className="rounded-2xl bg-[rgba(232,241,255,0.8)] border border-[rgba(148,163,184,0.35)] px-4 py-3">
                       <p className="text-[13px] font-semibold text-[#191F28] mb-1">근로장려금(EITC)</p>
@@ -333,14 +333,12 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                         소득이 일정 기준 이하인 근로자에게 연 1회 현금으로 지급되는 제도예요.
                       </p>
                     </div>
-
                     <div className="rounded-2xl bg-[rgba(240,249,255,0.85)] border border-[rgba(148,163,184,0.35)] px-4 py-3">
                       <p className="text-[13px] font-semibold text-[#191F28] mb-1">긴급복지지원</p>
                       <p className="text-[12px] text-[#8B95A1] mt-1">
                         갑작스러운 소득 상실로 생계가 어려울 때, 생계·주거비 등을 일시적으로 지원받을 수 있어요.
                       </p>
                     </div>
-
                     <div className="rounded-2xl bg-[rgba(243,244,246,0.9)] border border-[rgba(148,163,184,0.35)] px-4 py-3">
                       <p className="text-[13px] font-semibold text-[#191F28] mb-1">지자체 청년·근로자 지원</p>
                       <p className="text-[12px] text-[#8B95A1] mt-1">
@@ -348,7 +346,6 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                       </p>
                     </div>
                   </div>
-
                   <div className="mt-5 flex flex-col gap-2">
                     <PrimaryButton onClick={onRestart}>
                       다시 조건 계산하기
@@ -357,9 +354,9 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                       ← 메인 화면으로
                     </SecondaryButton>
                   </div>
-                </div>
-              </div>
-            </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </GlassCard>
       </div>
@@ -370,27 +367,27 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-[rgba(15,23,42,0.45)] backdrop-blur-[4px] flex items-end justify-center"
+            className="fixed inset-0 z-50 bg-[rgba(15,23,42,0.35)] backdrop-blur-[4px] flex items-center justify-center p-4"
             onClick={() => setCalendarOpen(false)}
           >
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 260, damping: 30 }}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               onClick={e => e.stopPropagation()}
               className="
                 w-full max-w-[460px]
-                bg-white/96 backdrop-blur-2xl
-                rounded-t-[24px]
-                shadow-[0_-18px_40px_rgba(15,23,42,0.28)]
-                px-4 pt-3 pb-4
+                bg-white
+                rounded-[24px]
+                shadow-xl
+                px-4 pt-4 pb-5
               "
             >
               <div
                 className="
                   w-10 h-1 rounded-full
-                  bg-slate-400
+                  bg-slate-200
                   mx-auto mb-3
                 "
               />
@@ -433,7 +430,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
               <div
                 className="
                   grid grid-cols-7 gap-1
-                  text-center text-[11px] text-[#8B95A1]
+                  text-center text-[11px] text-slate-600
                   mb-2
                 "
               >
