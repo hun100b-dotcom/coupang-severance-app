@@ -189,6 +189,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
         </div>
 
         <GlassCard className="p-6 md:p-8" animate>
+          {/* 슬라이더 영역을 카드 안에 가둠 */}
           <div style={{ overflow: 'hidden' }}>
             <div
               style={{
@@ -198,8 +199,9 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                 transition: 'transform 0.45s cubic-bezier(0.22,1,0.36,1)',
               }}
             >
-            {/* STEP 1 */}
-            <div style={{ width: '100%', flexShrink: 0 }}>
+              {/* STEP 1 */}
+              <div style={{ flex: '0 0 100%' }}>
+                <div>
               <div style={{ marginBottom: 18 }}>
                 <span
                   style={{
@@ -310,273 +312,277 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
               >
                 처음으로 돌아가기
               </SecondaryButton>
-            </div>
-
-            {/* STEP 2 */}
-            <div style={{ width: '100%', flexShrink: 0, paddingLeft: 24, paddingRight: 24 }}>
-              <h2 className="heading-md" style={{ marginBottom: 10 }}>
-                첫 출근일 기준 <span style={{ color: 'var(--toss-blue)' }}>1년 D-Day</span> 에요
-              </h2>
-              <p
-                style={{
-                  fontSize: '0.9rem',
-                  color: 'var(--toss-text-2)',
-                  marginBottom: 18,
-                  lineHeight: 1.6,
-                }}
-              >
-                퇴직금은 계속근로기간 1년 이상, 4주 평균 15시간 이상 근무해야 받을 수 있어요.
-                이 D-Day 전후로 근무 시간과 계약 상태를 한 번 더 점검해 보시면 좋아요.
-              </p>
-
-              <div
-                style={{
-                  padding: '14px 16px',
-                  borderRadius: 18,
-                  background: 'linear-gradient(135deg, #e8f1ff, #f4f7ff)',
-                  marginBottom: 20,
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: '0.8rem',
-                    color: 'var(--toss-text-3)',
-                    marginBottom: 6,
-                  }}
-                >
-                  첫 출근일
-                </p>
-                <p
-                  style={{
-                    fontSize: '1rem',
-                    fontWeight: 700,
-                    marginBottom: 10,
-                  }}
-                >
-                  {formatDate(firstWorkDate)}
-                </p>
-                <p
-                  style={{
-                    fontSize: '0.8rem',
-                    color: 'var(--toss-text-3)',
-                    marginBottom: 4,
-                  }}
-                >
-                  첫 출근일 기준 1년이 되는 날
-                </p>
-                <p
-                  style={{
-                    fontSize: '1.6rem',
-                    fontWeight: 900,
-                    color: 'var(--toss-blue)',
-                    fontFamily: "'Inter', 'Pretendard', sans-serif",
-                  }}
-                >
-                  {formatDate(dDayDate)}
-                </p>
               </div>
 
-              <div style={{ marginBottom: 18 }}>
-                <p
-                  style={{
-                    fontSize: '0.86rem',
-                    color: 'var(--toss-text-2)',
-                    marginBottom: 10,
-                  }}
-                >
-                  이 날짜를 놓치지 않도록, 간편 로그인으로 알림을 받아보세요.
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <button
-                    type="button"
-                    onClick={() => handleLoginMock('kakao')}
-                    disabled={authStatus.kakao === 'loading'}
+              {/* STEP 2 */}
+              <div style={{ flex: '0 0 100%' }}>
+                <div style={{ paddingLeft: 24, paddingRight: 24 }}>
+                  <h2 className="heading-md" style={{ marginBottom: 10 }}>
+                    첫 출근일 기준 <span style={{ color: 'var(--toss-blue)' }}>1년 D-Day</span> 에요
+                  </h2>
+                  <p
                     style={{
-                      width: '100%',
-                      height: 48,
-                      borderRadius: 999,
-                      border: 'none',
-                      background: '#FEE500',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
                       fontSize: '0.9rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
+                      color: 'var(--toss-text-2)',
+                      marginBottom: 18,
+                      lineHeight: 1.6,
                     }}
                   >
-                    <span
+                    퇴직금은 계속근로기간 1년 이상, 4주 평균 15시간 이상 근무해야 받을 수 있어요.
+                    이 D-Day 전후로 근무 시간과 계약 상태를 한 번 더 점검해 보시면 좋아요.
+                  </p>
+
+                  <div
+                    style={{
+                      padding: '14px 16px',
+                      borderRadius: 18,
+                      background: 'linear-gradient(135deg, #e8f1ff, #f4f7ff)',
+                      marginBottom: 20,
+                    }}
+                  >
+                    <p
                       style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: 4,
-                        background: '#191600',
-                        color: '#FEE500',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.9rem',
+                        fontSize: '0.8rem',
+                        color: 'var(--toss-text-3)',
+                        marginBottom: 6,
                       }}
                     >
-                      K
-                    </span>
-                    <span>
-                      {authStatus.kakao === 'loading' ? '카카오 로그인 처리 중...' : '카카오로 로그인하고 알림받기'}
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleLoginMock('google')}
-                    disabled={authStatus.google === 'loading'}
-                    style={{
-                      width: '100%',
-                      height: 48,
-                      borderRadius: 999,
-                      border: '1px solid #e5e7eb',
-                      background: '#ffffff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      fontSize: '0.9rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <span
+                      첫 출근일
+                    </p>
+                    <p
                       style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: 4,
-                        background: '#ffffff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.9rem',
+                        fontSize: '1rem',
+                        fontWeight: 700,
+                        marginBottom: 10,
                       }}
                     >
-                      G
-                    </span>
-                    <span>
-                      {authStatus.google === 'loading' ? 'Google 로그인 처리 중...' : 'Google로 로그인하고 알림받기'}
-                    </span>
-                  </button>
+                      {formatDate(firstWorkDate)}
+                    </p>
+                    <p
+                      style={{
+                        fontSize: '0.8rem',
+                        color: 'var(--toss-text-3)',
+                        marginBottom: 4,
+                      }}
+                    >
+                      첫 출근일 기준 1년이 되는 날
+                    </p>
+                    <p
+                      style={{
+                        fontSize: '1.6rem',
+                        fontWeight: 900,
+                        color: 'var(--toss-blue)',
+                        fontFamily: "'Inter', 'Pretendard', sans-serif",
+                      }}
+                    >
+                      {formatDate(dDayDate)}
+                    </p>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSkipLogin(true)
-                      setStep(3)
-                    }}
+                  <div style={{ marginBottom: 18 }}>
+                    <p
+                      style={{
+                        fontSize: '0.86rem',
+                        color: 'var(--toss-text-2)',
+                        marginBottom: 10,
+                      }}
+                    >
+                      이 날짜를 놓치지 않도록, 간편 로그인으로 알림을 받아보세요.
+                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <button
+                        type="button"
+                        onClick={() => handleLoginMock('kakao')}
+                        disabled={authStatus.kakao === 'loading'}
+                        style={{
+                          width: '100%',
+                          height: 48,
+                          borderRadius: 999,
+                          border: 'none',
+                          background: '#FEE500',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 8,
+                          fontSize: '0.9rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: 4,
+                            background: '#191600',
+                            color: '#FEE500',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.9rem',
+                          }}
+                        >
+                          K
+                        </span>
+                        <span>
+                          {authStatus.kakao === 'loading' ? '카카오 로그인 처리 중...' : '카카오로 로그인하고 알림받기'}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleLoginMock('google')}
+                        disabled={authStatus.google === 'loading'}
+                        style={{
+                          width: '100%',
+                          height: 48,
+                          borderRadius: 999,
+                          border: '1px solid #e5e7eb',
+                          background: '#ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 8,
+                          fontSize: '0.9rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: 4,
+                            background: '#ffffff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.9rem',
+                          }}
+                        >
+                          G
+                        </span>
+                        <span>
+                          {authStatus.google === 'loading' ? 'Google 로그인 처리 중...' : 'Google로 로그인하고 알림받기'}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSkipLogin(true)
+                          setStep(3)
+                        }}
+                        style={{
+                          marginTop: 2,
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--toss-text-3)',
+                          fontSize: '0.8rem',
+                          textDecoration: 'underline',
+                          cursor: 'pointer',
+                          alignSelf: 'center',
+                        }}
+                      >
+                        로그인은 나중에 할게요
+                      </button>
+                    </div>
+                  </div>
+
+                  {(authStatus.kakao === 'success' || authStatus.google === 'success') && (
+                    <div
+                      style={{
+                        marginTop: 4,
+                        padding: '8px 10px',
+                        borderRadius: 999,
+                        background: 'rgba(0,196,140,0.08)',
+                        color: '#00a876',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        textAlign: 'center',
+                      }}
+                    >
+                      알림 신청이 완료되었어요. 잠시 후 혜택 안내로 이동합니다.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* STEP 3 */}
+              <div style={{ flex: '0 0 100%' }}>
+                <div style={{ paddingLeft: 24, paddingRight: 24 }}>
+                  <h2 className="heading-md" style={{ marginBottom: 10 }}>
+                    지금은 비대상자여도
+                    <br />
+                    놓치지 말아야 할 혜택이 있어요
+                  </h2>
+                  <p
                     style={{
-                      marginTop: 2,
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--toss-text-3)',
-                      fontSize: '0.8rem',
-                      textDecoration: 'underline',
-                      cursor: 'pointer',
-                      alignSelf: 'center',
+                      fontSize: '0.9rem',
+                      color: 'var(--toss-text-2)',
+                      marginBottom: 18,
+                      lineHeight: 1.6,
                     }}
                   >
-                    로그인은 나중에 할게요
-                  </button>
-                </div>
-              </div>
-
-              {(authStatus.kakao === 'success' || authStatus.google === 'success') && (
-                <div
-                  style={{
-                    marginTop: 4,
-                    padding: '8px 10px',
-                    borderRadius: 999,
-                    background: 'rgba(0,196,140,0.08)',
-                    color: '#00a876',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    textAlign: 'center',
-                  }}
-                >
-                  알림 신청이 완료되었어요. 잠시 후 혜택 안내로 이동합니다.
-                </div>
-              )}
-            </div>
-
-            {/* STEP 3 */}
-            <div style={{ width: '100%', flexShrink: 0, paddingLeft: 24 }}>
-              <h2 className="heading-md" style={{ marginBottom: 10 }}>
-                지금은 비대상자여도
-                <br />
-                놓치지 말아야 할 혜택이 있어요
-              </h2>
-              <p
-                style={{
-                  fontSize: '0.9rem',
-                  color: 'var(--toss-text-2)',
-                  marginBottom: 18,
-                  lineHeight: 1.6,
-                }}
-              >
-                퇴직금 외에도 근로장려금, 긴급복지 등 다양한 지원 제도가 있어요.
-              </p>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
-                <div
-                  style={{
-                    padding: '12px 14px',
-                    borderRadius: 16,
-                    background: 'rgba(232,241,255,0.8)',
-                    border: '1px solid rgba(148,163,184,0.35)',
-                  }}
-                >
-                  <p style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--toss-text)' }}>근로장려금(EITC)</p>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginTop: 4 }}>
-                    소득이 일정 기준 이하인 근로자에게 연 1회 현금으로 지급되는 제도예요.
+                    퇴직금 외에도 근로장려금, 긴급복지 등 다양한 지원 제도가 있어요.
                   </p>
-                </div>
 
-                <div
-                  style={{
-                    padding: '12px 14px',
-                    borderRadius: 16,
-                    background: 'rgba(240,249,255,0.85)',
-                    border: '1px solid rgba(148,163,184,0.35)',
-                  }}
-                >
-                  <p style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--toss-text)' }}>긴급복지지원</p>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginTop: 4 }}>
-                    갑작스러운 소득 상실로 생계가 어려울 때, 생계·주거비 등을 일시적으로 지원받을 수 있어요.
-                  </p>
-                </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
+                    <div
+                      style={{
+                        padding: '12px 14px',
+                        borderRadius: 16,
+                        background: 'rgba(232,241,255,0.8)',
+                        border: '1px solid rgba(148,163,184,0.35)',
+                      }}
+                    >
+                      <p style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--toss-text)' }}>근로장려금(EITC)</p>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginTop: 4 }}>
+                        소득이 일정 기준 이하인 근로자에게 연 1회 현금으로 지급되는 제도예요.
+                      </p>
+                    </div>
 
-                <div
-                  style={{
-                    padding: '12px 14px',
-                    borderRadius: 16,
-                    background: 'rgba(243,244,246,0.9)',
-                    border: '1px solid rgba(148,163,184,0.35)',
-                  }}
-                >
-                  <p style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--toss-text)' }}>지자체 청년·근로자 지원</p>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginTop: 4 }}>
-                    거주 지역의 청년·근로자 대상 지원금을 함께 확인해 보세요.
-                  </p>
-                </div>
-              </div>
+                    <div
+                      style={{
+                        padding: '12px 14px',
+                        borderRadius: 16,
+                        background: 'rgba(240,249,255,0.85)',
+                        border: '1px solid rgba(148,163,184,0.35)',
+                      }}
+                    >
+                      <p style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--toss-text)' }}>긴급복지지원</p>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginTop: 4 }}>
+                        갑작스러운 소득 상실로 생계가 어려울 때, 생계·주거비 등을 일시적으로 지원받을 수 있어요.
+                      </p>
+                    </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <PrimaryButton onClick={onRestart}>
-                  다시 조건 계산하기
-                </PrimaryButton>
-                <SecondaryButton onClick={() => navigate('/')}>
-                  ← 메인 화면으로
-                </SecondaryButton>
+                    <div
+                      style={{
+                        padding: '12px 14px',
+                        borderRadius: 16,
+                        background: 'rgba(243,244,246,0.9)',
+                        border: '1px solid rgba(148,163,184,0.35)',
+                      }}
+                    >
+                      <p style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--toss-text)' }}>지자체 청년·근로자 지원</p>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginTop: 4 }}>
+                        거주 지역의 청년·근로자 대상 지원금을 함께 확인해 보세요.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <PrimaryButton onClick={onRestart}>
+                      다시 조건 계산하기
+                    </PrimaryButton>
+                    <SecondaryButton onClick={() => navigate('/')}>
+                      ← 메인 화면으로
+                    </SecondaryButton>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
         </GlassCard>
       </div>
 
