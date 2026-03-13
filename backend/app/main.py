@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 """FastAPI 메인 애플리케이션 — React 빌드 정적 파일 서빙 포함"""
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+# backend/.env 로드 (프로젝트 루트에서 uvicorn 실행 시에도 동작)
+_env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(_env_path)
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
