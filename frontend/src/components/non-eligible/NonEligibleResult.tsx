@@ -146,7 +146,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
               rounded-[32px]
               shadow-[0_20px_60px_rgba(49,130,246,0.12)]
               px-6 py-7 md:px-8 md:py-8
-              relative overflow-hidden
+              relative overflow-x-hidden max-h-[85vh] overflow-y-auto
             "
           >
             <motion.div
