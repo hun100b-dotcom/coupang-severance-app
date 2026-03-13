@@ -183,14 +183,15 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
         </div>
 
         <GlassCard className="p-6 md:p-8" animate>
-          <div
-            style={{
-              display: 'flex',
-              width: '300%',
-              transform: `translateX(-${(step - 1) * 100}%)`,
-              transition: 'transform 0.45s cubic-bezier(0.22,1,0.36,1)',
-            }}
-          >
+          <div style={{ overflow: 'hidden' }}>
+            <div
+              style={{
+                display: 'flex',
+                width: '300%',
+                transform: `translateX(-${(step - 1) * 100}%)`,
+                transition: 'transform 0.45s cubic-bezier(0.22,1,0.36,1)',
+              }}
+            >
             {/* STEP 1 */}
             <div style={{ width: '100%', flexShrink: 0 }}>
               <div style={{ marginBottom: 18 }}>
@@ -218,7 +219,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                   lineHeight: 1.3,
                 }}
               >
-                아직은 실업급여 받기가{' '}
+                아직은 퇴직금을 받기에는{' '}
                 <span style={{ color: 'var(--toss-blue)' }}>조금 이른 상태예요</span>
               </h2>
               <p
@@ -289,7 +290,8 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                   <p style={{ marginTop: 6, fontSize: '0.8rem', color: '#dc2626' }}>{errorMessage}</p>
                 )}
                 <p style={{ marginTop: 6, fontSize: '0.78rem', color: 'var(--toss-text-3)' }}>
-                  첫 출근일 기준으로 1년이 되는 날을 계산해 드릴게요.
+                  첫 출근일부터 1년이 되는 날을 기준으로,
+                  계속근로 1년과 4주 평균 15시간 이상 근무 요건을 함께 살펴볼 수 있어요.
                 </p>
               </div>
 
@@ -317,9 +319,11 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                   fontSize: '0.9rem',
                   color: 'var(--toss-text-2)',
                   marginBottom: 18,
+                  lineHeight: 1.6,
                 }}
               >
-                이 날짜 전후로 다시 한 번 자격을 확인하면, 실업급여 수급 가능성이 크게 올라가요.
+                퇴직금은 계속근로기간 1년 이상, 4주 평균 15시간 이상 근무해야 받을 수 있어요.
+                이 D-Day 전후로 근무 시간과 계약 상태를 한 번 더 점검해 보시면 좋아요.
               </p>
 
               <div
@@ -512,7 +516,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                   lineHeight: 1.6,
                 }}
               >
-                실업급여 외에도 근로장려금, 긴급복지 등 다양한 지원 제도가 있어요.
+                퇴직금 외에도 근로장려금, 긴급복지 등 다양한 지원 제도가 있어요.
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
