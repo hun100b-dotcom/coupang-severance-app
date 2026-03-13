@@ -95,8 +95,6 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
     return undefined
   }, [dDayDate, authStatus.kakao, authStatus.google, skipLogin])
 
-  const firstWorkDateValid = !!firstWorkDate
-
   const handleDateInputChange = (val: string) => {
     setDateInput(val)
     if (!val) {
@@ -150,6 +148,14 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
     setTimeout(() => {
       setAuthStatus(prev => ({ ...prev, [provider]: 'success' }))
     }, 1500)
+  }
+
+  const handleNextStep = () => {
+    if (!firstWorkDate) {
+      setErrorMessage('첫 출근일을 먼저 입력해 주세요.')
+      return
+    }
+    setStep(2)
   }
 
   return (
@@ -295,10 +301,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                 </p>
               </div>
 
-              <PrimaryButton
-                disabled={!firstWorkDateValid}
-                onClick={() => setStep(2)}
-              >
+              <PrimaryButton onClick={handleNextStep}>
                 다음으로
               </PrimaryButton>
               <SecondaryButton
