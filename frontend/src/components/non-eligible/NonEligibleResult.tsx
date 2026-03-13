@@ -573,6 +573,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
               </div>
             </div>
           </div>
+        </div>
         </GlassCard>
       </div>
 
