@@ -16,6 +16,15 @@ export default function App() {
         <Route path="/unemployment" element={<UnemploymentFlow />} />
         <Route path="*"            element={<Intro />} />
       </Routes>
+
+      {/* 배포 확인용 버전 표시 (화면 하단 고정) */}
+      <div
+        className="fixed bottom-2 right-2 text-[10px] text-slate-400/80 select-none pointer-events-none z-[1]"
+        aria-hidden
+      >
+        v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '?'}
+        {typeof __BUILD_DATE__ !== 'undefined' && ` · ${__BUILD_DATE__}`}
+      </div>
     </BrowserRouter>
   )
 }

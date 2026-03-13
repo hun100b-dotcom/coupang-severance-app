@@ -151,10 +151,10 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
           >
             <motion.div
               className="flex w-[300%]"
-              animate={{ x: `-${(step - 1) * 100}%` }}
+              animate={{ x: `-${(step - 1) * 33.333}%` }}
               transition={{ type: 'spring', stiffness: 260, damping: 30 }}
             >
-              <div className="flex-0 w-full flex-shrink-0">
+              <div className="flex-[0_0_33.333%] min-w-0">
                 <div>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[11px] font-bold mb-3">
                     <span>진단 결과</span>
@@ -216,7 +216,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                 </div>
               </div>
 
-              <div className="flex-0 w-full flex-shrink-0">
+              <div className="flex-[0_0_33.333%] min-w-0">
                 <div className="px-2 sm:px-3 md:px-4">
                   <div className="mb-4">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[11px] font-bold mb-3">
@@ -312,7 +312,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                 </div>
               </div>
 
-              <div className="flex-0 w-full flex-shrink-0">
+              <div className="flex-[0_0_33.333%] min-w-0">
                 <div className="px-2 sm:px-3 md:px-4">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[11px] font-bold mb-3">
                     <span>다른 혜택</span>
