@@ -201,7 +201,6 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
             >
               {/* STEP 1 */}
               <div style={{ flex: '0 0 100%' }}>
-                <div>
               <div style={{ marginBottom: 18 }}>
                 <span
                   style={{
