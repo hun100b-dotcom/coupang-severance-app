@@ -1,21 +1,27 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
 import AnimatedBackground from './components/AnimatedBackground'
 import Intro from './pages/Intro'
 import SeveranceFlow from './pages/SeveranceFlow'
 import UnemploymentFlow from './pages/UnemploymentFlow'
+import MyPage from './pages/MyPage'
 
 export default function App() {
   return (
     <BrowserRouter>
-      {/* 항상 살아있는 애니메이션 배경 */}
-      <AnimatedBackground />
+      <AuthProvider>
+        {/* 항상 살아있는 애니메이션 배경 */}
+        <AnimatedBackground />
 
-      <Routes>
-        <Route path="/"            element={<Intro />} />
-        <Route path="/severance"   element={<SeveranceFlow />} />
-        <Route path="/unemployment" element={<UnemploymentFlow />} />
-        <Route path="*"            element={<Intro />} />
-      </Routes>
+        <Routes>
+          <Route path="/"            element={<Intro />} />
+          <Route path="/severance"   element={<SeveranceFlow />} />
+          <Route path="/unemployment" element={<UnemploymentFlow />} />
+          <Route path="/mypage"      element={<MyPage />} />
+          <Route path="*"            element={<Intro />} />
+        </Routes>
+
+      </AuthProvider>
 
       {/* 배포 확인용 버전 표시 (화면 하단 고정) */}
       <div

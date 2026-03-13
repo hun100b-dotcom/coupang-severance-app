@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { User } from 'lucide-react'
 import GlassCard from '../components/GlassCard'
 import { PrimaryButton } from '../components/Button'
 import { getClickCount, registerClick } from '../lib/api'
@@ -60,6 +61,22 @@ export default function Intro() {
         padding: '24px 16px',
       }}
     >
+      {/* 상단 우측 My + User (마이페이지 진입) */}
+      <div
+        className="absolute top-0 left-0 right-0 flex justify-end px-4 py-3"
+        style={{ zIndex: 20 }}
+      >
+        <button
+          type="button"
+          onClick={() => navigate('/mypage')}
+          className="flex items-center gap-1.5 text-[#4E5968] hover:text-[#191F28] transition-colors"
+          aria-label="마이페이지"
+        >
+          <span className="text-sm font-medium">My</span>
+          <User className="w-5 h-5" />
+        </button>
+      </div>
+
       <div style={{ width: '100%', maxWidth: 440 }}>
 
         {/* ── 메인 카드 ─────────────────────────────────── */}
