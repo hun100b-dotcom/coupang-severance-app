@@ -9,6 +9,7 @@ import ResultSeverance from './ResultSeverance'
 import { calcSeverancePrecise, calcSeveranceSimple, extractSeveranceCompanies, SeverancePreciseResult, SeveranceSimpleResult } from '../lib/api'
 import { COMPANIES, Company } from '../lib/constants'
 import { Check } from 'lucide-react'
+import NonEligibleResult from '../components/non-eligible/NonEligibleResult'
 
 type Step = 1 | 2 | 3 | 4
 type CalcMode = 'precise' | 'simple'
@@ -95,29 +96,11 @@ export default function SeveranceFlow() {
 
   // ── 실패 화면 ──────────────────────────────────
   if (s.failed) {
-    return (
-      <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
-        {loading && <LoadingOverlay />}
-        <div style={{ width: '100%', maxWidth: 480 }}>
-          <GlassCard className="p-8">
-            <ProgressSummary steps={buildSteps(s, selectedPdfCompany)} totalSteps={4} currentStep={2} />
-            <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <div style={{ fontSize: '3rem', marginBottom: 16 }}>😔</div>
-              <h2 className="heading-lg" style={{ marginBottom: 12 }}>아직은 퇴직금을 받기 어려워요</h2>
-              <p style={{ color: 'var(--toss-text-2)', lineHeight: 1.7, fontSize: '0.95rem', marginBottom: 24 }}>
-                {s.q1 === false
-                  ? '퇴직급여법상 계속근로기간 1년 이상이 필요해요. 1년이 되면 다시 확인해 보세요.'
-                  : '주 15시간 이상 근무해야 퇴직금 수급 자격이 생겨요.'}
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <PrimaryButton onClick={reset}>처음으로 돌아가기</PrimaryButton>
-                <SecondaryButton onClick={() => navigate('/')}>홈으로</SecondaryButton>
-              </div>
-            </div>
-          </GlassCard>
-        </div>
-      </div>
-    )
+    const reason = s.q1 === false
+      ? '퇴직급여법상 계속근로기간 1년 이상이 필요해요. 1년이 되면 다시 확인해 보세요.'
+      : '주 15시간 이상 근무해야 퇴직금 수급 자격이 생겨요.'
+
+    return <NonEligibleResult reason={reason} onRestart={reset} />
   }
 
   // ── 계산 실행 ──────────────────────────────────
