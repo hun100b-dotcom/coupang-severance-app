@@ -51,9 +51,9 @@ export default function Intro() {
   const lines = mainCopy.split('\n')
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center bg-[#F2F4F6]/90 px-4 pt-2 pb-8">
+    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8">
       {/* 헤더: 좌 고객센터 | 중 왜 CATCH인가요? | 우 My */}
-      <header className="sticky top-0 z-30 w-full max-w-[460px] flex items-center justify-between py-3 bg-[#F2F4F6]/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 w-full max-w-[460px] flex items-center justify-between py-3 bg-white/60 backdrop-blur-xl">
         <button
           type="button"
           className="flex items-center gap-1.5 text-sm text-[#4E5968] hover:text-[#191F28]"
