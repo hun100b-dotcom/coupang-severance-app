@@ -866,3 +866,17 @@ input:focus {
 }
 .month-pip.ok   { background: rgba(0,196,140,0.15); color: #00a876; }
 .month-pip.fail { background: rgba(240,68,82,0.12); color: #cc2233; }
+
+/* ─────────────────────────────────────────────
+   고객센터 바텀시트 (V8)
+───────────────────────────────────────────── */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@keyframes slideUpFade {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-staggered-fade {
+  animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

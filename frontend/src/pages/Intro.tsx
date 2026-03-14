@@ -5,6 +5,7 @@ import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift }
 import { getClickCount, registerClick } from '../lib/api'
 import { INTRO_COPIES } from '../lib/constants'
 import WhyCatchModal from '../components/WhyCatchModal'
+import CustomerService from '../components/CustomerService'
 
 function HighlightCatch({ text }: { text: string }) {
   const parts = text.split(/(CATCH)/g)
@@ -25,6 +26,7 @@ export default function Intro() {
   const navigate = useNavigate()
   const [count, setCount] = useState(0)
   const [whyOpen, setWhyOpen] = useState(false)
+  const [csOpen, setCsOpen] = useState(false)
   const [copyIdx, setCopyIdx] = useState(0)
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export default function Intro() {
         <div className="col-span-1 flex justify-start min-w-0">
           <button
             type="button"
+            onClick={() => setCsOpen(true)}
             className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans"
             aria-label="고객센터"
           >
@@ -224,6 +227,7 @@ export default function Intro() {
       <AnimatePresence>
         {whyOpen && <WhyCatchModal onClose={() => setWhyOpen(false)} />}
       </AnimatePresence>
+      <CustomerService isOpen={csOpen} onClose={() => setCsOpen(false)} />
     </div>
   )
 }
