@@ -1,20 +1,21 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
-import { User } from 'lucide-react'
-import GlassCard from '../components/GlassCard'
-import { PrimaryButton } from '../components/Button'
+import { AnimatePresence } from 'framer-motion'
+import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift } from 'lucide-react'
 import { getClickCount, registerClick } from '../lib/api'
 import { INTRO_COPIES } from '../lib/constants'
+import WhyCatchModal from '../components/WhyCatchModal'
 
-// CATCH 강조 텍스트 렌더러
+const CARD_CLASS =
+  'bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.04)] border border-gray-100/50'
+
 function HighlightCatch({ text }: { text: string }) {
   const parts = text.split(/(CATCH)/g)
   return (
     <>
       {parts.map((part, i) =>
         part === 'CATCH' ? (
-          <span key={i} className="catch-highlight">{part}</span>
+          <span key={i} className="text-[#3182F6] font-bold">{part}</span>
         ) : (
           <span key={i}>{part}</span>
         )
@@ -25,230 +26,182 @@ function HighlightCatch({ text }: { text: string }) {
 
 export default function Intro() {
   const navigate = useNavigate()
-  const [copyIdx, setCopyIdx] = useState(0)
   const [count, setCount] = useState(0)
+  const [whyOpen, setWhyOpen] = useState(false)
 
   useEffect(() => {
     getClickCount().then(d => setCount(d.total)).catch(() => {})
   }, [])
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCopyIdx(i => (i + 1) % INTRO_COPIES.length)
-    }, 7000)
-    return () => clearInterval(timer)
-  }, [])
-
-  const handleStart = useCallback(async (service: 'severance' | 'unemployment') => {
-    try { await registerClick(service) } catch { /* 무시 */ }
+  const handleSeverance = useCallback(async () => {
+    try {
+      await registerClick('severance')
+    } catch {
+      /* 무시 */
+    }
     setCount(c => c + 1)
-    navigate(`/${service}`)
+    navigate('/severance')
   }, [navigate])
 
-  const copy = INTRO_COPIES[copyIdx]
-  const lines = copy.split('\n')
+  const handleUnemployment = useCallback(() => {
+    navigate('/unemployment')
+  }, [navigate])
+
+  const mainCopy = INTRO_COPIES[0]
+  const lines = mainCopy.split('\n')
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        zIndex: 1,
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px 16px',
-      }}
-    >
-      {/* 상단 우측 My + User (마이페이지 진입) */}
-      <div
-        className="absolute top-0 left-0 right-0 flex justify-end px-4 py-3"
-        style={{ zIndex: 20 }}
-      >
+    <div className="relative z-[1] min-h-screen flex flex-col items-center bg-[#F2F4F6]/90 px-4 pt-2 pb-8">
+      {/* 헤더: 좌 고객센터 | 중 왜 CATCH인가요? | 우 My */}
+      <header className="sticky top-0 z-30 w-full max-w-[460px] flex items-center justify-between py-3 bg-[#F2F4F6]/90 backdrop-blur-xl">
+        <button
+          type="button"
+          className="flex items-center gap-1.5 text-sm text-[#4E5968] hover:text-[#191F28]"
+          aria-label="고객센터"
+        >
+          <Headphones className="w-4 h-4" />
+          <span>고객센터</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setWhyOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 border border-blue-100 text-[#3182F6] text-sm font-medium hover:bg-blue-100/80"
+        >
+          <HelpCircle className="w-4 h-4" />
+          <span>왜 CATCH인가요?</span>
+        </button>
         <button
           type="button"
           onClick={() => navigate('/mypage')}
-          className="flex items-center gap-1.5 text-[#4E5968] hover:text-[#191F28] transition-colors"
+          className="flex items-center gap-1.5 text-sm text-[#4E5968] hover:text-[#191F28]"
           aria-label="마이페이지"
         >
-          <span className="text-sm font-medium">My</span>
+          <span className="font-medium">My</span>
           <User className="w-5 h-5" />
         </button>
-      </div>
+      </header>
 
-      <div style={{ width: '100%', maxWidth: 440 }}>
-
-        {/* ── 메인 카드 ─────────────────────────────────── */}
-        <GlassCard className="p-8" animate={false}>
-
-          {/* 로고 · 브랜드 */}
-          <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 64,
-                height: 64,
-                borderRadius: 20,
-                background: 'linear-gradient(135deg, var(--toss-blue), #5b9ef4)',
-                fontSize: '2rem',
-                marginBottom: 14,
-                boxShadow: '0 8px 32px rgba(49,130,246,0.35)',
-              }}
-            >
+      <div className="w-full max-w-[460px] flex flex-col gap-4 flex-1">
+        {/* 메인 카드 */}
+        <div className={`${CARD_CLASS} p-6`}>
+          <div className="text-center mb-5">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#3182F6] text-white text-2xl mb-3 shadow-lg shadow-blue-500/30">
               🔍
             </div>
-            {/* CATCH 워드마크 */}
-            <p
-              style={{
-                fontFamily: "'Inter', 'Pretendard', sans-serif",
-                fontSize: '1.75rem',
-                fontWeight: 900,
-                letterSpacing: '-0.06em',
-                background: 'linear-gradient(135deg, #1a73e8, #3182f6, #5b9ef4)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                lineHeight: 1,
-                marginBottom: 4,
-              }}
-            >
-              CATCH
-            </p>
-            <p
-              style={{
-                fontSize: '0.72rem',
-                fontWeight: 600,
-                color: 'var(--toss-text-3)',
-                letterSpacing: '0.05em',
-              }}
-            >
+            <p className="text-xl font-black text-[#1a73e8] tracking-tight mb-1">CATCH</p>
+            <p className="text-xs font-semibold text-[#8B95A1] tracking-wide">
               퇴직금 · 실업급여 자동계산
             </p>
           </div>
-
-          {/* 7초 Spring 슬라이드 카피 */}
-          <div style={{ minHeight: 88, marginBottom: 28, overflow: 'hidden', position: 'relative' }}>
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={copyIdx}
-                initial={{ opacity: 0, y: 28 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 340,
-                  damping: 28,
-                  mass: 0.9,
-                }}
-                style={{ textAlign: 'center', position: 'absolute', left: 0, right: 0 }}
-              >
-                {lines.map((line, i) => (
-                  <p
-                    key={i}
-                    className="heading-intro"
-                    style={{
-                      textAlign: 'center',
-                      lineHeight: 1.4,
-                      marginBottom: i < lines.length - 1 ? 6 : 0,
-                    }}
-                  >
-                    <HighlightCatch text={line} />
-                  </p>
-                ))}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* 누적 카운트 */}
-          <div
-            style={{
-              textAlign: 'center',
-              marginBottom: 28,
-              padding: '12px 20px',
-              background: 'rgba(49,130,246,0.06)',
-              borderRadius: 12,
-            }}
-          >
-            <p style={{ fontSize: '0.9rem', color: 'var(--toss-text-2)' }}>
+          <p className="text-center text-[#191F28] text-[15px] leading-snug mb-4">
+            {lines.map((line, i) => (
+              <span key={i}>
+                <HighlightCatch text={line} />
+                {i < lines.length - 1 && <br />}
+              </span>
+            ))}
+          </p>
+          <div className="text-center py-3 px-4 rounded-xl bg-blue-50/80">
+            <p className="text-sm text-[#4E5968]">
               지금까지{' '}
-              <span
-                style={{
-                  color: 'var(--toss-blue)',
-                  fontWeight: 800,
-                  fontSize: '1.1rem',
-                  fontFamily: "'Inter', 'Pretendard', sans-serif",
-                }}
-              >
+              <span className="text-[#3182F6] font-extrabold text-base">
                 {count.toLocaleString()}명
               </span>
               이 확인했어요
             </p>
           </div>
+        </div>
 
-          {/* CTA 버튼 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <PrimaryButton
-              onClick={() => handleStart('severance')}
-              style={{ fontSize: '1.05rem', padding: '18px' }}
-            >
-              🔍 내 퇴직금 캐치하기
-            </PrimaryButton>
-            <PrimaryButton
-              onClick={() => handleStart('unemployment')}
-              style={{
-                fontSize: '1.05rem',
-                padding: '18px',
-                background: 'linear-gradient(135deg, #2d6fa8, #3182f6)',
-              }}
-            >
-              🔎 실업급여 캐치하기
-            </PrimaryButton>
-          </div>
-        </GlassCard>
-
-        {/* ── 특징 카드 (glassmorphism hover) ────────────── */}
-        <div
-          style={{
-            marginTop: 16,
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr 1fr',
-            gap: 10,
-          }}
+        {/* 파란 CTA 카드 — 내 퇴직금 캐치하기 */}
+        <button
+          type="button"
+          onClick={handleSeverance}
+          className="w-full rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-blue-200/50 bg-gradient-to-br from-[#3182F6] to-[#2563eb] p-4 flex items-center gap-3 text-left hover:opacity-95 transition-opacity"
         >
-          {[
-            { icon: '⚡', label: '1분 만에', sub: '빠른 계산' },
-            { icon: '🔒', label: '안전하게', sub: '개인정보 보호' },
-            { icon: '📄', label: 'PDF 분석', sub: '자동 계산' },
-          ].map(f => (
-            <div key={f.label} className="feature-chip">
-              <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>{f.icon}</div>
-              <p style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--toss-text)' }}>{f.label}</p>
-              <p style={{ fontSize: '0.72rem', color: 'var(--toss-text-3)', marginTop: 2 }}>{f.sub}</p>
+          <span className="text-2xl">🔍</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-bold text-base">내 퇴직금 캐치하기</p>
+            <p className="text-white/90 text-sm">가장 많이 찾는 서비스</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white flex-shrink-0" />
+        </button>
+
+        {/* 2x2 서비스 그리드 */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={handleUnemployment}
+            className={`${CARD_CLASS} p-4 flex flex-col items-start text-left`}
+          >
+            <Building2 className="w-8 h-8 text-slate-500 mb-2" />
+            <p className="font-semibold text-[#191F28] text-sm">실업급여</p>
+            <p className="text-xs text-[#8B95A1] mt-0.5">수급 자격 확인</p>
+          </button>
+          <button
+            type="button"
+            className={`${CARD_CLASS} p-4 flex flex-col items-start text-left`}
+          >
+            <Calendar className="w-8 h-8 text-emerald-600 mb-2" />
+            <p className="font-semibold text-[#191F28] text-sm">주휴수당</p>
+            <p className="text-xs text-[#8B95A1] mt-0.5">이번 주 얼마일까?</p>
+          </button>
+          <button
+            type="button"
+            className={`${CARD_CLASS} p-4 flex flex-col items-start text-left`}
+          >
+            <Calendar className="w-8 h-8 text-amber-500 mb-2" />
+            <p className="font-semibold text-[#191F28] text-sm">연차수당</p>
+            <p className="text-xs text-[#8B95A1] mt-0.5">남은 연차 정산</p>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/mypage')}
+            className={`${CARD_CLASS} p-4 flex flex-col items-start text-left`}
+          >
+            <Gift className="w-8 h-8 text-violet-500 mb-2" />
+            <p className="font-semibold text-[#191F28] text-sm">나의 혜택</p>
+            <p className="text-xs text-[#8B95A1] mt-0.5">숨은 지원금 찾기</p>
+          </button>
+        </div>
+
+        {/* 통합 트러스트 바 — 가로 캡슐 1줄 */}
+        <div className={`${CARD_CLASS} px-4 py-3 flex items-center justify-around gap-2`}>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xl">⚡</span>
+            <div>
+              <p className="text-xs font-semibold text-[#191F28] leading-tight">1분 만에</p>
+              <p className="text-[10px] text-[#8B95A1] leading-tight">간단 계산</p>
             </div>
-          ))}
+          </div>
+          <div className="w-px h-8 bg-gray-200" />
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xl">🔒</span>
+            <div>
+              <p className="text-xs font-semibold text-[#191F28] leading-tight">안전하게</p>
+              <p className="text-[10px] text-[#8B95A1] leading-tight">개인정보 보호</p>
+            </div>
+          </div>
+          <div className="w-px h-8 bg-gray-200" />
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xl">📄</span>
+            <div>
+              <p className="text-xs font-semibold text-[#191F28] leading-tight">PDF 파일</p>
+              <p className="text-[10px] text-[#8B95A1] leading-tight">정밀 분석</p>
+            </div>
+          </div>
         </div>
 
         {/* 푸터 */}
-        <p
-          style={{
-            textAlign: 'center',
-            fontSize: '10px',
-            fontWeight: 300,
-            color: 'rgba(156,163,175,0.85)',
-            marginTop: 20,
-            lineHeight: 1.7,
-            letterSpacing: '0.01em',
-          }}
-        >
+        <p className="text-center text-[10px] font-light text-gray-400 leading-relaxed mt-2">
           © 2026 CATCH by LEAF-MASTER. All rights reserved.
           <br />
-          <span style={{ fontSize: '9px' }}>이 결과는 참고용이에요. 정확한 금액은 노무사 상담을 받으세요.</span>
+          <span className="text-[9px]">이 결과는 참고용이에요. 정확한 금액은 노무사 상담을 받으세요.</span>
         </p>
-
       </div>
+
+      <AnimatePresence>
+        {whyOpen && <WhyCatchModal onClose={() => setWhyOpen(false)} />}
+      </AnimatePresence>
     </div>
   )
 }
