@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift } from 'lucide-react'
 import { getClickCount, registerClick } from '../lib/api'
 import { INTRO_COPIES } from '../lib/constants'
@@ -12,7 +12,7 @@ function HighlightCatch({ text }: { text: string }) {
     <>
       {parts.map((part, i) =>
         part === 'CATCH' ? (
-          <span key={i} className="text-[#3182F6] font-bold">{part}</span>
+          <span key={i} className="text-[#3182F6] font-bold drop-shadow-sm">{part}</span>
         ) : (
           <span key={i}>{part}</span>
         )
@@ -25,9 +25,17 @@ export default function Intro() {
   const navigate = useNavigate()
   const [count, setCount] = useState(0)
   const [whyOpen, setWhyOpen] = useState(false)
+  const [copyIdx, setCopyIdx] = useState(0)
 
   useEffect(() => {
     getClickCount().then(d => setCount(d.total)).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCopyIdx(i => (i + 1) % INTRO_COPIES.length)
+    }, 7000)
+    return () => clearInterval(timer)
   }, [])
 
   const handleSeverance = useCallback(async () => {
@@ -44,7 +52,7 @@ export default function Intro() {
     navigate('/unemployment')
   }, [navigate])
 
-  const mainCopy = INTRO_COPIES[0]
+  const mainCopy = INTRO_COPIES[copyIdx]
   const lines = mainCopy.split('\n')
 
   return (
@@ -90,14 +98,25 @@ export default function Intro() {
               퇴직금 · 실업급여 자동계산
             </p>
           </div>
-          <p className="text-center text-[#191F28] text-[15px] leading-snug mb-4">
-            {lines.map((line, i) => (
-              <span key={i}>
-                <HighlightCatch text={line} />
-                {i < lines.length - 1 && <br />}
-              </span>
-            ))}
-          </p>
+          <div className="min-h-[4.5rem] flex flex-col justify-center items-center mb-4 overflow-hidden relative">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.p
+                key={copyIdx}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                className="text-center text-[#191F28] text-[26px] font-extrabold leading-[1.3] tracking-tighter"
+              >
+                {lines.map((line, i) => (
+                  <span key={i}>
+                    <HighlightCatch text={line} />
+                    {i < lines.length - 1 && <br />}
+                  </span>
+                ))}
+              </motion.p>
+            </AnimatePresence>
+          </div>
           <div className="text-center py-3 px-4 rounded-xl bg-blue-50/80">
             <p className="text-sm text-[#4E5968]">
               지금까지{' '}
