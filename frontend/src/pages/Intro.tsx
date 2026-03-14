@@ -57,33 +57,39 @@ export default function Intro() {
 
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-8">
-      {/* 헤더: 배경 투명 — 애니메이션 배경이 상단까지 보이도록 */}
-      <header className="sticky top-0 z-30 w-full max-w-[460px] flex items-center justify-between py-3 bg-transparent">
-        <button
-          type="button"
-          className="flex items-center gap-1.5 text-sm text-[#4E5968] hover:text-[#191F28]"
-          aria-label="고객센터"
-        >
-          <Headphones className="w-4 h-4" />
-          <span>고객센터</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setWhyOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/40 backdrop-blur-md border border-white/60 text-[#3182F6] text-sm font-medium hover:bg-white/50"
-        >
-          <HelpCircle className="w-4 h-4" />
-          <span>왜 CATCH인가요?</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate('/mypage')}
-          className="flex items-center gap-1.5 text-sm text-[#4E5968] hover:text-[#191F28]"
-          aria-label="마이페이지"
-        >
-          <span className="font-medium">My</span>
-          <User className="w-5 h-5" />
-        </button>
+      {/* 헤더: grid 3열 반응형 — 좌/중/우 겹침 없음, 배경 투명 */}
+      <header className="sticky top-0 z-30 w-full max-w-[460px] grid grid-cols-3 items-center gap-2 py-3 pb-4 bg-transparent">
+        <div className="col-span-1 flex justify-start min-w-0">
+          <button
+            type="button"
+            className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans"
+            aria-label="고객센터"
+          >
+            <Headphones className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">고객센터</span>
+          </button>
+        </div>
+        <div className="col-span-1 flex justify-center min-w-0">
+          <button
+            type="button"
+            onClick={() => setWhyOpen(true)}
+            className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white/40 backdrop-blur-md border border-white/60 text-[#3182F6] text-xs sm:text-sm font-medium hover:bg-white/50 font-sans"
+          >
+            <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+            <span className="truncate">왜 CATCH인가요?</span>
+          </button>
+        </div>
+        <div className="col-span-1 flex justify-end min-w-0">
+          <button
+            type="button"
+            onClick={() => navigate('/mypage')}
+            className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans"
+            aria-label="마이페이지"
+          >
+            <span className="truncate">My</span>
+            <User className="w-4 h-4 flex-shrink-0" />
+          </button>
+        </div>
       </header>
 
       <div className="w-full max-w-[460px] flex flex-col gap-4 flex-1">
@@ -102,11 +108,11 @@ export default function Intro() {
             <AnimatePresence mode="wait" initial={false}>
               <motion.p
                 key={copyIdx}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="text-center text-[#191F28] text-[26px] font-extrabold leading-[1.3] tracking-tighter"
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                className="text-center text-[#191F28] text-[26px] font-extrabold leading-[1.3] tracking-tighter font-sans"
               >
                 {lines.map((line, i) => (
                   <span key={i}>
