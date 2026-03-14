@@ -6,9 +6,6 @@ import { getClickCount, registerClick } from '../lib/api'
 import { INTRO_COPIES } from '../lib/constants'
 import WhyCatchModal from '../components/WhyCatchModal'
 
-const CARD_CLASS =
-  'bg-white/80 backdrop-blur-xl rounded-[32px] shadow-[0_12px_40px_rgba(49,130,246,0.06)] border border-white/60'
-
 function HighlightCatch({ text }: { text: string }) {
   const parts = text.split(/(CATCH)/g)
   return (
@@ -51,9 +48,9 @@ export default function Intro() {
   const lines = mainCopy.split('\n')
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-5 pb-8" style={{ paddingTop: 'max(1.25rem, env(safe-area-inset-top, 1.25rem))' }}>
-      {/* 헤더: 좌 고객센터 | 중 왜 CATCH인가요? | 우 My */}
-      <header className="sticky top-0 z-30 w-full max-w-[460px] flex items-center justify-between py-3 bg-white/60 backdrop-blur-xl">
+    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-8">
+      {/* 헤더: 배경 투명 — 애니메이션 배경이 상단까지 보이도록 */}
+      <header className="sticky top-0 z-30 w-full max-w-[460px] flex items-center justify-between py-3 bg-transparent">
         <button
           type="button"
           className="flex items-center gap-1.5 text-sm text-[#4E5968] hover:text-[#191F28]"
@@ -65,7 +62,7 @@ export default function Intro() {
         <button
           type="button"
           onClick={() => setWhyOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 border border-blue-100 text-[#3182F6] text-sm font-medium hover:bg-blue-100/80"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/40 backdrop-blur-md border border-white/60 text-[#3182F6] text-sm font-medium hover:bg-white/50"
         >
           <HelpCircle className="w-4 h-4" />
           <span>왜 CATCH인가요?</span>
@@ -82,8 +79,8 @@ export default function Intro() {
       </header>
 
       <div className="w-full max-w-[460px] flex flex-col gap-4 flex-1">
-        {/* 메인 카드 */}
-        <div className={`${CARD_CLASS} p-6`}>
+        {/* 메인 카드: 글래스 bg-white/60 + backdrop-blur-xl */}
+        <div className="rounded-[32px] p-6 bg-white/60 backdrop-blur-xl border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.06)]">
           <div className="text-center mb-5">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#3182F6] text-white text-2xl mb-3 shadow-lg shadow-blue-500/30">
               🔍
@@ -126,12 +123,12 @@ export default function Intro() {
           <ChevronRight className="w-5 h-5 text-white flex-shrink-0" />
         </button>
 
-        {/* 2x2 서비스 그리드 */}
+        {/* 서브 카드 4개: bg-white/50 backdrop-blur-md border border-white/60 */}
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
             onClick={handleUnemployment}
-            className={`${CARD_CLASS} p-4 flex flex-col items-start text-left`}
+            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
           >
             <Building2 className="w-8 h-8 text-slate-500 mb-2" />
             <p className="font-semibold text-[#191F28] text-sm">실업급여</p>
@@ -139,7 +136,7 @@ export default function Intro() {
           </button>
           <button
             type="button"
-            className={`${CARD_CLASS} p-4 flex flex-col items-start text-left`}
+            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
           >
             <Calendar className="w-8 h-8 text-emerald-600 mb-2" />
             <p className="font-semibold text-[#191F28] text-sm">주휴수당</p>
@@ -147,7 +144,7 @@ export default function Intro() {
           </button>
           <button
             type="button"
-            className={`${CARD_CLASS} p-4 flex flex-col items-start text-left`}
+            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
           >
             <Calendar className="w-8 h-8 text-amber-500 mb-2" />
             <p className="font-semibold text-[#191F28] text-sm">연차수당</p>
@@ -156,7 +153,7 @@ export default function Intro() {
           <button
             type="button"
             onClick={() => navigate('/mypage')}
-            className={`${CARD_CLASS} p-4 flex flex-col items-start text-left`}
+            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
           >
             <Gift className="w-8 h-8 text-violet-500 mb-2" />
             <p className="font-semibold text-[#191F28] text-sm">나의 혜택</p>
@@ -164,8 +161,8 @@ export default function Intro() {
           </button>
         </div>
 
-        {/* 통합 트러스트 바 — 가로 캡슐 1줄 */}
-        <div className={`${CARD_CLASS} px-4 py-3 flex items-center justify-around gap-2`}>
+        {/* 하단 트러스트 바: bg-white/40 backdrop-blur-lg border border-white/50 */}
+        <div className="rounded-[32px] px-4 py-3 flex items-center justify-around gap-2 bg-white/40 backdrop-blur-lg border border-white/50 shadow-[0_8px_32px_rgba(49,130,246,0.04)]">
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xl">⚡</span>
             <div>
@@ -173,7 +170,7 @@ export default function Intro() {
               <p className="text-[10px] text-[#8B95A1] leading-tight">간단 계산</p>
             </div>
           </div>
-          <div className="w-px h-8 bg-gray-200" />
+          <div className="w-px h-8 bg-white/60" />
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xl">🔒</span>
             <div>
@@ -181,7 +178,7 @@ export default function Intro() {
               <p className="text-[10px] text-[#8B95A1] leading-tight">개인정보 보호</p>
             </div>
           </div>
-          <div className="w-px h-8 bg-gray-200" />
+          <div className="w-px h-8 bg-white/60" />
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xl">📄</span>
             <div>
