@@ -7,7 +7,7 @@ import { INTRO_COPIES } from '../lib/constants'
 import WhyCatchModal from '../components/WhyCatchModal'
 
 const CARD_CLASS =
-  'bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.04)] border border-gray-100/50'
+  'bg-white/80 backdrop-blur-xl rounded-[32px] shadow-[0_12px_40px_rgba(49,130,246,0.06)] border border-white/60'
 
 function HighlightCatch({ text }: { text: string }) {
   const parts = text.split(/(CATCH)/g)
@@ -51,7 +51,7 @@ export default function Intro() {
   const lines = mainCopy.split('\n')
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8">
+    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-5 pb-8" style={{ paddingTop: 'max(1.25rem, env(safe-area-inset-top, 1.25rem))' }}>
       {/* 헤더: 좌 고객센터 | 중 왜 CATCH인가요? | 우 My */}
       <header className="sticky top-0 z-30 w-full max-w-[460px] flex items-center justify-between py-3 bg-white/60 backdrop-blur-xl">
         <button
