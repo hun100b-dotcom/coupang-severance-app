@@ -72,6 +72,7 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
   }, [isOpen])
 
   useEffect(() => {
+    if (!supabase) return
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session?.user)
       setIsAuthLoading(false)
@@ -80,12 +81,15 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
   }, [])
 
   useEffect(() => {
-    if (isOpen) {
-      supabase.auth.getSession().then(({ data: { session } }) => setIsLoggedIn(!!session?.user))
-    }
+    if (!supabase || !isOpen) return
+    supabase.auth.getSession().then(({ data: { session } }) => setIsLoggedIn(!!session?.user)).catch(() => {})
   }, [isOpen])
 
   const fetchInquiryHistory = useCallback(async () => {
+    if (!supabase) {
+      setInquiryHistory([])
+      return
+    }
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       setInquiryHistory([])
@@ -135,6 +139,10 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
   }
 
   const handleOAuthLogin = async (provider: 'kakao' | 'google') => {
+    if (!supabase) {
+      setIsAuthLoading(false)
+      return
+    }
     setIsAuthLoading(true)
     try {
       await supabase.auth.signInWithOAuth({ provider })
@@ -145,6 +153,10 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
 
   const handleSubmitInquiry = async () => {
     if (!inquiryText.trim() || !inquiryCategory) return
+    if (!supabase) {
+      setCurrentView('form')
+      return
+    }
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       setCurrentView('login')
