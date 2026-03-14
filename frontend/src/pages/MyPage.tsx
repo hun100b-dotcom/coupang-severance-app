@@ -27,6 +27,9 @@ export default function MyPage() {
       <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4 py-8 relative z-10">
         <div className="w-full max-w-[400px]">
           <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#3182F6] overflow-hidden mb-3 shadow-lg shadow-blue-500/30">
+              <img src="/catch-logo.png" alt="CATCH" className="w-full h-full object-contain p-1.5" />
+            </div>
             <h1 className="text-xl font-bold text-[#191F28] mb-2">내 정보</h1>
             <p className="text-sm text-[#4E5968]">로그인하면 D-Day와 진단 리포트를 볼 수 있어요</p>
           </div>
@@ -77,7 +80,10 @@ export default function MyPage() {
         className="sticky top-0 z-30 bg-[#F2F4F6]/90 backdrop-blur-xl border-b border-gray-200/50"
       >
         <div className="max-w-[460px] mx-auto px-4 h-14 flex items-center justify-between">
-          <h1 className="text-lg font-bold text-[#191F28]">내 정보</h1>
+          <div className="flex items-center gap-2">
+            <img src="/catch-logo.png" alt="" className="w-8 h-8 object-contain" />
+            <h1 className="text-lg font-bold text-[#191F28]">내 정보</h1>
+          </div>
           <div className="flex items-center gap-3">
             <button type="button" className="relative p-1.5 text-[#4E5968]">
               <Bell className="w-5 h-5" />

@@ -99,8 +99,8 @@ export default function Intro() {
         {/* 메인 카드: 글래스 bg-white/60 + backdrop-blur-xl */}
         <div className="rounded-[32px] p-6 bg-white/60 backdrop-blur-xl border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.06)]">
           <div className="text-center mb-5">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#3182F6] text-white text-2xl mb-3 shadow-lg shadow-blue-500/30">
-              🔍
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#3182F6] overflow-hidden mb-3 shadow-lg shadow-blue-500/30">
+              <img src="/catch-logo.png" alt="CATCH" className="w-full h-full object-contain p-1.5" />
             </div>
             <p className="text-xl font-black text-[#1a73e8] tracking-tight mb-1">CATCH</p>
             <p className="text-xs font-semibold text-[#8B95A1] tracking-wide">
@@ -143,7 +143,9 @@ export default function Intro() {
           onClick={handleSeverance}
           className="w-full rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-blue-200/50 bg-gradient-to-br from-[#3182F6] to-[#2563eb] p-4 flex items-center gap-3 text-left hover:opacity-95 transition-opacity"
         >
-          <span className="text-2xl">🔍</span>
+          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <img src="/catch-logo.png" alt="" className="w-full h-full object-contain p-1" />
+          </div>
           <div className="flex-1 min-w-0">
             <p className="text-white font-bold text-base">내 퇴직금 캐치하기</p>
             <p className="text-white/90 text-sm">가장 많이 찾는 서비스</p>

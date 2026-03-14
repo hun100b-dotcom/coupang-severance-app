@@ -38,6 +38,7 @@ export default function WhyCatchModal({ onClose }: WhyCatchModalProps) {
       >
         <div className="flex items-center justify-between px-5 pt-5 pb-2">
           <div className="flex items-center gap-2">
+            <img src="/catch-logo.png" alt="" className="w-8 h-8 object-contain" />
             {[1, 2].map(i => (
               <span
                 key={i}
