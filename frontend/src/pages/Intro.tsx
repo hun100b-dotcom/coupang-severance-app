@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift } from 'lucide-react'
 import { getClickCount, registerClick } from '../lib/api'
 import { INTRO_COPIES } from '../lib/constants'
+import { useAuth } from '../contexts/AuthContext'
 import WhyCatchModal from '../components/WhyCatchModal'
 import CustomerService from '../components/CustomerService'
 
@@ -24,6 +25,7 @@ function HighlightCatch({ text }: { text: string }) {
 
 export default function Intro() {
   const navigate = useNavigate()
+  const { isLoggedIn, logout } = useAuth()
   const [count, setCount] = useState(0)
   const [whyOpen, setWhyOpen] = useState(false)
   const [csOpen, setCsOpen] = useState(false)
@@ -82,16 +84,38 @@ export default function Intro() {
             <span className="truncate">왜 CATCH인가요?</span>
           </button>
         </div>
-        <div className="col-span-1 flex justify-end min-w-0">
-          <button
-            type="button"
-            onClick={() => navigate('/mypage')}
-            className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans"
-            aria-label="마이페이지"
-          >
-            <span className="truncate">My</span>
-            <User className="w-4 h-4 flex-shrink-0" />
-          </button>
+        <div className="col-span-1 flex justify-end items-center gap-2 min-w-0">
+          {isLoggedIn ? (
+            <>
+              <button
+                type="button"
+                onClick={() => navigate('/mypage')}
+                className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans"
+                aria-label="마이페이지"
+              >
+                <span className="truncate">마이페이지</span>
+                <User className="w-4 h-4 flex-shrink-0" />
+              </button>
+              <button
+                type="button"
+                onClick={() => logout()}
+                className="text-sm text-[#8B95A1] hover:text-[#191F28] font-medium font-sans"
+                aria-label="로그아웃"
+              >
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => navigate('/mypage')}
+              className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans"
+              aria-label="로그인"
+            >
+              <span className="truncate">로그인</span>
+              <User className="w-4 h-4 flex-shrink-0" />
+            </button>
+          )}
         </div>
       </header>
 

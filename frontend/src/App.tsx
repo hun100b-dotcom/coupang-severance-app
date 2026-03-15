@@ -1,10 +1,13 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import AnimatedBackground from './components/AnimatedBackground'
+import ProtectedRoute from './components/ProtectedRoute'
 import Intro from './pages/Intro'
 import SeveranceFlow from './pages/SeveranceFlow'
 import UnemploymentFlow from './pages/UnemploymentFlow'
 import MyPage from './pages/MyPage'
+import ReportDetail from './pages/ReportDetail'
+import PaymentGuide from './pages/PaymentGuide'
 
 export default function App() {
   return (
@@ -18,6 +21,8 @@ export default function App() {
           <Route path="/severance"   element={<SeveranceFlow />} />
           <Route path="/unemployment" element={<UnemploymentFlow />} />
           <Route path="/mypage"      element={<MyPage />} />
+          <Route path="/report/:id"  element={<ProtectedRoute><ReportDetail /></ProtectedRoute>} />
+          <Route path="/payment"    element={<PaymentGuide />} />
           <Route path="*"            element={<Intro />} />
         </Routes>
 

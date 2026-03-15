@@ -1,15 +1,6 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+/**
+ * Supabase 클라이언트 단일 진입점
+ * - 기존 코드 호환을 위해 utils/supabase/client에서 re-export 합니다.
+ */
 
-const url = import.meta.env.VITE_SUPABASE_URL ?? ''
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? ''
-
-let client: SupabaseClient | null = null
-try {
-  if (url && anonKey) {
-    client = createClient(url, anonKey)
-  }
-} catch {
-  client = null
-}
-
-export const supabase = client
+export { supabase } from '../utils/supabase/client'
