@@ -1,9 +1,17 @@
 /**
  * 앱 전역 에러 바운더리
  * - 렌더 중 발생한 에러를 잡아 빈 화면 대신 안내 메시지를 표시합니다.
+ * - 에러 시 화면 하단에 환경 변수 로드 여부를 텍스트로 표시합니다.
  */
 
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+
+function getEnvStatus(): string {
+  const url = typeof import.meta.env.VITE_SUPABASE_URL === 'string' && import.meta.env.VITE_SUPABASE_URL ? '설정됨' : '없음'
+  const key = typeof import.meta.env.VITE_SUPABASE_ANON_KEY === 'string' && import.meta.env.VITE_SUPABASE_ANON_KEY ? '설정됨' : '없음'
+  const api = typeof import.meta.env.VITE_API_URL === 'string' ? (import.meta.env.VITE_API_URL ? '설정됨' : '비어있음') : '없음'
+  return `[환경] VITE_SUPABASE_URL: ${url} | VITE_SUPABASE_ANON_KEY: ${key} | VITE_API_URL: ${api}`
+}
 
 interface Props {
   children: ReactNode
@@ -48,6 +56,9 @@ export default class ErrorBoundary extends Component<Props, State> {
             새로고침
           </button>
           <p className="mt-4 text-xs text-[#8B95A1]">위 빨간 상자에 표시된 오류 내용을 확인해 주세요.</p>
+          <p className="mt-4 pt-3 border-t border-gray-200 text-[10px] text-[#8B95A1] font-mono whitespace-pre-wrap">
+            {getEnvStatus()}
+          </p>
         </div>
       )
     }

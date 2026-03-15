@@ -9,6 +9,7 @@
 1. [로컬 실행 (터미널 명령어)](#1-로컬-실행-터미널-명령어)
 2. [Git 푸시 방법](#2-git-푸시-방법)
 2-1. [Vercel 환경 변수 넣는 방법 (단계별)](#2-1-vercel-환경-변수-넣는-방법-단계별)
+2-2. [카카오/구글 로그인 오류 해결 (redirect_uri_mismatch, KOE205)](#2-2-카카오구글-로그인-오류-해결-redirect_uri_mismatch-koe205)
 3. [API 연동 구조](#3-api-연동-구조)
 4. [사용 중인 API 및 키/환경 변수](#4-사용-중인-api-및-키환경-변수)
 5. [키 관리 및 보안](#5-키-관리-및-보안)
@@ -147,10 +148,109 @@ git push origin main
 2. **Site URL** 에 배포 주소 입력 (예: `https://coupang-severance-app.vercel.app`)
 3. **Redirect URLs** 에 아래를 **추가** (기존 로컬 주소는 그대로 두고):
    - `https://coupang-severance-app.vercel.app/**`
+   - `https://coupang-severance-app.vercel.app/auth/callback`  ← **소셜 로그인 후 세션 처리용 (필수)**
    - `https://coupang-severance-app.vercel.app/mypage`
 4. **Save** 클릭
 
-> 로컬만 쓸 때는 `http://localhost:5173` / `http://localhost:5173/mypage` 만 있어도 됩니다. 배포 후 로그인이 안 되면 위 배포 URL을 반드시 추가하세요.
+> 앱은 **getURL()** 로 현재 주소(로컬/배포)를 자동 인식하고, 로그인 후 **/auth/callback** 에서 세션을 잡은 뒤 마이페이지로 보냅니다. Redirect URLs에 **/auth/callback** 이 없으면 로그인이 완료돼도 세션이 안 잡힐 수 있습니다.  
+> 로컬만 쓸 때는 `http://localhost:5173` / `http://localhost:5173/auth/callback` / `http://localhost:5173/mypage` 를 등록하세요.
+
+---
+
+## 2-2. 카카오/구글 로그인 오류 해결 (redirect_uri_mismatch, KOE205)
+
+**증상:** 구글 로그인 시 "400 오류: redirect_uri_mismatch", 카카오 로그인 시 "잘못된 요청 (KOE205)" 이 나오는 경우.
+
+**원인:** OAuth는 **우리 앱 → 구글/카카오 → Supabase 콜백 → 우리 앱** 순서로 동작합니다. 구글/카카오 쪽에 **Supabase가 받을 콜백 주소**를 등록해 두어야 합니다. (우리 앱 주소가 아님.)
+
+### Supabase 콜백 URL (여기 주소를 구글·카카오에 등록)
+
+이 프로젝트의 Supabase URL이 `https://hmjxrqhcwjyfkvlcejfc.supabase.co` 이므로, 콜백 주소는 아래 하나입니다.
+
+```
+https://hmjxrqhcwjyfkvlcejfc.supabase.co/auth/v1/callback
+```
+
+---
+
+### 구글 (400 redirect_uri_mismatch) 수정 방법
+
+1. **Google Cloud Console** 접속 → [https://console.cloud.google.com](https://console.cloud.google.com)
+2. 프로젝트 선택 후 **APIs & Services** → **Credentials** (사용자 인증 정보)
+3. **OAuth 2.0 Client IDs** 목록에서 Supabase 로그인에 쓰는 **Web application** 클라이언트 클릭
+4. **Authorized redirect URIs** (승인된 리디렉션 URI)에 아래를 **정확히** 추가:
+   - `https://hmjxrqhcwjyfkvlcejfc.supabase.co/auth/v1/callback`
+5. **Save** 클릭 후 1~2분 정도 기다린 뒤 다시 로그인 시도
+
+> 로컬 테스트용이라면 `http://localhost:5173` 이 아니라 위 Supabase 콜백 URL만 추가하면 됩니다. (Supabase가 로컬/배포 구분을 처리합니다.)
+
+---
+
+### 카카오 (KOE205) 수정 방법
+
+1. **Kakao Developers** 접속 → [https://developers.kakao.com](https://developers.kakao.com) → 로그인
+2. **내 애플리케이션** → CATCH(또는 해당 앱) 선택
+3. **앱 설정** → **플랫폼** → **Web** 플랫폼이 있는지 확인 (없으면 **Web** 추가)
+4. **Web** 플랫폼의 **Redirect URI** 란에 아래를 **정확히** 추가:
+   - `https://hmjxrqhcwjyfkvlcejfc.supabase.co/auth/v1/callback`
+5. **저장** 클릭 후 다시 로그인 시도
+
+---
+
+### 체크리스트 요약
+
+| 위치 | 등록할 URL |
+|------|------------|
+| **Supabase** (Authentication → URL Configuration) | Site URL·Redirect URLs에 **우리 앱 주소** (예: `https://coupang-severance-app.vercel.app`, `.../mypage`) |
+| **Google Cloud Console** (OAuth 클라이언트) | Authorized redirect URIs에 **Supabase 콜백** `https://hmjxrqhcwjyfkvlcejfc.supabase.co/auth/v1/callback` |
+| **Kakao Developers** (Web 플랫폼) | Redirect URI에 **Supabase 콜백** `https://hmjxrqhcwjyfkvlcejfc.supabase.co/auth/v1/callback` |
+
+---
+
+### ⚠️ 구글 "401 disabled_client" (OAuth 클라이언트가 비활성화됨)
+
+**증상:** "액세스 차단됨: 승인 오류", "The OAuth client was disabled.", **401 오류: disabled_client**
+
+**원인:** Google Cloud Console에서 사용 중인 **OAuth 2.0 클라이언트가 꺼져 있음**.
+
+**해결 (순서대로):**
+
+1. [Google Cloud Console](https://console.cloud.google.com) → **APIs & Services** → **Credentials**
+2. **OAuth 2.0 Client IDs** 목록에서 CATCH/ Supabase 로그인에 쓰는 **Web client** 클릭
+3. 상단 또는 상세 화면에서 **상태**가 "사용 중지됨"이면 **사용 설정** / **Enable** 버튼 클릭
+4. **저장** 후 1~2분 뒤 다시 로그인 시도
+
+> 클라이언트를 실수로 삭제했다면, 동일한 프로젝트에서 **새 OAuth 클라이언트 ID(웹 애플리케이션)** 를 만들고, Redirect URI에 Supabase 콜백 URL을 넣은 뒤, Supabase **Authentication → Providers → Google** 에 새 Client ID / Client Secret 을 다시 등록해야 합니다.
+
+---
+
+### ⚠️ 카카오 "KOE006" (앱 관리자 설정 오류)
+
+**증상:** "앱 관리자 설정 오류 (KOE006)", "CATCH 서비스 설정에 오류가 있어, 이용할 수 없습니다."
+
+**원인:** Kakao Developers 앱 설정·플랫폼·동의항목·앱 상태 중 하나가 맞지 않음.
+
+**해결 (아래를 하나씩 확인):**
+
+1. **Redirect URI 정확히 일치**
+   - [Kakao Developers](https://developers.kakao.com) → **내 애플리케이션** → 해당 앱 → **앱 설정** → **플랫폼** → **Web**
+   - **Redirect URI**에 **아래만** 정확히 등록되어 있는지 확인 (공백/슬래시 하나라도 다르면 오류):
+     - `https://hmjxrqhcwjyfkvlcejfc.supabase.co/auth/v1/callback`
+   - 다른 테스트용 URL이 필요하면 그때만 추가하고, 위 Supabase 콜백은 반드시 포함
+
+2. **동의 항목**
+   - **제품 설정** → **카카오 로그인** → **동의 항목**
+   - Supabase/앱에서 쓰는 항목(**닉네임, 프로필 사진** 등)이 **비활성**이면 **필수 동의** 또는 **선택 동의**로 설정 후 저장
+
+3. **앱 키와 Supabase 일치**
+   - **앱 설정** → **앱 키** 에서 **REST API 키** 확인
+   - Supabase **Authentication** → **Providers** → **Kakao** 에 넣은 **Client ID**(앱 키) / **Client Secret**(REST API 키 또는 해당 시크릿) 이 이 앱과 동일한지 확인
+
+4. **앱 상태(개발/활성)**
+   - **앱 설정** → **앱 상태**가 **개발중**이면, **제품 설정** → **카카오 로그인** → **동의 항목** 등에서 사용할 수 있는지, 또는 **앱 실행 환경**을 **운영**으로 전환해야 하는지 확인 (카카오 정책에 따라 개발중 앱은 제한이 있을 수 있음)
+
+5. **다른 오류가 계속되면**
+   - Kakao Developers 고객센터 또는 [개발자 문서](https://developers.kakao.com)에서 "KOE006" 검색 후 최신 안내 확인
 
 ---
 

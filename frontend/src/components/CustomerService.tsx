@@ -15,6 +15,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { getURL } from '../utils/getUrl'
 
 type View = 'main' | 'login' | 'form' | 'success' | 'history'
 
@@ -140,13 +141,21 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
 
   const handleOAuthLogin = async (provider: 'kakao' | 'google') => {
     if (!supabase) {
+      alert('로그인 설정이 되어 있지 않습니다.')
       setIsAuthLoading(false)
       return
     }
     setIsAuthLoading(true)
     try {
-      await supabase.auth.signInWithOAuth({ provider })
-    } catch {
+      const redirectTo = `${getURL()}/auth/callback`
+      const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo } })
+      if (error) {
+        alert(`로그인 오류: ${error.message}`)
+      }
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e)
+      alert(`로그인 중 오류: ${message}`)
+    } finally {
       setIsAuthLoading(false)
     }
   }

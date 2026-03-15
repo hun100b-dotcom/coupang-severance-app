@@ -1,44 +1,36 @@
 /**
  * 전역 인증 컨텍스트 (Supabase Auth 기반)
- * - 앱 전체에서 user, isLoggedIn, loading 상태를 공유합니다.
- * - onAuthStateChange로 새로고침 후에도 로그인 상태가 유지됩니다.
+ * - redirectTo는 getURL()로 배포/로컬 자동 인식.
+ * - onAuthStateChange로 세션 유지, 로그인 시 try/catch + alert로 에러 노출.
  */
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { supabase } from '../utils/supabase/client'
+import { getURL } from '../utils/getUrl'
 
 export type ProviderType = 'kakao' | 'google'
 
-/** 앱에서 사용하는 유저 정보 (Supabase user + 메타데이터 요약) */
 export interface User {
   id: string
   email?: string
   name: string
   avatarUrl?: string
   provider?: ProviderType
-  /** Supabase 원본 객체 (updateUser 등에서 id 필요 시 사용) */
   raw?: SupabaseUser
 }
 
 interface AuthContextValue {
-  /** 현재 로그인한 유저 (없으면 null) */
   user: User | null
-  /** 로그인 여부 */
   isLoggedIn: boolean
-  /** 세션 복원 중 여부 (초기 로딩) */
   loading: boolean
-  /** 소셜 로그인 (완료 후 마이페이지로 이동) */
   login: (provider: ProviderType) => Promise<void>
-  /** 로그아웃 */
   logout: () => void
-  /** 유저 정보 갱신 (닉네임 등 수정 후 호출) */
   refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-/** Supabase User → 앱용 User 변환 (메타데이터에서 이름·프로필 사진 추출) */
 function toAppUser(sbUser: SupabaseUser): User {
   const meta = sbUser.user_metadata ?? {}
   const name =
@@ -59,7 +51,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // 초기 세션 복원 + 인증 상태 변경 리스너 (새로고침 시 로그인 유지)
   useEffect(() => {
     const client = supabase
     if (!client) {
@@ -89,19 +80,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  const login = useCallback(
-    async (provider: ProviderType) => {
-      if (!supabase) return
-      const redirectTo = `${window.location.origin}/mypage`
-      await supabase.auth.signInWithOAuth({
-        provider: provider === 'kakao' ? 'kakao' : 'google',
+  const login = useCallback(async (provider: ProviderType) => {
+    const client = supabase
+    if (!client) {
+      alert('로그인 설정이 되어 있지 않습니다. (Supabase URL/Key 확인)')
+      return
+    }
+    const redirectTo = `${getURL()}/auth/callback`
+    const providerId = provider === 'kakao' ? 'kakao' : 'google'
+    try {
+      const { error } = await client.auth.signInWithOAuth({
+        provider: providerId,
         options: { redirectTo },
       })
-      // OAuth는 외부 페이지로 이동 후 콜백으로 돌아오므로, 여기서 navigate는 호출되지 않습니다.
-      // 콜백 후 onAuthStateChange로 user가 설정되고, 이미 /mypage로 리다이렉트되어 있도록 redirectTo 사용
-    },
-    []
-  )
+      if (error) {
+        alert(`로그인 오류: ${error.message}`)
+        return
+      }
+      // 성공 시 Supabase가 OAuth 페이지로 이동시키므로 여기서는 추가 동작 없음
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e)
+      alert(`로그인 중 오류가 났어요.\n\n${message}`)
+    }
+  }, [])
 
   const logout = useCallback(async () => {
     if (supabase) await supabase.auth.signOut()

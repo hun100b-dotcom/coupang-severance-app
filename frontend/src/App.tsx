@@ -6,6 +6,7 @@ import Intro from './pages/Intro'
 import SeveranceFlow from './pages/SeveranceFlow'
 import UnemploymentFlow from './pages/UnemploymentFlow'
 import MyPage from './pages/MyPage'
+import AuthCallback from './pages/AuthCallback'
 import ReportDetail from './pages/ReportDetail'
 import PaymentGuide from './pages/PaymentGuide'
 
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/severance"   element={<SeveranceFlow />} />
           <Route path="/unemployment" element={<UnemploymentFlow />} />
           <Route path="/mypage"      element={<MyPage />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/report/:id"  element={<ProtectedRoute><ReportDetail /></ProtectedRoute>} />
           <Route path="/payment"    element={<PaymentGuide />} />
           <Route path="*"            element={<Intro />} />
