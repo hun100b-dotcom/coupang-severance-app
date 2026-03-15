@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const redirectTo = `${getURL()}/auth/callback`
     const providerId = provider === 'kakao' ? 'kakao' : 'google'
     try {
-      const { error } = await client.auth.signInWithOAuth({
+      const { data, error } = await client.auth.signInWithOAuth({
         provider: providerId,
         options: { redirectTo },
       })
@@ -97,7 +97,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         alert(`로그인 오류: ${error.message}`)
         return
       }
-      // 성공 시 Supabase가 OAuth 페이지로 이동시키므로 여기서는 추가 동작 없음
+      // 브라우저에서 리다이렉트가 안 될 수 있으므로 URL이 있으면 수동 이동 (카카오/구글 로그인 진행)
+      if (data?.url) {
+        window.location.href = data.url
+      }
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e)
       alert(`로그인 중 오류가 났어요.\n\n${message}`)

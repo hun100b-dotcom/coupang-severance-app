@@ -148,9 +148,13 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
     setIsAuthLoading(true)
     try {
       const redirectTo = `${getURL()}/auth/callback`
-      const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo } })
+      const { data, error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo } })
       if (error) {
         alert(`로그인 오류: ${error.message}`)
+        return
+      }
+      if (data?.url) {
+        window.location.href = data.url
       }
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e)

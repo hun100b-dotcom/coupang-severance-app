@@ -1,15 +1,20 @@
 /**
  * OAuth 콜백 전용 페이지 (/auth/callback)
- * - Supabase가 리다이렉트한 뒤 URL의 해시/쿼리에서 세션을 복원하고 /mypage로 이동합니다.
+ * - Supabase 리다이렉트 후 URL 해시/쿼리에서 세션 복원을 기다린 뒤 /mypage로 이동합니다.
+ * - onAuthStateChange + getSession 재시도로 세션이 확실히 잡힌 다음에만 이동해 구글 "다시 로그인 창" 현상 방지.
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase/client'
+
+const RETRY_DELAYS = [0, 200, 500, 1000, 1800]
+const GIVE_UP_MS = 3500
 
 export default function AuthCallback() {
   const navigate = useNavigate()
   const [status, setStatus] = useState<'처리 중...' | '완료' | '오류'>('처리 중...')
+  const doneRef = useRef(false)
 
   useEffect(() => {
     const client = supabase
@@ -19,35 +24,56 @@ export default function AuthCallback() {
       return
     }
 
-    let mounted = true
+    const goToMyPage = () => {
+      if (doneRef.current) return
+      doneRef.current = true
+      setStatus('완료')
+      // URL에 남은 해시 제거 후 이동 (보안·가독성)
+      navigate('/mypage', { replace: true })
+    }
 
-    const run = async () => {
-      try {
-        // Supabase 클라이언트가 URL 해시/쿼리를 파싱할 시간을 줌
-        await new Promise(r => setTimeout(r, 100))
-        const { data: { session }, error } = await client.auth.getSession()
-        if (!mounted) return
-        if (error) {
-          setStatus('오류')
-          setTimeout(() => navigate('/mypage', { replace: true }), 1500)
-          return
-        }
+    let timeoutId: ReturnType<typeof setTimeout>
+    const cleanup = () => {
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+
+    // 1) onAuthStateChange: 세션이 잡히면 바로 마이페이지로
+    const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
         if (session?.user) {
-          setStatus('완료')
-          navigate('/mypage', { replace: true })
-        } else {
-          navigate('/mypage', { replace: true })
+          goToMyPage()
+          subscription.unsubscribe()
         }
-      } catch {
-        if (mounted) {
-          setStatus('오류')
-          setTimeout(() => navigate('/mypage', { replace: true }), 1500)
+      }
+    })
+
+    // 2) getSession 재시도: 해시 파싱이 비동기일 수 있어 여러 번 시도
+    const tryGetSession = async () => {
+      for (const delay of RETRY_DELAYS) {
+        if (doneRef.current) return
+        if (delay > 0) await new Promise(r => setTimeout(r, delay))
+        const { data: { session }, error } = await client.auth.getSession()
+        if (doneRef.current) return
+        if (!error && session?.user) {
+          goToMyPage()
+          return
         }
       }
     }
+    tryGetSession()
 
-    run()
-    return () => { mounted = false }
+    // 3) 최대 대기 후에도 세션 없으면 마이페이지로 (무한 대기 방지)
+    timeoutId = setTimeout(() => {
+      if (doneRef.current) return
+      doneRef.current = true
+      setStatus('오류')
+      navigate('/mypage', { replace: true })
+    }, GIVE_UP_MS)
+
+    return () => {
+      subscription.unsubscribe()
+      cleanup()
+    }
   }, [navigate])
 
   return (

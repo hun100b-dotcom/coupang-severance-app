@@ -14,12 +14,12 @@ if (typeof window !== 'undefined') {
   })
 }
 
-// OAuth 콜백: 토큰이 메인(/)으로 온 경우 /auth/callback으로 보내 세션 처리 후 /mypage 이동
+// OAuth 콜백: 토큰이 붙은 모든 경로(/, /mypage 등)를 /auth/callback으로 보내 세션 처리 후 /mypage 이동
 if (typeof window !== 'undefined') {
   const { pathname, hash, search } = window.location
   const hasOAuthHash = hash && (hash.includes('access_token=') || hash.includes('refresh_token='))
   const hasOAuthQuery = search && (search.includes('access_token=') || search.includes('refresh_token='))
-  if (pathname === '/' && (hasOAuthHash || hasOAuthQuery)) {
+  if ((hasOAuthHash || hasOAuthQuery) && pathname !== '/auth/callback') {
     window.location.replace('/auth/callback' + (search || '') + (hash || ''))
   }
 }
