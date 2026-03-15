@@ -1,13 +1,13 @@
 /**
  * 전역 인증 컨텍스트 (Supabase Auth 기반)
- * - redirectTo는 getURL()로 배포/로컬 자동 인식.
- * - onAuthStateChange로 세션 유지, 로그인 시 try/catch + alert로 에러 노출.
+ * - redirectTo는 AUTH_CALLBACK_URL로 고정 (Supabase URL Configuration과 동일).
+ * - 인증 후 /auth/callback에서 세션 처리 후 마이페이지로 이동.
  */
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { supabase } from '../utils/supabase/client'
-import { getURL } from '../utils/getUrl'
+import { AUTH_CALLBACK_URL } from '../utils/getUrl'
 
 export type ProviderType = 'kakao' | 'google'
 
@@ -86,12 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       alert('로그인 설정이 되어 있지 않습니다. (Supabase URL/Key 확인)')
       return
     }
-    const redirectTo = `${getURL()}/auth/callback`
     const providerId = provider === 'kakao' ? 'kakao' : 'google'
     try {
       const { data, error } = await client.auth.signInWithOAuth({
         provider: providerId,
-        options: { redirectTo },
+        options: { redirectTo: AUTH_CALLBACK_URL },
       })
       if (error) {
         alert(`로그인 오류: ${error.message}`)

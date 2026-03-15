@@ -15,7 +15,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import { getURL } from '../utils/getUrl'
+import { AUTH_CALLBACK_URL } from '../utils/getUrl'
 
 type View = 'main' | 'login' | 'form' | 'success' | 'history'
 
@@ -147,8 +147,7 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
     }
     setIsAuthLoading(true)
     try {
-      const redirectTo = `${getURL()}/auth/callback`
-      const { data, error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo } })
+      const { data, error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: AUTH_CALLBACK_URL } })
       if (error) {
         alert(`로그인 오류: ${error.message}`)
         return

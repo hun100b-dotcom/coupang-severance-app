@@ -1,7 +1,7 @@
 /**
- * OAuth 콜백 전용 페이지 (/auth/callback)
- * - Supabase 리다이렉트 후 URL 해시/쿼리에서 세션 복원을 기다린 뒤 /mypage로 이동합니다.
- * - onAuthStateChange + getSession 재시도로 세션이 확실히 잡힌 다음에만 이동해 구글 "다시 로그인 창" 현상 방지.
+ * OAuth 콜백 전용 페이지 (redirectTo와 동일: .../auth/callback)
+ * - Supabase가 이 URL로 리다이렉트한 뒤, URL 해시/쿼리에서 세션을 복원합니다.
+ * - onAuthStateChange + getSession 재시도로 세션이 잡힌 뒤 /mypage로 이동해 로그인 상태를 유지합니다.
  */
 
 import { useEffect, useState, useRef } from 'react'
