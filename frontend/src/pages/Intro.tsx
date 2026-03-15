@@ -32,7 +32,12 @@ export default function Intro() {
   const [copyIdx, setCopyIdx] = useState(0)
 
   useEffect(() => {
-    getClickCount().then(d => setCount(d.total)).catch(() => {})
+    getClickCount()
+      .then(d => {
+        const total = d?.total
+        if (typeof total === 'number') setCount(total)
+      })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {

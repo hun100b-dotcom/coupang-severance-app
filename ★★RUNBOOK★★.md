@@ -139,6 +139,19 @@ git push origin main
 - `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` 두 개 추가 후 **Save**  
 - **Deployments** → 맨 위 배포 **⋯** → **Redeploy**
 
+### 6단계 (배포 도메인 사용 시): Supabase 리다이렉트 URL 등록
+
+로그인(카카오/구글)을 **배포된 사이트**에서 쓰려면 Supabase에 배포 URL을 등록해야 합니다.
+
+1. **Supabase 대시보드** → 프로젝트 선택 → **Authentication** → **URL Configuration**
+2. **Site URL** 에 배포 주소 입력 (예: `https://coupang-severance-app.vercel.app`)
+3. **Redirect URLs** 에 아래를 **추가** (기존 로컬 주소는 그대로 두고):
+   - `https://coupang-severance-app.vercel.app/**`
+   - `https://coupang-severance-app.vercel.app/mypage`
+4. **Save** 클릭
+
+> 로컬만 쓸 때는 `http://localhost:5173` / `http://localhost:5173/mypage` 만 있어도 됩니다. 배포 후 로그인이 안 되면 위 배포 URL을 반드시 추가하세요.
+
 ---
 
 ## 3. API 연동 구조

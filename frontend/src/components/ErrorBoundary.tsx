@@ -27,12 +27,19 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError && this.state.error) {
+      const err = this.state.error
+      const message = err?.message ?? String(err)
+      const stack = err?.stack ?? ''
       return (
         <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center p-4">
           <p className="text-[#191F28] font-semibold mb-2">일시적인 오류가 발생했어요</p>
-          <p className="text-sm text-[#8B95A1] mb-4 text-center">
+          <p className="text-sm text-[#8B95A1] mb-2 text-center">
             새로고침하거나 잠시 후 다시 시도해 주세요.
           </p>
+          <pre className="w-full max-w-lg mt-2 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-left text-xs text-red-800 overflow-auto max-h-40">
+            {message}
+            {stack ? `\n\n${stack}` : ''}
+          </pre>
           <button
             type="button"
             onClick={() => window.location.reload()}
@@ -40,7 +47,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           >
             새로고침
           </button>
-          <p className="mt-4 text-xs text-[#8B95A1]">콘솔(F12)에서 자세한 오류를 확인할 수 있어요.</p>
+          <p className="mt-4 text-xs text-[#8B95A1]">위 빨간 상자에 표시된 오류 내용을 확인해 주세요.</p>
         </div>
       )
     }
