@@ -14,12 +14,13 @@ if (typeof window !== 'undefined') {
   })
 }
 
-// 카카오/구글 OAuth 콜백: Supabase가 메인(/)으로 리다이렉트한 경우 해시 유지한 채 /mypage로 이동
+// 카카오/구글 OAuth 콜백: Supabase가 메인(/)으로 리다이렉트한 경우 해시·쿼리 유지한 채 /mypage로 이동
 if (typeof window !== 'undefined') {
-  const { pathname, hash } = window.location
+  const { pathname, hash, search } = window.location
   const hasOAuthHash = hash && (hash.includes('access_token=') || hash.includes('refresh_token='))
-  if (pathname === '/' && hasOAuthHash) {
-    window.location.replace('/mypage' + hash)
+  const hasOAuthQuery = search && (search.includes('access_token=') || search.includes('refresh_token='))
+  if (pathname === '/' && (hasOAuthHash || hasOAuthQuery)) {
+    window.location.replace('/mypage' + (search || '') + (hash || ''))
   }
 }
 
