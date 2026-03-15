@@ -61,14 +61,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // 초기 세션 복원 + 인증 상태 변경 리스너 (새로고침 시 로그인 유지)
   useEffect(() => {
-    if (!supabase) {
+    const client = supabase
+    if (!client) {
       setLoading(false)
       return
     }
 
     const getInitialSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
+        const { data: { session } } = await client.auth.getSession()
         if (session?.user) setUser(toAppUser(session.user))
         else setUser(null)
       } catch {
@@ -80,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     getInitialSession()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
       if (session?.user) setUser(toAppUser(session.user))
       else setUser(null)
     })

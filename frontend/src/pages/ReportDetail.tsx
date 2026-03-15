@@ -18,9 +18,10 @@ export default function ReportDetail() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!id || !supabase) {
+    const client = supabase
+    if (!id || !client) {
       setLoading(false)
-      if (!supabase) setError('Supabase가 설정되지 않았습니다.')
+      if (!client) setError('Supabase가 설정되지 않았습니다.')
       return
     }
 
@@ -28,7 +29,7 @@ export default function ReportDetail() {
       setLoading(true)
       setError(null)
       try {
-        const { data, error: err } = await supabase
+        const { data, error: err } = await client
           .from('reports')
           .select('*')
           .eq('id', id)

@@ -70,14 +70,15 @@ export default function MyPage() {
 
   // 프로필 조회 (joined_at, marketing_agreement)
   useEffect(() => {
-    if (!isLoggedIn || !user?.id || !supabase) {
+    const client = supabase
+    if (!isLoggedIn || !user?.id || !client) {
       setProfileLoading(false)
       setProfile(null)
       return
     }
     let cancelled = false
     const run = async () => {
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
+      const { data } = await client.from('profiles').select('*').eq('id', user.id).maybeSingle()
       if (!cancelled && data) {
         setProfile(data as Profile)
         setKakaoNotify((data as Profile).marketing_agreement ?? true)
@@ -90,14 +91,15 @@ export default function MyPage() {
 
   // 진단 리포트 목록 (최신순)
   useEffect(() => {
-    if (!isLoggedIn || !user?.id || !supabase) {
+    const client = supabase
+    if (!isLoggedIn || !user?.id || !client) {
       setReportsLoading(false)
       setReports([])
       return
     }
     let cancelled = false
     const run = async () => {
-      const { data } = await supabase
+      const { data } = await client
         .from('reports')
         .select('*')
         .eq('user_id', user.id)
