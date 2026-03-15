@@ -14,7 +14,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        {/* 항상 살아있는 애니메이션 배경 */}
+        {/* AuthProvider가 세션을 관리하므로 /mypage는 useAuth()로 로그인 여부·유저 상태를 사용 */}
         <AnimatedBackground />
 
         <Routes>

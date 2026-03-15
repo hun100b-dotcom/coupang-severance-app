@@ -1,35 +1,33 @@
 /**
- * OAuth 콜백 전용 페이지 (redirectTo와 동일: .../auth/callback)
+ * OAuth 콜백 전용 페이지 (redirectTo: https://coupang-severance-app.vercel.app/auth/callback)
  * - Supabase가 이 URL로 리다이렉트한 뒤, URL 해시/쿼리에서 세션을 복원합니다.
- * - onAuthStateChange + getSession 재시도로 세션이 잡힌 뒤 /mypage로 이동해 로그인 상태를 유지합니다.
+ * - 세션이 확실히 잡힌 뒤 full-page redirect로 /mypage 이동 → 앱 재로드 시 AuthProvider가 storage에서 세션을 읽어 로그인 UI 유지.
  */
 
 import { useEffect, useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase/client'
 
-const RETRY_DELAYS = [0, 200, 500, 1000, 1800]
-const GIVE_UP_MS = 3500
+const RETRY_DELAYS_MS = [0, 150, 400, 800, 1500]
+const GIVE_UP_MS = 4000
 
 export default function AuthCallback() {
-  const navigate = useNavigate()
   const [status, setStatus] = useState<'처리 중...' | '완료' | '오류'>('처리 중...')
   const doneRef = useRef(false)
+
+  const goToMyPage = () => {
+    if (doneRef.current) return
+    doneRef.current = true
+    setStatus('완료')
+    // full-page 이동으로 앱을 다시 띄워 AuthProvider가 storage에서 세션을 읽고 마이페이지 UI 표시
+    window.location.replace('/mypage')
+  }
 
   useEffect(() => {
     const client = supabase
     if (!client) {
       setStatus('오류')
-      setTimeout(() => navigate('/mypage', { replace: true }), 1500)
+      setTimeout(() => window.location.replace('/mypage'), 1500)
       return
-    }
-
-    const goToMyPage = () => {
-      if (doneRef.current) return
-      doneRef.current = true
-      setStatus('완료')
-      // URL에 남은 해시 제거 후 이동 (보안·가독성)
-      navigate('/mypage', { replace: true })
     }
 
     let timeoutId: ReturnType<typeof setTimeout>
@@ -37,7 +35,7 @@ export default function AuthCallback() {
       if (timeoutId) clearTimeout(timeoutId)
     }
 
-    // 1) onAuthStateChange: 세션이 잡히면 바로 마이페이지로
+    // 1) onAuthStateChange: 세션이 잡히면 마이페이지로
     const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
         if (session?.user) {
@@ -47,9 +45,9 @@ export default function AuthCallback() {
       }
     })
 
-    // 2) getSession 재시도: 해시 파싱이 비동기일 수 있어 여러 번 시도
+    // 2) getSession 재시도: 해시 파싱이 비동기일 수 있음
     const tryGetSession = async () => {
-      for (const delay of RETRY_DELAYS) {
+      for (const delay of RETRY_DELAYS_MS) {
         if (doneRef.current) return
         if (delay > 0) await new Promise(r => setTimeout(r, delay))
         const { data: { session }, error } = await client.auth.getSession()
@@ -67,14 +65,14 @@ export default function AuthCallback() {
       if (doneRef.current) return
       doneRef.current = true
       setStatus('오류')
-      navigate('/mypage', { replace: true })
+      window.location.replace('/mypage')
     }, GIVE_UP_MS)
 
     return () => {
       subscription.unsubscribe()
       cleanup()
     }
-  }, [navigate])
+  }, [])
 
   return (
     <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center p-4">
