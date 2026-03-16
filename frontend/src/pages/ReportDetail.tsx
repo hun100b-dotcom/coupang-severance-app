@@ -4,11 +4,11 @@
  * - 로그인 필요(ProtectedRoute로 보호).
  */
 
-import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, FileText } from 'lucide-react'
-import { supabase } from '../utils/supabase/client'
-import type { ReportRow } from '../types/supabase'
+import { useEffect, useState } from 'react' // 데이터 요청과 상태 관리를 위해 React 훅을 가져옵니다.
+import { useParams, useNavigate } from 'react-router-dom' // URL 파라미터와 페이지 이동을 위해 라우터 훅을 사용합니다.
+import { ChevronLeft, FileText } from 'lucide-react' // 아이콘 컴포넌트를 가져옵니다.
+import { supabase } from '../lib/supabase' // 공용 Supabase 클라이언트를 새 경로에서 가져옵니다.
+import type { ReportRow } from '../types/supabase' // 리포트 타입 정의를 가져옵니다.
 
 export default function ReportDetail() {
   const { id } = useParams<{ id: string }>()

@@ -14,6 +14,26 @@
 4. [사용 중인 API 및 키/환경 변수](#4-사용-중인-api-및-키환경-변수)
 5. [키 관리 및 보안](#5-키-관리-및-보안)
 6. [실행 체크리스트](#6-실행-체크리스트)
+7. [인증 구조 (리팩터 요약)](#7-인증-구조-리팩터-요약)
+
+---
+
+## 7. 인증 구조 (리팩터 요약)
+
+> Vite + Supabase 기준으로 로그인/인증을 처음부터 재구성한 구조입니다.  
+> 배포 주소: **https://coupang-severance-app.vercel.app**
+
+| 구분 | 경로/역할 |
+|------|------------|
+| **Supabase 클라이언트** | `frontend/src/lib/supabase.ts` — `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`로 단일 클라이언트 생성, 다른 파일은 여기서만 import |
+| **인증 콜백** | `frontend/src/pages/auth/callback.tsx` — 소셜 로그인 후 돌아오는 URL. `exchangeCodeForSession` 후 성공 시 `/mypage`, 실패 시 `/login`으로 이동 |
+| **로그인 페이지** | `frontend/src/pages/Login.tsx` — 카카오/구글 `signInWithOAuth`, `redirectTo: https://coupang-severance-app.vercel.app/auth/callback` |
+| **전역 로그인 상태** | `frontend/src/contexts/AuthContext.tsx` — 앱 시작 시 `onAuthStateChange` 1회 구독, `user` / `isLoggedIn` / `logout` 제공 |
+| **헤더 버튼** | `Intro.tsx` — 로그인 시 [마이페이지]·[로그아웃], 비로그인 시 [로그인] → `/login` 이동 |
+| **마이페이지** | `frontend/src/pages/MyPage.tsx` — 전역 `user`로 이름·프로필 이미지 표시, 가입일 기준 (오늘 − 가입일) 근무일 수만 표시 |
+
+- **라우트**: `/` 인트로, `/login` 로그인, `/auth/callback` OAuth 콜백, `/mypage` 마이페이지.
+- **Vercel 환경 변수**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 필수. Supabase 대시보드에서 Redirect URL에 `https://coupang-severance-app.vercel.app/auth/callback` 등록.
 
 ---
 

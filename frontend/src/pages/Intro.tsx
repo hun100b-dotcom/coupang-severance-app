@@ -113,7 +113,7 @@ export default function Intro() {
           ) : (
             <button
               type="button"
-              onClick={() => navigate('/mypage')}
+              onClick={() => navigate('/login')}
               className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans"
               aria-label="로그인"
             >

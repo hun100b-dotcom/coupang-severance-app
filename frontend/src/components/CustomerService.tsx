@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react' // 문의 작성/조회 상태 관리를 위해 React 훅들을 가져옵니다.
 import {
   X,
   Mail,
@@ -13,9 +13,9 @@ import {
   Clock,
   CheckCircle,
   Loader2,
-} from 'lucide-react'
-import { supabase } from '../lib/supabaseClient'
-import { AUTH_CALLBACK_URL } from '../utils/getUrl'
+} from 'lucide-react' // 다양한 아이콘 컴포넌트를 한 번에 가져옵니다.
+import { supabase } from '../lib/supabase' // 공용 Supabase 클라이언트를 새 경로에서 가져옵니다.
+import { AUTH_CALLBACK_URL } from '../utils/getUrl' // 콜백 URL 상수를 그대로 재사용합니다.
 
 type View = 'main' | 'login' | 'form' | 'success' | 'history'
 
