@@ -16,6 +16,24 @@ export const getClickCount = () =>
 export const registerClick = (service: 'severance' | 'unemployment') =>
   api.post(`/click/${service}`).then(r => r.data)
 
+// ── 1:1 문의 알림 (Discord Webhook 등) ─────────────
+export const notifyNewInquiry = (payload: {
+  title: string
+  content: string
+  userId?: string
+  userName?: string
+}) =>
+  api
+    .post('/inquiry/notify', {
+      // 백엔드 스키마에 맞춰 필드명을 매핑합니다.
+      title: payload.title,
+      content: payload.content,
+      user_id: payload.userId ?? null,
+      user_name: payload.userName ?? null,
+    })
+    .then(r => r.data)
+    .catch(() => undefined) // 알림 실패는 사용자 플로우를 막지 않도록 조용히 무시합니다.
+
 /** PDF에서 사업장 고유 리스트 추출 (퇴직금 정밀 계산용) */
 export const extractSeveranceCompanies = (file: File) => {
   const fd = new FormData()

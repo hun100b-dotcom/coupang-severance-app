@@ -3,32 +3,35 @@
 클릭 카운터 서비스 — Supabase 영구 보존
 
 Supabase Table: click_counter (단일 행, id=1)
-  id            int4  PRIMARY KEY
-  total_cnt     int8  DEFAULT 0   ← 누적 클릭 수
-  severance_cnt int8  DEFAULT 0   ← 퇴직금 버튼 클릭 수
-  unemployment_cnt int8 DEFAULT 0 ← 실업급여 버튼 클릭 수
+  id                 int4  PRIMARY KEY
+  total_cnt          int8  DEFAULT 0   ← 누적 클릭 수
+  severance_cnt      int8  DEFAULT 0   ← 퇴직금 버튼 클릭 수
+  unemployment_cnt   int8  DEFAULT 0   ← 실업급여 버튼 클릭 수
 
 Supabase SQL (처음 한 번만 실행):
   CREATE TABLE IF NOT EXISTS click_counter (
-    id            int4 PRIMARY KEY,
-    total_cnt     int8 DEFAULT 0,
-    severance_cnt int8 DEFAULT 0,
-    unemployment_cnt int8 DEFAULT 0
+    id                 int4 PRIMARY KEY,
+    total_cnt          int8 DEFAULT 0,
+    severance_cnt      int8 DEFAULT 0,
+    unemployment_cnt   int8 DEFAULT 0
   );
   INSERT INTO click_counter (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
 
-환경변수 (render.yaml 혹은 Render 대시보드):
-  SUPABASE_URL      = https://hmjprqxhowjyfkvicejt.supabase.co
-  SUPABASE_ANON_KEY = <anon jwt>
+환경변수 (Render 등의 배포 환경에서 설정 권장):
+  SUPABASE_URL      = https://hmjxrqhcwjyfkvlcejfc.supabase.co
+  SUPABASE_ANON_KEY = <해당 프로젝트의 anon 키>
+
+※ 기본값으로도 위 프로젝트(hmjxrqhcwjyfkvlcejfc)에 연결되지만,
+   운영 환경에서는 반드시 환경변수로 덮어써 주세요.
 """
 import json
 import os
 from pathlib import Path
 
-# ── 환경변수 (기본값: 하드코딩 — render.yaml 환경변수로 덮어씌워짐) ───────────
+# ── 환경변수 (기본값: 현재 Supabase 프로젝트 도메인) ─────────────────────────────
 _SUPABASE_URL = os.getenv(
     "SUPABASE_URL",
-    "https://hmjprqxhowjyfkvicejt.supabase.co",
+    "https://hmjxrqhcwjyfkvlcejfc.supabase.co",
 ).rstrip("/")
 
 _SUPABASE_KEY = os.getenv(
