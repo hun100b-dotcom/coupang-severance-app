@@ -1,47 +1,74 @@
-// 소셜 로그인 이후 Supabase가 redirect 시키는 콜백 페이지입니다.
-// 이 페이지에서 Supabase 코드(authorization code)를 세션으로 교환한 뒤 마이페이지 또는 로그인 페이지로 보내 줍니다.
+// 소셜 로그인 완료 후 Supabase가 토큰/코드를 붙여 되돌려주는 콜백 전용 페이지입니다.
+// 이 페이지에서는 세션이 정상적으로 생성되었는지만 확인하고, 성공 시 /mypage, 실패 시 /login 으로 이동합니다.
 
-import { useEffect, useState } from 'react' // React의 훅을 사용하기 위해 가져옵니다.
+import { useEffect, useRef, useState } from 'react' // React 훅을 사용하기 위해 가져옵니다.
 import { supabase } from '../../lib/supabase' // 공용 Supabase 클라이언트를 불러옵니다.
 
-type StatusText = '처리 중...' | '로그인 완료, 이동 중...' | '로그인에 실패했어요' // 화면에 표시할 상태 메시지 타입을 정의합니다.
+type Status = '처리 중...' | '로그인 완료, 이동 중...' | '로그인에 실패했어요' // 화면에 표시할 상태 메시지 타입입니다.
+
+const RETRY_DELAYS_MS = [0, 200, 500, 1000, 2000] // getSession 재시도 간격(밀리초) 배열입니다.
+const GIVE_UP_MS = 5000 // 이 시간 안에 세션이 안 잡히면 실패로 간주합니다.
 
 export default function AuthCallbackPage() {
-  const [status, setStatus] = useState<StatusText>('처리 중...') // 현재 진행 상태를 저장하는 상태 변수입니다.
+  const [status, setStatus] = useState<Status>('처리 중...') // 현재 진행 상태를 저장하는 상태입니다.
+  const doneRef = useRef(false) // 한 번만 리다이렉트하도록 제어하는 플래그입니다.
+
+  const goTo = (path: '/mypage' | '/login') => {
+    // 이미 이동 처리 중이라면 더 이상 실행하지 않습니다.
+    if (doneRef.current) return
+    doneRef.current = true // 이후 중복 호출을 막기 위해 플래그를 true 로 바꿉니다.
+    setStatus(path === '/mypage' ? '로그인 완료, 이동 중...' : '로그인에 실패했어요') // 이동 전 상태 텍스트를 업데이트합니다.
+    window.location.replace(path) // 히스토리에 남기지 않고 지정한 경로로 전체 페이지 이동을 수행합니다.
+  }
 
   useEffect(() => {
-    // 컴포넌트가 처음 렌더링될 때 한 번만 실행되도록 useEffect를 사용합니다.
-    const run = async () => {
-      if (!supabase) {
-        // Supabase 클라이언트가 생성되지 않았다면 더 진행할 수 없습니다.
-        setStatus('로그인에 실패했어요') // 오류 상태 메시지를 보여줍니다.
-        window.location.href = '/login' // 로그인 페이지로 이동시켜 재시도를 유도합니다.
-        return // 함수 실행을 종료합니다.
-      }
-
-      try {
-        // Supabase JS v2에서는 exchangeCodeForSession으로 URL 속 코드를 세션으로 교환할 수 있습니다.
-        const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href) // 현재 페이지 URL에 포함된 코드를 세션으로 교환합니다.
-
-        if (error || !data.session) {
-          // 에러가 발생했거나 세션이 없다면 로그인에 실패한 것으로 간주합니다.
-          setStatus('로그인에 실패했어요') // 실패 상태 메시지를 설정합니다.
-          window.location.href = '/login' // 다시 로그인 페이지로 보내 사용자가 재시도하게 합니다.
-          return // 더 이상 진행하지 않습니다.
-        }
-
-        // 여기까지 왔다면 세션이 정상적으로 생성된 상태입니다.
-        setStatus('로그인 완료, 이동 중...') // 성공 상태 메시지를 잠시 보여줍니다.
-        window.location.href = '/mypage' // 마이페이지로 전체 페이지 리다이렉트를 수행합니다.
-      } catch {
-        // 예기치 못한 오류가 발생한 경우입니다.
-        setStatus('로그인에 실패했어요') // 에러 메시지를 화면에 표시합니다.
-        window.location.href = '/login' // 안전하게 로그인 페이지로 돌려보냅니다.
-      }
+    const client = supabase // Supabase 클라이언트를 로컬 변수에 담아 사용합니다.
+    if (!client) {
+      // 클라이언트가 준비되지 않았다면 더 진행할 수 없습니다.
+      goTo('/login') // 바로 로그인 페이지로 돌려보냅니다.
+      return // effect 실행을 종료합니다.
     }
 
-    run() // 위에서 정의한 비동기 함수를 바로 실행합니다.
-  }, []) // 의존성 배열을 빈 배열로 주어 최초 마운트 시에만 실행되게 합니다.
+    // 1) onAuthStateChange: SIGNED_IN / INITIAL_SESSION 이벤트에서 세션이 확인되면 /mypage 로 이동합니다.
+    const {
+      data: { subscription },
+    } = client.auth.onAuthStateChange((event, session) => {
+      if (doneRef.current) return // 이미 다른 경로로 이동 중이면 무시합니다.
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
+        goTo('/mypage') // 세션이 있는 경우 마이페이지로 보냅니다.
+      }
+    })
+
+    // 2) getSession 재시도: 이미 세션이 잡혀 있는 경우를 위해 여러 번 확인합니다.
+    const tryGetSession = async () => {
+      for (const delay of RETRY_DELAYS_MS) {
+        if (doneRef.current) return // 이미 이동이 끝났다면 더 이상 시도하지 않습니다.
+        if (delay > 0) {
+          await new Promise(resolve => setTimeout(resolve, delay)) // 각 딜레이만큼 대기합니다.
+        }
+        const { data, error } = await client.auth.getSession() // 현재 세션 정보를 가져옵니다.
+        if (doneRef.current) return // 중간에 완료되었으면 즉시 중단합니다.
+        if (!error && data.session?.user) {
+          goTo('/mypage') // 세션이 있으면 마이페이지로 이동하고 함수 종료합니다.
+          return
+        }
+      }
+    }
+    tryGetSession() // 정의한 재시도 함수를 실행합니다.
+
+    // 3) 일정 시간 안에 세션이 안 잡히면 실패로 판단하고 /login 으로 보냅니다.
+    const timeoutId = window.setTimeout(() => {
+      if (doneRef.current) return // 이미 이동이 완료되었으면 아무 것도 하지 않습니다.
+      goTo('/login') // 로그인 실패로 보고 로그인 페이지로 이동합니다.
+    }, GIVE_UP_MS)
+
+    return () => {
+      // 컴포넌트가 언마운트될 때 정리 작업을 수행합니다.
+      doneRef.current = true // 더 이상의 이동을 막기 위해 플래그를 true 로 설정합니다.
+      subscription.unsubscribe() // onAuthStateChange 구독을 해제합니다.
+      window.clearTimeout(timeoutId) // 타임아웃 타이머를 정리합니다.
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center p-4">
