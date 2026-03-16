@@ -52,7 +52,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4 py-8 relative z-10">
       {/* 가운데 카드 레이아웃을 위한 래퍼입니다. */}
       <div className="w-full max-w-[400px]">
         {/* 상단 로고와 간단한 설명 영역입니다. */}
