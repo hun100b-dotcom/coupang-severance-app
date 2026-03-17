@@ -434,9 +434,15 @@ def parse_welcomwel_pdf(file_bytes: bytes) -> pd.DataFrame:
     근로복지공단 일용근로·노무제공내역서 PDF → 일별 DataFrame.
     연속 누적: 1페이지는 헤더 기준, 2페이지부터는 헤더 없이
     '첫 열 숫자(일련번호)' 또는 '둘째 열 날짜(20XX/XX)'인 행만 데이터로 수집.
+
+    서버 환경에서 pdfplumber 가 설치되지 않았다면 ImportError 가 발생해도
+    조용히 빈 DataFrame 을 반환해 버리면, 사용자는 "PDF 가 잘못됐다" 라고만
+    보이게 되어 원인 파악이 어렵다. 따라서 이 경우에는 명시적으로 예외를
+    발생시켜 상위 레이어( FastAPI 핸들러 )에서 500 에러로 처리하도록 한다.
     """
     if not HAS_PDFPLUMBER:
-        return pd.DataFrame()
+        # 런타임 환경 문제: pdfplumber 미설치
+        raise RuntimeError("pdfplumber is not available in the server environment.")
 
     all_data: list[dict] = []
 

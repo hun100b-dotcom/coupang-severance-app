@@ -50,11 +50,21 @@ async def precise_calculation(
     company_other: str = Form(""),
     end_date: Optional[str] = Form(None),
 ):
-    # 파싱 중 예외가 발생해도 500이 아닌 422로 통일되도록 처리
+    # PDF 파싱:
+    # - pdfplumber 미설치 등 서버 환경 문제는 500으로 명확히 노출
+    # - PDF 구조 인식 실패 등 일반적인 파싱 오류는 422로 통일
     try:
         raw = await file.read()
         df  = parse_welcomwel_pdf(raw)
+    except RuntimeError as e:
+        # 서버 런타임 환경 문제 (예: pdfplumber 미설치)
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail="서버 설정 문제로 PDF를 읽지 못하고 있어요. 잠시 후 다시 이용해 주세요.",
+        )
     except Exception as e:
+        # 그 외 파싱 오류는 "데이터를 추출할 수 없음"으로 처리
         traceback.print_exc()
         df = pd.DataFrame()
 
