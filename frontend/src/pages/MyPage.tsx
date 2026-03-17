@@ -1,7 +1,7 @@
 // 마이페이지 화면입니다.
 // Toss / Apple Card 스타일을 참고해, 프로필·퇴직금 위젯·서비스 카드·1:1 문의 내역을 한 화면에 배치합니다.
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -39,6 +39,33 @@ export default function MyPage() {
     }
   }, [loading, isLoggedIn, navigate])
 
+  // 로그인 상태가 준비된 뒤에만 문의 내역을 조회하도록 훅을 먼저 선언합니다.
+  const refreshInquiries = useCallback(async () => {
+    if (!supabase || !isLoggedIn || !user) {
+      setInquiries([])
+      setLoadingInquiries(false)
+      return
+    }
+    setLoadingInquiries(true)
+    try {
+      const { data, error } = await supabase
+        .from('inquiries')
+        .select('id, title, content, status, created_at, answer')
+        .eq('user_id', user.raw.id)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      setInquiries((data as InquiryItem[]) ?? [])
+    } catch {
+      setInquiries([])
+    } finally {
+      setLoadingInquiries(false)
+    }
+  }, [isLoggedIn, user])
+
+  useEffect(() => {
+    refreshInquiries()
+  }, [refreshInquiries])
+
   // 아직 초기 세션 확인 중이라면 간단한 로딩 화면을 반환합니다.
   if (loading) {
     return (
@@ -67,33 +94,6 @@ export default function MyPage() {
     (rawMeta.joined_at as string | undefined) ?? (user.raw.created_at ?? null)
 
   const workedDays = calculateDaysFrom(joinedAtRaw)
-
-  // 사용자의 1:1 문의 내역을 Supabase `inquiries` 테이블에서 불러오는 함수입니다.
-  const refreshInquiries = async () => {
-    if (!supabase) {
-      setInquiries([])
-      return
-    }
-    setLoadingInquiries(true)
-    try {
-      const { data, error } = await supabase
-        .from('inquiries')
-        .select('id, title, content, status, created_at, answer')
-        .eq('user_id', user.raw.id)
-        .order('created_at', { ascending: false })
-      if (error) throw error
-      setInquiries((data as InquiryItem[]) ?? [])
-    } catch {
-      setInquiries([])
-    } finally {
-      setLoadingInquiries(false)
-    }
-  }
-
-  useEffect(() => {
-    refreshInquiries()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   // 1:1 문의 작성 모달에서 호출하는 저장 함수입니다.
   const handleCreateInquiry = async (payload: { title: string; content: string }) => {
