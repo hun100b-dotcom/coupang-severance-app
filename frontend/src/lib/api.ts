@@ -4,7 +4,8 @@ const baseURL = typeof import.meta.env.VITE_API_URL === 'string' && import.meta.
   ? import.meta.env.VITE_API_URL.replace(/\/$/, '') // 끝 슬래시 제거
   : '/api'
 
-const api = axios.create({
+// 관리자 페이지 등 다른 곳에서도 쓸 수 있도록 내보냅니다
+export const api = axios.create({
   baseURL,
   timeout: 90000, // Render 무료 티어 콜드스타트 대기 (최대 50초+)
 })

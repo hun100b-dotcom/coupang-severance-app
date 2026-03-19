@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 
-from .api import common, severance, unemployment, notify
+from .api import common, severance, unemployment, notify, admin
 
 STATIC_DIR = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
 
@@ -36,6 +36,7 @@ app.include_router(common.router,       prefix="/api",              tags=["공�
 app.include_router(severance.router,    prefix="/api/severance",    tags=["퇴직금"])
 app.include_router(unemployment.router, prefix="/api/unemployment", tags=["실업급여"])
 app.include_router(notify.router,       prefix="/api",              tags=["알림"])
+app.include_router(admin.router,        prefix="/api",              tags=["관리자"])
 
 
 # 루트: API 안내 + /docs 로 이동 링크 (404 대신)
