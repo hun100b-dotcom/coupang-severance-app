@@ -416,6 +416,8 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
                 <div className="space-y-4">
                   {inquiryHistory.map(item => {
                     const isItemOpen = openHistoryItem === item.id
+                const isAnswered =
+                  item.status === '답변완료' || item.status === 'answered' || !!item.answer
                     return (
                       <div key={item.id} className={`bg-white rounded-[20px] overflow-hidden transition-all border font-sans ${isItemOpen ? 'border-blue-200 shadow-md' : 'border-gray-100 shadow-sm'}`}>
                         <button
@@ -425,7 +427,7 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
                         >
                           <div className="flex justify-between items-center w-full mb-2">
                             <span className="text-[12px] font-bold text-gray-500">{formatCreatedAt(item.created_at)}</span>
-                            {item.status === '답변완료' ? (
+                            {isAnswered ? (
                               <span className="flex items-center gap-1 text-[12px] font-extrabold text-green-600 bg-green-50 px-2 py-0.5 rounded-md">
                                 <CheckCircle className="w-3 h-3" />
                                 <span>답변완료</span>

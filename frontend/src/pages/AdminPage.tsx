@@ -1,11 +1,12 @@
 // 관리자 전용 1:1 문의 관리 페이지입니다.
 // 접근 조건: 로그인 + 이메일이 VITE_ADMIN_EMAIL 환경 변수와 일치해야 합니다.
+// Supabase RLS 정책으로 관리자 UUID만 모든 문의를 조회·수정할 수 있습니다.
 
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import GlassCard from '../components/GlassCard'
-import { api } from '../lib/api'
+import { supabase } from '../lib/supabase'
 
 // ── 타입 정의 ────────────────────────────────────────────
 interface Inquiry {
@@ -80,11 +81,9 @@ function StatusBadge({ status }: { status: string }) {
 // ── 문의 카드 (접기/펼치기 + 답변 작성) ────────────────
 function InquiryCard({
   inquiry,
-  adminSecret,
   onAnswered,
 }: {
   inquiry: Inquiry
-  adminSecret: string
   onAnswered: (id: string, answer: string) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -93,20 +92,25 @@ function InquiryCard({
   const [error, setError] = useState('')
   const isAnswered = inquiry.status === 'answered' || inquiry.status === '답변완료'
 
-  // 답변 제출 함수
+  // 답변 제출 함수 — Supabase 클라이언트로 직접 UPDATE
   const handleSubmit = async () => {
     if (!answerText.trim()) {
       setError('답변 내용을 입력해주세요.')
       return
     }
+    if (!supabase) {
+      setError('Supabase 설정이 올바르지 않습니다.')
+      return
+    }
     setSubmitting(true)
     setError('')
     try {
-      await api.patch(
-        `/admin/inquiries/${inquiry.id}/answer`,
-        { answer: answerText.trim() },
-        { headers: { 'X-Admin-Token': adminSecret } },
-      )
+      const { error: dbError } = await supabase
+        .from('inquiries')
+        .update({ answer: answerText.trim(), status: 'answered' })
+        .eq('id', inquiry.id)
+
+      if (dbError) throw dbError
       onAnswered(inquiry.id, answerText.trim())
     } catch {
       setError('답변 등록에 실패했습니다. 잠시 후 다시 시도해주세요.')
@@ -260,10 +264,8 @@ export default function AdminPage() {
   const { user, isLoggedIn, loading, logout } = useAuth()
   const navigate = useNavigate()
 
-  // 관리자 이메일: frontend/.env의 VITE_ADMIN_EMAIL과 일치해야 접근 가능
+  // 관리자 이메일: Vercel/frontend/.env의 VITE_ADMIN_EMAIL과 일치해야 접근 가능
   const adminEmail = import.meta.env.VITE_ADMIN_EMAIL ?? ''
-  // 관리자 시크릿: frontend/.env의 VITE_ADMIN_SECRET (백엔드 ADMIN_SECRET과 동일)
-  const adminSecret = import.meta.env.VITE_ADMIN_SECRET ?? ''
 
   const [inquiries, setInquiries] = useState<Inquiry[]>([])
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('전체')
@@ -281,22 +283,25 @@ export default function AdminPage() {
     }
   }, [loading, isAdmin, navigate])
 
-  // 문의 목록 불러오기
+  // 문의 목록 불러오기 — Supabase 클라이언트로 직접 SELECT (RLS가 관리자만 허용)
   const fetchInquiries = useCallback(async () => {
-    if (!isAdmin || !adminSecret) return
+    if (!isAdmin || !supabase) return
     setLoadingData(true)
     setFetchError('')
     try {
-      const res = await api.get('/admin/inquiries', {
-        headers: { 'X-Admin-Token': adminSecret },
-      })
-      setInquiries(res.data.inquiries ?? [])
+      const { data, error } = await supabase
+        .from('inquiries')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setInquiries(data ?? [])
     } catch {
-      setFetchError('문의 목록을 불러오지 못했습니다. 환경 변수 설정을 확인해주세요.')
+      setFetchError('문의 목록을 불러오지 못했습니다. 관리자 계정으로 로그인했는지 확인해주세요.')
     } finally {
       setLoadingData(false)
     }
-  }, [isAdmin, adminSecret])
+  }, [isAdmin])
 
   useEffect(() => {
     fetchInquiries()
@@ -482,9 +487,6 @@ export default function AdminPage() {
             <p style={{ color: '#cc2233', fontSize: '0.88rem', textAlign: 'center' }}>
               ⚠️ {fetchError}
             </p>
-            <p style={{ color: 'var(--toss-text-3)', fontSize: '0.8rem', textAlign: 'center', marginTop: 8 }}>
-              backend/.env에 ADMIN_SECRET과 SUPABASE_SERVICE_ROLE_KEY가 설정되어 있는지 확인하세요.
-            </p>
           </GlassCard>
         ) : loadingData ? (
           <GlassCard className="p-6" animate={false}>
@@ -507,7 +509,6 @@ export default function AdminPage() {
               <InquiryCard
                 key={inq.id}
                 inquiry={inq}
-                adminSecret={adminSecret}
                 onAnswered={handleAnswered}
               />
             ))}
