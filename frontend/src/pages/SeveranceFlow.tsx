@@ -222,7 +222,7 @@ export default function SeveranceFlow() {
       >
         다음
       </PrimaryButton>
-      <SecondaryButton style={{ marginTop: 10 }} onClick={() => navigate('/')}>← 홈으로</SecondaryButton>
+      <SecondaryButton style={{ marginTop: 10 }} onClick={() => navigate('/home')}>← 홈으로</SecondaryButton>
     </>,
     1,
   )

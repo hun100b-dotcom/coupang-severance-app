@@ -279,7 +279,7 @@ export default function AdminPage() {
   // 로그인 상태 확인 후 비관리자이면 홈으로 이동
   useEffect(() => {
     if (!loading && !isAdmin) {
-      navigate('/')
+      navigate('/home')
     }
   }, [loading, isAdmin, navigate])
 
@@ -368,7 +368,7 @@ export default function AdminPage() {
               </p>
             </div>
             <button
-              onClick={() => { logout(); navigate('/') }}
+              onClick={() => { logout(); navigate('/home') }}
               style={{
                 padding: '8px 14px',
                 background: 'rgba(240,68,82,0.1)',

@@ -99,7 +99,7 @@ export default function LoginPage() {
         {/* 하단에 홈으로 돌아가는 보조 버튼입니다. */}
         <button
           type="button"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/home')}
           className="mt-4 w-full text-sm text-[#8B95A1]"
         >
           ← 홈으로

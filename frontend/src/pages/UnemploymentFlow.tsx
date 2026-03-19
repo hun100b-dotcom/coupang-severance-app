@@ -97,7 +97,7 @@ export default function UnemploymentFlow() {
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <PrimaryButton onClick={reset}>처음으로 돌아가기</PrimaryButton>
-                <SecondaryButton onClick={() => navigate('/')}>홈으로</SecondaryButton>
+                <SecondaryButton onClick={() => navigate('/home')}>홈으로</SecondaryButton>
               </div>
             </div>
           </GlassCard>
@@ -197,7 +197,7 @@ export default function UnemploymentFlow() {
         </div>
       )}
       <PrimaryButton disabled={!s.company || (s.company === '기타' && !s.companyOther)} onClick={() => go(2)}>다음</PrimaryButton>
-      <SecondaryButton style={{ marginTop: 10 }} onClick={() => navigate('/')}>← 홈으로</SecondaryButton>
+      <SecondaryButton style={{ marginTop: 10 }} onClick={() => navigate('/home')}>← 홈으로</SecondaryButton>
     </>,
     1,
   )

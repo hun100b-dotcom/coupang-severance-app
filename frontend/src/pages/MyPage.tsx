@@ -159,7 +159,7 @@ export default function MyPage() {
         {/* 홈으로 돌아가는 보조 버튼 */}
         <button
           type="button"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/home')}
           className="w-full py-3 text-sm text-[#8B95A1]"
         >
           ← 홈으로

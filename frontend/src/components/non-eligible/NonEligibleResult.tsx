@@ -353,7 +353,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                     <PrimaryButton onClick={onRestart}>
                       다시 조건 계산하기
                     </PrimaryButton>
-                    <SecondaryButton onClick={() => navigate('/')}>
+                    <SecondaryButton onClick={() => navigate('/home')}>
                       ← 메인 화면으로
                     </SecondaryButton>
                   </div>

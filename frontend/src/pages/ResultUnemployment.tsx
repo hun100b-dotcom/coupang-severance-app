@@ -95,7 +95,7 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <PrimaryButton onClick={onReset}>다시 계산하기</PrimaryButton>
-          <SecondaryButton onClick={() => navigate('/')}>← 홈으로</SecondaryButton>
+          <SecondaryButton onClick={() => navigate('/home')}>← 홈으로</SecondaryButton>
         </div>
       </div>
     </div>

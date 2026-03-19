@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext' // 전역 로그인 상태
 import AnimatedBackground from './components/AnimatedBackground' // 배경 애니메이션 컴포넌트를 가져옵니다.
 import ProtectedRoute from './components/ProtectedRoute' // 로그인 필요 페이지를 보호하는 래퍼 컴포넌트를 가져옵니다.
 import Intro from './pages/Intro' // 인트로(홈) 페이지 컴포넌트를 가져옵니다.
+import Home from './pages/Home' // 기존 메인 화면 컴포넌트를 가져옵니다.
 import SeveranceFlow from './pages/SeveranceFlow' // 퇴직금 계산 플로우 페이지를 가져옵니다.
 import UnemploymentFlow from './pages/UnemploymentFlow' // 실업급여 계산 플로우 페이지를 가져옵니다.
 import MyPage from './pages/MyPage' // 마이페이지 컴포넌트를 가져옵니다.
@@ -23,8 +24,10 @@ export default function App() {
         <AnimatedBackground /> {/* 모든 페이지 뒤에 공통으로 깔릴 배경 애니메이션입니다. */}
 
         <Routes>
-          {/* / 경로는 인트로 페이지로 연결합니다. */}
+          {/* / 경로는 첫 진입 잠깐용 인트로 페이지로 연결합니다. */}
           <Route path="/" element={<Intro />} />
+          {/* /home 경로는 기존 메인 화면(인트로 이후의 실제 대시보드)입니다. */}
+          <Route path="/home" element={<Home />} />
           {/* 퇴직금 계산 페이지 라우트입니다. */}
           <Route path="/severance" element={<SeveranceFlow />} />
           {/* 실업급여 계산 페이지 라우트입니다. */}
@@ -48,8 +51,8 @@ export default function App() {
           <Route path="/payment" element={<PaymentGuide />} />
           {/* 관리자 전용 문의 관리 페이지 (로그인 + 관리자 이메일 일치 시만 접근 가능) */}
           <Route path="/admin" element={<AdminPage />} />
-          {/* 정의되지 않은 경로는 모두 인트로 페이지로 돌려보냅니다. */}
-          <Route path="*" element={<Intro />} />
+          {/* 정의되지 않은 경로는 모두 기존 메인 화면으로 돌려보냅니다. */}
+          <Route path="*" element={<Home />} />
         </Routes>
       </AuthProvider>
 
