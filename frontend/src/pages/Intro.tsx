@@ -1,264 +1,325 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState, type ComponentType } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift } from 'lucide-react'
-import { getClickCount, registerClick } from '../lib/api'
-import { INTRO_COPIES } from '../lib/constants'
+import { Headphones, HelpCircle, MessageSquare, ShieldCheck, Wallet } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import WhyCatchModal from '../components/WhyCatchModal'
 import CustomerService from '../components/CustomerService'
 
-function HighlightCatch({ text }: { text: string }) {
-  const parts = text.split(/(CATCH)/g)
+// 이 인트로에서 보여줄 “카운팅” 목표 금액입니다.
+const TARGET_WON = 3542000
+const COUNT_DURATION_MS = 2000
+
+/**
+ * 금액을 화면에 보기 좋게 포맷합니다.
+ * - 예: 3542000 -> "3,542,000"
+ */
+function formatWon(value: number) {
+  return new Intl.NumberFormat('ko-KR').format(value)
+}
+
+/**
+ * Benefit 카드 1개를 렌더링합니다.
+ * - 초보 개발자도 바로 이해할 수 있게, props로 무엇이 들어오는지 명확히 표현합니다.
+ */
+function BenefitCard({
+  title,
+  description,
+  Icon,
+}: {
+  title: string
+  description: string
+  Icon: ComponentType<{ className?: string }>
+}) {
   return (
-    <>
-      {parts.map((part, i) =>
-        part === 'CATCH' ? (
-          <span key={i} className="text-[#3182F6] font-bold drop-shadow-sm">{part}</span>
-        ) : (
-          <span key={i}>{part}</span>
-        )
-      )}
-    </>
+    <motion.div
+      // 카드가 올라오며 “정돈된 느낌”이 나도록 부드럽게 Y축 이동합니다.
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+      className="rounded-[24px] bg-white/70 backdrop-blur-xl border border-white/60 shadow-[0_18px_60px_rgba(49,130,246,0.10)] p-4"
+    >
+      <div className="flex items-start gap-3">
+        <div className="w-11 h-11 rounded-2xl bg-[#3182f6]/10 flex items-center justify-center flex-shrink-0">
+          <Icon className="w-5 h-5 text-[#3182f6]" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[14px] font-extrabold text-[#191F28] tracking-tight">{title}</p>
+          <p className="text-[12px] text-[#4E5968] mt-1 leading-relaxed font-medium">{description}</p>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+/**
+ * 하단 고정 CTA 버튼입니다.
+ * - 모바일에서 버튼이 항상 보이도록 `fixed`로 고정합니다.
+ */
+function FixedStartButton({
+  label,
+  onClick,
+}: {
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <div
+      className="fixed left-0 right-0 bottom-0 z-50 bg-gradient-to-t from-white via-white/90 to-white/0 pt-3 pb-3 px-4"
+      // iOS safe-area를 커버하기 위한 보정(환경에 따라 불필요할 수 있지만 안전합니다)
+      style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full rounded-[18px] bg-[#3182f6] text-white font-extrabold tracking-tight px-5 py-4 shadow-[0_14px_50px_rgba(49,130,246,0.35)] hover:bg-[#1b64da] active:scale-[0.99] transition-transform"
+      >
+        {label}
+      </button>
+      <p className="text-center text-[10px] text-[#8B95A1] mt-2 font-medium">
+        시작은 무료이며, 입력한 내용은 더 나은 안내를 위해 활용됩니다.
+      </p>
+    </div>
   )
 }
 
 export default function Intro() {
   const navigate = useNavigate()
   const { isLoggedIn, logout } = useAuth()
-  const [count, setCount] = useState(0)
+
   const [whyOpen, setWhyOpen] = useState(false)
   const [csOpen, setCsOpen] = useState(false)
-  const [copyIdx, setCopyIdx] = useState(0)
 
+  // 0원부터 TARGET_WON까지 올라가는 “표시용” 상태입니다.
+  const [countWon, setCountWon] = useState(0)
+
+  /**
+   * 페이지 진입 시 카운팅 애니메이션을 실행합니다.
+   * - framer-motion 없이도 requestAnimationFrame으로 부드럽게 처리합니다.
+   * - `prefers-reduced-motion` 환경에서는 즉시 목표값으로 점프합니다.
+   */
   useEffect(() => {
-    getClickCount()
-      .then(d => {
-        const total = d?.total
-        if (typeof total === 'number') setCount(total)
-      })
-      .catch(() => {})
-  }, [])
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCopyIdx(i => (i + 1) % INTRO_COPIES.length)
-    }, 7000)
-    return () => clearInterval(timer)
-  }, [])
-
-  const handleSeverance = useCallback(async () => {
-    try {
-      await registerClick('severance')
-    } catch {
-      /* 무시 */
+    if (prefersReducedMotion) {
+      setCountWon(TARGET_WON)
+      return
     }
-    setCount(c => c + 1)
+
+    let raf = 0
+    const start = performance.now()
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / COUNT_DURATION_MS)
+      // 보기 좋게 “끝으로 갈수록 천천히” 내려오지 않게 easeOut 느낌을 줍니다.
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setCountWon(Math.floor(TARGET_WON * eased))
+      if (progress < 1) raf = requestAnimationFrame(tick)
+    }
+
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [])
+
+  const startLabel = useMemo(() => {
+    // 로그인 여부에 따라 사용자가 더 명확히 이해할 수 있는 문구로 분기합니다.
+    if (isLoggedIn) return 'CATCH 시작하기'
+    return '로그인하고 CATCH 시작하기'
+  }, [isLoggedIn])
+
+  /**
+   * 메인 CTA 클릭 처리:
+   * - 비로그인: 로그인 페이지로 이동
+   * - 로그인: 바로 계산/대시보드 성격의 메인 흐름으로 이동
+   */
+  const handleStart = () => {
+    if (!isLoggedIn) {
+      navigate('/login')
+      return
+    }
     navigate('/severance')
-  }, [navigate])
-
-  const handleUnemployment = useCallback(() => {
-    navigate('/unemployment')
-  }, [navigate])
-
-  const mainCopy = INTRO_COPIES[copyIdx]
-  const lines = mainCopy.split('\n')
+  }
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-8">
-      {/* 헤더: grid 3열 반응형 — 좌/중/우 겹침 없음, 배경 투명 */}
-      <header className="sticky top-0 z-30 w-full max-w-[460px] grid grid-cols-3 items-center gap-2 py-3 pb-4 bg-transparent">
-        <div className="col-span-1 flex justify-start min-w-0">
-          <button
-            type="button"
-            onClick={() => setCsOpen(true)}
-            className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans"
-            aria-label="고객센터"
-          >
-            <Headphones className="w-4 h-4 flex-shrink-0" />
-            <span className="truncate">고객센터</span>
-          </button>
-        </div>
-        <div className="col-span-1 flex justify-center min-w-0">
-          <button
-            type="button"
-            onClick={() => setWhyOpen(true)}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white/40 backdrop-blur-md border border-white/60 text-[#3182F6] text-xs sm:text-sm font-medium hover:bg-white/50 font-sans"
-          >
-            <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-            <span className="truncate">왜 CATCH인가요?</span>
-          </button>
-        </div>
-        <div className="col-span-1 flex justify-end items-center gap-2 min-w-0">
-          {isLoggedIn ? (
-            <>
-              <button
-                type="button"
-                onClick={() => navigate('/mypage')}
-                className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans"
-                aria-label="마이페이지"
-              >
-                <span className="truncate">마이페이지</span>
-                <User className="w-4 h-4 flex-shrink-0" />
-              </button>
-              <button
-                type="button"
-                onClick={() => logout()}
-                className="text-sm text-[#8B95A1] hover:text-[#191F28] font-medium font-sans"
-                aria-label="로그아웃"
-              >
-                로그아웃
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => navigate('/login')}
-              className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans"
-              aria-label="로그인"
-            >
-              <span className="truncate">로그인</span>
-              <User className="w-4 h-4 flex-shrink-0" />
-            </button>
-          )}
-        </div>
-      </header>
-
-      <div className="w-full max-w-[460px] flex flex-col gap-4 flex-1">
-        {/* 메인 카드: 글래스 bg-white/60 + backdrop-blur-xl */}
-        <div className="rounded-[32px] p-6 bg-white/60 backdrop-blur-xl border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.06)]">
-          <div className="text-center mb-5">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#3182F6] overflow-hidden mb-3 shadow-lg shadow-blue-500/30">
-              <img src="/catch-logo.png" alt="CATCH" className="w-full h-full object-contain p-1.5" />
-            </div>
-            <p className="text-xl font-black text-[#1a73e8] tracking-tight mb-1">CATCH</p>
-            <p className="text-xs font-semibold text-[#8B95A1] tracking-wide">
-              퇴직금 · 실업급여 자동계산
-            </p>
-          </div>
-          <div className="min-h-[4.5rem] flex flex-col justify-center items-center mb-4 overflow-hidden relative">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.p
-                key={copyIdx}
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                className="text-center text-[#191F28] text-[26px] font-extrabold leading-[1.3] tracking-tighter font-sans"
-              >
-                {lines.map((line, i) => (
-                  <span key={i}>
-                    <HighlightCatch text={line} />
-                    {i < lines.length - 1 && <br />}
-                  </span>
-                ))}
-              </motion.p>
-            </AnimatePresence>
-          </div>
-          <div className="text-center py-3 px-4 rounded-xl bg-blue-50/80">
-            <p className="text-sm text-[#4E5968]">
-              지금까지{' '}
-              <span className="text-[#3182F6] font-extrabold text-base">
-                {count.toLocaleString()}명
-              </span>
-              이 확인했어요
-            </p>
-          </div>
-        </div>
-
-        {/* 파란 CTA 카드 — 내 퇴직금 캐치하기 */}
+    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-28 font-sans">
+      {/* 상단 헤더: 사용자가 도움/설명을 빠르게 찾을 수 있게 유지합니다. */}
+      <header className="sticky top-0 z-30 w-full max-w-[460px] flex items-center justify-between pb-3">
         <button
           type="button"
-          onClick={handleSeverance}
-          className="w-full rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-blue-200/50 bg-gradient-to-br from-[#3182F6] to-[#2563eb] p-4 flex items-center gap-3 text-left hover:opacity-95 transition-opacity"
+          onClick={() => setCsOpen(true)}
+          className="flex items-center gap-1.5 text-[12px] text-[#4E5968] hover:text-[#191F28] font-semibold tracking-tight"
+          aria-label="고객센터 열기"
         >
-          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
-            <img src="/catch-logo.png" alt="" className="w-full h-full object-contain p-1" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white font-bold text-base">내 퇴직금 캐치하기</p>
-            <p className="text-white/90 text-sm">가장 많이 찾는 서비스</p>
-          </div>
-          <ChevronRight className="w-5 h-5 text-white flex-shrink-0" />
+          <Headphones className="w-4 h-4" />
+          고객센터
         </button>
 
-        {/* 서브 카드 4개: bg-white/50 backdrop-blur-md border border-white/60 */}
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={handleUnemployment}
-            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
-          >
-            <Building2 className="w-8 h-8 text-slate-500 mb-2" />
-            <p className="font-semibold text-[#191F28] text-sm">실업급여</p>
-            <p className="text-xs text-[#8B95A1] mt-0.5">수급 자격 확인</p>
-          </button>
-          <button
-            type="button"
-            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
-          >
-            <Calendar className="w-8 h-8 text-emerald-600 mb-2" />
-            <p className="font-semibold text-[#191F28] text-sm">주휴수당</p>
-            <p className="text-xs text-[#8B95A1] mt-0.5">이번 주 얼마일까?</p>
-          </button>
-          <button
-            type="button"
-            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
-          >
-            <Calendar className="w-8 h-8 text-amber-500 mb-2" />
-            <p className="font-semibold text-[#191F28] text-sm">연차수당</p>
-            <p className="text-xs text-[#8B95A1] mt-0.5">남은 연차 정산</p>
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/mypage')}
-            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
-          >
-            <Gift className="w-8 h-8 text-violet-500 mb-2" />
-            <p className="font-semibold text-[#191F28] text-sm">나의 혜택</p>
-            <p className="text-xs text-[#8B95A1] mt-0.5">숨은 지원금 찾기</p>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setWhyOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/60 backdrop-blur-xl border border-white/70 text-[#3182f6] text-[12px] font-extrabold tracking-tight hover:bg-white/80 transition-colors"
+          aria-label="왜 CATCH인가요 열기"
+        >
+          <HelpCircle className="w-4 h-4" />
+          왜 CATCH인가요?
+        </button>
 
-        {/* 하단 트러스트 바: bg-white/40 backdrop-blur-lg border border-white/50 */}
-        <div className="rounded-[32px] px-4 py-3 flex items-center justify-around gap-2 bg-white/40 backdrop-blur-lg border border-white/50 shadow-[0_8px_32px_rgba(49,130,246,0.04)]">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xl">⚡</span>
-            <div>
-              <p className="text-xs font-semibold text-[#191F28] leading-tight">1분 만에</p>
-              <p className="text-[10px] text-[#8B95A1] leading-tight">간단 계산</p>
-            </div>
-          </div>
-          <div className="w-px h-8 bg-white/60" />
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xl">🔒</span>
-            <div>
-              <p className="text-xs font-semibold text-[#191F28] leading-tight">안전하게</p>
-              <p className="text-[10px] text-[#8B95A1] leading-tight">개인정보 보호</p>
-            </div>
-          </div>
-          <div className="w-px h-8 bg-white/60" />
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xl">📄</span>
-            <div>
-              <p className="text-xs font-semibold text-[#191F28] leading-tight">PDF 파일</p>
-              <p className="text-[10px] text-[#8B95A1] leading-tight">정밀 분석</p>
-            </div>
-          </div>
-        </div>
+        {isLoggedIn ? (
+          <button
+            type="button"
+            onClick={() => logout()}
+            className="text-[12px] text-[#8B95A1] hover:text-[#191F28] font-semibold tracking-tight"
+            aria-label="로그아웃"
+          >
+            로그아웃
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            className="text-[12px] text-[#8B95A1] hover:text-[#191F28] font-semibold tracking-tight"
+            aria-label="로그인"
+          >
+            로그인
+          </button>
+        )}
+      </header>
 
-        {/* 푸터 */}
-        <p className="text-center text-[10px] font-light text-gray-400 leading-relaxed mt-2">
-          © 2026 CATCH by LEAF-MASTER. All rights reserved.
-          <br />
-          <span className="text-[9px]">이 결과는 참고용이에요. 정확한 금액은 노무사 상담을 받으세요.</span>
+      {/* 가운데 콘텐츠: 모바일 우선으로 배치합니다. */}
+      <main className="w-full max-w-[460px] flex flex-col gap-5 flex-1">
+        {/* Hero 섹션: 가장 큰 메시지 + 카운팅 금액으로 첫 인상을 강하게 만듭니다. */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, ease: [0.2, 0.8, 0.2, 1] }}
+          className="rounded-[28px] bg-white/60 backdrop-blur-xl border border-white/70 shadow-[0_20px_80px_rgba(49,130,246,0.10)] p-5"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-[#3182f6]/10 flex items-center justify-center overflow-hidden">
+              <img src="/catch-logo.png" alt="CATCH" className="w-full h-full object-contain p-2" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[12px] font-extrabold text-[#191F28] tracking-tight">
+                자동 계산 · 1:1 문의
+              </p>
+              <p className="text-[11px] text-[#4E5968] font-medium mt-0.5">
+                퇴직금과 실업급여를, 더 빠르게 확인해보세요
+              </p>
+            </div>
+          </div>
+
+          <h1 className="mt-4 text-[26px] sm:text-[30px] leading-[1.15] font-black tracking-tight text-[#191F28]">
+            잠자고 있는 내 퇴직금, <span className="text-[#3182f6]">3초 만에</span> 확인하세요
+          </h1>
+
+          {/* 요청하신 “0원 → 3,542,000원” 카운팅 영역 */}
+          <div className="mt-4 rounded-[20px] bg-[#3182f6]/10 border border-[#3182f6]/20 px-4 py-3">
+            <p className="text-[12px] font-semibold text-[#4E5968] tracking-tight">
+              오늘 확인해볼 예상 구간(예시)
+            </p>
+            <p className="text-[22px] font-extrabold text-[#191F28] tracking-tight mt-1">
+              {formatWon(countWon)}원
+            </p>
+          </div>
+
+          <p className="text-[13px] text-[#4E5968] font-medium leading-relaxed mt-3">
+            지금 시작하면 입력 과정을 줄여, 핵심만 빠르게 확인할 수 있어요.
+            결과가 궁금하면 1:1 문의로 추가 안내도 받을 수 있습니다.
+          </p>
+        </motion.section>
+
+        {/* Benefit cards: Toss 스타일의 카드형 장점 영역입니다. */}
+        <section className="flex flex-col gap-3">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }}
+            className="px-1"
+          >
+            <p className="text-[14px] font-extrabold text-[#191F28] tracking-tight">
+              딱 필요한 것만, 더 매끄럽게
+            </p>
+            <p className="text-[12px] text-[#4E5968] mt-1 font-medium leading-relaxed">
+              세 가지 포인트로, 첫 시작을 쉽게 만들었습니다.
+            </p>
+          </motion.div>
+
+          {/* 모바일은 1열, 데스크톱은 3열로 배치합니다. */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <BenefitCard
+              title="손쉽게 준비"
+              description="복잡한 서류는 줄이고, 필요한 정보만 안내받아요."
+              Icon={Wallet}
+            />
+            <BenefitCard
+              title="안전 우선"
+              description="개인정보와 절차를 투명하게 관리합니다."
+              Icon={ShieldCheck}
+            />
+            <BenefitCard
+              title="빠른 답변"
+              description="궁금한 점은 1:1 문의로 더 명확히 확인해요."
+              Icon={MessageSquare}
+            />
+          </div>
+        </section>
+
+        {/* Social proof: 신뢰를 주는 문구 + 요약 배지 영역입니다. */}
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+          className="rounded-[28px] bg-white/55 backdrop-blur-xl border border-white/70 shadow-[0_20px_80px_rgba(49,130,246,0.07)] p-5"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-[#3182f6]/10 flex items-center justify-center flex-shrink-0">
+              <span className="text-[18px]">⭐</span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[14px] font-extrabold text-[#191F28] tracking-tight">
+                이미 수천 명이 확인했습니다
+              </p>
+              <p className="text-[12px] text-[#4E5968] mt-1 font-medium leading-relaxed">
+                퇴직금/실업급여 계산을 처음 해보시는 분도 부담 없이 시작할 수 있도록 설계했어요.
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            <div className="rounded-[18px] bg-white/60 border border-white/70 p-3">
+              <p className="text-[12px] font-extrabold text-[#191F28] tracking-tight">3초</p>
+              <p className="text-[11px] text-[#4E5968] font-medium mt-1">빠른 시작</p>
+            </div>
+            <div className="rounded-[18px] bg-white/60 border border-white/70 p-3">
+              <p className="text-[12px] font-extrabold text-[#191F28] tracking-tight">안전</p>
+              <p className="text-[11px] text-[#4E5968] font-medium mt-1">개인정보</p>
+            </div>
+            <div className="rounded-[18px] bg-white/60 border border-white/70 p-3">
+              <p className="text-[12px] font-extrabold text-[#191F28] tracking-tight">문의</p>
+              <p className="text-[11px] text-[#4E5968] font-medium mt-1">명확한 답변</p>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* 작은 안내 문구: 법적/안내성 문장으로 UX 신뢰도 보강합니다. */}
+        <p className="text-center text-[10px] text-gray-400 leading-relaxed font-medium mt-1">
+          이 결과는 참고용입니다. 정확한 금액 확인이 필요하면 노무사 상담을 권장합니다.
         </p>
-      </div>
+      </main>
 
+      {/* “왜 CATCH?” 모달 */}
       <AnimatePresence>
         {whyOpen && <WhyCatchModal onClose={() => setWhyOpen(false)} />}
       </AnimatePresence>
+      {/* 고객센터 모달 */}
       <CustomerService isOpen={csOpen} onClose={() => setCsOpen(false)} />
+
+      {/* 고정 CTA 버튼: 모바일 하단에서 항상 보이도록 `fixed`로 고정합니다. */}
+      <FixedStartButton label={startLabel} onClick={handleStart} />
     </div>
   )
 }

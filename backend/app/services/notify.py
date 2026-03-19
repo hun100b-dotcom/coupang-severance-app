@@ -9,10 +9,17 @@
 from __future__ import annotations
 
 import os
-from typing import Optional
+from urllib.parse import urlparse
+from typing import Optional, TypedDict
 
 
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
+
+
+class NotifyResult(TypedDict):
+    ok: bool
+    reason: str
+    status_code: int | None
 
 
 async def notify_new_inquiry(
@@ -21,7 +28,7 @@ async def notify_new_inquiry(
     content: str,
     user_id: Optional[str] = None,
     user_name: Optional[str] = None,
-) -> None:
+) -> NotifyResult:
     """
     새 1:1 문의가 접수됐을 때 호출되는 비동기 함수입니다.
 
@@ -33,7 +40,8 @@ async def notify_new_inquiry(
 
     # 웹훅 URL이 설정되어 있지 않으면 아무 것도 하지 않고 종료합니다.
     if not DISCORD_WEBHOOK_URL:
-        return
+        print("[notify_new_inquiry] DISCORD_WEBHOOK_URL 미설정: 알림 전송을 건너뜁니다.")
+        return {"ok": False, "reason": "webhook_not_configured", "status_code": None}
 
     # Discord Webhook 포맷에 맞춘 간단한 메시지 페이로드를 구성합니다.
     # - content: 기본 텍스트
@@ -62,7 +70,13 @@ async def notify_new_inquiry(
         import httpx
 
         async with httpx.AsyncClient(timeout=5) as client:
-            await client.post(DISCORD_WEBHOOK_URL, json=payload)
+            res = await client.post(DISCORD_WEBHOOK_URL, json=payload)
+            # Discord가 4xx/5xx를 반환하면 예외를 발생시켜 로그로 원인을 남깁니다.
+            res.raise_for_status()
+            host = urlparse(DISCORD_WEBHOOK_URL).netloc or "unknown-host"
+            print(f"[notify_new_inquiry] 알림 전송 성공: host={host}, status={res.status_code}")
+            return {"ok": True, "reason": "sent", "status_code": res.status_code}
     except Exception as exc:  # pragma: no cover - 알림 실패는 치명적이지 않으므로 조용히 로그만 남깁니다.
         print(f"[notify_new_inquiry] 알림 전송 실패: {exc}")
+        return {"ok": False, "reason": str(exc), "status_code": None}
 
