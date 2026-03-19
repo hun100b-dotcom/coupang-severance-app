@@ -18,7 +18,9 @@ interface Props {
 }
 
 function isPrecise(r: SeverancePreciseResult | SeveranceSimpleResult): r is SeverancePreciseResult {
-  return 'eligible' in r
+  // 이제 SeveranceSimpleResult에도 eligible 필드가 생겼으므로,
+  // 정밀계산에만 있는 qualifying_days 필드로 구분한다
+  return 'qualifying_days' in r
 }
 
 // ── 아코디언 헤더 ──────────────────────────────────────────
@@ -476,8 +478,9 @@ export default function ResultSeverance({ result, resultType, company, onReset }
     ? Math.max(...segments.map((s: { qualifying_days: number }) => s.qualifying_days), precise ? result.qualifying_days : 0)
     : (precise ? result.qualifying_days : null)
 
-  const eligible     = precise ? derivedEligible : true
-  const eligMsg      = precise ? result.eligibility_message : null
+  // 정밀계산·간편계산 모두 eligible, eligibility_message 필드를 가짐
+  const eligible     = precise ? derivedEligible : result.eligible
+  const eligMsg      = result.eligibility_message
   const qualifyDays  = precise ? derivedQualifyDays : null
 
   return (

@@ -243,10 +243,53 @@ def compute_severance(df: pd.DataFrame, end_date: datetime = None) -> dict:
     }
 
 
-def compute_severance_simple(work_days: int, avg_daily_wage: float) -> float:
+def compute_severance_simple(work_days: int, avg_daily_wage: float) -> dict:
+    """
+    간편 퇴직금 계산 — 정밀계산과 동일한 산정 기준 적용.
+
+    정밀계산(compute_severance)과 동일하게:
+      - 365일 이상 근무해야 퇴직금 수급 가능 (근로자퇴직급여보장법 기준)
+      - 365일 미만이면 퇴직금 0원, eligible=False 반환
+      - 계산 공식: 평균임금 × 30 × (근무일수 ÷ 365)
+    """
+    # 입력값이 0 이하이면 계산 불가
     if work_days <= 0 or avg_daily_wage <= 0:
-        return 0.0
-    return avg_daily_wage * 30 * (work_days / 365)
+        return {
+            "eligible": False,
+            "severance": 0.0,
+            "work_days": work_days,
+            "average_wage": avg_daily_wage,
+            "eligibility_message": "근무일수 또는 평균 일당이 올바르지 않습니다.",
+        }
+
+    # 365일(1년) 이상 근무해야 퇴직금 수급 가능 — 정밀계산과 동일 기준
+    eligible = work_days >= 365
+
+    if eligible:
+        # 퇴직금 공식: 평균임금 × 30일치 × (근속일수 ÷ 365)
+        severance = avg_daily_wage * 30 * (work_days / 365)
+        years = work_days // 365
+        months_rem = (work_days % 365) // 30
+        message = (
+            f"입력하신 근무일수 {work_days}일(약 {years}년 {months_rem}개월) 기준, "
+            f"퇴직금 수급 요건(365일)을 충족합니다."
+        )
+    else:
+        # 365일 미만이면 퇴직금 0원
+        severance = 0.0
+        needed = 365 - work_days
+        message = (
+            f"입력하신 근무일수 {work_days}일은 퇴직금 수급 기준(365일)에 "
+            f"{needed}일 부족합니다."
+        )
+
+    return {
+        "eligible": eligible,
+        "severance": severance,
+        "work_days": work_days,
+        "average_wage": avg_daily_wage,
+        "eligibility_message": message,
+    }
 
 
 # ──────────────────────────────────────────────────────────────────────────────

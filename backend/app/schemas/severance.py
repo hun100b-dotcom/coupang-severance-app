@@ -118,6 +118,9 @@ class SeveranceSimpleRequest(BaseModel):
 
 
 class SeveranceSimpleResponse(BaseModel):
+    # 정밀계산과 동일한 자격 판단 필드 추가
+    eligible: bool
+    eligibility_message: str
     severance: float
     work_days: int
     average_wage: float

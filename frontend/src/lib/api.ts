@@ -145,6 +145,9 @@ export const calcSeverancePrecise = (
   }).then(r => r.data)
 
 export interface SeveranceSimpleResult {
+  // 정밀계산과 동일하게 자격 판단 필드 추가
+  eligible: boolean
+  eligibility_message: string
   severance: number
   work_days: number
   average_wage: number

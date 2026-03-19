@@ -246,9 +246,12 @@ async def precise_calculation(
 
 @router.post("/simple", response_model=SeveranceSimpleResponse)
 async def simple_calculation(req: SeveranceSimpleRequest):
-    sev = compute_severance_simple(req.work_days, req.avg_daily_wage)
+    # compute_severance_simple이 이제 dict를 반환 (정밀계산과 동일한 기준 적용)
+    result = compute_severance_simple(req.work_days, req.avg_daily_wage)
     return SeveranceSimpleResponse(
-        severance    = round(sev, 0),
-        work_days    = req.work_days,
-        average_wage = req.avg_daily_wage,
+        eligible            = result["eligible"],
+        eligibility_message = result["eligibility_message"],
+        severance           = round(result["severance"], 0),
+        work_days           = result["work_days"],
+        average_wage        = result["average_wage"],
     )
