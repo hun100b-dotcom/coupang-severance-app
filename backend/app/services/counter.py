@@ -61,16 +61,17 @@ def _sb_get() -> dict:
     """Supabase에서 현재 카운트 조회. 실패 시 JSON 폴백."""
     try:
         import httpx
-        url = f"{_SUPABASE_URL}/rest/v1/{_TABLE}?id=eq.1&select=total_cnt,severance_cnt,unemployment_cnt"
+        # 실제 DB 컬럼명: total, severance, unemployment
+        url = f"{_SUPABASE_URL}/rest/v1/{_TABLE}?id=eq.1&select=total,severance,unemployment"
         r = httpx.get(url, headers=_headers(), timeout=7)
         if r.status_code == 200:
             rows = r.json()
             if rows:
                 row = rows[0]
                 return {
-                    "total":        int(row.get("total_cnt", 0)),
-                    "severance":    int(row.get("severance_cnt", 0)),
-                    "unemployment": int(row.get("unemployment_cnt", 0)),
+                    "total":        int(row.get("total", 0) or 0),
+                    "severance":    int(row.get("severance", 0) or 0),
+                    "unemployment": int(row.get("unemployment", 0) or 0),
                 }
         print(f"[counter:get] status={r.status_code} body={r.text[:200]}")
     except Exception as exc:
@@ -88,10 +89,11 @@ def _sb_increment(service: str) -> dict:
         new_severance    = cur["severance"] + (1 if service == "severance" else 0)
         new_unemployment = cur["unemployment"] + (1 if service == "unemployment" else 0)
 
+        # 실제 DB 컬럼명에 맞춰 업데이트합니다
         payload = {
-            "total_cnt":        new_total,
-            "severance_cnt":    new_severance,
-            "unemployment_cnt": new_unemployment,
+            "total":        new_total,
+            "severance":    new_severance,
+            "unemployment": new_unemployment,
         }
         url = f"{_SUPABASE_URL}/rest/v1/{_TABLE}?id=eq.1"
         r = httpx.patch(url, headers=_headers(), json=payload, timeout=7)

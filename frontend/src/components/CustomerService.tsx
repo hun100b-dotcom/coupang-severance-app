@@ -16,6 +16,7 @@ import {
 } from 'lucide-react' // 다양한 아이콘 컴포넌트를 한 번에 가져옵니다.
 import { supabase } from '../lib/supabase' // 공용 Supabase 클라이언트를 새 경로에서 가져옵니다.
 import { AUTH_CALLBACK_URL } from '../utils/getUrl' // 콜백 URL 상수를 그대로 재사용합니다.
+import { notifyNewInquiry } from '../lib/api' // 문의 접수 시 관리자 Discord 알림을 보냅니다.
 
 type View = 'main' | 'login' | 'form' | 'success' | 'history'
 
@@ -179,6 +180,14 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
         { user_id: user.id, category: inquiryCategory, content: inquiryText.trim(), status: '대기중' },
       ])
       if (error) throw error
+
+      // 문의 접수 성공 후 관리자에게 Discord 알림을 보냅니다 (실패해도 사용자 플로우에 영향 없음)
+      notifyNewInquiry({
+        title: `[${inquiryCategory}] 새 문의`,
+        content: inquiryText.trim(),
+        userId: user.id,
+      })
+
       setInquiryText('')
       setInquiryCategory('')
       setCurrentView('success')
