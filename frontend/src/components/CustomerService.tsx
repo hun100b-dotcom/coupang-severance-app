@@ -84,8 +84,11 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
 
   useEffect(() => {
     if (!supabase || !isOpen) return
-    supabase.auth.getSession().then(({ data: { session } }) => setIsLoggedIn(!!session?.user)).catch(() => {})
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session?.user)
+    }).catch(() => {})
   }, [isOpen])
+
 
   const fetchInquiryHistory = useCallback(async () => {
     if (!supabase) {
@@ -116,6 +119,11 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
   useEffect(() => {
     if (isLoggedIn && currentView === 'history') fetchInquiryHistory()
   }, [isLoggedIn, currentView, fetchInquiryHistory])
+
+  // 로그인 상태로 모달이 열리면 문의내역 미리 로드
+  useEffect(() => {
+    if (isOpen && isLoggedIn) fetchInquiryHistory()
+  }, [isOpen, isLoggedIn, fetchInquiryHistory])
 
   const handleClose = () => {
     setIsAnimating(false)
@@ -177,7 +185,7 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
     }
     try {
       const { error } = await supabase.from('inquiries').insert([
-        { user_id: user.id, category: inquiryCategory, content: inquiryText.trim(), status: '대기중' },
+        { user_id: user.id, title: `[${inquiryCategory}] 새 문의`, category: inquiryCategory, content: inquiryText.trim(), status: '대기중' },
       ])
       if (error) throw error
 
@@ -191,6 +199,7 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
       setInquiryText('')
       setInquiryCategory('')
       setCurrentView('success')
+      fetchInquiryHistory() // 문의 접수 직후 내역 미리 갱신
     } catch {
       setCurrentView('form')
     }

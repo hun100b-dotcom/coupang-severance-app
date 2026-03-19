@@ -1,21 +1,25 @@
-// 근무일수와 간단한 예상 퇴직금을 보여주는 위젯입니다.
-// Toss 스타일의 심플한 게이지와 큰 숫자 표현에 집중합니다.
-
+// 퇴직금 여정 위젯: 정밀계산 이력이 있으면 최근 이력 표시, 없으면 정밀계산 유도
 import { motion } from 'framer-motion'
-import { Clock } from 'lucide-react'
+import { Clock, ArrowRight, Calculator, CheckCircle2 } from 'lucide-react'
+import type { ReportRow } from '../../types/supabase'
 
 interface RetirementWidgetProps {
-  workDays: number | null // 오늘까지의 근무 일수(없으면 null)
-  onGoCalculate: () => void // 사용자가 계산 페이지로 이동하고 싶을 때 호출되는 콜백입니다.
+  workDays: number | null
+  latestReport: ReportRow | null | undefined // undefined=로딩중, null=이력없음
+  onGoCalculate: () => void
+  onViewReport: (id: string) => void
 }
 
-export function RetirementWidget({ workDays, onGoCalculate }: RetirementWidgetProps) {
-  // 근무일수가 있을 때 아주 단순한 예시 퇴직금(연차 X, 세부 규칙 X) 금액을 계산합니다.
-  // 여기서는 "근무일수 × 3만원" 정도의 완전히 참고용 수치를 사용합니다.
-  const estimatedSeverance =
-    workDays != null ? Math.max(0, Math.round(workDays * 30000)) : null
+function formatDate(iso: string) {
+  try {
+    const d = new Date(iso)
+    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
+  } catch { return iso }
+}
 
+export function RetirementWidget({ workDays, latestReport, onGoCalculate, onViewReport }: RetirementWidgetProps) {
   const progress = workDays != null ? Math.min(100, (workDays / 365) * 100) : 0
+  const isLoading = latestReport === undefined
 
   return (
     <motion.section
@@ -24,6 +28,7 @@ export function RetirementWidget({ workDays, onGoCalculate }: RetirementWidgetPr
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55, delay: 0.05, ease: [0.2, 0.8, 0.2, 1] }}
     >
+      {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-2xl bg-[#e8f3ff] flex items-center justify-center">
@@ -32,7 +37,7 @@ export function RetirementWidget({ workDays, onGoCalculate }: RetirementWidgetPr
           <div>
             <p className="text-xs font-semibold text-[#4e5968]">퇴직금 여정</p>
             <p className="text-sm font-extrabold text-[#191f28] tracking-tight">
-              오늘까지 근무 일수
+              {latestReport ? '최근 정밀계산 이력' : '내 퇴직금 계산 현황'}
             </p>
           </div>
         </div>
@@ -43,53 +48,80 @@ export function RetirementWidget({ workDays, onGoCalculate }: RetirementWidgetPr
         )}
       </div>
 
-      {workDays == null ? (
-        <div className="space-y-3">
-          <p className="text-sm text-[#8b95a1]">
-            가입일 정보를 찾을 수 없어 근무 일수를 계산하지 못했어요.
+      {/* 근무 일수 게이지 (workDays가 있을 때만) */}
+      {workDays != null && (
+        <div className="space-y-2">
+          <p className="text-sm text-[#4e5968]">
+            오늘까지 <span className="font-semibold text-[#191f28]">{workDays.toLocaleString()}일</span>{' '}
+            가입 경과
+          </p>
+          <div className="h-3 rounded-full bg-slate-100 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-[#60a5fa] to-[#3182f6]"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 정밀계산 이력 있음 */}
+      {!isLoading && latestReport ? (
+        <div className="pt-2 border-t border-slate-100 space-y-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+            <p className="text-xs font-semibold text-emerald-600">정밀계산 완료</p>
+          </div>
+          <div className="rounded-2xl bg-slate-50 px-4 py-3 space-y-1">
+            <p className="text-sm font-extrabold text-[#191f28] tracking-tight truncate">
+              {latestReport.company_name ?? latestReport.title ?? '계산 완료'}
+            </p>
+            <p className="text-[11px] text-[#8b95a1]">
+              {formatDate(latestReport.created_at)} 계산
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => onViewReport(latestReport.id)}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-2xl bg-[#3182f6] text-white text-xs font-semibold shadow-[0_10px_30px_rgba(49,130,246,0.3)] hover:bg-[#1b64da] transition-colors"
+            >
+              <span>리포트 보기</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={onGoCalculate}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-2xl bg-slate-100 text-[#4e5968] text-xs font-semibold hover:bg-slate-200 transition-colors"
+            >
+              <Calculator className="w-3.5 h-3.5" />
+              <span>다시 계산</span>
+            </button>
+          </div>
+        </div>
+      ) : !isLoading && !latestReport ? (
+        /* 이력 없음 → 정밀계산 유도 */
+        <div className="pt-2 border-t border-slate-100 space-y-3">
+          <p className="text-sm text-[#8b95a1] leading-relaxed">
+            아직 정밀계산 이력이 없어요.<br />
+            PDF 파일로 정확한 퇴직금을 확인해보세요.
           </p>
           <button
             type="button"
             onClick={onGoCalculate}
-            className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-[#3182f6] text-white text-xs font-semibold shadow-[0_10px_30px_rgba(49,130,246,0.35)] hover:bg-[#1b64da] transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#3182f6] text-white text-xs font-semibold shadow-[0_10px_30px_rgba(49,130,246,0.35)] hover:bg-[#1b64da] transition-colors"
           >
-            내 퇴직금 계산하러 가기
+            <Calculator className="w-3.5 h-3.5" />
+            <span>정밀계산 시작하기</span>
           </button>
         </div>
       ) : (
-        <>
-          <div className="space-y-2">
-            <p className="text-sm text-[#4e5968]">
-              오늘까지 <span className="font-semibold text-[#191f28]">{workDays.toLocaleString()}일</span>{' '}
-              근무하셨어요.
-            </p>
-            <div className="h-3 rounded-full bg-slate-100 overflow-hidden">
-              <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-[#60a5fa] to-[#3182f6]"
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
-              />
-            </div>
-          </div>
-          <div className="pt-2 border-t border-slate-100 flex items-end justify-between">
-            <div>
-              <p className="text-[11px] font-semibold text-[#8b95a1] mb-1">예상 퇴직금 (참고용)</p>
-              <p className="text-[22px] font-extrabold tracking-tight text-[#191f28]">
-                {estimatedSeverance != null ? estimatedSeverance.toLocaleString() : '-'}원
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={onGoCalculate}
-              className="text-xs font-semibold text-[#3182f6] hover:text-[#1b64da]"
-            >
-              정밀 계산하기
-            </button>
-          </div>
-        </>
+        /* 로딩 중 */
+        <div className="pt-2 border-t border-slate-100">
+          <div className="h-10 rounded-2xl bg-slate-100 animate-pulse" />
+        </div>
       )}
     </motion.section>
   )
 }
-

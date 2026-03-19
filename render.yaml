@@ -12,6 +12,8 @@ services:
       - key: PYTHON_VERSION
         value: "3.12.0"
       - key: SUPABASE_URL
-        value: "https://hmjprqxhowjyfkvicejt.supabase.co"
+        value: "https://hmjxrqhcwjyfkvlcejfc.supabase.co"
       - key: SUPABASE_ANON_KEY
         value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtanhycWhjd2p5Zmt2bGNlamZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTEwNTMsImV4cCI6MjA4ODYyNzA1M30.gr9poC-5808qHRoYc-5WH3dTqXupEEJpDdztv2fddog"
+      - key: DISCORD_WEBHOOK_URL
+        sync: false  # Render 대시보드에서 직접 입력 (보안 값)

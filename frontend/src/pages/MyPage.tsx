@@ -11,6 +11,7 @@ import { ServiceCards } from '../components/mypage/ServiceCards'
 import { InquiryModal } from '../components/mypage/InquiryModal'
 import { InquiryHistory, InquiryItem } from '../components/mypage/InquiryHistory'
 import { notifyNewInquiry } from '../lib/api'
+import type { ReportRow } from '../types/supabase'
 
 // 가입일(ISO 문자열)로부터 오늘까지 경과한 일수를 계산하는 순수 함수입니다.
 function calculateDaysFrom(joinedAt: string | null | undefined): number | null {
@@ -28,9 +29,10 @@ export default function MyPage() {
   const navigate = useNavigate()
   const { isLoggedIn, user, loading, logout } = useAuth()
 
-  const [inquiryModalOpen, setInquiryModalOpen] = useState(false) // 1:1 문의 작성 모달 표시 여부입니다.
-  const [inquiries, setInquiries] = useState<InquiryItem[]>([]) // 사용자의 문의 히스토리 목록입니다.
-  const [loadingInquiries, setLoadingInquiries] = useState(true) // 문의 목록 로딩 상태입니다.
+  const [inquiryModalOpen, setInquiryModalOpen] = useState(false)
+  const [inquiries, setInquiries] = useState<InquiryItem[]>([])
+  const [loadingInquiries, setLoadingInquiries] = useState(true)
+  const [latestReport, setLatestReport] = useState<ReportRow | null | undefined>(undefined) // undefined=로딩중, null=없음
 
   // 로그인 상태가 아닌데 로딩이 끝났다면 로그인 페이지로 보냅니다.
   useEffect(() => {
@@ -65,6 +67,25 @@ export default function MyPage() {
   useEffect(() => {
     refreshInquiries()
   }, [refreshInquiries])
+
+  // 가장 최근 정밀계산 리포트 조회
+  useEffect(() => {
+    if (!supabase || !isLoggedIn || !user) { setLatestReport(null); return }
+    const fetchReport = async () => {
+      try {
+        const { data } = await supabase!
+          .from('reports')
+          .select('id, title, company_name, created_at')
+          .eq('user_id', user.raw.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+        setLatestReport((data?.[0] as ReportRow) ?? null)
+      } catch {
+        setLatestReport(null)
+      }
+    }
+    fetchReport()
+  }, [isLoggedIn, user])
 
   // 아직 초기 세션 확인 중이라면 간단한 로딩 화면을 반환합니다.
   if (loading) {
@@ -102,8 +123,9 @@ export default function MyPage() {
     await supabase.from('inquiries').insert({
       user_id: user.raw.id,
       title: payload.title,
+      category: '기타',
       content: payload.content,
-      status: 'waiting',
+      status: '대기중',
     })
     // 2) 관리자 알림(Discord Webhook 등)을 비동기로 호출합니다.
     notifyNewInquiry({
@@ -143,7 +165,9 @@ export default function MyPage() {
 
         <RetirementWidget
           workDays={workedDays}
+          latestReport={latestReport}
           onGoCalculate={() => navigate('/severance')}
+          onViewReport={(id) => navigate(`/report/${id}`)}
         />
 
         <ServiceCards onOpenInquiry={() => setInquiryModalOpen(true)} />

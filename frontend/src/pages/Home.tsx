@@ -195,7 +195,8 @@ export default function Intro() {
           </button>
           <button
             type="button"
-            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
+            onClick={() => navigate('/weekly-allowance')}
+            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)] hover:bg-white/70 transition-colors"
           >
             <Calendar className="w-8 h-8 text-emerald-600 mb-2" />
             <p className="font-semibold text-[#191F28] text-sm">주휴수당</p>
@@ -203,7 +204,8 @@ export default function Intro() {
           </button>
           <button
             type="button"
-            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
+            onClick={() => navigate('/annual-leave')}
+            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)] hover:bg-white/70 transition-colors"
           >
             <Calendar className="w-8 h-8 text-amber-500 mb-2" />
             <p className="font-semibold text-[#191F28] text-sm">연차수당</p>
@@ -211,8 +213,8 @@ export default function Intro() {
           </button>
           <button
             type="button"
-            onClick={() => navigate('/mypage')}
-            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
+            onClick={() => navigate('/my-benefits')}
+            className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)] hover:bg-white/70 transition-colors"
           >
             <Gift className="w-8 h-8 text-violet-500 mb-2" />
             <p className="font-semibold text-[#191F28] text-sm">나의 혜택</p>
