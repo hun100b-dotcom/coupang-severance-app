@@ -8,24 +8,14 @@ export default function Intro() {
   const [phase, setPhase] = useState<'logo' | 'text' | 'ready'>('logo')
   const [exiting, setExiting] = useState(false)
 
-  // 재방문자는 즉시 메인으로
-  useEffect(() => {
-    const key = 'catch_intro_seen_v2'
-    if (window.localStorage.getItem(key)) {
-      navigate('/home', { replace: true })
-      return
-    }
-    window.localStorage.setItem(key, '1')
-  }, [navigate])
-
-  // 시퀀스: logo(0s) → text(0.6s) → ready(1.4s) → auto-advance(3s)
+  // 시퀀스: logo(0s) → text(0.6s) → ready(1.4s) → auto-advance(6s)
   useEffect(() => {
     const t1 = setTimeout(() => setPhase('text'), 600)
     const t2 = setTimeout(() => setPhase('ready'), 1400)
     const t3 = setTimeout(() => {
       setExiting(true)
       setTimeout(() => navigate('/home', { replace: true }), 500)
-    }, 3000)
+    }, 6000)
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
   }, [navigate])
 
