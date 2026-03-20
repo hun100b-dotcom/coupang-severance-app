@@ -1,17 +1,5 @@
-/**
- * 앱 전역 에러 바운더리
- * - 렌더 중 발생한 에러를 잡아 빈 화면 대신 안내 메시지를 표시합니다.
- * - 에러 시 화면 하단에 환경 변수 로드 여부를 텍스트로 표시합니다.
- */
-
 import { Component, type ErrorInfo, type ReactNode } from 'react'
-
-function getEnvStatus(): string {
-  const url = typeof import.meta.env.VITE_SUPABASE_URL === 'string' && import.meta.env.VITE_SUPABASE_URL ? '설정됨' : '없음'
-  const key = typeof import.meta.env.VITE_SUPABASE_ANON_KEY === 'string' && import.meta.env.VITE_SUPABASE_ANON_KEY ? '설정됨' : '없음'
-  const api = typeof import.meta.env.VITE_API_URL === 'string' ? (import.meta.env.VITE_API_URL ? '설정됨' : '비어있음') : '없음'
-  return `[환경] VITE_SUPABASE_URL: ${url} | VITE_SUPABASE_ANON_KEY: ${key} | VITE_API_URL: ${api}`
-}
+import { AlertTriangle } from 'lucide-react'
 
 interface Props {
   children: ReactNode
@@ -20,12 +8,13 @@ interface Props {
 interface State {
   hasError: boolean
   error: Error | null
+  showDetail: boolean
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
-  state: State = { hasError: false, error: null }
+  state: State = { hasError: false, error: null, showDetail: false }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error }
   }
 
@@ -36,29 +25,58 @@ export default class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError && this.state.error) {
       const err = this.state.error
-      const message = err?.message ?? String(err)
-      const stack = err?.stack ?? ''
       return (
-        <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center p-4">
-          <p className="text-[#191F28] font-semibold mb-2">일시적인 오류가 발생했어요</p>
-          <p className="text-sm text-[#8B95A1] mb-2 text-center">
+        <div className="min-h-screen bg-gradient-to-br from-[#eef2ff] to-[#f8fafc] flex flex-col items-center justify-center p-6">
+          {/* 로고 */}
+          <div className="w-16 h-16 rounded-[22px] bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.1)] flex items-center justify-center mb-6">
+            <img src="/catch-logo.png" alt="CATCH" className="w-8 h-8 object-contain" />
+          </div>
+
+          {/* 아이콘 */}
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mb-5">
+            <AlertTriangle className="w-7 h-7 text-amber-500" />
+          </div>
+
+          {/* 메시지 */}
+          <h2 className="text-lg font-extrabold text-[#191F28] tracking-tight mb-2">
+            일시적인 오류가 발생했어요
+          </h2>
+          <p className="text-sm text-[#8B95A1] mb-6 text-center max-w-xs leading-relaxed">
             새로고침하거나 잠시 후 다시 시도해 주세요.
+            <br />
+            문제가 지속되면 고객센터로 문의해 주세요.
           </p>
-          <pre className="w-full max-w-lg mt-2 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-left text-xs text-red-800 overflow-auto max-h-40">
-            {message}
-            {stack ? `\n\n${stack}` : ''}
-          </pre>
+
+          {/* 새로고침 버튼 */}
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="px-4 py-2 rounded-xl bg-[#3182F6] text-white text-sm font-medium"
+            className="btn-primary max-w-[200px] text-center"
           >
             새로고침
           </button>
-          <p className="mt-4 text-xs text-[#8B95A1]">위 빨간 상자에 표시된 오류 내용을 확인해 주세요.</p>
-          <p className="mt-4 pt-3 border-t border-gray-200 text-[10px] text-[#8B95A1] font-mono whitespace-pre-wrap">
-            {getEnvStatus()}
-          </p>
+
+          {/* 기술 정보 토글 (개발 모드에서만 기본 표시) */}
+          <button
+            type="button"
+            onClick={() => this.setState(s => ({ showDetail: !s.showDetail }))}
+            className="mt-6 text-xs text-[#8B95A1] hover:text-[#4E5968] transition-colors"
+          >
+            {this.state.showDetail ? '기술 정보 숨기기' : '기술 정보 보기'}
+          </button>
+
+          {this.state.showDetail && (
+            <pre className="w-full max-w-lg mt-3 p-4 bg-white/60 backdrop-blur-md border border-white/50 rounded-2xl text-left text-xs text-[#4E5968] overflow-auto max-h-40 shadow-sm">
+              {err.message}
+              {err.stack ? `\n\n${err.stack}` : ''}
+            </pre>
+          )}
+
+          {import.meta.env.DEV && (
+            <p className="mt-4 text-[10px] text-[#8B95A1] font-mono">
+              [DEV] {err.message?.slice(0, 100)}
+            </p>
+          )}
         </div>
       )
     }

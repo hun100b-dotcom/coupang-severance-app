@@ -40,6 +40,7 @@ export default {
         'spin-ring':    'spinRing 1.2s linear infinite',
         'pulse-dot':    'pulseDot 1.4s ease-in-out infinite',
         'page-enter':   'pageEnter 0.45s cubic-bezier(0.22,1,0.36,1) forwards',
+        'shimmer':      'shimmer 2s ease-in-out infinite',
       },
       keyframes: {
         gradientShift: {
@@ -87,6 +88,10 @@ export default {
         pageEnter: {
           from: { opacity: '0', transform: 'translateX(24px) scale(0.98)' },
           to:   { opacity: '1', transform: 'translateX(0)   scale(1)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
         },
       },
     },

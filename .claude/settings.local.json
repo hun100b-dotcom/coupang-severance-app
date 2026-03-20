@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Notion__notion-create-pages",
+      "mcp__claude_ai_Notion__notion-fetch",
+      "mcp__claude_ai_Notion__notion-create-database",
+      "mcp__claude_ai_Notion__notion-update-page",
+      "Bash(npm run:*)",
+      "Bash(ls:*)",
+      "mcp__claude_ai_Vercel__list_teams",
+      "mcp__claude_ai_Supabase__list_projects",
+      "mcp__claude_ai_Supabase__get_project",
+      "mcp__claude_ai_Vercel__list_projects",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "Bash(npx vercel:*)",
+      "Read(//c/Users/hun10/.vercel/**)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); servers=d.get\\(''''mcpServers'''',{}\\); print\\([\\(k, list\\(v.keys\\(\\)\\)\\) for k,v in servers.items\\(\\)]\\)\")",
+      "Read(//c/Users/hun10/.claude/**)",
+      "mcp__claude_ai_Vercel__get_project",
+      "Bash(echo $VERCEL_TOKEN)",
+      "Bash(\"C:/Users/hun10/OneDrive/바탕 화면/Github/coupang-severance-app/frontend/.env.local\")",
+      "mcp__claude_ai_Vercel__get_deployment",
+      "mcp__claude_ai_Notion__notion-search",
+      "mcp__claude_ai_Supabase__list_tables",
+      "mcp__claude_ai_Notion__notion-create-comment",
+      "mcp__claude_ai_Notion__notion-move-pages",
+      "Skill(update-config)"
+    ]
+  }
+}

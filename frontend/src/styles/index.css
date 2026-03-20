@@ -16,6 +16,12 @@
   --glass-bg:        rgba(255, 255, 255, 0.72);
   --glass-border:    rgba(255, 255, 255, 0.5);
   --glass-shadow:    0 20px 60px rgba(49, 130, 246, 0.08), 0 4px 16px rgba(0,0,0,0.06);
+  --premium-shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+  --premium-shadow-md: 0 8px 24px rgba(49,130,246,0.06);
+  --premium-shadow-lg: 0 20px 60px rgba(49,130,246,0.08);
+  --glass-bg-strong: rgba(255, 255, 255, 0.8);
+  --glass-bg-medium: rgba(255, 255, 255, 0.6);
+  --glass-bg-light: rgba(255, 255, 255, 0.4);
 }
 
 *, *::before, *::after {
@@ -30,6 +36,7 @@ html, body, #root {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--toss-text);
+  scroll-behavior: smooth;
 }
 
 /* ─────────────────────────────────────────────
@@ -59,10 +66,10 @@ html, body, #root {
 .blob-1 {
   width: 860px; height: 860px;
   background: radial-gradient(circle at 40% 40%,
-    rgba(59, 130, 246, 0.65) 0%,
-    rgba(96, 165, 250, 0.35) 45%,
+    rgba(59, 130, 246, 0.5) 0%,
+    rgba(96, 165, 250, 0.25) 45%,
     transparent 72%);
-  filter: blur(60px);
+  filter: blur(75px);
   top: -260px; left: -220px;
   animation: blob1 20s ease-in-out infinite;
 }
@@ -71,10 +78,10 @@ html, body, #root {
 .blob-2 {
   width: 760px; height: 760px;
   background: radial-gradient(circle at 55% 45%,
-    rgba(99, 102, 241, 0.6) 0%,
-    rgba(167, 139, 250, 0.32) 45%,
+    rgba(99, 102, 241, 0.45) 0%,
+    rgba(167, 139, 250, 0.22) 45%,
     transparent 72%);
-  filter: blur(65px);
+  filter: blur(80px);
   top: 35%; right: -200px;
   animation: blob2 24s ease-in-out infinite;
 }
@@ -83,10 +90,10 @@ html, body, #root {
 .blob-3 {
   width: 620px; height: 620px;
   background: radial-gradient(circle at 50% 50%,
-    rgba(14, 165, 233, 0.5) 0%,
-    rgba(125, 211, 252, 0.25) 50%,
+    rgba(14, 165, 233, 0.38) 0%,
+    rgba(125, 211, 252, 0.18) 50%,
     transparent 75%);
-  filter: blur(55px);
+  filter: blur(70px);
   bottom: -150px; left: 10%;
   animation: blob3 22s ease-in-out infinite;
 }
@@ -95,10 +102,10 @@ html, body, #root {
 .blob-4 {
   width: 520px; height: 520px;
   background: radial-gradient(circle at 50% 50%,
-    rgba(168, 85, 247, 0.5) 0%,
-    rgba(216, 180, 254, 0.25) 50%,
+    rgba(168, 85, 247, 0.3) 0%,
+    rgba(216, 180, 254, 0.15) 50%,
     transparent 75%);
-  filter: blur(58px);
+  filter: blur(72px);
   top: 50%; left: -80px;
   animation: blob4 18s ease-in-out infinite;
 }
@@ -107,10 +114,10 @@ html, body, #root {
 .blob-5 {
   width: 560px; height: 560px;
   background: radial-gradient(circle at 50% 50%,
-    rgba(56, 189, 248, 0.45) 0%,
-    rgba(186, 230, 253, 0.22) 50%,
+    rgba(56, 189, 248, 0.32) 0%,
+    rgba(186, 230, 253, 0.15) 50%,
     transparent 75%);
-  filter: blur(62px);
+  filter: blur(76px);
   top: 5%; right: 5%;
   animation: blob5 27s ease-in-out infinite;
 }
@@ -879,4 +886,23 @@ input:focus {
 }
 .animate-staggered-fade {
   animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─────────────────────────────────────────────
+   Premium shimmer & skeleton utilities
+───────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+  background-size: 200% 100%;
+}
+
+/* Count-up number display */
+.num-countup {
+  font-family: 'Inter', 'Pretendard', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
 }
