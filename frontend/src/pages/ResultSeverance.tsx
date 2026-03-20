@@ -9,6 +9,7 @@ import {
   SeverancePreciseResult, SeveranceSimpleResult, EmploymentReport, BlockItem,
 } from '../lib/api'
 import { fmt } from '../lib/constants'
+import { supabase } from '../lib/supabase'
 
 interface Props {
   result: SeverancePreciseResult | SeveranceSimpleResult
@@ -458,6 +459,7 @@ function Section5AIAnalysis({ comment }: { comment: string }) {
 export default function ResultSeverance({ result, resultType, company, onReset }: Props) {
   const navigate = useNavigate()
   const [reportOpen, setReportOpen] = useState(false)
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'login_required' | 'error'>('idle')
 
   const precise      = isPrecise(result)
   const severance    = result.severance
@@ -654,6 +656,67 @@ export default function ResultSeverance({ result, resultType, company, onReset }
         >
           ℹ️ 이 결과는 참고용이에요. 정확한 퇴직금은 회사 급여 기록과 노무사 상담을 통해 확인해 주세요.
         </div>
+
+        {/* ── 저장 버튼 (정밀계산 완료 시만 표시) ─────── */}
+        {resultType === 'precise' && (
+          <div style={{
+            background: saveState === 'saved' ? 'linear-gradient(135deg,#ecfdf5,#d1fae5)' : 'linear-gradient(135deg,#eff6ff,#dbeafe)',
+            border: `1.5px solid ${saveState === 'saved' ? '#6ee7b7' : '#93c5fd'}`,
+            borderRadius: 20,
+            padding: '16px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}>
+            <div>
+              <p style={{ fontSize: '0.85rem', fontWeight: 800, color: saveState === 'saved' ? '#065f46' : '#1e3a5f', letterSpacing: '-0.01em' }}>
+                {saveState === 'saved' ? '✅ 마이페이지에 저장됐어요' : '📌 결과를 저장하면 마이페이지에서 다시 볼 수 있어요'}
+              </p>
+              <p style={{ fontSize: '0.72rem', color: saveState === 'saved' ? '#059669' : '#3b82f6', marginTop: 2 }}>
+                {saveState === 'saved' ? '마이페이지 → 퇴직금 여정에서 확인하세요' :
+                 saveState === 'login_required' ? '로그인 후 저장할 수 있어요' :
+                 saveState === 'error' ? '저장 중 오류가 발생했어요. 다시 시도해 주세요' :
+                 '로그인 필요 · 1회 저장 가능'}
+              </p>
+            </div>
+            {saveState !== 'saved' && (
+              <button
+                type="button"
+                disabled={saveState === 'saving'}
+                onClick={async () => {
+                  if (!supabase) { setSaveState('login_required'); return }
+                  setSaveState('saving')
+                  const { data: { user } } = await supabase.auth.getUser()
+                  if (!user) { setSaveState('login_required'); return }
+                  const companyName = company || '계산 결과'
+                  const title = `${companyName} 정밀계산 ${new Date().toLocaleDateString('ko-KR')}`
+                  const { error } = await supabase.from('reports').insert({
+                    user_id: user.id,
+                    title,
+                    company_name: companyName,
+                  })
+                  setSaveState(error ? 'error' : 'saved')
+                }}
+                style={{
+                  flexShrink: 0,
+                  padding: '9px 16px',
+                  borderRadius: 14,
+                  background: saveState === 'saving' ? '#93c5fd' : '#3182f6',
+                  color: '#fff',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: saveState === 'saving' ? 'not-allowed' : 'pointer',
+                  letterSpacing: '-0.01em',
+                }}
+              >
+                {saveState === 'saving' ? '저장중...' :
+                 saveState === 'login_required' ? '로그인 필요' : '저장하기'}
+              </button>
+            )}
+          </div>
+        )}
 
         {/* ── 액션 버튼 ────────────────────────────────── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
