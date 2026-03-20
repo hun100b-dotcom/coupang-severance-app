@@ -695,6 +695,14 @@ export default function ResultSeverance({ result, resultType, company, onReset }
                     user_id: user.id,
                     title,
                     company_name: companyName,
+                    payload: {
+                      severance: result.severance,
+                      work_days: result.work_days,
+                      average_wage: result.average_wage,
+                      eligible: result.eligible ?? true,
+                      eligibility_message: result.eligibility_message ?? '',
+                      qualifying_days: precise ? (result as any).qualifying_days ?? result.work_days : result.work_days,
+                    },
                   })
                   setSaveState(error ? 'error' : 'saved')
                 }}

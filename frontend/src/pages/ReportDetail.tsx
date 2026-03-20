@@ -8,7 +8,9 @@ import { useEffect, useState } from 'react' // 데이터 요청과 상태 관리
 import { useParams, useNavigate } from 'react-router-dom' // URL 파라미터와 페이지 이동을 위해 라우터 훅을 사용합니다.
 import { ChevronLeft, FileText } from 'lucide-react' // 아이콘 컴포넌트를 가져옵니다.
 import { supabase } from '../lib/supabase' // 공용 Supabase 클라이언트를 새 경로에서 가져옵니다.
-import type { ReportRow } from '../types/supabase' // 리포트 타입 정의를 가져옵니다.
+import type { ReportRow, SeverancePayload } from '../types/supabase' // 리포트 타입 정의를 가져옵니다.
+
+const fmt = (n: number) => n.toLocaleString('ko-KR')
 
 export default function ReportDetail() {
   const { id } = useParams<{ id: string }>()
@@ -97,7 +99,7 @@ export default function ReportDetail() {
       </header>
 
       <div className="max-w-[460px] mx-auto px-4 pt-4">
-        <div className="bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.04)] border border-gray-100/50 p-5">
+        <div className="bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.04)] border border-gray-100/50 p-5 mb-4">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
               <FileText className="w-5 h-5 text-gray-500" />
@@ -110,14 +112,64 @@ export default function ReportDetail() {
               </p>
             </div>
           </div>
-          <p className="text-sm text-[#4E5968]">
-            이 리포트는 마이페이지의 「내 진단 리포트」에서 확인한 항목의 상세 화면입니다.
-            추후 상세 분석 내용을 여기에 표시할 수 있습니다.
-          </p>
+
+          {/* payload가 있으면 계산 결과 표시 */}
+          {report.payload && (report.payload as SeverancePayload).severance ? (
+            <>
+              <div className="mb-4">
+                <p className="text-xs text-[#8B95A1] mb-2">예상 퇴직금 (세전)</p>
+                <p className="text-2xl font-bold text-[#191F28] mb-1">{fmt(Math.round((report.payload as SeverancePayload).severance))}<span className="text-base font-medium ml-1">원</span></p>
+                <div className="inline-flex items-center gap-2 mt-2">
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                    (report.payload as SeverancePayload).eligible
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-700'
+                  }`}>
+                    {(report.payload as SeverancePayload).eligible ? '✓ 수급 가능' : '✗ 요건 미충족'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="p-3 bg-blue-50/50 rounded-xl">
+                  <p className="text-xs text-[#8B95A1] mb-1">평균 일당</p>
+                  <p className="font-bold text-[#191F28]">{fmt(Math.round((report.payload as SeverancePayload).average_wage))}<span className="text-xs font-medium ml-1">원/일</span></p>
+                </div>
+                <div className="p-3 bg-blue-50/50 rounded-xl">
+                  <p className="text-xs text-[#8B95A1] mb-1">근무일수</p>
+                  <p className="font-bold text-[#191F28]">{(report.payload as SeverancePayload).work_days.toLocaleString()}<span className="text-xs font-medium ml-1">일</span></p>
+                </div>
+                <div className="p-3 bg-blue-50/50 rounded-xl">
+                  <p className="text-xs text-[#8B95A1] mb-1">인정 근속기간</p>
+                  <p className="font-bold text-[#191F28]">{(report.payload as SeverancePayload).qualifying_days}<span className="text-xs font-medium ml-1">일</span></p>
+                </div>
+                <div className="p-3 bg-blue-50/50 rounded-xl">
+                  <p className="text-xs text-[#8B95A1] mb-1">적용 기준</p>
+                  <p className="font-bold text-[#191F28] text-sm">365일</p>
+                </div>
+              </div>
+
+              {(report.payload as SeverancePayload).eligibility_message && (
+                <div className="p-3 bg-blue-50/50 rounded-xl mb-4">
+                  <p className="text-xs text-[#8B95A1] font-medium mb-1">자격 판정</p>
+                  <p className="text-sm text-[#191F28]">{(report.payload as SeverancePayload).eligibility_message}</p>
+                </div>
+              )}
+
+              <p className="text-xs text-[#8B95A1] leading-relaxed mb-4">
+                ※ 이 결과는 참고용입니다. 정확한 퇴직금은 회사 급여 기록과 노무사 상담을 통해 확인해 주세요.
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-[#4E5968] mb-4">
+              계산 데이터가 없습니다.
+            </p>
+          )}
+
           <button
             type="button"
             onClick={() => navigate('/mypage')}
-            className="mt-4 w-full py-3 text-sm font-semibold text-[#3182F6] border border-[#3182F6]/30 rounded-xl hover:bg-blue-50/50"
+            className="w-full py-3 text-sm font-semibold text-[#3182F6] border border-[#3182F6]/30 rounded-xl hover:bg-blue-50/50"
           >
             마이페이지로 돌아가기
           </button>

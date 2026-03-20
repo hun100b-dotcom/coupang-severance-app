@@ -12,6 +12,16 @@ export interface Profile {
   updated_at?: string
 }
 
+/** 퇴직금 계산 결과 payload 구조 */
+export interface SeverancePayload {
+  severance: number
+  work_days: number
+  average_wage: number
+  eligible: boolean
+  eligibility_message: string
+  qualifying_days: number
+}
+
 /** reports 테이블 한 행 - 리스트/상세 공통 */
 export interface ReportRow {
   id: string
@@ -19,6 +29,6 @@ export interface ReportRow {
   title: string
   company_name: string | null
   created_at: string
-  /** 상세 데이터(JSON) 등 추가 컬럼은 필요 시 확장 */
-  payload?: unknown
+  /** 상세 데이터(JSON) - 퇴직금 계산 결과 */
+  payload?: SeverancePayload | null
 }
