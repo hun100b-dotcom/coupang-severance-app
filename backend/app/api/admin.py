@@ -42,7 +42,12 @@ SUPABASE_SERVICE_ROLE_KEY = (
     os.getenv("SUPABASE_SERVICE_ROLE_KEY")
     or os.getenv("SUPABASE_ANON_KEY", "")
 )
-ADMIN_SECRET = os.getenv("ADMIN_SECRET", "")
+# ADMIN_SECRET이 없으면 SUPABASE_ANON_KEY 뒤 32자로 자동 파생 (환경변수 미설정 시 폴백)
+ADMIN_SECRET = (
+    os.getenv("ADMIN_SECRET")
+    or os.getenv("SUPABASE_ANON_KEY", "")[-32:]
+    or ""
+)
 
 
 # ── 공통 헬퍼 ─────────────────────────────────────────────
@@ -151,12 +156,12 @@ async def admin_stats(x_admin_token: Optional[str] = Header(default=None)):
     inq_answered  = sum(1 for i in inquiries if i.get("status") in ("answered", "답변완료"))
     inq_closed    = sum(1 for i in inquiries if i.get("status") == "closed")
 
-    # 클릭 집계
+    # 클릭 집계 (click_counter 테이블 실제 컬럼: total, severance, unemployment)
     total_clicks = severance_clicks = unemployment_clicks = 0
     for row in clicks_data:
-        total_clicks        += row.get("count", 0)
-        severance_clicks    += row.get("severance_count", 0)
-        unemployment_clicks += row.get("unemployment_count", 0)
+        total_clicks        += row.get("total", 0)
+        severance_clicks    += row.get("severance", 0)
+        unemployment_clicks += row.get("unemployment", 0)
 
     return {
         "users": {

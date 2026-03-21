@@ -193,7 +193,11 @@ export const calcUBSimple = (
   api.post('/unemployment/simple', { insured_days, avg_daily_wage, age_50 }).then(r => r.data)
 
 // ── Admin OS API ──────────────────────────────────────────
-const H = () => ({ 'X-Admin-Token': import.meta.env.VITE_ADMIN_SECRET ?? '' })
+// VITE_ADMIN_SECRET 미설정 시 VITE_SUPABASE_ANON_KEY 뒤 32자로 자동 파생 (백엔드와 동일 로직)
+const _adminToken =
+  (import.meta.env.VITE_ADMIN_SECRET as string | undefined) ||
+  ((import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.slice(-32) ?? '')
+const H = () => ({ 'X-Admin-Token': _adminToken })
 
 // Dashboard
 export const getAdminStats = () =>
