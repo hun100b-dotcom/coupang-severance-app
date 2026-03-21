@@ -151,7 +151,6 @@ def admin_health(x_admin_token: Optional[str] = Header(default=None)):
     _check_admin(x_admin_token)
     try:
         r = _sb_get("system_settings", {"select": "key", "limit": "1"})
-        ri = _sb_get("inquiries", {"select": "id,status", "limit": "3"}, count=True)
         return {
             "ok": True,
             "supabase_url": SUPABASE_URL,
@@ -159,9 +158,6 @@ def admin_health(x_admin_token: Optional[str] = Header(default=None)):
             "service_key_len": len(SUPABASE_SERVICE_ROLE_KEY),
             "settings_status": r.status_code,
             "body": r.text[:120],
-            "inquiries_status": ri.status_code,
-            "inquiries_body": ri.text[:300],
-            "inquiries_headers": dict(ri.headers),
         }
     except Exception as e:
         return {"ok": False, "url": SUPABASE_URL, "error": str(e), "type": type(e).__name__}
