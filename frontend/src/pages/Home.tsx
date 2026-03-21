@@ -97,15 +97,20 @@ export default function Home() {
     return () => clearInterval(timer)
   }, [])
 
-  const handleSeverance = useCallback(async () => {
-    try { await registerClick('severance') } catch { /* 무시 */ }
+  const trackAndNavigate = useCallback(async (
+    service: 'severance' | 'unemployment' | 'weekly_allowance' | 'annual_leave' | 'benefits',
+    path: string
+  ) => {
     setCount(c => c + 1)
-    navigate('/severance')
+    try { registerClick(service) } catch { /* 무시 */ }
+    navigate(path)
   }, [navigate])
 
-  const handleUnemployment = useCallback(() => {
-    navigate('/unemployment')
-  }, [navigate])
+  const handleSeverance    = useCallback(() => trackAndNavigate('severance',       '/severance'),       [trackAndNavigate])
+  const handleUnemployment = useCallback(() => trackAndNavigate('unemployment',    '/unemployment'),    [trackAndNavigate])
+  const handleWeekly       = useCallback(() => trackAndNavigate('weekly_allowance','/weekly-allowance'),[trackAndNavigate])
+  const handleAnnual       = useCallback(() => trackAndNavigate('annual_leave',    '/annual-leave'),    [trackAndNavigate])
+  const handleBenefits     = useCallback(() => trackAndNavigate('benefits',        '/my-benefits'),     [trackAndNavigate])
 
   const mainCopy = INTRO_COPIES[copyIdx]
   const lines = mainCopy.split('\n')
@@ -270,9 +275,9 @@ export default function Home() {
         >
           {[
             { label: '실업급여', sub: '수급 자격 확인', icon: Building2, color: 'text-slate-500', bg: 'bg-slate-100', onClick: handleUnemployment },
-            { label: '주휴수당', sub: '이번 주 얼마일까?', icon: Calendar, color: 'text-emerald-600', bg: 'bg-emerald-50', onClick: () => navigate('/weekly-allowance') },
-            { label: '연차수당', sub: '남은 연차 정산', icon: Calendar, color: 'text-amber-500', bg: 'bg-amber-50', onClick: () => navigate('/annual-leave') },
-            { label: '나의 혜택', sub: '숨은 지원금 찾기', icon: Gift, color: 'text-violet-500', bg: 'bg-violet-50', onClick: () => navigate('/my-benefits') },
+            { label: '주휴수당', sub: '이번 주 얼마일까?', icon: Calendar, color: 'text-emerald-600', bg: 'bg-emerald-50', onClick: handleWeekly },
+            { label: '연차수당', sub: '남은 연차 정산', icon: Calendar, color: 'text-amber-500', bg: 'bg-amber-50', onClick: handleAnnual },
+            { label: '나의 혜택', sub: '숨은 지원금 찾기', icon: Gift, color: 'text-violet-500', bg: 'bg-violet-50', onClick: handleBenefits },
           ].map((card, i) => (
             <motion.button
               key={card.label}

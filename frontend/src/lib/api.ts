@@ -14,7 +14,7 @@ export const api = axios.create({
 export const getClickCount = () =>
   api.get<{ total: number; severance: number; unemployment: number }>('/click-count').then(r => r.data)
 
-export const registerClick = (service: 'severance' | 'unemployment') =>
+export const registerClick = (service: 'severance' | 'unemployment' | 'weekly_allowance' | 'annual_leave' | 'benefits') =>
   api.post(`/click/${service}`).then(r => r.data)
 
 // ── 1:1 문의 알림 (Discord Webhook 등) ─────────────
