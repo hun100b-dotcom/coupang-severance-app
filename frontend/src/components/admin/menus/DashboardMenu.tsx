@@ -27,10 +27,12 @@ export default function DashboardMenu() {
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null)
   const [recentInquiries, setRecentInquiries] = useState<AdminInquiry[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [range, setRange] = useState(30)
 
   const load = async () => {
     setLoading(true)
+    setError(null)
     try {
       const { start, end } = getDateRange(range)
       const [s, a, inq] = await Promise.all([
@@ -41,8 +43,9 @@ export default function DashboardMenu() {
       setStats(s)
       setAnalytics(a)
       setRecentInquiries(inq.inquiries ?? [])
-    } catch {
-      // silent
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e)
+      setError(msg || '알 수 없는 오류')
     } finally {
       setLoading(false)
     }
@@ -50,10 +53,36 @@ export default function DashboardMenu() {
 
   useEffect(() => { load() }, [range])
 
-  if (loading || !stats) {
+  if (loading) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.88rem' }}>
+      <div style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.88rem' }}>
         대시보드 로딩 중...
+      </div>
+    )
+  }
+
+  if (error || !stats) {
+    return (
+      <div style={{ padding: '40px' }}>
+        <div style={{
+          background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
+          borderRadius: 12, padding: '24px', color: '#ff6b6b',
+        }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>⚠️ 대시보드 데이터 로드 실패</div>
+          <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)', marginBottom: 16 }}>
+            {error || '데이터를 불러오지 못했습니다.'}
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.7 }}>
+            <b>체크리스트:</b><br />
+            1. Render 환경변수: <code style={{ background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: 4 }}>ADMIN_SECRET</code> 설정 여부<br />
+            2. Render 환경변수: <code style={{ background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: 4 }}>SUPABASE_SERVICE_ROLE_KEY</code> 설정 여부<br />
+            3. Vercel 환경변수: <code style={{ background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: 4 }}>VITE_ADMIN_SECRET</code> 설정 여부
+          </div>
+          <button onClick={load} style={{
+            marginTop: 16, padding: '8px 20px', borderRadius: 8, border: 'none',
+            background: '#3182f6', color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700,
+          }}>재시도</button>
+        </div>
       </div>
     )
   }

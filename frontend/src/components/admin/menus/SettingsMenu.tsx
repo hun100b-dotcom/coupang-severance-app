@@ -10,13 +10,14 @@ export default function SettingsMenu() {
   const [settings, setSettings] = useState<SystemSettings | null>(null)
   const [ips, setIps] = useState<BlockedIp[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const loadSettings = async () => {
     try {
       const res = await getSettings()
       setSettings(res.settings ?? {})
-    } catch {
-      // silent
+    } catch (e: unknown) {
+      throw e
     }
   }
 
@@ -25,21 +26,41 @@ export default function SettingsMenu() {
       const res = await getBlockedIps()
       setIps(res.blocked_ips ?? [])
     } catch {
-      // silent
+      // silent — ip 목록은 optional
     }
   }
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true)
+  const reload = async () => {
+    setLoading(true)
+    setError(null)
+    try {
       await Promise.all([loadSettings(), loadIps()])
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
       setLoading(false)
     }
-    load()
-  }, [])
+  }
 
-  if (loading || !settings) {
-    return <div style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.88rem' }}>설정 로딩 중...</div>
+  useEffect(() => { reload() }, [])
+
+  if (loading) {
+    return <div style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.88rem' }}>설정 로딩 중...</div>
+  }
+
+  if (error || !settings) {
+    return (
+      <div style={{ padding: '40px' }}>
+        <div style={{ background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)', borderRadius: 12, padding: '24px', color: '#ff6b6b' }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>⚠️ 설정 로드 실패</div>
+          <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)', marginBottom: 12 }}>{error || '데이터를 불러오지 못했습니다.'}</div>
+          <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)' }}>
+            Render: <code style={{ background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: 4 }}>ADMIN_SECRET</code> &amp; <code style={{ background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: 4 }}>SUPABASE_SERVICE_ROLE_KEY</code> 확인
+          </div>
+          <button onClick={reload} style={{ marginTop: 14, padding: '8px 20px', borderRadius: 8, border: 'none', background: '#3182f6', color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700 }}>재시도</button>
+        </div>
+      </div>
+    )
   }
 
   return (

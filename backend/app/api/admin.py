@@ -37,7 +37,11 @@ from pydantic import BaseModel
 router = APIRouter()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+# service role key가 없으면 anon key로 fallback (RLS가 없는 테이블에서는 동작)
+SUPABASE_SERVICE_ROLE_KEY = (
+    os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    or os.getenv("SUPABASE_ANON_KEY", "")
+)
 ADMIN_SECRET = os.getenv("ADMIN_SECRET", "")
 
 

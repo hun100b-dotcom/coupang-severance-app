@@ -25,18 +25,20 @@ export default function InquiriesMenu() {
   const [category, setCategory] = useState('')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [activeInquiry, setActiveInquiry] = useState<AdminInquiry | null>(null)
   const [showTemplates, setShowTemplates] = useState(false)
 
   const loadInquiries = useCallback(async () => {
     setLoading(true)
+    setApiError(null)
     try {
       const res = await getAdminInquiries({ page, limit: 20, status, category, search })
       setInquiries(res.inquiries ?? [])
       setTotal(res.total ?? 0)
-    } catch {
-      // silent
+    } catch (e: unknown) {
+      setApiError(e instanceof Error ? e.message : String(e))
     } finally {
       setLoading(false)
     }
@@ -146,6 +148,13 @@ export default function InquiriesMenu() {
           {/* 일괄 액션 바 */}
           <BulkActionBar selectedIds={[...selected]} onDone={handleBulkDone} />
 
+          {/* 에러 표시 */}
+          {apiError && (
+            <div style={{ background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)', borderRadius: 10, padding: '14px 18px', marginBottom: 12, color: '#ff6b6b', fontSize: '0.82rem' }}>
+              ⚠️ {apiError} — ADMIN_SECRET 및 환경변수를 확인하세요.
+            </div>
+          )}
+
           {/* 테이블 */}
           <div style={{
             background: 'rgba(255,255,255,0.03)',
@@ -153,7 +162,7 @@ export default function InquiriesMenu() {
             borderRadius: 14, overflow: 'hidden', marginBottom: 14,
           }}>
             {loading ? (
-              <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '32px 0', fontSize: '0.85rem' }}>
+              <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', padding: '32px 0', fontSize: '0.85rem' }}>
                 로딩 중...
               </p>
             ) : (

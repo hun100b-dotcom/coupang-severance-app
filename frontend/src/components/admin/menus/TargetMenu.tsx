@@ -10,25 +10,38 @@ export default function TargetMenu() {
   const [companies, setCompanies] = useState<CompanyTarget[]>([])
   const [segments, setSegments] = useState<TargetSegments | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true)
-      try {
-        const [c, s] = await Promise.all([getTargetCompanies(), getTargetSegments()])
-        setCompanies(c.companies ?? [])
-        setSegments(s)
-      } catch {
-        // silent
-      } finally {
-        setLoading(false)
-      }
+  const load = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const [c, s] = await Promise.all([getTargetCompanies(), getTargetSegments()])
+      setCompanies(c.companies ?? [])
+      setSegments(s)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setLoading(false)
     }
-    load()
-  }, [])
+  }
+
+  useEffect(() => { load() }, [])
 
   if (loading) {
-    return <div style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.88rem' }}>분석 데이터 로딩 중...</div>
+    return <div style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.88rem' }}>분석 데이터 로딩 중...</div>
+  }
+
+  if (error) {
+    return (
+      <div style={{ padding: '40px' }}>
+        <div style={{ background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)', borderRadius: 12, padding: '24px', color: '#ff6b6b' }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>⚠️ 타겟 분석 로드 실패</div>
+          <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)', marginBottom: 12 }}>{error}</div>
+          <button onClick={load} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: '#3182f6', color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700 }}>재시도</button>
+        </div>
+      </div>
+    )
   }
 
   return (

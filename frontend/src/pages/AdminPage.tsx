@@ -49,6 +49,10 @@ export default function AdminPage() {
       minHeight: '100vh',
       background: '#0d0d1a',
       color: '#fff',
+      position: 'fixed',
+      inset: 0,
+      zIndex: 100,
+      overflow: 'auto',
     }}>
       <AdminSidebar
         active={activeMenu}
