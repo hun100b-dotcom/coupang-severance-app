@@ -109,19 +109,21 @@ async def _write_audit(
 async def admin_health(x_admin_token: Optional[str] = Header(default=None)):
     """환경변수 및 Supabase 연결 상태 확인 (디버그용)"""
     _check_admin(x_admin_token)
+    url_to_try = f"{SUPABASE_URL}/rest/v1/system_settings"
     try:
         h = _supabase_headers()
-        async with httpx.AsyncClient(timeout=5) as client:
-            r = await client.get(f"{SUPABASE_URL}/rest/v1/system_settings", headers=h, params={"select": "key", "limit": "1"})
+        # sync httpx (counter.py 방식) — async DNS 이슈 우회
+        r = httpx.get(url_to_try, headers=h, params={"select": "key", "limit": "1"}, timeout=5)
         return {
             "ok": True,
             "admin_secret_len": len(ADMIN_SECRET),
             "supabase_url": SUPABASE_URL,
             "service_key_len": len(SUPABASE_SERVICE_ROLE_KEY),
             "settings_status": r.status_code,
+            "body_preview": r.text[:100],
         }
     except Exception as e:
-        return {"ok": False, "error": str(e), "type": type(e).__name__}
+        return {"ok": False, "url": url_to_try, "error": str(e), "type": type(e).__name__}
 
 
 # ── Dashboard ─────────────────────────────────────────────
