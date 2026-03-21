@@ -191,3 +191,52 @@ export const calcUBSimple = (
   age_50: boolean
 ): Promise<UBResult> =>
   api.post('/unemployment/simple', { insured_days, avg_daily_wage, age_50 }).then(r => r.data)
+
+// ── Admin OS API ──────────────────────────────────────────
+const H = () => ({ 'X-Admin-Token': import.meta.env.VITE_ADMIN_SECRET ?? '' })
+
+// Dashboard
+export const getAdminStats = () =>
+  api.get('/admin/stats', { headers: H() }).then(r => r.data)
+export const getAdminAnalytics = (start: string, end: string) =>
+  api.get('/admin/analytics', { params: { start, end }, headers: H() }).then(r => r.data)
+
+// Target
+export const getTargetCompanies = () =>
+  api.get('/admin/target/companies', { headers: H() }).then(r => r.data)
+export const getTargetSegments = () =>
+  api.get('/admin/target/segments', { headers: H() }).then(r => r.data)
+
+// Inquiries
+export const getAdminInquiries = (params: object) =>
+  api.get('/admin/inquiries', { params, headers: H() }).then(r => r.data)
+export const patchInquiryStatus = (id: string, status: string) =>
+  api.patch(`/admin/inquiries/${id}/status`, { status }, { headers: H() }).then(r => r.data)
+export const patchInquiryAnswer = (id: string, answer: string) =>
+  api.patch(`/admin/inquiries/${id}/answer`, { answer }, { headers: H() }).then(r => r.data)
+export const bulkInquiryStatus = (ids: string[], status: string) =>
+  api.post('/admin/inquiries/bulk-status', { ids, status }, { headers: H() }).then(r => r.data)
+
+// Templates
+export const getTemplates = () =>
+  api.get('/admin/templates', { headers: H() }).then(r => r.data)
+export const createTemplate = (body: object) =>
+  api.post('/admin/templates', body, { headers: H() }).then(r => r.data)
+export const deleteTemplate = (id: string) =>
+  api.delete(`/admin/templates/${id}`, { headers: H() }).then(r => r.data)
+
+// Settings
+export const getSettings = () =>
+  api.get('/admin/settings', { headers: H() }).then(r => r.data)
+export const patchSetting = (key: string, value: string) =>
+  api.patch('/admin/settings', { key, value }, { headers: H() }).then(r => r.data)
+export const getBlockedIps = () =>
+  api.get('/admin/blocked-ips', { headers: H() }).then(r => r.data)
+export const blockIp = (body: object) =>
+  api.post('/admin/blocked-ips', body, { headers: H() }).then(r => r.data)
+export const unblockIp = (id: string) =>
+  api.delete(`/admin/blocked-ips/${id}`, { headers: H() }).then(r => r.data)
+
+// Logs
+export const getAuditLogs = (params: object) =>
+  api.get('/admin/logs', { params, headers: H() }).then(r => r.data)

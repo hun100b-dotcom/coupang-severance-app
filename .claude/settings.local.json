@@ -25,7 +25,13 @@
       "mcp__claude_ai_Supabase__list_tables",
       "mcp__claude_ai_Notion__notion-create-comment",
       "mcp__claude_ai_Notion__notion-move-pages",
-      "Skill(update-config)"
+      "Skill(update-config)",
+      "mcp__claude_ai_Vercel__get_deployment_build_logs",
+      "Bash(curl -s -X POST \"https://discord.com/api/webhooks/1484194639916433510/u60qAWYiRa5AmjgfUEl2-5TkoGKOvlSHwcRBK3YuxEZDQJM--JJ9VKJDBttu4j6eYWqY\" -H \"Content-Type: application/json\" -d \"{\"\"content\"\":\"\"test from my PC\"\"}\" --max-time 10 -w \"\\\\nHTTP_STATUS:%{http_code}\")",
+      "Bash(curl -s -X POST \"https://discord.com/api/webhooks/1484912164211789926/BHyKtOY0wX-yGZEevjQaCd_do9tK_Q12b5xEflHqNvDbMGAkkMtSi1DOMX5JQtbX4_PC\" -H \"Content-Type: application/json\" -d \"{\"\"content\"\":\"\"[CATCH] 새 Webhook URL 테스트 - 정상 작동 확인\"\"}\" --max-time 10 -w \"\\\\nHTTP_STATUS:%{http_code}\")",
+      "Bash(curl -s -X POST \"https://discord.com/api/webhooks/1484912164211789926/BHyKtOY0wX-yGZEevjQaCd_do9tK_Q12b5xEflHqNvDbMGAkkMtSi1DOMX5JQtbX4_PC\" -H \"Content-Type: application/json\" --data-ascii \"{\"\"content\"\":\"\"CATCH test message\"\"}\" --max-time 10 -w \"\\\\nHTTP_STATUS:%{http_code}\")",
+      "Bash(curl -s -X POST \"https://coupang-severance-app.onrender.com/api/inquiry/notify\" -H \"Content-Type: application/json\" --data-ascii \"{\"\"title\"\":\"\"[test] new inquiry\"\",\"\"content\"\":\"\"Discord notification test\"\",\"\"user_id\"\":null,\"\"user_name\"\":null}\" --max-time 60)",
+      "Bash(npm install:*)"
     ]
   }
 }
