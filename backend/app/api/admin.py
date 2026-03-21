@@ -207,11 +207,13 @@ async def admin_analytics(
     if not end:
         end = datetime.utcnow().date().isoformat()
 
+    # PostgREST 날짜 범위 필터: URL에 직접 쿼리스트링으로 전달 (dict 중복키 불가 우회)
+    date_filter = f"gte.{start}T00:00:00Z&created_at=lte.{end}T23:59:59Z"
     async with httpx.AsyncClient(timeout=15) as client:
         users_res, reports_res, inquiries_res = await asyncio.gather(
-            client.get(f"{SUPABASE_URL}/rest/v1/profiles",  headers=headers, params={"select": "created_at", "created_at": f"gte.{start}T00:00:00Z,lte.{end}T23:59:59Z"}),
-            client.get(f"{SUPABASE_URL}/rest/v1/reports",   headers=headers, params={"select": "created_at", "created_at": f"gte.{start}T00:00:00Z,lte.{end}T23:59:59Z"}),
-            client.get(f"{SUPABASE_URL}/rest/v1/inquiries", headers=headers, params={"select": "created_at", "created_at": f"gte.{start}T00:00:00Z,lte.{end}T23:59:59Z"}),
+            client.get(f"{SUPABASE_URL}/rest/v1/profiles?select=created_at&created_at={date_filter}",  headers=headers),
+            client.get(f"{SUPABASE_URL}/rest/v1/reports?select=created_at&created_at={date_filter}",   headers=headers),
+            client.get(f"{SUPABASE_URL}/rest/v1/inquiries?select=created_at&created_at={date_filter}", headers=headers),
         )
 
     def _by_date(rows: list, key="created_at") -> dict[str, int]:
