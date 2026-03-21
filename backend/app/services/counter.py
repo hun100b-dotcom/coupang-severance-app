@@ -28,11 +28,12 @@ import json
 import os
 from pathlib import Path
 
-# ── 환경변수 (기본값: 현재 Supabase 프로젝트 도메인) ─────────────────────────────
-_SUPABASE_URL = os.getenv(
-    "SUPABASE_URL",
-    "https://hmjxrqhcwjyfkvlcejfc.supabase.co",
-).rstrip("/")
+# ── Supabase URL 검증 — 잘못된 환경변수가 설정돼도 올바른 프로젝트에 연결 ──────────
+_PROJECT_ID   = "hmjxrqhcwjyfkvlcejfc"
+_CORRECT_SB_URL = f"https://{_PROJECT_ID}.supabase.co"
+_env_sb_url   = os.getenv("SUPABASE_URL", "").rstrip("/")
+# env 변수가 올바른 프로젝트 ID를 포함하지 않으면 하드코딩된 올바른 URL을 사용합니다
+_SUPABASE_URL = _env_sb_url if _PROJECT_ID in _env_sb_url else _CORRECT_SB_URL
 
 _SUPABASE_KEY = os.getenv(
     "SUPABASE_ANON_KEY",

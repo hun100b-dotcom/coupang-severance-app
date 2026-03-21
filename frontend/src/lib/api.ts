@@ -192,6 +192,76 @@ export const calcUBSimple = (
 ): Promise<UBResult> =>
   api.post('/unemployment/simple', { insured_days, avg_daily_wage, age_50 }).then(r => r.data)
 
+// ── 주휴수당 ─────────────────────────────────────────────
+export const extractWeeklyAllowanceCompanies = (file: File) => {
+  const fd = new FormData()
+  fd.append('file', file)
+  return api.post<{ companies: string[] }>('/weekly-allowance/extract-companies', fd).then(r => r.data)
+}
+
+export interface WeeklyAllowanceWeekItem {
+  week_key: string
+  week_start: string
+  week_end: string
+  work_days: number
+  weekly_hours: number
+  total_pay: number
+  eligible: boolean
+  allowance: number
+}
+
+export interface WeeklyAllowancePreciseResult {
+  company: string
+  hourly_wage: number
+  daily_hours: number
+  total_weeks: number
+  eligible_weeks: number
+  total_allowance: number
+  weeks: WeeklyAllowanceWeekItem[]
+  error?: string
+}
+
+export const calcWeeklyAllowancePrecise = (formData: FormData): Promise<WeeklyAllowancePreciseResult> =>
+  api.post('/weekly-allowance/precise', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }).then(r => r.data)
+
+// ── 연차수당 ─────────────────────────────────────────────
+export const extractAnnualLeaveCompanies = (file: File) => {
+  const fd = new FormData()
+  fd.append('file', file)
+  return api.post<{ companies: string[] }>('/annual-leave/extract-companies', fd).then(r => r.data)
+}
+
+export interface AnnualLeaveMonthItem {
+  month: string
+  work_days: number
+  attended: boolean
+}
+
+export interface AnnualLeavePreciseResult {
+  company: string
+  hire_date: string
+  ref_date: string
+  years_worked: number
+  months_worked: number
+  attended_months: number
+  first_year_days: number
+  annual_days: number
+  total_entitlement: number
+  used_days: number
+  remaining_days: number
+  avg_daily_wage: number
+  unpaid_allowance: number | null
+  monthly_detail: AnnualLeaveMonthItem[]
+  error?: string
+}
+
+export const calcAnnualLeavePrecise = (formData: FormData): Promise<AnnualLeavePreciseResult> =>
+  api.post('/annual-leave/precise', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }).then(r => r.data)
+
 // ── Admin OS API ──────────────────────────────────────────
 // VITE_ADMIN_SECRET 미설정 시 VITE_SUPABASE_ANON_KEY 뒤 32자로 자동 파생 (백엔드와 동일 로직)
 const _adminToken =

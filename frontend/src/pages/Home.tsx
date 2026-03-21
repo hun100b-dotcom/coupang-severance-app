@@ -63,7 +63,7 @@ const cardVariants = {
 
 export default function Home() {
   const navigate = useNavigate()
-  const { isLoggedIn, logout } = useAuth()
+  const { isLoggedIn } = useAuth()
   const [count, setCount] = useState(0)
   const [countLoaded, setCountLoaded] = useState(false)
   const [whyOpen, setWhyOpen] = useState(false)
@@ -157,14 +157,6 @@ export default function Home() {
               >
                 <span className="truncate">마이페이지</span>
                 <User className="w-4 h-4 flex-shrink-0" />
-              </button>
-              <button
-                type="button"
-                onClick={() => logout()}
-                className="text-sm text-[#8B95A1] hover:text-[#191F28] font-medium font-sans active:scale-95 transition-transform"
-                aria-label="로그아웃"
-              >
-                로그아웃
               </button>
             </>
           ) : (

@@ -17,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 
-from .api import common, severance, unemployment, notify, admin
+from .api import common, severance, unemployment, notify, admin, weekly_allowance, annual_leave
 
 STATIC_DIR = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
 
@@ -83,11 +83,13 @@ async def block_ips_middleware(request: Request, call_next):
         return JSONResponse({"detail": "접근이 차단되었습니다."}, status_code=403)
     return await call_next(request)
 
-app.include_router(common.router,       prefix="/api",              tags=["공통"])
-app.include_router(severance.router,    prefix="/api/severance",    tags=["퇴직금"])
-app.include_router(unemployment.router, prefix="/api/unemployment", tags=["실업급여"])
-app.include_router(notify.router,       prefix="/api",              tags=["알림"])
-app.include_router(admin.router,        prefix="/api",              tags=["관리자"])
+app.include_router(common.router,            prefix="/api",                  tags=["공통"])
+app.include_router(severance.router,         prefix="/api/severance",        tags=["퇴직금"])
+app.include_router(unemployment.router,      prefix="/api/unemployment",     tags=["실업급여"])
+app.include_router(weekly_allowance.router,  prefix="/api/weekly-allowance", tags=["주휴수당"])
+app.include_router(annual_leave.router,      prefix="/api/annual-leave",     tags=["연차수당"])
+app.include_router(notify.router,            prefix="/api",                  tags=["알림"])
+app.include_router(admin.router,             prefix="/api",                  tags=["관리자"])
 
 
 # 루트: API 안내 + /docs 로 이동 링크 (404 대신)
