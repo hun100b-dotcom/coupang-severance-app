@@ -190,11 +190,13 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
       if (error) throw error
 
       // 문의 접수 성공 후 관리자에게 Discord 알림을 보냅니다 (실패해도 사용자 플로우에 영향 없음)
+      console.log('[CustomerService] 문의 접수 성공, Discord 알림 호출 시작...')
       notifyNewInquiry({
         title: `[${inquiryCategory}] 새 문의`,
         content: inquiryText.trim(),
         userId: user.id,
       })
+      console.log('[CustomerService] Discord 알림 호출 완료')
 
       setInquiryText('')
       setInquiryCategory('')

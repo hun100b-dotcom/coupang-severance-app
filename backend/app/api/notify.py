@@ -36,12 +36,18 @@ async def inquiry_notify(payload: InquiryNotifyPayload):
     사용자 경험(문의 접수 플로우)을 방해하지 않는 것을 목표로 합니다.
   """
 
+  print(f"[inquiry_notify 엔드포인트 호출]")
+  print(f"  title: {payload.title}")
+  print(f"  content: {payload.content[:50]}...")
+  print(f"  user_id: {payload.user_id}")
+
   result = await notify_new_inquiry(
     title=payload.title,
     content=payload.content,
     user_id=payload.user_id,
     user_name=payload.user_name,
   )
+  print(f"[notify_new_inquiry 결과] ok={result['ok']}, reason={result['reason']}")
 
   return {
     "ok": True,

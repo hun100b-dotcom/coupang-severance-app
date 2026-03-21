@@ -23,8 +23,9 @@ export const notifyNewInquiry = (payload: {
   content: string
   userId?: string
   userName?: string
-}) =>
-  api
+}) => {
+  console.log('[notifyNewInquiry] 호출됨:', payload)
+  return api
     .post('/inquiry/notify', {
       // 백엔드 스키마에 맞춰 필드명을 매핑합니다.
       title: payload.title,
@@ -32,8 +33,15 @@ export const notifyNewInquiry = (payload: {
       user_id: payload.userId ?? null,
       user_name: payload.userName ?? null,
     })
-    .then(r => r.data)
-    .catch(() => undefined) // 알림 실패는 사용자 플로우를 막지 않도록 조용히 무시합니다.
+    .then(r => {
+      console.log('[notifyNewInquiry] 성공 응답:', r.data)
+      return r.data
+    })
+    .catch(err => {
+      console.error('[notifyNewInquiry] 오류:', err)
+      return undefined
+    }) // 알림 실패는 사용자 플로우를 막지 않도록 조용히 무시합니다.
+}
 
 /** PDF에서 사업장 고유 리스트 추출 (퇴직금 정밀 계산용) */
 export const extractSeveranceCompanies = (file: File) => {

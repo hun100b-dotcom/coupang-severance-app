@@ -15,6 +15,14 @@ from typing import Optional, TypedDict
 
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
 
+# 시작 시 디버깅 로그
+print("[notify.py 초기화]")
+print(f"  DISCORD_WEBHOOK_URL 설정 여부: {'✓ 설정됨' if DISCORD_WEBHOOK_URL else '✗ 미설정'}")
+if DISCORD_WEBHOOK_URL:
+    # 보안상 일부만 표시
+    masked = DISCORD_WEBHOOK_URL[:50] + "..." if len(DISCORD_WEBHOOK_URL) > 50 else DISCORD_WEBHOOK_URL
+    print(f"  URL (마스킹): {masked}")
+
 
 class NotifyResult(TypedDict):
     ok: bool

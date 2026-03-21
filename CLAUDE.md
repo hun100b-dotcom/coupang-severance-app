@@ -1,19 +1,19 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+이 파일은 이 저장소의 코드로 작업할 때 Claude Code (claude.ai/code)에 대한 지침을 제공합니다.
 
-## Project Overview
+## 프로젝트 개요
 
-**CATCH (퇴직금 한번에)** — A severance pay and unemployment benefit calculator for daily-wage workers (일용직) in Korea, primarily targeting 쿠팡, 마켓컬리, CJ대한통운 employees. Users upload a 근로복지공단 일용근로내역서 (employment record PDF) or manually enter work days, and the app calculates eligible severance/unemployment benefits based on Korean labor law.
+**CATCH (퇴직금 한번에)** — 한국의 일용직 근로자를 위한 퇴직금 및 실업급여 계산기로, 주로 쿠팡, 마켓컬리, CJ대한통운 직원을 대상으로 합니다. 사용자는 근로복지공단 일용근로내역서 PDF를 업로드하거나 근무일 수를 수동으로 입력하면, 앱은 한국 노동법에 따라 적격 퇴직금/실업급여를 계산합니다.
 
-- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS, deployed on Vercel
-- **Backend**: FastAPI (Python 3.12), deployed on Render (Singapore)
-- **Database**: Supabase Postgres — stores click counters, user inquiries, and user profiles
-- **Auth**: Supabase OAuth (Kakao + Google) — managed entirely frontend-side via `@supabase/supabase-js`
+- **프론트엔드**: React 18 + TypeScript + Vite + Tailwind CSS, Vercel에 배포
+- **백엔드**: FastAPI (Python 3.12), Render (싱가포르)에 배포
+- **데이터베이스**: Supabase Postgres — 클릭 카운터, 사용자 문의, 사용자 프로필 저장
+- **인증**: Supabase OAuth (카카오 + 구글) — `@supabase/supabase-js`를 통해 프론트엔드에서 전적으로 관리
 
-## Development Commands
+## 개발 명령어
 
-### Backend Setup (First Time)
+### 백엔드 설정 (처음 실행)
 
 ```powershell
 cd coupang-severance-app
@@ -22,136 +22,136 @@ python -m venv backend\.venv
 pip install -r backend\requirements.txt
 ```
 
-### Backend Dev Server
+### 백엔드 개발 서버
 
 ```powershell
-# Terminal 1
+# 터미널 1
 .\backend\.venv\Scripts\Activate.ps1
 uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Access: `http://localhost:8000` | Swagger API docs: `http://localhost:8000/docs`
+접속: `http://localhost:8000` | Swagger API 문서: `http://localhost:8000/docs`
 
-### Frontend Setup & Dev
+### 프론트엔드 설정 & 개발
 
 ```powershell
-# Terminal 2
+# 터미널 2
 cd frontend
 npm install
 npm run dev
 ```
 
-Access: `http://localhost:5173`
+접속: `http://localhost:5173`
 
-**Note**: Vite automatically proxies `/api/*` → `http://localhost:8000` in dev mode.
+**참고**: Vite는 개발 모드에서 자동으로 `/api/*` → `http://localhost:8000`으로 프록시합니다.
 
-### Frontend Build
+### 프론트엔드 빌드
 
 ```powershell
 cd frontend
-npm run build  # Runs: tsc -b && vite build → output in frontend/dist
+npm run build  # 실행: tsc -b && vite build → frontend/dist에 출력
 ```
 
-### Validation Tests
+### 유효성 검증 테스트
 
 ```powershell
 .\backend\.venv\Scripts\Activate.ps1
-python tests\validate_severance_logic.py  # Test logic against fixtures
+python tests\validate_severance_logic.py  # 로직을 픽스처와 비교하여 테스트
 ```
 
-## High-Level Architecture
+## 고수준 아키텍처
 
-### Request Flow
+### 요청 흐름
 
 ```
-Browser (React SPA)
+브라우저 (React SPA)
   │
-  ├─ /api/* (Vite proxy in dev, VITE_API_URL env in prod)
+  ├─ /api/* (개발 시 Vite 프록시, 프로덕션에서 VITE_API_URL 환경변수)
   │       │
-  │       └─► FastAPI Backend (port 8000)
-  │               ├─ /api/severance/*     — PDF parse, precision calculation
-  │               ├─ /api/unemployment/*  — Unemployment eligibility
-  │               ├─ /api/click-count     — Visit counter
-  │               └─ /api/inquiry/notify  — Discord webhook (1:1 inquiries)
+  │       └─► FastAPI 백엔드 (포트 8000)
+  │               ├─ /api/severance/*     — PDF 파싱, 정밀 계산
+  │               ├─ /api/unemployment/*  — 실업급여 적격성
+  │               ├─ /api/click-count     — 방문 카운터
+  │               └─ /api/inquiry/notify  — Discord 웹훅 (1:1 문의)
   │
-  └─ Supabase (frontend directly)
-          ├─ Auth: OAuth via signInWithOAuth, session via onAuthStateChange
-          ├─ profiles: User profile (joined_at, marketing_agreement)
-          ├─ reports: Saved calculation results (id, user_id, title, company_name, payload)
-          └─ inquiries: 1:1 customer inquiries (created_at, message, status)
+  └─ Supabase (프론트엔드에서 직접)
+          ├─ 인증: signInWithOAuth를 통한 OAuth, onAuthStateChange를 통한 세션
+          ├─ profiles: 사용자 프로필 (joined_at, marketing_agreement)
+          ├─ reports: 저장된 계산 결과 (id, user_id, title, company_name, payload)
+          └─ inquiries: 1:1 고객 문의 (created_at, message, status)
 ```
 
-### Key Modules
+### 주요 모듈
 
-#### Backend (`backend/app/`)
+#### 백엔드 (`backend/app/`)
 
-- **`services/pdf.py`** — Parses 근로복지공단 일용근로내역서 PDFs using `pdfplumber`. Handles multi-page tables, repeated headers, and 4 date formats. `COMPANY_KEYWORDS` dict maps canonical names to known variants (쿠팡, 마켓컬리, etc.).
-- **`services/severance.py`** — Core severance eligibility logic. Uses **28-day reverse-block algorithm**: from last work date, divides employment into 28-day blocks; a block qualifies if ≥8 work days (≡ 4-week average ≥15 hrs/week). Eligible if `qualifying_days ≥ 365`. Also detects 3-month employment gaps to split into separate segments.
-- **`services/unemployment.py`** — Unemployment eligibility: checks insured days in last 18 months ≥ 180.
-- **`services/counter.py`** — Click counter backed by Supabase `click_counter` table. Falls back to `data/click_count.json` if Supabase is unavailable.
-- **`services/notify.py`** — Sends Discord webhook notification when a user submits a 1:1 inquiry. Silently suppresses errors.
-- **`api/severance.py`, `api/unemployment.py`** — HTTP endpoints for calculation. Two modes each:
-  - **정밀 계산 (Precise)**: User uploads PDF → backend parses, filters by company, runs full algorithm
-  - **쉬운 계산 (Simple)**: User enters work days + average wage → backend applies formula directly
+- **`services/pdf.py`** — `pdfplumber`를 사용하여 근로복지공단 일용근로내역서 PDF를 파싱합니다. 다중 페이지 테이블, 반복되는 헤더, 4가지 날짜 형식을 처리합니다. `COMPANY_KEYWORDS` 사전은 표준 이름을 알려진 변형 (쿠팡, 마켓컬리 등)으로 매핑합니다.
+- **`services/severance.py`** — 핵심 퇴직금 적격성 로직입니다. **28일 역순 블록 알고리즘**을 사용합니다: 마지막 근무일부터 고용을 28일 블록으로 분할하고, 근무일수 ≥8일 (≡ 4주 평균 ≥15시간/주)이면 블록이 적격입니다. `qualifying_days ≥ 365`이면 적격입니다. 또한 3개월 고용 간격을 감지하여 별개 세그먼트로 분할합니다.
+- **`services/unemployment.py`** — 실업급여 적격성: 지난 18개월 내 보험일 수 ≥ 180을 확인합니다.
+- **`services/counter.py`** — Supabase `click_counter` 테이블로 지원되는 클릭 카운터입니다. Supabase를 사용할 수 없으면 `data/click_count.json`으로 폴백합니다.
+- **`services/notify.py`** — 사용자가 1:1 문의를 제출할 때 Discord 웹훅 알림을 보냅니다. 오류를 조용히 억제합니다.
+- **`api/severance.py`, `api/unemployment.py`** — 계산용 HTTP 엔드포인트입니다. 각각 두 가지 모드를 지원합니다:
+  - **정밀 계산 (Precise)**: 사용자가 PDF 업로드 → 백엔드에서 파싱, 회사별 필터링, 전체 알고리즘 실행
+  - **쉬운 계산 (Simple)**: 사용자가 근무일 수 + 평균 일급 입력 → 백엔드에서 공식 직접 적용
 
-#### Frontend (`frontend/src/`)
+#### 프론트엔드 (`frontend/src/`)
 
-- **`lib/supabase.ts`** — Single Supabase client instance. **All other files must import from here only.** Initialized with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
-- **`lib/api.ts`** — Centralized Axios instance. `baseURL = /api` in dev (proxied by Vite) and `VITE_API_URL` in production.
-- **`contexts/AuthContext.tsx`** — Global auth state. Subscribes to `onAuthStateChange` once at app startup. Exports `user`, `isLoggedIn`, `loading`, `logout`.
-- **`pages/SeveranceFlow.tsx`** — 4-step wizard: company selection → eligibility check → calculation mode → results. PDF upload triggers `/api/severance/extract-companies` first to show company selector.
-- **`pages/UnemploymentFlow.tsx`** — Parallel wizard for unemployment benefits.
-- **`pages/auth/callback.tsx`** — OAuth callback handler. Exchanges auth code for session, redirects to `/mypage` on success or `/login` on failure.
-- **`pages/MyPage.tsx`** — Shows user profile (from Supabase profile), past calculation results (from reports table), and inquiries history.
-- **`components/mypage/RetirementWidget.tsx`** — Displays latest saved calculation result or prompt to start a new calculation.
-- **`components/ErrorBoundary.tsx`** — Catches React render errors and displays fallback UI.
+- **`lib/supabase.ts`** — 단일 Supabase 클라이언트 인스턴스입니다. **다른 모든 파일은 여기서만 임포트해야 합니다.** `VITE_SUPABASE_URL` 및 `VITE_SUPABASE_ANON_KEY`로 초기화됩니다.
+- **`lib/api.ts`** — 중앙 집중식 Axios 인스턴스입니다. 개발 모드에서는 `baseURL = /api` (Vite로 프록시), 프로덕션에서는 `VITE_API_URL`입니다.
+- **`contexts/AuthContext.tsx`** — 전역 인증 상태입니다. 앱 시작 시 `onAuthStateChange`를 한 번 구독합니다. `user`, `isLoggedIn`, `loading`, `logout`을 내보냅니다.
+- **`pages/SeveranceFlow.tsx`** — 4단계 마법사: 회사 선택 → 적격성 확인 → 계산 모드 → 결과. PDF 업로드는 먼저 `/api/severance/extract-companies`를 트리거하여 회사 선택기를 표시합니다.
+- **`pages/UnemploymentFlow.tsx`** — 실업급여를 위한 병렬 마법사입니다.
+- **`pages/auth/callback.tsx`** — OAuth 콜백 핸들러입니다. 인증 코드를 세션으로 교환하고, 성공 시 `/mypage`로 리다이렉트하거나 실패 시 `/login`으로 리다이렉트합니다.
+- **`pages/MyPage.tsx`** — 사용자 프로필 (Supabase 프로필에서), 과거 계산 결과 (reports 테이블에서), 문의 이력을 표시합니다.
+- **`components/mypage/RetirementWidget.tsx`** — 최신 저장된 계산 결과를 표시하거나 새 계산을 시작하도록 프롬프트합니다.
+- **`components/ErrorBoundary.tsx`** — React 렌더링 오류를 캡처하고 폴백 UI를 표시합니다.
 
-### Calculation Modes
+### 계산 모드
 
-Both severance and unemployment flows support:
+퇴직금 및 실업급여 흐름 모두 지원:
 
-1. **정밀 계산 (Precise)** — User uploads PDF. Backend parses it with `pdfplumber`, extracts work dates by company, runs full 28-day block algorithm.
-2. **쉬운 계산 (Simple)** — User manually enters total work days and average daily wage. Backend applies the formula: `severance = average_wage × 30 × (work_days ÷ 365)`.
+1. **정밀 계산 (Precise)** — 사용자가 PDF를 업로드합니다. 백엔드는 `pdfplumber`로 파싱하고, 회사별로 근무일을 추출한 후, 전체 28일 블록 알고리즘을 실행합니다.
+2. **쉬운 계산 (Simple)** — 사용자가 근무일 수와 평균 일급을 수동으로 입력합니다. 백엔드는 공식을 적용합니다: `퇴직금 = 평균_일급 × 30 × (근무일_수 ÷ 365)`.
 
-## Key Implementation Patterns
+## 핵심 구현 패턴
 
-### Supabase Client Import
+### Supabase 클라이언트 임포트
 
-**CRITICAL**: Always import Supabase from the central client:
+**중요**: 항상 중앙 클라이언트에서 Supabase를 임포트하세요:
 
 ```typescript
-import { supabase } from '../lib/supabase'  // ✓ Correct
-// NOT: import { createClient } from '@supabase/supabase-js'  ✗
+import { supabase } from '../lib/supabase'  // ✓ 올바름
+// 아님: import { createClient } from '@supabase/supabase-js'  ✗
 ```
 
-### Authentication State
+### 인증 상태
 
-Access global auth state via `AuthContext`:
+`AuthContext`를 통해 전역 인증 상태에 접근하세요:
 
 ```typescript
 import { useAuth } from '../contexts/AuthContext'
 const { user, isLoggedIn, logout } = useAuth()
 ```
 
-### API Calls
+### API 호출
 
-Use centralized Axios instance:
+중앙 집중식 Axios 인스턴스를 사용하세요:
 
 ```typescript
 import { api } from '../lib/api'
 const response = await api.post('/severance/precise', { /* payload */ })
 ```
 
-### Result Storage
+### 결과 저장
 
-When a user saves a calculation result, store it in the `reports` table with:
+사용자가 계산 결과를 저장할 때, `reports` 테이블에 저장하세요:
 
 ```typescript
 await supabase.from('reports').insert({
   user_id: user.id,
-  title: 'Company Name Calculation Date',
-  company_name: 'Company Name',
-  payload: {  // SeverancePayload type
+  title: '회사명 계산 날짜',
+  company_name: '회사명',
+  payload: {  // SeverancePayload 타입
     severance: number,
     work_days: number,
     average_wage: number,
@@ -162,58 +162,58 @@ await supabase.from('reports').insert({
 })
 ```
 
-## Environment Variables
+## 환경 변수
 
-### Frontend (`frontend/.env.local`)
+### 프론트엔드 (`frontend/.env.local`)
 
 ```
 VITE_SUPABASE_URL=https://hmjxrqhcwjyfkvlcejfc.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJ...  # Supabase anon public key
-VITE_API_URL=  # Leave empty in dev (Vite proxies); set to backend URL in production
+VITE_SUPABASE_ANON_KEY=eyJ...  # Supabase 익명 공개 키
+VITE_API_URL=  # 개발 모드에서는 비워두기 (Vite 프록시); 프로덕션에서는 백엔드 URL 설정
 ```
 
-### Backend (`backend/.env`)
+### 백엔드 (`backend/.env`)
 
 ```
 SUPABASE_URL=https://hmjxrqhcwjyfkvlcejfc.supabase.co
 SUPABASE_ANON_KEY=eyJ...
-DISCORD_WEBHOOK_URL=https://discordapp.com/api/webhooks/...  # Optional
+DISCORD_WEBHOOK_URL=https://discordapp.com/api/webhooks/...  # 선택사항
 ```
 
-## Deployment
+## 배포
 
-### Frontend → Vercel
+### 프론트엔드 → Vercel
 
-- Automatic deployment on `git push origin main`
-- Build command: `cd frontend && npm run build`
-- Output: `frontend/dist`
-- `vercel.json` at repo root configures rewrite of all non-asset routes to `/index.html` (SPA)
-- **Required env vars in Vercel project settings**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
-- **Supabase redirect URLs** (Settings → Authentication → URL Configuration):
-  - `https://coupang-severance-app.vercel.app/**` (allow all paths)
-  - `https://coupang-severance-app.vercel.app/auth/callback` (required for OAuth session)
+- `git push origin main`시 자동 배포
+- 빌드 명령어: `cd frontend && npm run build`
+- 출력: `frontend/dist`
+- 저장소 루트의 `vercel.json`은 모든 비자산 경로를 `/index.html`로 재쓰기하도록 구성 (SPA)
+- **Vercel 프로젝트 설정에서 필수 환경 변수**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+- **Supabase 리다이렉트 URL** (설정 → 인증 → URL 구성):
+  - `https://coupang-severance-app.vercel.app/**` (모든 경로 허용)
+  - `https://coupang-severance-app.vercel.app/auth/callback` (OAuth 세션에 필수)
 
-### Backend → Render
+### 백엔드 → Render
 
-- Automatic deployment on `git push origin main`
-- `render.yaml` at repo root configures Python 3.12, Singapore region
-- Start command: `uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`
-- **Backend also mounts** `frontend/dist` as static files (`/assets`) if it exists, enabling the same server to optionally serve the frontend.
+- `git push origin main`시 자동 배포
+- 저장소 루트의 `render.yaml`은 Python 3.12, 싱가포르 지역으로 구성
+- 시작 명령어: `uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`
+- **백엔드는** 존재하면 `frontend/dist`를 정적 파일 (`/assets`)로 마운트하여, 같은 서버에서 선택적으로 프론트엔드를 제공할 수 있습니다.
 
-## Testing & Validation
+## 테스트 & 유효성 검증
 
-- **Test PDFs**: `tests/fixtures/` contains sample employment records
-- **Validation script**: `python tests/validate_severance_logic.py` validates logic against fixtures
-- **Generate test PDFs**: `python scripts/generate_test_pdfs.py` (requires `reportlab`)
+- **테스트 PDF**: `tests/fixtures/`에는 샘플 근로 기록이 있습니다
+- **유효성 검증 스크립트**: `python tests/validate_severance_logic.py`는 픽스처에 대해 로직을 검증합니다
+- **테스트 PDF 생성**: `python scripts/generate_test_pdfs.py` (`reportlab` 필요)
 
-## Important Notes for Future Work
+## 향후 작업을 위한 중요 사항
 
-1. **Notion Sync**: After completing code changes, always update the corresponding Notion development task in the "📋 CATCH 개발 태스크" database with status "✅ 완료" and implementation notes. See memory for Notion DB details.
+1. **Notion 동기화**: 코드 변경을 완료한 후 항상 "📋 CATCH 개발 태스크" 데이터베이스의 해당 Notion 개발 작업을 상태 "✅ 완료"로 업데이트하고 구현 노트를 추가하세요. Notion DB 세부 정보는 메모리를 참조하세요.
 
-2. **28-Day Block Algorithm**: This is the core of severance eligibility. Understand it in `backend/app/services/severance.py`. A block is a 28-day window; it qualifies if ≥8 work days (roughly 4 weeks at ≥15 hrs/week). The algorithm runs backward from the last work date.
+2. **28일 블록 알고리즘**: 이것이 퇴직금 적격성의 핵심입니다. `backend/app/services/severance.py`에서 이해하세요. 블록은 28일 윈도우입니다. 근무일 ≥8일 (대략 주당 ≥15시간의 4주)이면 적격입니다. 알고리즘은 마지막 근무일부터 역순으로 실행됩니다.
 
-3. **Company Filtering**: The PDF parser extracts all work records. The `/api/severance/extract-companies` endpoint returns a list of companies found in the PDF. Users select a company, which then filters the data for the `/api/severance/precise` call.
+3. **회사 필터링**: PDF 파서는 모든 근무 기록을 추출합니다. `/api/severance/extract-companies` 엔드포인트는 PDF에서 발견된 회사 목록을 반환합니다. 사용자가 회사를 선택하면, 이는 `/api/severance/precise` 호출에 대한 데이터를 필터링합니다.
 
-4. **Error Boundaries**: Frontend components are wrapped in `<ErrorBoundary>` to catch unhandled React errors. The app uses `LoadingOverlay` for async operations and `SkeletonCard` for placeholders.
+4. **오류 경계**: 프론트엔드 컴포넌트는 처리되지 않은 React 오류를 캡처하기 위해 `<ErrorBoundary>`로 래핑됩니다. 앱은 비동기 작업에 `LoadingOverlay`를 사용하고 플레이스홀더에 `SkeletonCard`를 사용합니다.
 
-5. **Calculation Results Storage**: ReportDetail.tsx now displays saved `payload` data (severance amount, work days, average wage, eligibility) in card format. The payload is structured per `SeverancePayload` type in `types/supabase.ts`.
+5. **계산 결과 저장**: ReportDetail.tsx는 이제 저장된 `payload` 데이터 (퇴직금 금액, 근무일, 평균 일급, 적격성)를 카드 형식으로 표시합니다. 페이로드는 `types/supabase.ts`의 `SeverancePayload` 타입에 따라 구조화됩니다.
