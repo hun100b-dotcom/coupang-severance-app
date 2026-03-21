@@ -19,20 +19,26 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-_DEFAULT_SUPABASE_URL = "https://hmjxrqhcwjyfkvlcejfc.supabase.co"
+# ── 프로젝트 고정 상수 (Supabase 프로젝트 ID 기반) ──────────
+_PROJECT_ID      = "hmjxrqhcwjyfkvlcejfc"
+_CORRECT_SB_URL  = f"https://{_PROJECT_ID}.supabase.co"
 _DEFAULT_ANON_KEY = (
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
     ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtanhycWhjd2p5Zmt2bGNlamZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTEwNTMsImV4cCI6MjA4ODYyNzA1M30"
     ".gr9poC-5808qHRoYc-5WH3dTqXupEEJpDdztv2fddog"
 )
+# Vercel VITE_ADMIN_SECRET 와 동일한 기본값 (환경변수 미설정 시 폴백)
+_DEFAULT_ADMIN_SECRET = "Luck2058qorwhdgns3"
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", _DEFAULT_SUPABASE_URL).rstrip("/")
+# SUPABASE_URL 환경변수가 다른 프로젝트를 가리키면 올바른 URL로 강제 교정
+_env_sb_url = os.getenv("SUPABASE_URL", "").rstrip("/")
+SUPABASE_URL = _env_sb_url if _PROJECT_ID in _env_sb_url else _CORRECT_SB_URL
+
 SUPABASE_SERVICE_ROLE_KEY = (
     os.getenv("SUPABASE_SERVICE_ROLE_KEY")
     or os.getenv("SUPABASE_ANON_KEY", _DEFAULT_ANON_KEY)
 )
-_anon_for_secret = os.getenv("SUPABASE_ANON_KEY", _DEFAULT_ANON_KEY)
-ADMIN_SECRET = os.getenv("ADMIN_SECRET") or _anon_for_secret[-32:]
+ADMIN_SECRET = os.getenv("ADMIN_SECRET") or _DEFAULT_ADMIN_SECRET
 
 
 # ── 공통 헬퍼 ─────────────────────────────────────────────
