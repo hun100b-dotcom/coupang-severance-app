@@ -36,18 +36,22 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
+_DEFAULT_SUPABASE_URL = "https://hmjxrqhcwjyfkvlcejfc.supabase.co"
+_DEFAULT_ANON_KEY = (
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtanhycWhjd2p5Zmt2bGNlamZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTEwNTMsImV4cCI6MjA4ODYyNzA1M30"
+    ".gr9poC-5808qHRoYc-5WH3dTqXupEEJpDdztv2fddog"
+)
+
+SUPABASE_URL = os.getenv("SUPABASE_URL", _DEFAULT_SUPABASE_URL).rstrip("/")
 # service role key가 없으면 anon key로 fallback (RLS가 없는 테이블에서는 동작)
 SUPABASE_SERVICE_ROLE_KEY = (
     os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-    or os.getenv("SUPABASE_ANON_KEY", "")
+    or os.getenv("SUPABASE_ANON_KEY", _DEFAULT_ANON_KEY)
 )
 # ADMIN_SECRET이 없으면 SUPABASE_ANON_KEY 뒤 32자로 자동 파생 (환경변수 미설정 시 폴백)
-ADMIN_SECRET = (
-    os.getenv("ADMIN_SECRET")
-    or os.getenv("SUPABASE_ANON_KEY", "")[-32:]
-    or ""
-)
+_anon_for_secret = os.getenv("SUPABASE_ANON_KEY", _DEFAULT_ANON_KEY)
+ADMIN_SECRET = os.getenv("ADMIN_SECRET") or _anon_for_secret[-32:]
 
 
 # ── 공통 헬퍼 ─────────────────────────────────────────────
