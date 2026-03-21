@@ -3,6 +3,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom' // 브라우저 라우팅을 위해 react-router-dom을 가져옵니다.
 import { AuthProvider } from './contexts/AuthContext' // 전역 로그인 상태를 제공하는 AuthProvider를 가져옵니다.
 import AnimatedBackground from './components/AnimatedBackground' // 배경 애니메이션 컴포넌트를 가져옵니다.
+import Layout from './components/Layout' // 상단/하단 네비바를 포함한 전역 레이아웃 컴포넌트입니다.
 import ProtectedRoute from './components/ProtectedRoute' // 로그인 필요 페이지를 보호하는 래퍼 컴포넌트를 가져옵니다.
 import Intro from './pages/Intro' // 인트로(홈) 페이지 컴포넌트를 가져옵니다.
 import Home from './pages/Home' // 기존 메인 화면 컴포넌트를 가져옵니다.
@@ -27,47 +28,54 @@ export default function App() {
         <AnimatedBackground /> {/* 모든 페이지 뒤에 공통으로 깔릴 배경 애니메이션입니다. */}
 
         <Routes>
-          {/* / 경로는 첫 진입 잠깐용 인트로 페이지로 연결합니다. */}
+          {/* ── 네비바 없는 독립 페이지 ── */}
+          {/* / 경로: 첫 진입용 인트로 스플래시 (6초 후 자동 이동) */}
           <Route path="/" element={<Intro />} />
-          {/* /home 경로는 기존 메인 화면(인트로 이후의 실제 대시보드)입니다. */}
-          <Route path="/home" element={<Home />} />
-          {/* 퇴직금 계산 페이지 라우트입니다. */}
-          <Route path="/severance" element={<SeveranceFlow />} />
-          {/* 실업급여 계산 페이지 라우트입니다. */}
-          <Route path="/unemployment" element={<UnemploymentFlow />} />
-          {/* 로그인한 사용자의 마이페이지 라우트입니다. */}
-          <Route path="/mypage" element={<MyPage />} />
-          {/* 소셜 로그인 이후 돌아오는 인증 콜백 라우트입니다. */}
+          {/* OAuth 콜백: 로그인 처리 후 리다이렉트 */}
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
-          {/* 새로 만드는 전용 로그인 페이지 라우트입니다. */}
+          {/* 로그인 페이지: 독립 UI로 표시 */}
           <Route path="/login" element={<LoginPage />} />
-          {/* 리포트 상세 페이지는 ProtectedRoute로 감싸 로그인 여부를 확인합니다. */}
-          <Route
-            path="/report/:id"
-            element={
-              <ProtectedRoute>
-                <ReportDetail />
-              </ProtectedRoute>
-            }
-          />
-          {/* 결제 안내 페이지 라우트입니다. */}
-          <Route path="/payment" element={<PaymentGuide />} />
-          {/* 관리자 전용 문의 관리 페이지 (로그인 + 관리자 이메일 일치 시만 접근 가능) */}
+          {/* 관리자 페이지: 자체 사이드바 네비 보유 */}
           <Route path="/admin" element={<AdminPage />} />
-          {/* 주휴수당 계산기 */}
-          <Route path="/weekly-allowance" element={<WeeklyAllowancePage />} />
-          {/* 연차수당 계산기 */}
-          <Route path="/annual-leave" element={<AnnualLeaveAllowancePage />} />
-          {/* 나의 혜택 */}
-          <Route path="/my-benefits" element={<MyBenefitsPage />} />
-          {/* 정의되지 않은 경로는 모두 기존 메인 화면으로 돌려보냅니다. */}
-          <Route path="*" element={<Home />} />
+
+          {/* ── 네비바(TopNav + BottomNav)가 있는 일반 페이지 ──
+              Layout 컴포넌트가 Outlet을 통해 중첩 라우트를 렌더링합니다. */}
+          <Route element={<Layout />}>
+            {/* 메인 홈 화면 */}
+            <Route path="/home" element={<Home />} />
+            {/* 퇴직금 계산 플로우 */}
+            <Route path="/severance" element={<SeveranceFlow />} />
+            {/* 실업급여 계산 플로우 */}
+            <Route path="/unemployment" element={<UnemploymentFlow />} />
+            {/* 마이페이지 (로그인 없이도 접근, 내부에서 로그인 유도) */}
+            <Route path="/mypage" element={<MyPage />} />
+            {/* 리포트 상세 (로그인 필수) */}
+            <Route
+              path="/report/:id"
+              element={
+                <ProtectedRoute>
+                  <ReportDetail />
+                </ProtectedRoute>
+              }
+            />
+            {/* 결제 안내 */}
+            <Route path="/payment" element={<PaymentGuide />} />
+            {/* 주휴수당 계산기 */}
+            <Route path="/weekly-allowance" element={<WeeklyAllowancePage />} />
+            {/* 연차수당 계산기 */}
+            <Route path="/annual-leave" element={<AnnualLeaveAllowancePage />} />
+            {/* 나의 혜택 */}
+            <Route path="/my-benefits" element={<MyBenefitsPage />} />
+            {/* 정의되지 않은 경로는 메인 화면으로 */}
+            <Route path="*" element={<Home />} />
+          </Route>
         </Routes>
       </AuthProvider>
 
-      {/* 배포 버전과 빌드 날짜를 화면 오른쪽 아래에 작게 표시합니다. */}
+      {/* 배포 버전과 빌드 날짜를 화면 오른쪽 아래에 작게 표시합니다.
+          BottomNav(60px) 위에 표시되도록 bottom-[68px]로 조정합니다. */}
       <div
-        className="fixed bottom-2 right-2 text-[10px] text-slate-400/80 select-none pointer-events-none z-[1]"
+        className="fixed bottom-[68px] right-2 text-[10px] text-slate-400/80 select-none pointer-events-none z-[1]"
         aria-hidden
       >
         v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '?'}
