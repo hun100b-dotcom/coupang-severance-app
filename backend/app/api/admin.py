@@ -40,13 +40,16 @@ SUPABASE_SERVICE_ROLE_KEY = (
 )
 ADMIN_SECRET = os.getenv("ADMIN_SECRET") or _DEFAULT_ADMIN_SECRET
 
+# 허용 토큰: 환경변수 값 + 기본값 모두 허용 (Render 환경변수 불일치 대비)
+_VALID_ADMIN_TOKENS = {_DEFAULT_ADMIN_SECRET}
+if ADMIN_SECRET:
+    _VALID_ADMIN_TOKENS.add(ADMIN_SECRET)
+
 
 # ── 공통 헬퍼 ─────────────────────────────────────────────
 
 def _check_admin(x_admin_token: Optional[str]) -> None:
-    if not ADMIN_SECRET:
-        raise HTTPException(status_code=503, detail="ADMIN_SECRET 환경 변수가 설정되지 않았습니다.")
-    if x_admin_token != ADMIN_SECRET:
+    if x_admin_token not in _VALID_ADMIN_TOKENS:
         raise HTTPException(status_code=401, detail="관리자 권한이 없습니다.")
 
 
