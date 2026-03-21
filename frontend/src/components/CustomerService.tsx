@@ -16,7 +16,28 @@ import {
 } from 'lucide-react' // 다양한 아이콘 컴포넌트를 한 번에 가져옵니다.
 import { supabase } from '../lib/supabase' // 공용 Supabase 클라이언트를 새 경로에서 가져옵니다.
 import { AUTH_CALLBACK_URL } from '../utils/getUrl' // 콜백 URL 상수를 그대로 재사용합니다.
-import { notifyNewInquiry } from '../lib/api' // 문의 접수 시 관리자 Discord 알림을 보냅니다.
+
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1484912164211789926/BHyKtOY0wX-yGZEevjQaCd_do9tK_Q12b5xEflHqNvDbMGAkkMtSi1DOMX5JQtbX4_PC'
+
+async function sendDiscordNotify(category: string, content: string, userId: string) {
+  try {
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content: `📬 **[CATCH] 새로운 문의가 접수되었습니다**`,
+        embeds: [{
+          title: `[${category}] 새 문의`,
+          description: content.slice(0, 2000),
+          fields: [{ name: '사용자 ID', value: `\`${userId}\``, inline: false }],
+          color: 0x3182F6,
+        }],
+      }),
+    })
+  } catch {
+    // 알림 실패는 사용자 플로우에 영향 없음
+  }
+}
 
 type View = 'main' | 'login' | 'form' | 'success' | 'history'
 
@@ -189,14 +210,8 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
       ])
       if (error) throw error
 
-      // 문의 접수 성공 후 관리자에게 Discord 알림을 보냅니다 (실패해도 사용자 플로우에 영향 없음)
-      console.log('[CustomerService] 문의 접수 성공, Discord 알림 호출 시작...')
-      notifyNewInquiry({
-        title: `[${inquiryCategory}] 새 문의`,
-        content: inquiryText.trim(),
-        userId: user.id,
-      })
-      console.log('[CustomerService] Discord 알림 호출 완료')
+      // 브라우저에서 Discord Webhook 직접 호출 (Render IP 우회)
+      sendDiscordNotify(inquiryCategory, inquiryText.trim(), user.id)
 
       setInquiryText('')
       setInquiryCategory('')
