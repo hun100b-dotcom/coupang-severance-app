@@ -103,6 +103,27 @@ async def _write_audit(
         pass
 
 
+# ── Debug ─────────────────────────────────────────────────
+
+@router.get("/admin/health")
+async def admin_health(x_admin_token: Optional[str] = Header(default=None)):
+    """환경변수 및 Supabase 연결 상태 확인 (디버그용)"""
+    _check_admin(x_admin_token)
+    try:
+        h = _supabase_headers()
+        async with httpx.AsyncClient(timeout=5) as client:
+            r = await client.get(f"{SUPABASE_URL}/rest/v1/system_settings", headers=h, params={"select": "key", "limit": "1"})
+        return {
+            "ok": True,
+            "admin_secret_len": len(ADMIN_SECRET),
+            "supabase_url": SUPABASE_URL,
+            "service_key_len": len(SUPABASE_SERVICE_ROLE_KEY),
+            "settings_status": r.status_code,
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e), "type": type(e).__name__}
+
+
 # ── Dashboard ─────────────────────────────────────────────
 
 @router.get("/admin/stats")
@@ -453,13 +474,16 @@ async def bulk_inquiry_status(
 @router.get("/admin/templates")
 async def list_templates(x_admin_token: Optional[str] = Header(default=None)):
     _check_admin(x_admin_token)
-    async with httpx.AsyncClient(timeout=10) as client:
-        res = await client.get(
-            f"{SUPABASE_URL}/rest/v1/inquiry_templates",
-            headers=_supabase_headers(),
-            params={"select": "*", "order": "use_count.desc"},
-        )
-    return {"templates": res.json() if res.status_code == 200 else []}
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            res = await client.get(
+                f"{SUPABASE_URL}/rest/v1/inquiry_templates",
+                headers=_supabase_headers(),
+                params={"select": "*", "order": "use_count.desc"},
+            )
+        return {"templates": res.json() if res.status_code == 200 else []}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
 
 
 class TemplatePayload(BaseModel):
