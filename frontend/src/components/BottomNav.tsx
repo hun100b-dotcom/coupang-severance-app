@@ -1,6 +1,6 @@
 // 하단 네비게이션 바 컴포넌트 (모바일 친화적 탭 네비게이션)
 // - 좌우 스크롤 가능한 6개 탭
-// - 탭: 홈 / 퇴직금 캐치하기 / 실업급여 캐치하기 / 연차수당 캐치하기 / 주휴수당 캐치하기 / 마이페이지
+// - 탭: 홈 / 퇴직금 / 실업급여 / 연차수당 / 주휴수당 / 마이페이지
 // - 활성 탭은 파란색 + 상단 인디케이터 바
 // - 활성 탭이 항상 화면 중앙으로 스크롤되도록 처리
 
@@ -28,28 +28,28 @@ const NAV_TABS = [
   },
   {
     id: 'severance',
-    label: '퇴직금 캐치하기',
+    label: '퇴직금',
     icon: Briefcase,
     path: '/severance',
     isActive: (pathname: string) => pathname === '/severance',
   },
   {
     id: 'unemployment',
-    label: '실업급여 캐치하기',
+    label: '실업급여',
     icon: ShieldCheck,
     path: '/unemployment',
     isActive: (pathname: string) => pathname === '/unemployment',
   },
   {
     id: 'annual-leave',
-    label: '연차수당 캐치하기',
+    label: '연차수당',
     icon: CalendarDays,
     path: '/annual-leave',
     isActive: (pathname: string) => pathname === '/annual-leave',
   },
   {
     id: 'weekly-allowance',
-    label: '주휴수당 캐치하기',
+    label: '주휴수당',
     icon: Clock,
     path: '/weekly-allowance',
     isActive: (pathname: string) => pathname === '/weekly-allowance',
@@ -110,8 +110,8 @@ export default function BottomNav() {
       {/* 가로 스크롤 컨테이너 — 스크롤바 숨김 */}
       <div
         ref={scrollRef}
-        className="flex overflow-x-auto h-[60px]"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} // Firefox/IE 스크롤바 숨김
+        className="flex overflow-x-auto h-[56px] justify-start hide-scrollbar"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} // 스크롤바 숨김
       >
         {NAV_TABS.map((tab, index) => {
           const active = tab.isActive(location.pathname)
@@ -122,8 +122,8 @@ export default function BottomNav() {
               key={tab.id}
               ref={(el) => { tabRefs.current[index] = el }}
               onClick={() => handleTabClick(tab)}
-              className="flex flex-col items-center justify-center gap-0.5 relative transition-colors flex-shrink-0 px-2"
-              style={{ minWidth: '80px' }} // 탭이 잘리지 않도록 최소 너비 고정
+              className="flex flex-col items-center justify-center relative transition-colors flex-shrink-0"
+              style={{ minWidth: '72px', paddingLeft: '12px', paddingRight: '12px' }}
               aria-label={tab.label}
               aria-current={active ? 'page' : undefined}
             >
@@ -131,7 +131,7 @@ export default function BottomNav() {
               {active && (
                 <motion.div
                   layoutId="bottomNavIndicator"
-                  className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[3px] rounded-b-full"
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-b-full"
                   style={{ background: '#3182F6' }}
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
@@ -143,7 +143,7 @@ export default function BottomNav() {
                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               >
                 <Icon
-                  size={22}
+                  size={18}
                   strokeWidth={active ? 2.2 : 1.7}
                   style={{ color: active ? '#3182F6' : '#9CA3AF' }}
                 />
@@ -151,7 +151,7 @@ export default function BottomNav() {
 
               {/* 라벨 — 긴 텍스트도 잘리지 않도록 whitespace-nowrap */}
               <span
-                className="text-[9px] font-medium leading-none whitespace-nowrap"
+                className="text-[10px] font-medium leading-none whitespace-nowrap mt-0.5"
                 style={{ color: active ? '#3182F6' : '#9CA3AF' }}
               >
                 {tab.label}
