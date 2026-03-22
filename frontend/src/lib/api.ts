@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { supabase } from './supabase'
 
 const baseURL = typeof import.meta.env.VITE_API_URL === 'string' && import.meta.env.VITE_API_URL
   ? import.meta.env.VITE_API_URL.replace(/\/$/, '') // 끝 슬래시 제거
@@ -17,30 +18,38 @@ export const getClickCount = () =>
 export const registerClick = (service: 'severance' | 'unemployment' | 'weekly_allowance' | 'annual_leave' | 'benefits') =>
   api.post(`/click/${service}`).then(r => r.data)
 
-// ── 1:1 문의 알림 (Discord Webhook 등) ─────────────
-export const notifyNewInquiry = (payload: {
+// ── 1:1 문의 알림 (Supabase Edge Function → Discord Webhook) ─────────
+// 브라우저에서 Discord Webhook을 직접 호출하지 않고,
+// Supabase Edge Function을 통해 서버사이드에서 처리합니다.
+// Webhook URL은 Supabase Secret에서만 관리하므로 코드에 노출되지 않습니다.
+export async function notifyNewInquiry(payload: {
   title: string
   content: string
   userId?: string
   userName?: string
-}) => {
-  console.log('[notifyNewInquiry] 호출됨:', payload)
-  return api
-    .post('/inquiry/notify', {
-      // 백엔드 스키마에 맞춰 필드명을 매핑합니다.
-      title: payload.title,
-      content: payload.content,
-      user_id: payload.userId ?? null,
-      user_name: payload.userName ?? null,
+  category?: string
+}) {
+  try {
+    if (!supabase) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다')
+
+    // Edge Function에 전달할 메시지를 구성합니다.
+    // title + content를 합쳐 하나의 message 필드로 전달합니다.
+    const { error } = await supabase.functions.invoke('notify-inquiry', {
+      body: {
+        message: `[${payload.title}]\n${payload.content}`,
+        category: payload.category ?? '기타',
+        userId: payload.userId,
+        createdAt: new Date().toISOString(),
+      },
     })
-    .then(r => {
-      console.log('[notifyNewInquiry] 성공 응답:', r.data)
-      return r.data
-    })
-    .catch(err => {
-      console.error('[notifyNewInquiry] 오류:', err)
-      return undefined
-    }) // 알림 실패는 사용자 플로우를 막지 않도록 조용히 무시합니다.
+
+    if (error) throw error
+    return { success: true }
+  } catch (err) {
+    // 알림 실패는 문의 저장 자체를 막지 않음 — 콘솔 로그만 기록
+    console.warn('[Discord 알림 실패] 문의는 정상 저장됩니다.', err)
+    return { success: false }
+  }
 }
 
 /** PDF에서 사업장 고유 리스트 추출 (퇴직금 정밀 계산용) */
