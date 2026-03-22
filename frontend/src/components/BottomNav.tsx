@@ -1,45 +1,64 @@
 // 하단 네비게이션 바 컴포넌트 (모바일 친화적 탭 네비게이션)
-// - 아이콘 + 라벨 조합으로 현재 페이지 활성 표시
-// - 탭: 홈 / 퇴직금 / 실업급여 / 마이페이지
+// - 좌우 스크롤 가능한 6개 탭
+// - 탭: 홈 / 퇴직금 캐치하기 / 실업급여 캐치하기 / 연차수당 캐치하기 / 주휴수당 캐치하기 / 마이페이지
+// - 활성 탭은 파란색 + 상단 인디케이터 바
+// - 활성 탭이 항상 화면 중앙으로 스크롤되도록 처리
 
+import { useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Home, Briefcase, ShieldCheck, UserCircle2 } from 'lucide-react'
+import {
+  Home,
+  Briefcase,
+  ShieldCheck,
+  CalendarDays,
+  Clock,
+  UserCircle2,
+} from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
-// ── 탭 정의 ──
+// ── 탭 정의 (순서대로 렌더링됨) ──
 const NAV_TABS = [
   {
     id: 'home',
     label: '홈',
     icon: Home,
     path: '/home',
-    // /home 경로일 때 활성화
     isActive: (pathname: string) => pathname === '/home',
   },
   {
     id: 'severance',
-    label: '퇴직금',
+    label: '퇴직금 캐치하기',
     icon: Briefcase,
     path: '/severance',
-    // /severance, /weekly-allowance, /annual-leave 포함 활성화
-    isActive: (pathname: string) =>
-      ['/severance', '/weekly-allowance', '/annual-leave'].includes(pathname),
+    isActive: (pathname: string) => pathname === '/severance',
   },
   {
     id: 'unemployment',
-    label: '실업급여',
+    label: '실업급여 캐치하기',
     icon: ShieldCheck,
     path: '/unemployment',
-    // /unemployment 경로일 때 활성화
     isActive: (pathname: string) => pathname === '/unemployment',
+  },
+  {
+    id: 'annual-leave',
+    label: '연차수당 캐치하기',
+    icon: CalendarDays,
+    path: '/annual-leave',
+    isActive: (pathname: string) => pathname === '/annual-leave',
+  },
+  {
+    id: 'weekly-allowance',
+    label: '주휴수당 캐치하기',
+    icon: Clock,
+    path: '/weekly-allowance',
+    isActive: (pathname: string) => pathname === '/weekly-allowance',
   },
   {
     id: 'mypage',
     label: '마이페이지',
     icon: UserCircle2,
     path: '/mypage',
-    // /mypage, /report/:id, /my-benefits 포함 활성화
     isActive: (pathname: string) =>
       pathname === '/mypage' ||
       pathname.startsWith('/report/') ||
@@ -52,8 +71,29 @@ export default function BottomNav() {
   const location = useLocation()
   const { isLoggedIn } = useAuth()
 
-  // 탭 클릭 핸들러: 마이페이지는 비로그인 시 로그인 페이지로 리다이렉트
-  function handleTabClick(tab: typeof NAV_TABS[number]) {
+  // 스크롤 컨테이너 ref
+  const scrollRef = useRef<HTMLDivElement>(null)
+  // 각 탭 버튼 ref (활성 탭 스크롤 계산에 사용)
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
+
+  // 경로가 바뀔 때마다 활성 탭을 스크롤 컨테이너 중앙으로 이동
+  useEffect(() => {
+    const activeIndex = NAV_TABS.findIndex((tab) => tab.isActive(location.pathname))
+    if (activeIndex === -1) return
+
+    const tabEl = tabRefs.current[activeIndex]
+    const scrollEl = scrollRef.current
+    if (!tabEl || !scrollEl) return
+
+    // 활성 탭의 중심이 스크롤 컨테이너 중앙에 오도록 scrollLeft 계산
+    const targetLeft =
+      tabEl.offsetLeft - scrollEl.clientWidth / 2 + tabEl.clientWidth / 2
+
+    scrollEl.scrollTo({ left: targetLeft, behavior: 'smooth' })
+  }, [location.pathname])
+
+  // 탭 클릭: 마이페이지는 비로그인 시 로그인 페이지로 이동
+  function handleTabClick(tab: (typeof NAV_TABS)[number]) {
     if (tab.id === 'mypage' && !isLoggedIn) {
       navigate('/login')
       return
@@ -67,20 +107,27 @@ export default function BottomNav() {
       className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-100"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} // iOS 홈 인디케이터 영역 대응
     >
-      <div className="max-w-[460px] mx-auto flex items-stretch h-[60px]">
-        {NAV_TABS.map((tab) => {
+      {/* 가로 스크롤 컨테이너 — 스크롤바 숨김 */}
+      <div
+        ref={scrollRef}
+        className="flex overflow-x-auto h-[60px]"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} // Firefox/IE 스크롤바 숨김
+      >
+        {NAV_TABS.map((tab, index) => {
           const active = tab.isActive(location.pathname)
           const Icon = tab.icon
 
           return (
             <button
               key={tab.id}
+              ref={(el) => { tabRefs.current[index] = el }}
               onClick={() => handleTabClick(tab)}
-              className="flex-1 flex flex-col items-center justify-center gap-0.5 relative transition-colors"
+              className="flex flex-col items-center justify-center gap-0.5 relative transition-colors flex-shrink-0 px-2"
+              style={{ minWidth: '80px' }} // 탭이 잘리지 않도록 최소 너비 고정
               aria-label={tab.label}
               aria-current={active ? 'page' : undefined}
             >
-              {/* 활성화된 탭 아이콘 아래의 블루 인디케이터 점 */}
+              {/* 활성 탭 상단 인디케이터 바 */}
               {active && (
                 <motion.div
                   layoutId="bottomNavIndicator"
@@ -102,9 +149,9 @@ export default function BottomNav() {
                 />
               </motion.div>
 
-              {/* 라벨 */}
+              {/* 라벨 — 긴 텍스트도 잘리지 않도록 whitespace-nowrap */}
               <span
-                className="text-[10px] font-medium leading-none"
+                className="text-[9px] font-medium leading-none whitespace-nowrap"
                 style={{ color: active ? '#3182F6' : '#9CA3AF' }}
               >
                 {tab.label}

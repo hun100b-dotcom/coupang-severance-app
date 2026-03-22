@@ -11,6 +11,7 @@ export interface InquiryItem {
   status: string | null
   created_at: string
   answer?: string | null
+  category?: string | null // 문의 카테고리 (퇴직금/실업급여, 서류발급, 오류/버그, 기타 등)
 }
 
 interface InquiryHistoryProps {

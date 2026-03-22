@@ -60,7 +60,7 @@ export default function MyPage() {
     try {
       const { data, error } = await supabase
         .from('inquiries')
-        .select('id, title, content, status, created_at, answer')
+        .select('id, title, content, status, created_at, answer, category')
         .eq('user_id', user.raw.id)
         .order('created_at', { ascending: false })
       if (error) throw error
