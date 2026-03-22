@@ -657,8 +657,8 @@ export default function ResultSeverance({ result, resultType, company, onReset }
           ℹ️ 이 결과는 참고용이에요. 정확한 퇴직금은 회사 급여 기록과 노무사 상담을 통해 확인해 주세요.
         </div>
 
-        {/* ── 저장 버튼 (정밀계산 완료 시만 표시) ─────── */}
-        {resultType === 'precise' && (
+        {/* ── 저장 버튼 (간편계산·정밀계산 모두 표시) ─────── */}
+        {(
           <div style={{
             background: saveState === 'saved' ? 'linear-gradient(135deg,#ecfdf5,#d1fae5)' : 'linear-gradient(135deg,#eff6ff,#dbeafe)',
             border: `1.5px solid ${saveState === 'saved' ? '#6ee7b7' : '#93c5fd'}`,

@@ -1,52 +1,60 @@
-// 마이페이지 화면입니다.
-// Toss / Apple Card 스타일을 참고해, 프로필·퇴직금 위젯·서비스 카드·1:1 문의 내역을 한 화면에 배치합니다.
+// 마이페이지 — 토스/당근마켓 스타일로 전면 개편
+// 프로필 카드 · 계산 기록 · 빠른 계산 · 고객지원 · 계정 관리
 
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ChevronLeft, LogOut } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { ProfileSection } from '../components/mypage/ProfileSection'
-import { RetirementWidget } from '../components/mypage/RetirementWidget'
-import { ServiceCards } from '../components/mypage/ServiceCards'
-import { InquiryModal } from '../components/mypage/InquiryModal'
-import { InquiryHistory, InquiryItem } from '../components/mypage/InquiryHistory'
 import { notifyNewInquiry } from '../lib/api'
+import { ProfileCard } from '../components/mypage/ProfileCard'
+import { SavedResultsList } from '../components/mypage/SavedResultsList'
+import { SavedResultDetail } from '../components/mypage/SavedResultDetail'
+import { QuickActions } from '../components/mypage/QuickActions'
+import { SupportSection } from '../components/mypage/SupportSection'
+import { InquiryModal } from '../components/mypage/InquiryModal'
+import type { InquiryItem } from '../components/mypage/InquiryHistory'
 import type { ReportRow } from '../types/supabase'
 
-// 가입일(ISO 문자열)로부터 오늘까지 경과한 일수를 계산하는 순수 함수입니다.
-function calculateDaysFrom(joinedAt: string | null | undefined): number | null {
-  if (!joinedAt) return null
-  const start = new Date(joinedAt)
+// 가입일로부터 경과 일수 계산
+function calcDaysFrom(iso: string | null | undefined): number | null {
+  if (!iso) return null
+  const start = new Date(iso)
   const today = new Date()
   start.setHours(0, 0, 0, 0)
   today.setHours(0, 0, 0, 0)
-  const diffMs = today.getTime() - start.getTime()
-  if (diffMs < 0) return null
-  return Math.floor(diffMs / (24 * 60 * 60 * 1000))
+  const ms = today.getTime() - start.getTime()
+  if (ms < 0) return null
+  return Math.floor(ms / (24 * 60 * 60 * 1000))
 }
 
 export default function MyPage() {
   const navigate = useNavigate()
   const { isLoggedIn, user, loading, logout } = useAuth()
 
+  // ── 모달 상태
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false)
+  const [selectedReport, setSelectedReport] = useState<ReportRow | null>(null)
+
+  // ── 문의 내역
   const [inquiries, setInquiries] = useState<InquiryItem[]>([])
   const [loadingInquiries, setLoadingInquiries] = useState(true)
-  const [latestReport, setLatestReport] = useState<ReportRow | null | undefined>(undefined) // undefined=로딩중, null=없음
 
-  // 로그인 상태가 아닌데 로딩이 끝났다면 로그인 페이지로 보냅니다.
+  // ── 저장된 계산 기록 (최대 50건)
+  const [reports, setReports] = useState<ReportRow[]>([])
+  const [loadingReports, setLoadingReports] = useState(true)
+
+  // 로그인되지 않으면 로그인 페이지로 이동
   useEffect(() => {
     if (!loading && !isLoggedIn) {
       navigate('/login', { replace: true })
     }
   }, [loading, isLoggedIn, navigate])
 
-  // 로그인 상태가 준비된 뒤에만 문의 내역을 조회하도록 훅을 먼저 선언합니다.
+  // ── 문의 내역 조회
   const refreshInquiries = useCallback(async () => {
     if (!supabase || !isLoggedIn || !user) {
-      setInquiries([])
-      setLoadingInquiries(false)
-      return
+      setInquiries([]); setLoadingInquiries(false); return
     }
     setLoadingInquiries(true)
     try {
@@ -64,30 +72,30 @@ export default function MyPage() {
     }
   }, [isLoggedIn, user])
 
-  useEffect(() => {
-    refreshInquiries()
-  }, [refreshInquiries])
+  useEffect(() => { refreshInquiries() }, [refreshInquiries])
 
-  // 가장 최근 정밀계산 리포트 조회
+  // ── 저장된 계산 기록 조회 (최대 50건, 최신순)
   useEffect(() => {
-    if (!supabase || !isLoggedIn || !user) { setLatestReport(null); return }
-    const fetchReport = async () => {
+    if (!supabase || !isLoggedIn || !user) { setReports([]); setLoadingReports(false); return }
+    const fetch = async () => {
       try {
         const { data } = await supabase!
           .from('reports')
-          .select('id, title, company_name, created_at')
+          .select('id, title, company_name, created_at, payload')
           .eq('user_id', user.raw.id)
           .order('created_at', { ascending: false })
-          .limit(1)
-        setLatestReport((data?.[0] as ReportRow) ?? null)
+          .limit(50)
+        setReports((data as ReportRow[]) ?? [])
       } catch {
-        setLatestReport(null)
+        setReports([])
+      } finally {
+        setLoadingReports(false)
       }
     }
-    fetchReport()
+    fetch()
   }, [isLoggedIn, user])
 
-  // 아직 초기 세션 확인 중이라면 간단한 로딩 화면을 반환합니다.
+  // 로딩 중
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4">
@@ -96,30 +104,24 @@ export default function MyPage() {
     )
   }
 
-  // 로그인되지 않은 상태라면 안내 문구만 표시합니다.
+  // 로그인 안 됨
   if (!isLoggedIn || !user) {
     return (
       <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4">
-        <p className="text-sm text-[#8B95A1]">로그인이 필요합니다. 로그인 페이지로 이동 중...</p>
+        <p className="text-sm text-[#8B95A1]">로그인이 필요합니다. 이동 중...</p>
       </div>
     )
   }
 
-  const rawMeta = user.raw.user_metadata ?? {}
-  const displayName: string =
-    rawMeta.full_name ?? rawMeta.name ?? user.name ?? '사용자'
-  const avatarUrl: string | undefined =
-    rawMeta.avatar_url ?? rawMeta.picture ?? user.avatarUrl
+  const rawMeta    = user.raw.user_metadata ?? {}
+  const displayName: string = rawMeta.full_name ?? rawMeta.name ?? user.name ?? '사용자'
+  const avatarUrl: string | undefined = rawMeta.avatar_url ?? rawMeta.picture ?? user.avatarUrl
+  const joinedAt: string | null = (rawMeta.joined_at as string | undefined) ?? (user.raw.created_at ?? null)
+  const daysWithCatch = calcDaysFrom(joinedAt)
 
-  const joinedAtRaw: string | null =
-    (rawMeta.joined_at as string | undefined) ?? (user.raw.created_at ?? null)
-
-  const workedDays = calculateDaysFrom(joinedAtRaw)
-
-  // 1:1 문의 작성 모달에서 호출하는 저장 함수입니다.
+  // ── 1:1 문의 저장 핸들러
   const handleCreateInquiry = async (payload: { title: string; content: string }) => {
     if (!supabase) return
-    // 1) Supabase inquiries 테이블에 문의를 저장합니다.
     await supabase.from('inquiries').insert({
       user_id: user.raw.id,
       title: payload.title,
@@ -127,70 +129,82 @@ export default function MyPage() {
       content: payload.content,
       status: '대기중',
     })
-    // 2) 관리자 알림(Discord Webhook 등)을 비동기로 호출합니다.
-    notifyNewInquiry({
-      title: payload.title,
-      content: payload.content,
-      userId: user.raw.id,
-      userName: displayName,
-    })
-    // 3) 최신 상담 내역을 다시 가져옵니다.
+    notifyNewInquiry({ title: payload.title, content: payload.content, userId: user.raw.id, userName: displayName })
     await refreshInquiries()
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F4F6] pb-10 relative z-10">
-      {/* 상단 헤더: 앱 로고와 로그아웃 버튼을 오른쪽에 배치합니다. */}
+    <div className="min-h-screen bg-[#F2F4F6] pb-16 relative z-10">
+      {/* 헤더 */}
       <header className="sticky top-0 z-30 bg-[#F2F4F6]/90 backdrop-blur-xl border-b border-gray-200/50">
         <div className="max-w-[460px] mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/catch-logo.png" alt="" className="w-7 h-7 object-contain" />
-            <h1 className="text-[17px] font-extrabold text-[#191f28] tracking-tight">
-              내 정보
-            </h1>
+            <button type="button" onClick={() => navigate('/home')}
+              className="p-1.5 rounded-xl hover:bg-black/5 transition-colors">
+              <ChevronLeft className="w-5 h-5 text-[#191f28]" />
+            </button>
+            <h1 className="text-[17px] font-extrabold text-[#191f28] tracking-tight">내 정보</h1>
           </div>
-          <button
-            type="button"
-            onClick={() => logout()}
-            className="text-xs text-[#8B95A1] hover:text-[#4e5968]"
-          >
+          <button type="button" onClick={() => logout()}
+            className="flex items-center gap-1.5 text-[12px] text-[#8B95A1] hover:text-[#4e5968] transition-colors px-2 py-1 rounded-lg hover:bg-black/5">
+            <LogOut className="w-3.5 h-3.5" />
             로그아웃
           </button>
         </div>
       </header>
 
-      {/* 본문: 프로필 · 퇴직금 위젯 · 서비스 카드 · 상담 내역 순서로 구성합니다. */}
-      <main className="max-w-[460px] mx-auto px-4 pt-4 space-y-4 pb-6">
-        <ProfileSection name={displayName} avatarUrl={avatarUrl} />
+      {/* 본문 */}
+      <main className="max-w-[460px] mx-auto px-4 pt-4 space-y-3 pb-6">
 
-        <RetirementWidget
-          workDays={workedDays}
-          latestReport={latestReport}
-          onGoCalculate={() => navigate('/severance')}
-          onViewReport={(id) => navigate(`/report/${id}`)}
+        {/* ① 프로필 카드 */}
+        <ProfileCard
+          name={displayName}
+          email={user.email}
+          avatarUrl={avatarUrl}
+          joinedAt={joinedAt}
+          daysWithCatch={daysWithCatch}
         />
 
-        <ServiceCards onOpenInquiry={() => setInquiryModalOpen(true)} />
+        {/* ② 계산 기록 */}
+        <SavedResultsList
+          reports={reports}
+          loading={loadingReports}
+          onSelectReport={r => setSelectedReport(r)}
+          onGoCalculate={() => navigate('/severance')}
+        />
 
-        {loadingInquiries ? (
-          <section className="bg-white rounded-[32px] shadow-[0_18px_60px_rgba(15,23,42,0.08)] border border-slate-100 px-5 py-6">
-            <p className="text-sm text-[#8b95a1]">나의 상담 내역을 불러오는 중입니다...</p>
-          </section>
-        ) : (
-          <InquiryHistory items={inquiries} />
-        )}
+        {/* ③ 빠른 계산 바로가기 */}
+        <QuickActions onOpenInquiry={() => setInquiryModalOpen(true)} />
 
-        {/* 홈으로 돌아가는 보조 버튼 */}
-        <button
-          type="button"
-          onClick={() => navigate('/home')}
-          className="w-full py-3 text-sm text-[#8B95A1]"
-        >
-          ← 홈으로
-        </button>
+        {/* ④ 고객지원 */}
+        <SupportSection
+          inquiries={inquiries}
+          loadingInquiries={loadingInquiries}
+          onOpenInquiry={() => setInquiryModalOpen(true)}
+        />
+
+        {/* ⑤ 계정 관리 */}
+        <div className="bg-white rounded-[32px] shadow-[0_18px_60px_rgba(15,23,42,0.08)] border border-slate-100 px-5 py-5">
+          <p className="text-[15px] font-extrabold text-[#191f28] tracking-tight mb-3">계정 관리</p>
+          <button type="button" onClick={() => logout()}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-slate-200 text-[13px] font-semibold text-[#4e5968] hover:bg-slate-50 active:scale-[0.98] transition-all">
+            <LogOut className="w-4 h-4" />
+            로그아웃
+          </button>
+          <p className="text-[10px] text-[#8b95a1] text-center mt-4 leading-relaxed">
+            계정 탈퇴가 필요하시면 1:1 문의로 요청해 주세요.
+          </p>
+        </div>
+
       </main>
 
-      {/* 1:1 문의 작성 모달 */}
+      {/* 계산결과 상세 모달 */}
+      <SavedResultDetail
+        report={selectedReport}
+        onClose={() => setSelectedReport(null)}
+      />
+
+      {/* 1:1 문의 모달 */}
       <InquiryModal
         open={inquiryModalOpen}
         onClose={() => setInquiryModalOpen(false)}
@@ -199,5 +213,3 @@ export default function MyPage() {
     </div>
   )
 }
-
-
