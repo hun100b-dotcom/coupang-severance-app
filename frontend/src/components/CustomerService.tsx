@@ -280,7 +280,8 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
             <div className="flex-1 flex flex-col px-5 pb-12 pt-5">
               <div className="mb-6 sticky top-0 z-20 bg-[#F9FAFB] pb-2 -mx-5 px-5">
                 <div className="relative mb-4 group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  {/* 돋보기 아이콘: absolute left-3으로 정확히 배치 (텍스트와 겹치지 않도록) */}
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
                     <Search className="w-5 h-5 text-gray-400 group-focus-within:text-[#3182F6] transition-colors" />
                   </div>
                   <input
@@ -288,7 +289,7 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
                     placeholder="궁금한 내용을 검색해보세요"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full bg-white text-[#191F28] font-bold text-[15px] tracking-tight rounded-[20px] pl-11 pr-10 py-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100 focus:outline-none focus:border-[#3182F6]/30 focus:shadow-[0_4px_20px_rgba(49,130,246,0.1)] transition-all placeholder:text-gray-400 placeholder:font-medium font-sans"
+                    className="w-full bg-white text-[#191F28] font-bold text-[15px] tracking-tight rounded-[20px] pl-10 pr-10 py-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100 focus:outline-none focus:border-[#3182F6]/30 focus:shadow-[0_4px_20px_rgba(49,130,246,0.1)] transition-all placeholder:text-gray-400 placeholder:font-medium font-sans"
                   />
                   {searchQuery && (
                     <button type="button" onClick={() => setSearchQuery('')} className="absolute inset-y-0 right-0 pr-4 flex items-center">
