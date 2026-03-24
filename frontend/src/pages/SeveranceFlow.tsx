@@ -182,7 +182,7 @@ export default function SeveranceFlow() {
     <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
       {loading && <LoadingOverlay message="퇴직금을 계산하고 있어요.." />}
       <div style={{ width: '100%', maxWidth: 480 }}>
-        <GlassCard className="p-8">
+        <GlassCard className="p-5 sm:p-8">
           <ProgressSummary steps={buildSteps(s, selectedPdfCompany)} totalSteps={4} currentStep={stepN} />
           {content}
         </GlassCard>

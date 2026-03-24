@@ -497,7 +497,7 @@ export default function ResultSeverance({ result, resultType, company, onReset }
       <div style={{ width: '100%', maxWidth: 520 }}>
 
         {/* ── 히어로 카드 ─────────────────────────────── */}
-        <GlassCard className="p-8" style={{ marginBottom: 16 }}>
+        <GlassCard className="p-5 sm:p-8" style={{ marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--toss-text-3)' }}>{company}</span>
             <span className={eligible ? 'badge-eligible' : 'badge-ineligible'}>
