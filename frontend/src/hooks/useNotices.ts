@@ -15,7 +15,7 @@ export function useNotices() {
 
     const fetchNotices = async () => {
       try {
-        const { data, error: sbError } = await supabase
+        const { data, error: sbError } = await supabase!
           .from('notices')
           .select('*')
           .eq('is_active', true)
