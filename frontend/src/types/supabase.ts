@@ -68,6 +68,16 @@ export type AnyPayload =
   | AnnualLeavePayload
   | UnemploymentPayload
 
+/** notices 테이블 한 행 */
+export interface Notice {
+  id: string
+  content: string
+  is_active: boolean
+  priority: number
+  created_at: string
+  updated_at: string
+}
+
 /** reports 테이블 한 행 - 리스트/상세 공통 */
 export interface ReportRow {
   id: string
