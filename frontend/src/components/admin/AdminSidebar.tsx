@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
-export type AdminMenu = 'dashboard' | 'target' | 'inquiries' | 'settings' | 'logs'
+export type AdminMenu = 'dashboard' | 'target' | 'inquiries' | 'notices' | 'settings' | 'logs'
 
 interface Props {
   active: AdminMenu
@@ -14,6 +14,7 @@ const MENUS: { key: AdminMenu; icon: string; label: string }[] = [
   { key: 'dashboard',  icon: '🏠', label: 'Dashboard'  },
   { key: 'target',     icon: '🎯', label: 'Target'      },
   { key: 'inquiries',  icon: '💬', label: 'Inquiries'   },
+  { key: 'notices',    icon: '📢', label: '공지사항'     },
   { key: 'settings',   icon: '⚙️', label: 'Settings'    },
   { key: 'logs',       icon: '📋', label: 'Logs'        },
 ]

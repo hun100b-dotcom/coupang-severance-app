@@ -10,6 +10,7 @@ import TargetMenu from '../components/admin/menus/TargetMenu'
 import InquiriesMenu from '../components/admin/menus/InquiriesMenu'
 import SettingsMenu from '../components/admin/menus/SettingsMenu'
 import LogsMenu from '../components/admin/menus/LogsMenu'
+import NoticesMenu from '../components/admin/menus/NoticesMenu'
 
 export default function AdminPage() {
   const { user, isLoggedIn, loading, logout } = useAuth()
@@ -38,6 +39,7 @@ export default function AdminPage() {
       case 'dashboard':  return <DashboardMenu />
       case 'target':     return <TargetMenu />
       case 'inquiries':  return <InquiriesMenu />
+      case 'notices':    return <NoticesMenu />
       case 'settings':   return <SettingsMenu />
       case 'logs':       return <LogsMenu />
     }

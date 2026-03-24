@@ -7,6 +7,8 @@ import { INTRO_COPIES } from '../lib/constants'
 import { useAuth } from '../contexts/AuthContext'
 import WhyCatchModal from '../components/WhyCatchModal'
 import CustomerService from '../components/CustomerService'
+import NoticesBanner from '../components/NoticesBanner'
+import { useNotices } from '../hooks/useNotices'
 
 // ── count-up hook: 0에서 target까지 부드러운 카운트업 ──
 function useCountUp(target: number, duration = 1500) {
@@ -64,6 +66,7 @@ const cardVariants = {
 export default function Home() {
   const navigate = useNavigate()
   const { isLoggedIn } = useAuth()
+  const { notices } = useNotices()
   const [count, setCount] = useState(0)
   const [countLoaded, setCountLoaded] = useState(false)
   const [whyOpen, setWhyOpen] = useState(false)
@@ -174,6 +177,9 @@ export default function Home() {
       </header>
 
       <div className="w-full max-w-[460px] flex flex-col gap-4 flex-1">
+        {/* ── 공지사항 배너 ── */}
+        <NoticesBanner notices={notices} />
+
         {/* ── 메인 히어로 카드 ── */}
         <motion.div
           custom={0}
