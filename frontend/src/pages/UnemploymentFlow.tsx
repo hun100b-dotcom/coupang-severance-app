@@ -87,7 +87,7 @@ export default function UnemploymentFlow() {
       <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
         {loading && <LoadingOverlay />}
         <div style={{ width: '100%', maxWidth: 480 }}>
-          <GlassCard className="p-8">
+          <GlassCard className="p-5 sm:p-8">
             <ProgressSummary steps={buildSteps(s, selectedPdfCompany)} totalSteps={4} currentStep={2} />
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ fontSize: '3rem', marginBottom: 16 }}>😔</div>
@@ -171,7 +171,7 @@ export default function UnemploymentFlow() {
     <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
       {loading && <LoadingOverlay message="실업급여를 계산하고 있어요.." />}
       <div style={{ width: '100%', maxWidth: 480 }}>
-        <GlassCard className="p-8">
+        <GlassCard className="p-5 sm:p-8">
           <ProgressSummary steps={buildSteps(s, selectedPdfCompany)} totalSteps={4} currentStep={stepN} />
           {content}
         </GlassCard>

@@ -45,7 +45,7 @@ export default function TargetMenu() {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>Target Analysis</h2>
         <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>사용자 페르소나 · 세그먼트 분석</p>

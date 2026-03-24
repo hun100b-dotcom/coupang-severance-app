@@ -33,7 +33,7 @@ export default function LogsMenu() {
   useEffect(() => { load() }, [load])
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
         <div>
           <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>Audit Logs</h2>

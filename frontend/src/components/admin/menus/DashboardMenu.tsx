@@ -88,7 +88,7 @@ export default function DashboardMenu() {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24, gap: 12 }}>
         <div>

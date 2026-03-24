@@ -96,7 +96,7 @@ export default function InquiriesMenu() {
   const totalPages = Math.ceil(total / 20)
 
   return (
-    <div style={{ padding: '24px', position: 'relative' }}>
+    <div style={{ padding: 'clamp(12px, 3vw, 24px)', position: 'relative' }}>
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20, gap: 12 }}>
         <div>

@@ -64,7 +64,7 @@ export default function SettingsMenu() {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>Settings</h2>
         <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>운영 제어 · Discord · CMS · 법정 변수 · IP 보안</p>
