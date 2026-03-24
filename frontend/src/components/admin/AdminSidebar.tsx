@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
-export type AdminMenu = 'dashboard' | 'target' | 'inquiries' | 'notices' | 'settings' | 'logs'
+export type AdminMenu = 'dashboard' | 'target' | 'inquiries' | 'notices' | 'settings' | 'logs' | 'members' | 'accounts' | 'audit'
 
 interface Props {
   active: AdminMenu
@@ -15,8 +15,11 @@ const MENUS: { key: AdminMenu; icon: string; label: string }[] = [
   { key: 'target',     icon: '🎯', label: 'Target'      },
   { key: 'inquiries',  icon: '💬', label: 'Inquiries'   },
   { key: 'notices',    icon: '📢', label: '공지사항'     },
+  { key: 'members',    icon: '👥', label: '회원 관리'    },
+  { key: 'accounts',   icon: '🔑', label: '관리자 계정'  },
   { key: 'settings',   icon: '⚙️', label: 'Settings'    },
   { key: 'logs',       icon: '📋', label: 'Logs'        },
+  { key: 'audit',      icon: '🔍', label: '감사 로그'    },
 ]
 
 export default function AdminSidebar({ active, onChange, adminEmail, onLogout }: Props) {

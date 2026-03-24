@@ -11,14 +11,20 @@ import InquiriesMenu from '../components/admin/menus/InquiriesMenu'
 import SettingsMenu from '../components/admin/menus/SettingsMenu'
 import LogsMenu from '../components/admin/menus/LogsMenu'
 import NoticesMenu from '../components/admin/menus/NoticesMenu'
+import MembersMenu from '../components/admin/menus/MembersMenu'
+import AccountsMenu from '../components/admin/menus/AccountsMenu'
+import AuditMenu from '../components/admin/menus/AuditMenu'
 
 const MENUS: { key: AdminMenu; icon: string; label: string }[] = [
   { key: 'dashboard',  icon: '🏠', label: 'Dashboard'  },
   { key: 'target',     icon: '🎯', label: 'Target'      },
   { key: 'inquiries',  icon: '💬', label: 'Inquiries'   },
   { key: 'notices',    icon: '📢', label: '공지사항'     },
+  { key: 'members',    icon: '👥', label: '회원 관리'    },
+  { key: 'accounts',   icon: '🔑', label: '관리자 계정'  },
   { key: 'settings',   icon: '⚙️', label: 'Settings'    },
   { key: 'logs',       icon: '📋', label: 'Logs'        },
+  { key: 'audit',      icon: '🔍', label: '감사 로그'    },
 ]
 
 export default function AdminPage() {
@@ -49,8 +55,11 @@ export default function AdminPage() {
       case 'target':     return <TargetMenu />
       case 'inquiries':  return <InquiriesMenu />
       case 'notices':    return <NoticesMenu />
+      case 'members':    return <MembersMenu />
+      case 'accounts':   return <AccountsMenu />
       case 'settings':   return <SettingsMenu />
       case 'logs':       return <LogsMenu />
+      case 'audit':      return <AuditMenu />
     }
   }
 

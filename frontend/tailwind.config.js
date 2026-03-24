@@ -41,6 +41,7 @@ export default {
         'pulse-dot':    'pulseDot 1.4s ease-in-out infinite',
         'page-enter':   'pageEnter 0.45s cubic-bezier(0.22,1,0.36,1) forwards',
         'shimmer':      'shimmer 2s ease-in-out infinite',
+        'marquee':      'marquee-scroll 30s linear infinite',
       },
       keyframes: {
         gradientShift: {
@@ -92,6 +93,11 @@ export default {
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
+        },
+        // 마키 배너: 오른쪽에서 왼쪽으로 흘러가는 애니메이션
+        'marquee-scroll': {
+          '0%':   { transform: 'translateX(100vw)' },
+          '100%': { transform: 'translateX(-100%)' },
         },
       },
     },
