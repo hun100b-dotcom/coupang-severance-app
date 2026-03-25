@@ -1,9 +1,10 @@
 // NoticesBanner.tsx — 홈 화면 공지사항 배너
-// - 10초마다 공지사항 로테이션 (여러 개일 때)
-// - 텍스트가 컨테이너 너비를 초과하면 seamless 마키 애니메이션 적용
-// - 배너 클릭 시 /notices 페이지로 이동
+// - 10초마다 공지 로테이션
+// - 텍스트가 길면(25자 초과) 우→좌 뉴스티커 슬라이드 애니메이션 적용
+// - 짧으면 정적 표시 (truncate)
+// - 배너 클릭 시 /notices 이동
 
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Megaphone, ChevronRight } from 'lucide-react'
 import type { Notice } from '../types/supabase'
@@ -12,29 +13,14 @@ interface Props {
   notices: Notice[]
 }
 
+// 텍스트가 25자를 초과하면 마키 적용 (모바일 기준 한 줄 약 20~25자)
+const MARQUEE_THRESHOLD = 25
+
 export default function NoticesBanner({ notices }: Props) {
   const navigate = useNavigate()
   const [currentIdx, setCurrentIdx] = useState(0)
-  const [overflow, setOverflow] = useState(false)
 
-  // 숨겨진 측정 span: overflow-hidden 밖에서 실제 텍스트 너비를 측정
-  const measureRef = useRef<HTMLSpanElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  // 현재 텍스트가 컨테이너보다 길면 마키 필요
-  const checkOverflow = useCallback(() => {
-    if (!measureRef.current || !containerRef.current) return
-    setOverflow(measureRef.current.offsetWidth > containerRef.current.offsetWidth)
-  }, [])
-
-  // currentIdx 또는 notices 변경 시 오버플로우 재측정
-  useEffect(() => {
-    const id = requestAnimationFrame(checkOverflow)
-    window.addEventListener('resize', checkOverflow)
-    return () => { cancelAnimationFrame(id); window.removeEventListener('resize', checkOverflow) }
-  }, [currentIdx, notices, checkOverflow])
-
-  // 10초마다 다음 공지로 로테이션
+  // 10초마다 다음 공지로 전환
   useEffect(() => {
     if (notices.length <= 1) return
     const timer = setInterval(() => {
@@ -46,8 +32,12 @@ export default function NoticesBanner({ notices }: Props) {
   if (notices.length === 0) return null
 
   const current = notices[currentIdx]
-  // 마키 속도: 텍스트 10자당 1초, 최소 6초 최대 20초
-  const marqueeDuration = `${Math.min(20, Math.max(6, Math.ceil(current.content.length / 8)))}s`
+  const isLong = current.content.length > MARQUEE_THRESHOLD
+
+  // 슬라이드 속도: 10자당 1.2초, 최소 8초 최대 25초
+  const durationSec = isLong
+    ? Math.min(25, Math.max(8, Math.ceil(current.content.length * 1.2 / 10)))
+    : 0
 
   return (
     <button
@@ -57,49 +47,37 @@ export default function NoticesBanner({ notices }: Props) {
       aria-label="공지사항 전체 보기"
     >
       <div className="mx-3 my-2 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 px-4 py-3 flex items-center gap-3 hover:from-blue-100 hover:to-indigo-100 transition-colors duration-150">
-        {/* 스피커 아이콘 */}
         <Megaphone className="w-4 h-4 text-blue-500 flex-shrink-0" />
 
-        {/* 텍스트 영역 */}
-        <div ref={containerRef} className="flex-1 overflow-hidden min-w-0 relative">
-          {/* 숨겨진 측정 span: 실제 텍스트 너비 측정용 */}
-          <span
-            ref={measureRef}
-            style={{
-              position: 'absolute',
-              visibility: 'hidden',
-              whiteSpace: 'nowrap',
-              pointerEvents: 'none',
-              top: 0,
-              left: 0,
-            }}
-            className="text-sm"
-          >
-            {current.content}
-          </span>
-
-          {overflow ? (
-            // 마키 모드: 텍스트 2번 복사 후 translateX(-50%) seamless 순환
+        {/* 텍스트 영역 — overflow hidden 컨테이너 */}
+        <div className="flex-1 overflow-hidden min-w-0" style={{ position: 'relative', height: '1.3rem' }}>
+          {isLong ? (
+            /*
+              뉴스티커 슬라이드:
+              - paddingLeft: '100%' → 텍스트가 컨테이너 오른쪽 끝에서 시작
+              - animation translateX(0 → -100%) → 왼쪽으로 슬라이드
+              - key를 currentIdx로 설정해 공지 전환 시 애니메이션 재시작
+            */
             <span
               key={`ticker-${currentIdx}`}
               style={{
-                display: 'inline-flex',
+                display: 'inline-block',
                 whiteSpace: 'nowrap',
-                animation: `marquee-ticker ${marqueeDuration} linear infinite`,
+                paddingLeft: '100%',
+                animation: `news-ticker ${durationSec}s linear infinite`,
                 willChange: 'transform',
+                lineHeight: '1.3rem',
               }}
               className="text-sm text-gray-700"
             >
-              {/* 첫 번째 복사 */}
-              <span style={{ paddingRight: '3rem' }}>{current.content}</span>
-              {/* 두 번째 복사 (seamless 연결) */}
-              <span style={{ paddingRight: '3rem' }}>{current.content}</span>
+              {current.content}
             </span>
           ) : (
-            // 정적 모드: truncate
+            /* 짧은 텍스트: 정적 표시 */
             <span
               key={`static-${currentIdx}`}
-              className="text-sm text-gray-700 block truncate"
+              style={{ lineHeight: '1.3rem' }}
+              className="text-sm text-gray-700 block truncate absolute inset-0"
             >
               {current.content}
             </span>
