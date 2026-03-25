@@ -117,7 +117,6 @@ export default function ServerLogsMenu() {
   useEffect(() => { if (activeTab === 'audit') loadAuditLogs() }, [activeTab, loadAuditLogs])
 
   const totalSysPages = Math.ceil(sysTotal / PAGE_SIZE)
-  const totalAuditPages = Math.ceil(auditTotal / 50)
 
   return (
     <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
