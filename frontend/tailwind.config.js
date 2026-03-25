@@ -42,6 +42,7 @@ export default {
         'page-enter':   'pageEnter 0.45s cubic-bezier(0.22,1,0.36,1) forwards',
         'shimmer':      'shimmer 2s ease-in-out infinite',
         'marquee':      'marquee-scroll 30s linear infinite',
+        'marquee-ticker': 'marquee-ticker 8s linear infinite',
       },
       keyframes: {
         gradientShift: {
@@ -98,6 +99,11 @@ export default {
         'marquee-scroll': {
           '0%':   { transform: 'translateX(100vw)' },
           '100%': { transform: 'translateX(-100%)' },
+        },
+        // seamless 뉴스티커 마키 (텍스트 2번 복사 후 -50% 이동)
+        'marquee-ticker': {
+          '0%':   { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
         },
       },
     },

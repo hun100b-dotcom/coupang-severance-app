@@ -30,7 +30,7 @@ export default function NoticesPage() {
 
   return (
     // 전체 페이지: 흰 배경, 최소 높이 전체 화면
-    <div className="min-h-screen bg-gray-50">
+    <div className="relative z-[1] min-h-screen bg-gray-50">
 
       {/* ── 커스텀 상단 헤더 (TopNav 대신 사용) ──
           TopNav는 이미 Layout에 포함되어 있으므로,

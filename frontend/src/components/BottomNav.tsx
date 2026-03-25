@@ -18,6 +18,7 @@ import {
   CalendarDays,
   Clock,
   UserCircle2,
+  Megaphone,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -58,6 +59,13 @@ const NAV_TABS = [
     icon: Clock,
     path: '/weekly-allowance',
     isActive: (pathname: string) => pathname === '/weekly-allowance',
+  },
+  {
+    id: 'notices',
+    label: '공지사항',
+    icon: Megaphone,
+    path: '/notices',
+    isActive: (pathname: string) => pathname === '/notices',
   },
   {
     id: 'mypage',
@@ -142,7 +150,7 @@ export default function BottomNav() {
                 className="flex flex-col items-center justify-center relative transition-colors flex-shrink-0 flex-1"
                 // minWidth 80px: 기존 72px에서 키워 터치 영역 확대
                 // flex-1: PC에서 균등 분배
-                style={{ minWidth: '80px', paddingLeft: '8px', paddingRight: '8px' }}
+                style={{ minWidth: '72px', paddingLeft: '6px', paddingRight: '6px' }}
                 aria-label={tab.label}
                 aria-current={active ? 'page' : undefined}
               >
