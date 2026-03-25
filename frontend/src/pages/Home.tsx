@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift } from 'lucide-react'
+import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift, X, Bell } from 'lucide-react'
 import { getClickCount, registerClick } from '../lib/api'
 import { INTRO_COPIES } from '../lib/constants'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 import WhyCatchModal from '../components/WhyCatchModal'
 import CustomerService from '../components/CustomerService'
 import NoticesBanner from '../components/NoticesBanner'
@@ -75,11 +76,49 @@ export default function Home() {
   const [scrolled, setScrolled] = useState(false)
   const animatedCount = useCountUp(count)
 
+  // CMS 공지/팝업 상태
+  const [annoText, setAnnoText] = useState('')
+  const [annoVisible, setAnnoVisible] = useState(false)
+  const [popupText, setPopupText] = useState('')
+  const [popupOpen, setPopupOpen] = useState(false)
+
   // 스크롤 감지 → 헤더 글래스모피즘
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // CMS 공지/팝업 로드
+  useEffect(() => {
+    if (!supabase) return
+    const sb = supabase
+    ;(async () => {
+      try {
+        const { data } = await sb
+          .from('system_settings')
+          .select('key,value')
+          .in('key', ['announcement_text', 'announcement_enabled', 'popup_banner_text', 'popup_banner_enabled'])
+        if (!data) return
+        const m: Record<string, string> = {}
+        data.forEach(r => { m[r.key] = r.value })
+
+        const annoEnabled = m['announcement_enabled'] === 'true'
+        const text = m['announcement_text'] ?? ''
+        if (annoEnabled && text.trim()) {
+          setAnnoText(text)
+          setAnnoVisible(true)
+        }
+
+        const popupEnabled = m['popup_banner_enabled'] === 'true'
+        const pText = m['popup_banner_text'] ?? ''
+        const dismissed = sessionStorage.getItem('popup_dismissed') === '1'
+        if (popupEnabled && pText.trim() && !dismissed) {
+          setPopupText(pText)
+          setTimeout(() => setPopupOpen(true), 800)
+        }
+      } catch { /* 조용히 무시 */ }
+    })()
   }, [])
 
   // 누적 카운트 조회
@@ -175,6 +214,27 @@ export default function Home() {
           )}
         </div>
       </header>
+
+      {/* ── CMS 긴급 공지 배너 ── */}
+      <AnimatePresence>
+        {annoVisible && annoText && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full max-w-[460px]"
+          >
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-50/90 backdrop-blur-md border border-amber-200/60 shadow-[0_4px_20px_rgba(251,191,36,0.15)]">
+              <Bell className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+              <p className="flex-1 text-xs font-medium text-amber-800 leading-relaxed">{annoText}</p>
+              <button onClick={() => setAnnoVisible(false)} className="p-0.5 rounded-full text-amber-400 hover:text-amber-600 transition-colors flex-shrink-0">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="w-full max-w-[460px] flex flex-col gap-4 flex-1">
         {/* ── 공지사항 배너 ── */}
@@ -338,6 +398,71 @@ export default function Home() {
         {whyOpen && <WhyCatchModal onClose={() => setWhyOpen(false)} />}
       </AnimatePresence>
       <CustomerService isOpen={csOpen} onClose={() => setCsOpen(false)} />
+
+      {/* ── CMS 팝업 배너 ── */}
+      <AnimatePresence>
+        {popupOpen && popupText && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4"
+            style={{ background: 'rgba(0,0,0,0.45)' }}
+            onClick={() => {
+              setPopupOpen(false)
+              sessionStorage.setItem('popup_dismissed', '1')
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 40, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.97 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-[400px] rounded-3xl bg-white/95 backdrop-blur-2xl border border-white/80 shadow-[0_24px_80px_rgba(49,130,246,0.18)] p-6 relative"
+            >
+              {/* 닫기 버튼 */}
+              <button
+                onClick={() => { setPopupOpen(false); sessionStorage.setItem('popup_dismissed', '1') }}
+                className="absolute top-4 right-4 p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* 아이콘 */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                  <Bell className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-bold text-[#191F28] text-sm">공지사항</p>
+                  <p className="text-xs text-[#8B95A1]">CATCH 서비스 안내</p>
+                </div>
+              </div>
+
+              {/* 내용 */}
+              <p className="text-sm text-[#3C4858] leading-relaxed mb-5 whitespace-pre-wrap">{popupText}</p>
+
+              {/* 버튼 */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setPopupOpen(false); sessionStorage.setItem('popup_dismissed', '1') }}
+                  className="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition-colors"
+                >
+                  오늘 하루 보지 않기
+                </button>
+                <button
+                  onClick={() => { setPopupOpen(false); sessionStorage.setItem('popup_dismissed', '1') }}
+                  className="flex-1 py-2.5 rounded-xl bg-[#3182F6] text-white text-sm font-bold hover:bg-blue-600 transition-colors"
+                >
+                  확인
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

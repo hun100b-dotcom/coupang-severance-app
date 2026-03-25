@@ -1,67 +1,70 @@
-// MembersMenu.tsx — 회원 관리 메뉴
-// ─────────────────────────────────────────────────────────────
-// Supabase `profiles` 테이블과 `auth.users` 기반으로 가입 회원을 조회합니다.
-//
-// profiles 테이블: id(=auth.users.id), joined_at, marketing_agreement, updated_at
-// auth.users는 직접 쿼리할 수 없으므로, profiles를 통해 조회합니다.
-// 이메일/소셜 정보는 Supabase Admin API를 통해야 하나,
-// 여기서는 profiles 테이블에 추가된 email, provider 컬럼을 활용합니다.
-// (컬럼이 없을 경우 graceful 처리)
-//
-// SQL: supabase/migrations/005_profiles_extended.sql 참조
-
+// MembersMenu.tsx — 회원 관리 (개인정보 마스킹 + 보안키 언마스킹)
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../../lib/supabase'
 
-// ── 회원 타입 (profiles 테이블 기준) ──
 interface MemberRow {
   id: string
-  email: string | null        // profiles에 email 저장 시
-  provider: string | null     // 소셜 로그인 제공자 (google, kakao 등)
-  joined_at: string | null    // 입사일 (사용자가 입력한 값)
+  email: string | null
+  display_name: string | null
+  provider: string | null
+  joined_at: string | null
   marketing_agreement: boolean
   updated_at: string | null
-  created_at: string          // 가입일
+  created_at: string
 }
 
-const PAGE_SIZE = 20 // 페이지당 표시 회원 수
+interface Props {
+  isSuperAdmin: boolean
+}
 
-export default function MembersMenu() {
+const PAGE_SIZE = 20
+
+// 이메일 마스킹: a***@gmail.com
+function maskEmail(email: string | null): string {
+  if (!email) return '이메일 미등록'
+  const atIdx = email.indexOf('@')
+  if (atIdx <= 0) return '****'
+  const local = email.slice(0, atIdx)
+  const domain = email.slice(atIdx)
+  const visible = local.slice(0, Math.min(2, local.length))
+  const masked = '*'.repeat(Math.max(3, local.length - visible.length))
+  return `${visible}${masked}${domain}`
+}
+
+// UUID 마스킹
+function maskId(id: string): string {
+  return id.slice(0, 8) + '****-****-****-' + id.slice(-4)
+}
+
+export default function MembersMenu({ isSuperAdmin }: Props) {
   const [members, setMembers] = useState<MemberRow[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
 
-  // ── 검색/필터 상태 ──
   const [searchEmail, setSearchEmail] = useState('')
   const [filterMarketing, setFilterMarketing] = useState<'' | 'true' | 'false'>('')
-
-  // ── 페이지네이션 ──
   const [page, setPage] = useState(1)
 
-  // ── 회원 목록 불러오기 ──
+  // 마스킹 해제 상태
+  const [unmasked, setUnmasked] = useState(false)
+  const [showUnlockDialog, setShowUnlockDialog] = useState(false)
+  const [unlockKey, setUnlockKey] = useState('')
+  const [unlockError, setUnlockError] = useState('')
+  const [unlockLoading, setUnlockLoading] = useState(false)
+
   const fetchMembers = useCallback(async () => {
     if (!supabase) return
     setLoading(true)
     try {
-      // profiles 테이블에서 조회
-      // email 컬럼이 없을 수 있으므로 select에서 graceful 처리
       let query = supabase
         .from('profiles')
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
 
-      // 이메일 검색 필터
-      if (searchEmail.trim()) {
-        query = query.ilike('email', `%${searchEmail.trim()}%`)
-      }
-      // 마케팅 동의 필터
-      if (filterMarketing === 'true') {
-        query = query.eq('marketing_agreement', true)
-      } else if (filterMarketing === 'false') {
-        query = query.eq('marketing_agreement', false)
-      }
+      if (searchEmail.trim()) query = query.ilike('email', `%${searchEmail.trim()}%`)
+      if (filterMarketing === 'true') query = query.eq('marketing_agreement', true)
+      else if (filterMarketing === 'false') query = query.eq('marketing_agreement', false)
 
-      // 페이지네이션
       const from = (page - 1) * PAGE_SIZE
       const to = from + PAGE_SIZE - 1
       query = query.range(from, to)
@@ -80,28 +83,61 @@ export default function MembersMenu() {
 
   useEffect(() => { fetchMembers() }, [fetchMembers])
 
-  // ── 날짜 포맷 ──
+  // 마스킹 해제 시도
+  async function handleUnmask() {
+    if (!supabase) return
+    if (!unlockKey.trim()) { setUnlockError('보안키를 입력하세요.'); return }
+    setUnlockLoading(true)
+    setUnlockError('')
+    try {
+      const { data } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'member_unmask_key')
+        .single()
+
+      const storedKey = data?.value ?? ''
+      if (!storedKey) {
+        setUnlockError('보안키가 설정되지 않았습니다. Settings → 개인정보 보안키에서 설정하세요.')
+        return
+      }
+      if (unlockKey === storedKey) {
+        setUnmasked(true)
+        setShowUnlockDialog(false)
+        setUnlockKey('')
+      } else {
+        setUnlockError('보안키가 일치하지 않습니다.')
+      }
+    } catch {
+      setUnlockError('보안키 확인 중 오류가 발생했습니다.')
+    } finally {
+      setUnlockLoading(false)
+    }
+  }
+
   function formatDate(iso: string | null) {
     if (!iso) return '-'
     const d = new Date(iso)
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
   }
 
-  // ── 소셜 로그인 제공자 표시 ──
+  function formatDateTime(iso: string | null) {
+    if (!iso) return '-'
+    const d = new Date(iso)
+    return `${formatDate(iso)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  }
+
   function providerBadge(provider: string | null) {
     if (!provider) return null
     const colors: Record<string, string> = {
-      google: '#ea4335',
-      kakao: '#fee500',
-      github: '#6e40c9',
+      google: '#ea4335', kakao: '#fee500', github: '#6e40c9',
     }
     const color = colors[provider.toLowerCase()] ?? '#3182f6'
     return (
       <span style={{
         fontSize: '0.68rem', fontWeight: 700,
         color: provider.toLowerCase() === 'kakao' ? '#3d1d1d' : '#fff',
-        background: color,
-        padding: '2px 7px', borderRadius: 999,
+        background: color, padding: '2px 7px', borderRadius: 999,
       }}>
         {provider}
       </span>
@@ -113,67 +149,96 @@ export default function MembersMenu() {
   return (
     <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
 
-      {/* ── 헤더 ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+      {/* 헤더 */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
-            회원 관리
-          </h2>
-          <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>
-            profiles 테이블 기준 · 총 {total.toLocaleString()}명
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fff', margin: 0 }}>회원 관리</h2>
+          <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>
+            profiles 테이블 · 총 {total.toLocaleString()}명 로그인 회원
           </p>
         </div>
-        <button onClick={fetchMembers} style={{ ...outlineBtn, marginLeft: 'auto' }}>↻ 새로고침</button>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {/* 마스킹 상태 표시 + 해제 버튼 */}
+          {!unmasked ? (
+            <button
+              onClick={() => setShowUnlockDialog(true)}
+              style={{
+                padding: '7px 14px', borderRadius: 8,
+                border: '1px solid rgba(240,200,0,0.3)',
+                background: 'rgba(240,200,0,0.08)', color: '#f0c800',
+                fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700,
+              }}
+            >
+              🔒 마스킹 해제
+            </button>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{
+                padding: '4px 12px', borderRadius: 8,
+                background: 'rgba(34,197,94,0.12)',
+                border: '1px solid rgba(34,197,94,0.25)',
+                color: '#22c55e', fontSize: '0.78rem', fontWeight: 700,
+              }}>
+                🔓 마스킹 해제됨
+              </span>
+              <button
+                onClick={() => { setUnmasked(false); setUnlockKey('') }}
+                style={{ ...outlineBtn, fontSize: '0.75rem', padding: '5px 10px' }}
+              >
+                재잠금
+              </button>
+            </div>
+          )}
+          <button onClick={fetchMembers} style={outlineBtn}>↻ 새로고침</button>
+        </div>
       </div>
 
-      {/* ── 검색/필터 ── */}
+      {/* 마스킹 해제 주의 안내 */}
+      {!unmasked && (
+        <div style={{
+          marginBottom: 14, padding: '10px 14px', borderRadius: 10,
+          background: 'rgba(240,200,0,0.06)', border: '1px solid rgba(240,200,0,0.15)',
+          fontSize: '0.78rem', color: 'rgba(255,220,50,0.8)', lineHeight: 1.5,
+        }}>
+          🔒 개인정보 보호를 위해 이메일/ID가 마스킹 처리됩니다. 보안키 입력 시 전체 정보를 확인할 수 있습니다.
+          {isSuperAdmin && <span style={{ color: 'rgba(255,255,255,0.5)', marginLeft: 6 }}>· 보안키는 Settings → 개인정보 보안키에서 설정</span>}
+        </div>
+      )}
+
+      {/* 검색/필터 */}
       <div style={{
-        display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16,
-        padding: '14px', borderRadius: 12,
+        display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14,
+        padding: '12px', borderRadius: 12,
         background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
       }}>
-        {/* 이메일 검색 */}
         <input
-          type="text"
-          placeholder="이메일 검색..."
+          type="text" placeholder="이메일 검색..."
           value={searchEmail}
           onChange={e => setSearchEmail(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && setPage(1)}
-          style={{ ...filterInput, flex: '1 1 200px' }}
+          style={{ ...filterInput, flex: '1 1 180px' }}
         />
-        {/* 마케팅 동의 필터 */}
         <select
           value={filterMarketing}
           onChange={e => { setFilterMarketing(e.target.value as '' | 'true' | 'false'); setPage(1) }}
-          style={{ ...filterInput, flex: '0 1 160px' }}
+          style={{ ...filterInput, flex: '0 1 150px' }}
         >
           <option value="">마케팅 동의 전체</option>
           <option value="true">동의함</option>
           <option value="false">미동의</option>
         </select>
-        {/* 검색 버튼 */}
-        <button onClick={() => { setPage(1); fetchMembers() }} style={primaryBtn}>
-          검색
-        </button>
-        {/* 초기화 */}
-        <button
-          onClick={() => { setSearchEmail(''); setFilterMarketing(''); setPage(1) }}
-          style={outlineBtn}
-        >
-          초기화
-        </button>
+        <button onClick={() => { setPage(1); fetchMembers() }} style={btnPrimary}>검색</button>
+        <button onClick={() => { setSearchEmail(''); setFilterMarketing(''); setPage(1) }} style={outlineBtn}>초기화</button>
       </div>
 
-      {/* ── 회원 목록 ── */}
+      {/* 회원 목록 */}
       <div style={{
         background: 'rgba(255,255,255,0.03)',
         border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: 14, overflow: 'hidden',
       }}>
         {loading ? (
-          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '32px 0' }}>
-            로딩 중...
-          </p>
+          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '32px 0' }}>로딩 중...</p>
         ) : members.length === 0 ? (
           <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '32px 0', fontSize: '0.85rem' }}>
             조회된 회원이 없습니다.
@@ -181,121 +246,151 @@ export default function MembersMenu() {
         ) : (
           <>
             {/* PC 테이블 헤더 */}
-            <div
-              className="hidden md:grid"
-              style={{
-                gridTemplateColumns: '1fr 100px 120px 120px 80px',
-                padding: '10px 16px',
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
-                fontSize: '0.72rem', fontWeight: 700,
-                color: 'rgba(255,255,255,0.3)',
-                textTransform: 'uppercase', letterSpacing: '0.05em',
-              }}
-            >
+            <div className="hidden md:grid" style={{
+              gridTemplateColumns: '2fr 80px 110px 110px 70px 70px',
+              padding: '10px 16px',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              fontSize: '0.7rem', fontWeight: 700,
+              color: 'rgba(255,255,255,0.3)',
+              textTransform: 'uppercase', letterSpacing: '0.05em',
+            }}>
               <span>이메일 / ID</span>
               <span>소셜</span>
               <span>가입일</span>
-              <span>마지막 수정</span>
+              <span>마지막 접속</span>
               <span>마케팅</span>
+              <span>이름</span>
             </div>
 
-            {members.map(member => (
-              <div key={member.id}>
-                {/* PC 행 */}
-                <div
-                  className="hidden md:grid"
-                  style={{
-                    gridTemplateColumns: '1fr 100px 120px 120px 80px',
-                    padding: '12px 16px',
+            {members.map(member => {
+              const emailDisplay = unmasked ? (member.email ?? '이메일 미등록') : maskEmail(member.email)
+              const idDisplay = unmasked ? member.id : maskId(member.id)
+              return (
+                <div key={member.id}>
+                  {/* PC 행 */}
+                  <div className="hidden md:grid" style={{
+                    gridTemplateColumns: '2fr 80px 110px 110px 70px 70px',
+                    padding: '11px 16px',
                     borderBottom: '1px solid rgba(255,255,255,0.04)',
                     alignItems: 'center',
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: '0.88rem', color: '#fff', fontWeight: 600 }}>
-                      {member.email ?? '이메일 미등록'}
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 600 }}>
+                        {emailDisplay}
+                      </div>
+                      <div style={{
+                        fontSize: '0.68rem', color: 'rgba(255,255,255,0.28)',
+                        fontFamily: 'monospace', marginTop: 1,
+                      }}>
+                        {idDisplay}
+                      </div>
                     </div>
-                    <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>
-                      {member.id.substring(0, 16)}...
+                    <div>{providerBadge(member.provider)}</div>
+                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)' }}>
+                      {formatDate(member.created_at)}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)' }}>
+                      {formatDateTime(member.updated_at)}
+                    </div>
+                    <div>
+                      <span style={{
+                        fontSize: '0.7rem', fontWeight: 700,
+                        color: member.marketing_agreement ? '#22c55e' : 'rgba(255,255,255,0.25)',
+                      }}>
+                        {member.marketing_agreement ? '● 동의' : '○ 미동의'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)' }}>
+                      {member.display_name ?? '-'}
                     </div>
                   </div>
-                  <div>{providerBadge(member.provider)}</div>
-                  <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)' }}>
-                    {formatDate(member.created_at)}
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)' }}>
-                    {formatDate(member.updated_at)}
-                  </div>
-                  <div>
-                    <span style={{
-                      fontSize: '0.72rem', fontWeight: 700,
-                      color: member.marketing_agreement ? '#22c55e' : 'rgba(255,255,255,0.25)',
-                    }}>
-                      {member.marketing_agreement ? '● 동의' : '○ 미동의'}
-                    </span>
-                  </div>
-                </div>
 
-                {/* 모바일 카드 */}
-                <div
-                  className="md:hidden"
-                  style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <div style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 600, wordBreak: 'break-all', flex: 1 }}>
-                      {member.email ?? '이메일 미등록'}
+                  {/* 모바일 카드 */}
+                  <div className="md:hidden" style={{
+                    padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.04)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <div style={{
+                        fontSize: '0.83rem', color: '#fff', fontWeight: 600,
+                        flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {emailDisplay}
+                      </div>
+                      {member.provider && <div style={{ flexShrink: 0 }}>{providerBadge(member.provider)}</div>}
                     </div>
-                    {member.provider && (
-                      <div style={{ marginLeft: 8, flexShrink: 0 }}>{providerBadge(member.provider)}</div>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>
-                    <span>가입: {formatDate(member.created_at)}</span>
-                    <span style={{ color: member.marketing_agreement ? '#22c55e' : 'rgba(255,255,255,0.25)' }}>
-                      마케팅 {member.marketing_agreement ? '동의' : '미동의'}
-                    </span>
+                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace', marginBottom: 4 }}>
+                      {idDisplay}
+                    </div>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>
+                      <span>가입: {formatDate(member.created_at)}</span>
+                      {member.display_name && <span>이름: {member.display_name}</span>}
+                      <span style={{ color: member.marketing_agreement ? '#22c55e' : 'rgba(255,255,255,0.25)' }}>
+                        마케팅 {member.marketing_agreement ? '동의' : '미동의'}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </>
         )}
       </div>
 
-      {/* ── 페이지네이션 ── */}
+      {/* 페이지네이션 */}
       {totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
-          <button
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-            style={{ ...outlineBtn, opacity: page === 1 ? 0.4 : 1 }}
-          >
-            ← 이전
-          </button>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem', padding: '7px 12px' }}>
-            {page} / {totalPages} 페이지
-          </span>
-          <button
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-            style={{ ...outlineBtn, opacity: page === totalPages ? 0.4 : 1 }}
-          >
-            다음 →
-          </button>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ ...outlineBtn, opacity: page === 1 ? 0.4 : 1 }}>← 이전</button>
+          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem', padding: '7px 12px' }}>{page} / {totalPages}</span>
+          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ ...outlineBtn, opacity: page === totalPages ? 0.4 : 1 }}>다음 →</button>
+        </div>
+      )}
+
+      {/* 마스킹 해제 다이얼로그 */}
+      {showUnlockDialog && (
+        <div style={overlayStyle} onClick={() => setShowUnlockDialog(false)}>
+          <div style={modalStyle} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff', marginBottom: 6 }}>🔐 개인정보 마스킹 해제</div>
+            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: 16, lineHeight: 1.5 }}>
+              슈퍼 관리자가 설정한 보안키를 입력하면 회원 이메일과 ID 전체를 확인할 수 있습니다.
+            </p>
+            <input
+              type="password"
+              placeholder="보안키 입력..."
+              value={unlockKey}
+              onChange={e => { setUnlockKey(e.target.value); setUnlockError('') }}
+              onKeyDown={e => e.key === 'Enter' && handleUnmask()}
+              autoFocus
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: 10,
+                border: unlockError ? '1px solid #f04052' : '1px solid rgba(255,255,255,0.15)',
+                background: 'rgba(255,255,255,0.07)', color: '#fff',
+                fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
+                marginBottom: unlockError ? 6 : 16,
+              }}
+            />
+            {unlockError && (
+              <p style={{ fontSize: '0.78rem', color: '#f04052', marginBottom: 12 }}>{unlockError}</p>
+            )}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setShowUnlockDialog(false)} style={{ ...outlineBtn, flex: 1 }}>취소</button>
+              <button onClick={handleUnmask} disabled={unlockLoading} style={{ ...btnPrimary, flex: 1 }}>
+                {unlockLoading ? '확인 중...' : '확인'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
   )
 }
 
-// ── 공통 스타일 ──
 const outlineBtn: React.CSSProperties = {
   padding: '7px 14px', borderRadius: 8,
   border: '1px solid rgba(255,255,255,0.12)',
   background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)',
   fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600,
 }
-const primaryBtn: React.CSSProperties = {
+const btnPrimary: React.CSSProperties = {
   padding: '7px 16px', borderRadius: 8,
   border: 'none', background: '#3182f6', color: '#fff',
   fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700,
@@ -305,4 +400,14 @@ const filterInput: React.CSSProperties = {
   border: '1px solid rgba(255,255,255,0.1)',
   background: 'rgba(255,255,255,0.06)', color: '#fff',
   fontSize: '0.82rem', outline: 'none',
+}
+const overlayStyle: React.CSSProperties = {
+  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  zIndex: 300, padding: 16,
+}
+const modalStyle: React.CSSProperties = {
+  background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.12)',
+  borderRadius: 20, padding: '28px 24px',
+  width: '100%', maxWidth: 400,
 }

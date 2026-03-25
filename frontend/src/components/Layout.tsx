@@ -17,7 +17,8 @@ export default function Layout() {
           - pt-14: TopNav(h-14=56px) 높이만큼 상단 여백
           - pb-[60px]: BottomNav(60px) 높이만큼 하단 여백
           - min-h-screen: 짧은 페이지도 화면 전체 채우기 */}
-      <main className="pt-14 pb-[60px] min-h-screen">
+      {/* pb-[72px]: BottomNav 높이(64px) + 여유 8px */}
+      <main className="pt-14 pb-[72px] min-h-screen">
         <Outlet />
       </main>
 

@@ -63,25 +63,16 @@ export default function DashboardMenu() {
 
   if (error || !stats) {
     return (
-      <div style={{ padding: '40px' }}>
+      <div style={{ padding: '20px' }}>
         <div style={{
           background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
-          borderRadius: 12, padding: '24px', color: '#ff6b6b',
+          borderRadius: 12, padding: '20px', color: '#ff6b6b',
         }}>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>⚠️ 대시보드 데이터 로드 실패</div>
           <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)', marginBottom: 16 }}>
             {error || '데이터를 불러오지 못했습니다.'}
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.7 }}>
-            <b>체크리스트:</b><br />
-            1. Render 환경변수: <code style={{ background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: 4 }}>ADMIN_SECRET</code> 설정 여부<br />
-            2. Render 환경변수: <code style={{ background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: 4 }}>SUPABASE_SERVICE_ROLE_KEY</code> 설정 여부<br />
-            3. Vercel 환경변수: <code style={{ background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: 4 }}>VITE_ADMIN_SECRET</code> 설정 여부
-          </div>
-          <button onClick={load} style={{
-            marginTop: 16, padding: '8px 20px', borderRadius: 8, border: 'none',
-            background: '#3182f6', color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700,
-          }}>재시도</button>
+          <button onClick={load} style={btnPrimary}>재시도</button>
         </div>
       </div>
     )
@@ -90,43 +81,45 @@ export default function DashboardMenu() {
   return (
     <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
       {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24, gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20, gap: 8, flexWrap: 'wrap' }}>
         <div>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>Dashboard</h2>
-          <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>서비스 핵심 지표 한눈에</p>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fff', margin: 0 }}>Dashboard</h2>
+          <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>서비스 핵심 지표</p>
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 5, flexWrap: 'wrap' }}>
           {[7, 30, 90].map(d => (
             <button key={d} onClick={() => setRange(d)} style={{
-              padding: '4px 12px', borderRadius: 999, border: 'none',
+              padding: '4px 10px', borderRadius: 999, border: 'none',
               background: range === d ? '#3182f6' : 'rgba(255,255,255,0.08)',
               color: range === d ? '#fff' : 'rgba(255,255,255,0.5)',
-              fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
+              fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer',
             }}>{d}일</button>
           ))}
           <button onClick={load} style={{
-            padding: '4px 12px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.1)',
-            background: 'transparent', color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', cursor: 'pointer',
+            padding: '4px 10px', borderRadius: 999,
+            border: '1px solid rgba(255,255,255,0.1)',
+            background: 'transparent', color: 'rgba(255,255,255,0.4)',
+            fontSize: '0.72rem', cursor: 'pointer',
           }}>↻</button>
         </div>
       </div>
 
-      {/* KPI 그리드 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+      {/* KPI 그리드 — 모바일 2열, 데스크탑 4열 */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <KpiCard label="전체 유저" value={stats.users.total.toLocaleString()} sub={`오늘 +${stats.users.new_today}`} color="#3182f6" icon="👥" />
         <KpiCard label="계산 건수" value={stats.reports.total.toLocaleString()} sub={`적격 ${stats.reports.eligible}건`} color="#00c48c" icon="📊" />
         <KpiCard label="대기 문의" value={stats.inquiries.waiting} sub={`전체 ${stats.inquiries.total}건`} color="#f08c00" icon="💬" />
         <KpiCard label="평균 퇴직금" value={fmtMoney(stats.reports.avg_severance)} sub="적격자 기준" color="#6c5ce7" icon="💰" />
       </div>
 
-      {/* 2열 차트 */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 14, marginBottom: 14 }}>
+      {/* 2열 차트 — 모바일 1열, 데스크탑 2열 */}
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-3 mb-3">
         <DailyTrendChart data={analytics?.daily ?? []} />
         <ServiceBarChart severance={stats.clicks.severance} unemployment={stats.clicks.unemployment} />
       </div>
 
-      {/* 추가 KPI */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
+      {/* 추가 KPI — 모바일 2열, 데스크탑 3열 */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
         <KpiCard label="마케팅 동의" value={`${stats.users.marketing_agreed}명`} color="#fd79a8" />
         <KpiCard label="이번 주 신규" value={`+${stats.users.new_this_week}명`} color="#00cec9" />
         <KpiCard label="총 클릭수" value={stats.clicks.total.toLocaleString()} color="#fdcb6e" />
@@ -136,4 +129,10 @@ export default function DashboardMenu() {
       <RecentActivity inquiries={recentInquiries} />
     </div>
   )
+}
+
+const btnPrimary: React.CSSProperties = {
+  padding: '8px 20px', borderRadius: 8, border: 'none',
+  background: '#3182f6', color: '#fff', fontSize: '0.82rem',
+  cursor: 'pointer', fontWeight: 700,
 }

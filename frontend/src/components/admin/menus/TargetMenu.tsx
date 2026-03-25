@@ -51,8 +51,8 @@ export default function TargetMenu() {
         <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>사용자 페르소나 · 세그먼트 분석</p>
       </div>
 
-      {/* 회사별 파이차트 + 테이블 */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+      {/* 회사별 파이차트 + 테이블 — 모바일 1열, 데스크탑 2열 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <CompanyPieChart companies={companies} />
 
         {/* 상위 회사 리스트 */}
@@ -78,8 +78,8 @@ export default function TargetMenu() {
         </div>
       </div>
 
-      {/* 세그먼트 차트 */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+      {/* 세그먼트 차트 — 모바일 1열, 데스크탑 2열 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <WorkDurationSegment data={segments?.by_duration ?? []} />
         <WageSegment data={segments?.by_wage ?? []} />
       </div>
