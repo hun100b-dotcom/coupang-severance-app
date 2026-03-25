@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 import AdminSidebar, { type AdminMenu, SUPER_ADMIN_EMAIL } from '../components/admin/AdminSidebar'
 import DashboardMenu from '../components/admin/menus/DashboardMenu'
 import TargetMenu from '../components/admin/menus/TargetMenu'
@@ -13,17 +14,31 @@ import NoticesMenu from '../components/admin/menus/NoticesMenu'
 import MembersMenu from '../components/admin/menus/MembersMenu'
 import AccountsMenu from '../components/admin/menus/AccountsMenu'
 
-const MENUS: { key: AdminMenu; icon: string; label: string; superAdminOnly?: boolean }[] = [
-  { key: 'dashboard',  icon: '🏠', label: 'Dashboard'     },
-  { key: 'target',     icon: '🎯', label: 'Target'         },
-  { key: 'inquiries',  icon: '💬', label: 'Inquiries'      },
-  { key: 'notices',    icon: '📢', label: '공지사항'        },
-  { key: 'members',    icon: '👥', label: '회원 관리'       },
-  { key: 'accounts',   icon: '🔑', label: '관리자 계정'     },
-  { key: 'settings',   icon: '⚙️', label: 'Settings'       },
-  { key: 'audit_logs', icon: '🔍', label: 'Audit Logs',  superAdminOnly: true },
-  { key: 'server_logs',icon: '🖥️', label: 'Server Logs'   },
+const ALL_MENUS: { key: AdminMenu; icon: string; label: string }[] = [
+  { key: 'dashboard',  icon: '🏠', label: 'Dashboard'   },
+  { key: 'target',     icon: '🎯', label: 'Target'       },
+  { key: 'inquiries',  icon: '💬', label: 'Inquiries'    },
+  { key: 'notices',    icon: '📢', label: '공지사항'      },
+  { key: 'members',    icon: '👥', label: '회원 관리'     },
+  { key: 'accounts',   icon: '🔑', label: '관리자 계정'   },
+  { key: 'settings',   icon: '⚙️', label: 'Settings'     },
+  { key: 'audit_logs', icon: '🔍', label: 'Audit Logs'  },
+  { key: 'server_logs',icon: '🖥️', label: 'Server Logs' },
 ]
+
+interface PermLevel { label: string; color: string; permissions: Record<string, boolean> }
+
+// 기본 권한 폴백
+const DEFAULT_PERMS: Record<string, PermLevel> = {
+  super_admin: {
+    label: '슈퍼 관리자', color: '#f04040',
+    permissions: { dashboard:true, target:true, inquiries:true, notices:true, members:true, accounts:true, settings:true, audit_logs:true, server_logs:true },
+  },
+  admin: {
+    label: '관리자', color: '#3182f6',
+    permissions: { dashboard:true, target:true, inquiries:true, notices:true, members:true, accounts:false, settings:false, audit_logs:false, server_logs:false },
+  },
+}
 
 export default function AdminPage() {
   const { user, isLoggedIn, loading, logout } = useAuth()
@@ -33,42 +48,66 @@ export default function AdminPage() {
   const isSuperAdmin = isAdmin && user?.email === SUPER_ADMIN_EMAIL
 
   const [activeMenu, setActiveMenu] = useState<AdminMenu>('dashboard')
+  const [permLevels, setPermLevels] = useState<Record<string, PermLevel>>(DEFAULT_PERMS)
 
   useEffect(() => {
     if (!loading && !isAdmin) navigate('/home')
   }, [loading, isAdmin, navigate])
+
+  // DB에서 권한 레벨 로드
+  useEffect(() => {
+    if (!supabase) return
+    ;(async () => {
+      try {
+        const { data } = await supabase
+          .from('system_settings')
+          .select('value')
+          .eq('key', 'permission_levels')
+          .single()
+        if (data?.value) setPermLevels({ ...DEFAULT_PERMS, ...JSON.parse(data.value) })
+      } catch { /* 기본값 유지 */ }
+    })()
+  }, [])
 
   if (loading) return null
   if (!isAdmin) return null
 
   const handleLogout = () => { logout(); navigate('/home') }
 
-  // 슈퍼어드민 전용 메뉴 접근 차단
+  // 현재 사용자 역할 + 권한
+  const currentRole = isSuperAdmin ? 'super_admin' : 'admin'
+  const currentPerms = permLevels[currentRole]?.permissions ?? DEFAULT_PERMS.admin.permissions
+  const currentRoleLabel = permLevels[currentRole]?.label ?? '관리자'
+  const currentRoleColor = permLevels[currentRole]?.color ?? '#3182f6'
+
+  // DB 권한 기반 메뉴 필터
+  const visibleMenus = ALL_MENUS.filter(m => currentPerms[m.key] !== false)
+
   const handleMenuChange = (menu: AdminMenu) => {
-    const menuDef = MENUS.find(m => m.key === menu)
-    if (menuDef?.superAdminOnly && !isSuperAdmin) return
+    if (currentPerms[menu] === false) return
     setActiveMenu(menu)
   }
 
   const renderMenu = () => {
+    // 권한 없는 메뉴 접근 시 차단
+    if (currentPerms[activeMenu] === false) {
+      return <AccessDenied label={`'${ALL_MENUS.find(m=>m.key===activeMenu)?.label}' 메뉴에 접근할 권한이 없습니다.`} />
+    }
     switch (activeMenu) {
-      case 'dashboard':  return <DashboardMenu />
-      case 'target':     return <TargetMenu />
-      case 'inquiries':  return <InquiriesMenu />
-      case 'notices':    return <NoticesMenu />
-      case 'members':    return <MembersMenu isSuperAdmin={isSuperAdmin} />
-      case 'accounts':   return <AccountsMenu isSuperAdmin={isSuperAdmin} />
-      case 'settings':   return <SettingsMenu isSuperAdmin={isSuperAdmin} />
-      case 'audit_logs': return isSuperAdmin
-        ? <AuditLogsMenu />
-        : <AccessDenied label="Audit Logs는 최고관리자(catchmarsterdmin@gmail.com)만 접근할 수 있습니다." />
+      case 'dashboard':   return <DashboardMenu />
+      case 'target':      return <TargetMenu />
+      case 'inquiries':   return <InquiriesMenu />
+      case 'notices':     return <NoticesMenu />
+      case 'members':     return <MembersMenu isSuperAdmin={isSuperAdmin} />
+      case 'accounts':    return <AccountsMenu isSuperAdmin={isSuperAdmin} />
+      case 'settings':    return <SettingsMenu isSuperAdmin={isSuperAdmin} />
+      case 'audit_logs':  return <AuditLogsMenu />
       case 'server_logs': return <ServerLogsMenu />
       default: return null
     }
   }
 
-  const activeMenuInfo = MENUS.find(m => m.key === activeMenu)
-  const visibleMenus = MENUS.filter(m => !m.superAdminOnly || isSuperAdmin)
+  const activeMenuInfo = ALL_MENUS.find(m => m.key === activeMenu)
 
   return (
     <div style={{
@@ -104,16 +143,15 @@ export default function AdminPage() {
             </option>
           ))}
         </select>
-        {isSuperAdmin && (
-          <span style={{
-            fontSize: '0.65rem', fontWeight: 800,
-            color: '#f04040', background: 'rgba(240,64,64,0.12)',
-            border: '1px solid rgba(240,64,64,0.2)',
-            padding: '2px 8px', borderRadius: 999, whiteSpace: 'nowrap',
-          }}>
-            최고관리자
-          </span>
-        )}
+        <span style={{
+          fontSize: '0.62rem', fontWeight: 800,
+          color: currentRoleColor,
+          background: `${currentRoleColor}1a`,
+          border: `1px solid ${currentRoleColor}33`,
+          padding: '2px 7px', borderRadius: 999, whiteSpace: 'nowrap',
+        }}>
+          {currentRoleLabel}
+        </span>
         <button
           onClick={handleLogout}
           style={{

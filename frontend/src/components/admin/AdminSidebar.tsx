@@ -16,21 +16,42 @@ interface Props {
   onLogout: () => void
 }
 
-const ALL_MENUS: { key: AdminMenu; icon: string; label: string; superAdminOnly?: boolean }[] = [
-  { key: 'dashboard',  icon: '🏠', label: 'Dashboard'     },
-  { key: 'target',     icon: '🎯', label: 'Target'         },
-  { key: 'inquiries',  icon: '💬', label: 'Inquiries'      },
-  { key: 'notices',    icon: '📢', label: '공지사항'        },
-  { key: 'members',    icon: '👥', label: '회원 관리'       },
-  { key: 'accounts',   icon: '🔑', label: '관리자 계정'     },
-  { key: 'settings',   icon: '⚙️', label: 'Settings'       },
-  { key: 'audit_logs', icon: '🔍', label: 'Audit Logs',  superAdminOnly: true },
-  { key: 'server_logs',icon: '🖥️', label: 'Server Logs'   },
+// 모든 메뉴 정의 (순서 = 표시 순서)
+const ALL_MENUS: { key: AdminMenu; icon: string; label: string }[] = [
+  { key: 'dashboard',  icon: '🏠', label: 'Dashboard'   },
+  { key: 'target',     icon: '🎯', label: 'Target'       },
+  { key: 'inquiries',  icon: '💬', label: 'Inquiries'    },
+  { key: 'notices',    icon: '📢', label: '공지사항'      },
+  { key: 'members',    icon: '👥', label: '회원 관리'     },
+  { key: 'accounts',   icon: '🔑', label: '관리자 계정'   },
+  { key: 'settings',   icon: '⚙️', label: 'Settings'     },
+  { key: 'audit_logs', icon: '🔍', label: 'Audit Logs'  },
+  { key: 'server_logs',icon: '🖥️', label: 'Server Logs' },
 ]
+
+interface PermLevel {
+  label: string
+  color: string
+  permissions: Record<string, boolean>
+}
+
+// 기본 권한 (DB 로드 실패 시 폴백)
+const DEFAULT_PERMS: Record<string, PermLevel> = {
+  super_admin: {
+    label: '슈퍼 관리자', color: '#f04040',
+    permissions: { dashboard:true, target:true, inquiries:true, notices:true, members:true, accounts:true, settings:true, audit_logs:true, server_logs:true },
+  },
+  admin: {
+    label: '관리자', color: '#3182f6',
+    permissions: { dashboard:true, target:true, inquiries:true, notices:true, members:true, accounts:false, settings:false, audit_logs:false, server_logs:false },
+  },
+}
 
 export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmin, onLogout }: Props) {
   const [waitingCount, setWaitingCount] = useState(0)
+  const [permLevels, setPermLevels] = useState<Record<string, PermLevel>>(DEFAULT_PERMS)
 
+  // 문의 대기 건수 실시간 구독
   useEffect(() => {
     if (!supabase) return
     const sb = supabase
@@ -49,7 +70,32 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
     return () => { sb.removeChannel(channel) }
   }, [])
 
-  const visibleMenus = ALL_MENUS.filter(m => !m.superAdminOnly || isSuperAdmin)
+  // DB에서 권한 레벨 로드 → 메뉴 제어에 동적 반영
+  useEffect(() => {
+    if (!supabase) return
+    ;(async () => {
+      try {
+        const { data } = await supabase
+          .from('system_settings')
+          .select('value')
+          .eq('key', 'permission_levels')
+          .single()
+        if (data?.value) {
+          const parsed = JSON.parse(data.value)
+          setPermLevels({ ...DEFAULT_PERMS, ...parsed })
+        }
+      } catch { /* 기본값 유지 */ }
+    })()
+  }, [])
+
+  // 현재 사용자 역할 결정
+  const currentRole = isSuperAdmin ? 'super_admin' : 'admin'
+  const currentPerms = permLevels[currentRole]?.permissions ?? DEFAULT_PERMS.admin.permissions
+  const currentRoleLabel = permLevels[currentRole]?.label
+  const currentRoleColor = permLevels[currentRole]?.color ?? '#3182f6'
+
+  // DB 권한 기반으로 메뉴 필터링
+  const visibleMenus = ALL_MENUS.filter(m => currentPerms[m.key] !== false)
 
   return (
     <aside style={{
@@ -59,7 +105,7 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
       display: 'flex', flexDirection: 'column',
       padding: '20px 0', flexShrink: 0,
     }}>
-      {/* 로고 */}
+      {/* 로고/프로필 */}
       <div style={{ padding: '0 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginBottom: 2 }}>
           CATCH Admin OS
@@ -67,18 +113,19 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
         <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
           관리자 콘솔
         </div>
-        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: 4, wordBreak: 'break-all' }}>
+        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', marginTop: 4, wordBreak: 'break-all' }}>
           {adminEmail}
         </div>
-        {isSuperAdmin && (
+        {currentRoleLabel && (
           <div style={{
             display: 'inline-block', marginTop: 6,
             fontSize: '0.65rem', fontWeight: 800,
-            color: '#f04040', background: 'rgba(240,64,64,0.12)',
-            border: '1px solid rgba(240,64,64,0.25)',
+            color: currentRoleColor,
+            background: `${currentRoleColor}1a`,
+            border: `1px solid ${currentRoleColor}44`,
             padding: '2px 8px', borderRadius: 999,
           }}>
-            ✦ 최고관리자
+            ✦ {currentRoleLabel}
           </div>
         )}
       </div>
@@ -87,6 +134,8 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
       <nav style={{ flex: 1, padding: '12px 10px' }}>
         {visibleMenus.map(m => {
           const isActive = m.key === active
+          // audit_logs는 슈퍼어드민 전용 표시
+          const isSuperOnly = m.key === 'audit_logs'
           return (
             <button
               key={m.key}
@@ -113,8 +162,8 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
                   {waitingCount}
                 </span>
               )}
-              {m.superAdminOnly && (
-                <span style={{ fontSize: '0.6rem', color: '#f04040', opacity: 0.7 }}>●</span>
+              {isSuperOnly && (
+                <span style={{ fontSize: '0.58rem', color: '#f04040', opacity: 0.8 }}>●</span>
               )}
               {isActive && (
                 <div style={{

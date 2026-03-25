@@ -25,16 +25,16 @@ const STATUS_LABEL: Record<string, string> = {
 export default function RecentActivity({ inquiries }: Props) {
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.04)',
-      border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: 14,
-      padding: '20px',
+      background: 'rgba(255,255,255,0.08)',
+      border: '1px solid rgba(255,255,255,0.14)',
+      borderRadius: 12,
+      padding: 'clamp(12px,3vw,20px)',
     }}>
-      <p style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 14 }}>
+      <p style={{ fontSize: 'clamp(0.75rem,2.5vw,0.82rem)', fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginBottom: 12 }}>
         최근 문의 활동
       </p>
       {inquiries.length === 0 && (
-        <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '20px 0' }}>
+        <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '16px 0' }}>
           문의 없음
         </p>
       )}
@@ -42,22 +42,40 @@ export default function RecentActivity({ inquiries }: Props) {
         <div key={inq.id} style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 10,
-          padding: '8px 0',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          gap: 8,
+          padding: '7px 0',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
         }}>
+          {/* 상태 배지 */}
           <span style={{
-            fontSize: '0.68rem',
+            fontSize: '0.65rem',
             fontWeight: 700,
             color: STATUS_COLOR[inq.status] ?? 'rgba(255,255,255,0.4)',
-            minWidth: 28,
+            background: `${STATUS_COLOR[inq.status] ?? 'rgba(255,255,255,0.1)'}22`,
+            border: `1px solid ${STATUS_COLOR[inq.status] ?? 'rgba(255,255,255,0.15)'}55`,
+            borderRadius: 4,
+            padding: '1px 5px',
+            flexShrink: 0,
+            minWidth: 30,
+            textAlign: 'center',
           }}>
             {STATUS_LABEL[inq.status] ?? inq.status}
           </span>
-          <span style={{ flex: 1, fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            [{inq.category}] {inq.title ?? inq.content.slice(0, 40)}
+          {/* 내용 */}
+          <span style={{
+            flex: 1,
+            fontSize: 'clamp(0.72rem,2.2vw,0.82rem)',
+            color: 'rgba(255,255,255,0.75)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            minWidth: 0,
+          }}>
+            <span style={{ color: 'rgba(255,255,255,0.4)', marginRight: 4 }}>[{inq.category}]</span>
+            {inq.title ?? inq.content.slice(0, 35)}
           </span>
-          <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>
+          {/* 시각 */}
+          <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', flexShrink: 0 }}>
             {fmt(inq.created_at)}
           </span>
         </div>

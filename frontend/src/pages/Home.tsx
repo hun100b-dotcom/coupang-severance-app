@@ -112,7 +112,9 @@ export default function Home() {
 
         const popupEnabled = m['popup_banner_enabled'] === 'true'
         const pText = m['popup_banner_text'] ?? ''
-        const dismissed = sessionStorage.getItem('popup_dismissed') === '1'
+        // 24시간 만료 체크 (localStorage 기반)
+        const dismissedUntil = parseInt(localStorage.getItem('popup_dismissed_until') ?? '0', 10)
+        const dismissed = Date.now() < dismissedUntil
         if (popupEnabled && pText.trim() && !dismissed) {
           setPopupText(pText)
           setTimeout(() => setPopupOpen(true), 800)
@@ -411,7 +413,7 @@ export default function Home() {
             style={{ background: 'rgba(0,0,0,0.45)' }}
             onClick={() => {
               setPopupOpen(false)
-              sessionStorage.setItem('popup_dismissed', '1')
+              localStorage.setItem('popup_dismissed_until', String(Date.now() + 86400000))
             }}
           >
             <motion.div
@@ -424,7 +426,7 @@ export default function Home() {
             >
               {/* 닫기 버튼 */}
               <button
-                onClick={() => { setPopupOpen(false); sessionStorage.setItem('popup_dismissed', '1') }}
+                onClick={() => { setPopupOpen(false); localStorage.setItem('popup_dismissed_until', String(Date.now() + 86400000)) }}
                 className="absolute top-4 right-4 p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500"
               >
                 <X className="w-4 h-4" />
@@ -447,13 +449,13 @@ export default function Home() {
               {/* 버튼 */}
               <div className="flex gap-2">
                 <button
-                  onClick={() => { setPopupOpen(false); sessionStorage.setItem('popup_dismissed', '1') }}
+                  onClick={() => { setPopupOpen(false); localStorage.setItem('popup_dismissed_until', String(Date.now() + 86400000)) }}
                   className="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition-colors"
                 >
                   오늘 하루 보지 않기
                 </button>
                 <button
-                  onClick={() => { setPopupOpen(false); sessionStorage.setItem('popup_dismissed', '1') }}
+                  onClick={() => { setPopupOpen(false); localStorage.setItem('popup_dismissed_until', String(Date.now() + 86400000)) }}
                   className="flex-1 py-2.5 rounded-xl bg-[#3182F6] text-white text-sm font-bold hover:bg-blue-600 transition-colors"
                 >
                   확인
