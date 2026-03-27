@@ -6,7 +6,7 @@ export type AdminMenu =
   | 'members' | 'accounts' | 'settings'
   | 'audit_logs' | 'server_logs'
 
-export const SUPER_ADMIN_EMAIL = 'catchmarsterdmin@gmail.com'
+export const SUPER_ADMIN_EMAIL = 'catchmasterdmin@gmail.com'
 
 interface Props {
   active: AdminMenu
@@ -94,8 +94,8 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
   const currentRoleLabel = permLevels[currentRole]?.label
   const currentRoleColor = permLevels[currentRole]?.color ?? '#3182f6'
 
-  // DB 권한 기반으로 메뉴 필터링
-  const visibleMenus = ALL_MENUS.filter(m => currentPerms[m.key] !== false)
+  // 모든 메뉴 표시 (권한 체크는 클릭 시 AdminPage에서 수행)
+  const visibleMenus = ALL_MENUS
 
   return (
     <aside style={{

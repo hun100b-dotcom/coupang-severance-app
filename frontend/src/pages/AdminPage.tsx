@@ -80,11 +80,11 @@ export default function AdminPage() {
   const currentRoleLabel = permLevels[currentRole]?.label ?? '관리자'
   const currentRoleColor = permLevels[currentRole]?.color ?? '#3182f6'
 
-  // DB 권한 기반 메뉴 필터
-  const visibleMenus = ALL_MENUS.filter(m => currentPerms[m.key] !== false)
+  // 모든 메뉴 표시 (권한 체크는 renderMenu()에서 수행)
+  const visibleMenus = ALL_MENUS
 
   const handleMenuChange = (menu: AdminMenu) => {
-    if (currentPerms[menu] === false) return
+    // 탭 클릭은 항상 허용 (접근 제한은 renderMenu에서 처리)
     setActiveMenu(menu)
   }
 
