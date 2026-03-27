@@ -90,7 +90,6 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
 
   // 현재 사용자 역할 결정
   const currentRole = isSuperAdmin ? 'super_admin' : 'admin'
-  const currentPerms = permLevels[currentRole]?.permissions ?? DEFAULT_PERMS.admin.permissions
   const currentRoleLabel = permLevels[currentRole]?.label
   const currentRoleColor = permLevels[currentRole]?.color ?? '#3182f6'
 
