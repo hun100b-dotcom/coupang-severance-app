@@ -1,6 +1,7 @@
 // MembersMenu.tsx — 회원 관리 (개인정보 마스킹 + 보안키 언마스킹)
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../../lib/supabase'
+import { logAdminAction } from '../../../lib/adminAuditLog'
 
 interface MemberRow {
   id: string
@@ -129,6 +130,12 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
         return
       }
       if (unlockKey === storedKey) {
+        // 마스킹 해제 감사 로그 기록
+        await logAdminAction('unmask_members', undefined, {
+          timestamp: new Date().toISOString(),
+          member_count: members.length,
+        })
+
         setUnmasked(true)
         setShowUnlockDialog(false)
         setUnlockKey('')

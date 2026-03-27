@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react' // 데이터 요청과 상태 관리
 import { useParams, useNavigate } from 'react-router-dom' // URL 파라미터와 페이지 이동을 위해 라우터 훅을 사용합니다.
 import { ChevronLeft, FileText } from 'lucide-react' // 아이콘 컴포넌트를 가져옵니다.
 import { supabase } from '../lib/supabase' // 공용 Supabase 클라이언트를 새 경로에서 가져옵니다.
+import { logAccess } from '../lib/accessLog' // 접근 로그 기록
 import type { ReportRow, SeverancePayload } from '../types/supabase' // 리포트 타입 정의를 가져옵니다.
 
 const fmt = (n: number) => n.toLocaleString('ko-KR')
@@ -38,6 +39,9 @@ export default function ReportDetail() {
           .single()
         if (err) throw err
         setReport(data as ReportRow)
+
+        // 접근 로그 기록 (계산 결과 조회)
+        logAccess('view_report', id)
       } catch (e) {
         setError('리포트를 불러오지 못했어요.')
         setReport(null)

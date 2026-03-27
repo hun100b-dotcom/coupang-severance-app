@@ -3,10 +3,11 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, LogOut } from 'lucide-react'
+import { ChevronLeft, LogOut, Trash2 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { notifyNewInquiry } from '../lib/api'
+import { logAccess } from '../lib/accessLog'
 import { ProfileCard } from '../components/mypage/ProfileCard'
 import { SavedResultsList } from '../components/mypage/SavedResultsList'
 import { SavedResultDetail } from '../components/mypage/SavedResultDetail'
@@ -119,6 +120,13 @@ export default function MyPage() {
   const joinedAt: string | null = (rawMeta.joined_at as string | undefined) ?? (user.raw.created_at ?? null)
   const daysWithCatch = calcDaysFrom(joinedAt)
 
+  // 프로필 조회 로그 기록 (페이지 진입 시)
+  useEffect(() => {
+    if (user) {
+      logAccess('view_profile')
+    }
+  }, [user])
+
   // ── 1:1 문의 저장 핸들러
   const handleCreateInquiry = async (payload: { title: string; content: string }) => {
     if (!supabase) return
@@ -131,6 +139,9 @@ export default function MyPage() {
     }).select('id').single()
 
     if (!error && data?.id) {
+      // 접근 로그 기록
+      logAccess('create_inquiry', data.id)
+
       // 개인정보보호법 준수: Discord로 개인정보를 전송하지 않고 inquiry_id만 전송
       notifyNewInquiry({
         inquiryId: data.id,
@@ -141,6 +152,46 @@ export default function MyPage() {
       })
     }
     await refreshInquiries()
+  }
+
+  // ── 회원 탈퇴 핸들러 (개인정보보호법 제21조: 파기 의무)
+  const handleDeleteAccount = async () => {
+    if (!supabase || !user) return
+
+    const confirmed = window.confirm(
+      '⚠️ 회원 탈퇴 시 모든 데이터가 즉시 삭제되며 복구할 수 없습니다.\n\n' +
+      '- 저장된 계산 결과\n' +
+      '- 1:1 문의 내역\n' +
+      '- 개인정보 (이름, 생년월일, 핸드폰번호)\n\n' +
+      '정말 탈퇴하시겠습니까?'
+    )
+
+    if (!confirmed) return
+
+    try {
+      // 0. 접근 로그 기록 (탈퇴 전에 기록)
+      await logAccess('delete_account')
+
+      // 1. 계산 결과 삭제
+      await supabase.from('reports').delete().eq('user_id', user.raw.id)
+
+      // 2. 문의 내역 삭제
+      await supabase.from('inquiries').delete().eq('user_id', user.raw.id)
+
+      // 3. 접근 로그 삭제
+      await supabase.from('user_access_logs').delete().eq('user_id', user.raw.id)
+
+      // 4. 프로필 삭제
+      await supabase.from('profiles').delete().eq('id', user.raw.id)
+
+      // 5. 로그아웃 및 리다이렉트
+      alert('회원 탈퇴가 완료되었습니다.')
+      await logout()
+      navigate('/login')
+    } catch (error) {
+      console.error('회원 탈퇴 실패:', error)
+      alert('회원 탈퇴 중 오류가 발생했습니다. 1:1 문의로 요청해 주세요.')
+    }
   }
 
   return (
@@ -196,13 +247,23 @@ export default function MyPage() {
         {/* ⑤ 계정 관리 */}
         <div className="bg-white rounded-[32px] shadow-[0_18px_60px_rgba(15,23,42,0.08)] border border-slate-100 px-5 py-5">
           <p className="text-[15px] font-extrabold text-[#191f28] tracking-tight mb-3">계정 관리</p>
+
+          {/* 로그아웃 버튼 */}
           <button type="button" onClick={() => logout()}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-slate-200 text-[13px] font-semibold text-[#4e5968] hover:bg-slate-50 active:scale-[0.98] transition-all">
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-slate-200 text-[13px] font-semibold text-[#4e5968] hover:bg-slate-50 active:scale-[0.98] transition-all mb-2">
             <LogOut className="w-4 h-4" />
             로그아웃
           </button>
+
+          {/* 회원 탈퇴 버튼 */}
+          <button type="button" onClick={handleDeleteAccount}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-red-200 text-[13px] font-semibold text-red-600 hover:bg-red-50 active:scale-[0.98] transition-all">
+            <Trash2 className="w-4 h-4" />
+            회원 탈퇴
+          </button>
+
           <p className="text-[10px] text-[#8b95a1] text-center mt-4 leading-relaxed">
-            계정 탈퇴가 필요하시면 1:1 문의로 요청해 주세요.
+            탈퇴 시 모든 데이터가 즉시 삭제되며 복구할 수 없습니다.
           </p>
         </div>
 

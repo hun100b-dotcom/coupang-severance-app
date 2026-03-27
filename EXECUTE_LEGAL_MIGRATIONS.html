@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚖️ 법적 준수 마이그레이션 실행 가이드</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      min-height: 100vh;
+      padding: 32px 16px;
+      color: #1e293b;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 24px;
+      padding: 48px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    }
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .subtitle {
+      font-size: 1.1rem;
+      color: #64748b;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    .alert {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      border-radius: 8px;
+    }
+    .alert strong {
+      color: #92400e;
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1.1rem;
+    }
+    .alert p {
+      color: #78350f;
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+    .step {
+      margin-bottom: 32px;
+      padding: 24px;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+    }
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .step-number {
+      background: #3b82f6;
+      color: white;
+      font-weight: 800;
+      font-size: 1.2rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .step-content {
+      margin-left: 52px;
+      color: #475569;
+      line-height: 1.7;
+    }
+    .step-content p {
+      margin-bottom: 12px;
+    }
+    .sql-box {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin-top: 16px;
+      position: relative;
+      border: 2px solid #334155;
+    }
+    .sql-box pre {
+      margin: 0;
+      white-space: pre-wrap;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59,130,246,0.4);
+    }
+    .copy-btn:active {
+      transform: translateY(0);
+    }
+    .link-btn {
+      display: inline-block;
+      background: #10b981;
+      color: white;
+      padding: 14px 28px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-top: 16px;
+      transition: all 0.2s;
+    }
+    .link-btn:hover {
+      background: #059669;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16,185,129,0.4);
+    }
+    .success-msg {
+      background: #d1fae5;
+      border-left: 4px solid #10b981;
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin-top: 16px;
+      color: #065f46;
+      font-weight: 600;
+    }
+    .code {
+      background: #e2e8f0;
+      color: #1e293b;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚖️ 법적 준수 마이그레이션 실행</h1>
+    <p class="subtitle">
+      개인정보보호법 및 정보통신망법 완전 준수를 위한 데이터베이스 변경사항을 적용합니다.
+    </p>
+
+    <div class="alert">
+      <strong>⚠️ 중요: 반드시 순서대로 실행하세요</strong>
+      <p>
+        각 마이그레이션은 이전 마이그레이션에 의존성이 있습니다.
+        <strong>반드시 007 → 008 순서로 실행</strong>해야 오류가 발생하지 않습니다.
+      </p>
+    </div>
+
+    <!-- Step 1: 마케팅 동의 분리 -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-number">1</div>
+        <div class="step-title">마케팅 동의 분리 (정보통신망법 제50조)</div>
+      </div>
+      <div class="step-content">
+        <p>
+          <strong>파일:</strong> <span class="code">supabase/migrations/007_marketing_consent_separation.sql</span>
+        </p>
+        <p>
+          정보통신망법 제50조에 따라 전화(음성), SMS/문자, 이메일 마케팅 수신 동의를 각각 분리하여 수집하도록 테이블 구조를 변경합니다.
+        </p>
+
+        <div class="sql-box">
+          <button class="copy-btn" onclick="copySQL('sql1')">📋 복사</button>
+          <pre id="sql1">-- 007_marketing_consent_separation.sql
+
+-- profiles 테이블에 마케팅 수신 동의 분리 (정보통신망법 제50조)
+ALTER TABLE public.profiles
+  DROP COLUMN IF EXISTS marketing_agreement,
+  ADD COLUMN IF NOT EXISTS marketing_sms boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS marketing_email boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS marketing_phone boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS marketing_agreed_at timestamptz;
+
+COMMENT ON COLUMN public.profiles.marketing_sms IS '정보통신망법 제50조: SMS/문자 마케팅 수신 동의';
+COMMENT ON COLUMN public.profiles.marketing_email IS '정보통신망법 제50조: 이메일 마케팅 수신 동의';
+COMMENT ON COLUMN public.profiles.marketing_phone IS '정보통신망법 제50조: 전화(음성) 마케팅 수신 동의';
+COMMENT ON COLUMN public.profiles.marketing_agreed_at IS '마케팅 수신 동의 일시';</pre>
+        </div>
+
+        <a href="https://supabase.com/dashboard/project/hmjxrqhcwjyfkvlcejfc/sql/new" target="_blank" class="link-btn">
+          🔗 Supabase SQL Editor 열기
+        </a>
+
+        <div class="success-msg">
+          ✅ 실행 완료 후 "Success. No rows returned" 메시지가 표시되어야 합니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: 사용자 접근 로그 -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-number">2</div>
+        <div class="step-title">사용자 접근 로그 (개인정보 안전성 확보조치 기준 제7조)</div>
+      </div>
+      <div class="step-content">
+        <p>
+          <strong>파일:</strong> <span class="code">supabase/migrations/008_user_access_logs.sql</span>
+        </p>
+        <p>
+          개인정보의 안전성 확보조치 기준 제7조에 따라 개인정보 처리 시스템에 접속한 기록을 6개월 이상 보관합니다.
+        </p>
+
+        <div class="sql-box">
+          <button class="copy-btn" onclick="copySQL('sql2')">📋 복사</button>
+          <pre id="sql2">-- 008_user_access_logs.sql
+
+-- 사용자 접근 로그 테이블 (개인정보의 안전성 확보조치 기준 제7조)
+CREATE TABLE IF NOT EXISTS public.user_access_logs (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  action text NOT NULL,
+  target_id uuid,
+  ip_address inet,
+  user_agent text,
+  created_at timestamptz DEFAULT now() NOT NULL
+);
+
+COMMENT ON TABLE public.user_access_logs IS '사용자 접근 로그 (6개월 보관 의무)';
+COMMENT ON COLUMN public.user_access_logs.action IS 'view_profile, update_profile, view_report, create_inquiry, delete_account, view_inquiry';
+COMMENT ON COLUMN public.user_access_logs.target_id IS '조회한 리소스 ID (reports.id, inquiries.id 등)';
+
+-- 인덱스: 사용자별 조회 최적화
+CREATE INDEX IF NOT EXISTS idx_user_access_logs_user_id ON public.user_access_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_access_logs_created_at ON public.user_access_logs(created_at DESC);
+
+-- RLS 활성화
+ALTER TABLE public.user_access_logs ENABLE ROW LEVEL SECURITY;
+
+-- 정책: 사용자는 자신의 접근 로그만 조회 가능
+CREATE POLICY "Users can view their own access logs"
+  ON public.user_access_logs FOR SELECT
+  USING (auth.uid() = user_id);
+
+-- 정책: 관리자는 모든 접근 로그 조회 가능
+CREATE POLICY "Admins can view all access logs"
+  ON public.user_access_logs FOR SELECT
+  USING (public.is_admin());
+
+-- 정책: 사용자는 자신의 접근 로그 기록 가능 (INSERT만)
+CREATE POLICY "Users can insert their own access logs"
+  ON public.user_access_logs FOR INSERT
+  WITH CHECK (auth.uid() = user_id);</pre>
+        </div>
+
+        <a href="https://supabase.com/dashboard/project/hmjxrqhcwjyfkvlcejfc/sql/new" target="_blank" class="link-btn">
+          🔗 Supabase SQL Editor 열기
+        </a>
+
+        <div class="success-msg">
+          ✅ 실행 완료 후 "Success. No rows returned" 메시지가 표시되어야 합니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: 검증 -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-number">3</div>
+        <div class="step-title">마이그레이션 검증</div>
+      </div>
+      <div class="step-content">
+        <p>모든 마이그레이션이 정상적으로 적용되었는지 확인합니다.</p>
+
+        <div class="sql-box">
+          <button class="copy-btn" onclick="copySQL('sql3')">📋 복사</button>
+          <pre id="sql3">-- 검증 쿼리 1: profiles 테이블에 마케팅 동의 컬럼 존재 확인
+SELECT column_name, data_type, is_nullable
+FROM information_schema.columns
+WHERE table_name = 'profiles'
+  AND column_name IN ('marketing_sms', 'marketing_email', 'marketing_phone', 'marketing_agreed_at')
+ORDER BY column_name;
+
+-- 예상 결과: 4개 행이 조회되어야 함
+
+-- 검증 쿼리 2: user_access_logs 테이블 존재 확인
+SELECT table_name, table_type
+FROM information_schema.tables
+WHERE table_schema = 'public' AND table_name = 'user_access_logs';
+
+-- 예상 결과: 1개 행 (user_access_logs, BASE TABLE)</pre>
+        </div>
+
+        <div class="success-msg">
+          ✅ 두 쿼리 모두 예상 결과가 나오면 마이그레이션이 성공적으로 완료된 것입니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: 배포 -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-number">4</div>
+        <div class="step-title">프론트엔드 배포</div>
+      </div>
+      <div class="step-content">
+        <p>
+          데이터베이스 마이그레이션이 완료되면 Git push로 Vercel에 자동 배포됩니다.
+        </p>
+
+        <div class="sql-box">
+          <button class="copy-btn" onclick="copySQL('git')">📋 복사</button>
+          <pre id="git">git status
+# 변경된 파일 확인
+
+git add -A
+git commit -m "feat: 개인정보보호법 완전 준수 — 마케팅 동의 분리 + 접근 로그 + 회원 탈퇴"
+git push origin main
+
+# Vercel 자동 배포 대기 (약 2분)</pre>
+        </div>
+
+        <a href="https://vercel.com/hun100bs-projects-a5d67f6d/coupang-severance-app" target="_blank" class="link-btn">
+          🔗 Vercel 배포 상태 확인
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function copySQL(id) {
+      const text = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = '✅ 복사됨!';
+        btn.style.background = '#10b981';
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = '#3b82f6';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
