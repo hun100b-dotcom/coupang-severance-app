@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from 'react' // React 훅을 사용하기 위해 가져옵니다.
 import { supabase } from '../../lib/supabase' // 공용 Supabase 클라이언트를 불러옵니다.
 
-type Status = '처리 중...' | '로그인 완료, 이동 중...' | '로그인에 실패했어요' // 화면에 표시할 상태 메시지 타입입니다.
+type Status = '처리 중...' | '로그인 완료, 이동 중...' | '로그인에 실패했어요' | '추가 정보 입력 페이지로 이동 중...' // 화면에 표시할 상태 메시지 타입입니다.
 
 const RETRY_DELAYS_MS = [0, 200, 500, 1000, 2000] // getSession 재시도 간격(밀리초) 배열입니다.
 const GIVE_UP_MS = 5000 // 이 시간 안에 세션이 안 잡히면 실패로 간주합니다.
@@ -13,11 +13,19 @@ export default function AuthCallbackPage() {
   const [status, setStatus] = useState<Status>('처리 중...') // 현재 진행 상태를 저장하는 상태입니다.
   const doneRef = useRef(false) // 한 번만 리다이렉트하도록 제어하는 플래그입니다.
 
-  const goTo = (path: '/mypage' | '/login') => {
+  const goTo = async (path: '/mypage' | '/login' | '/onboarding') => {
     // 이미 이동 처리 중이라면 더 이상 실행하지 않습니다.
     if (doneRef.current) return
     doneRef.current = true // 이후 중복 호출을 막기 위해 플래그를 true 로 바꿉니다.
-    setStatus(path === '/mypage' ? '로그인 완료, 이동 중...' : '로그인에 실패했어요') // 이동 전 상태 텍스트를 업데이트합니다.
+
+    if (path === '/login') {
+      setStatus('로그인에 실패했어요')
+    } else if (path === '/onboarding') {
+      setStatus('추가 정보 입력 페이지로 이동 중...')
+    } else {
+      setStatus('로그인 완료, 이동 중...')
+    }
+
     window.location.replace(path) // 히스토리에 남기지 않고 지정한 경로로 전체 페이지 이동을 수행합니다.
   }
 
@@ -29,13 +37,24 @@ export default function AuthCallbackPage() {
       return // effect 실행을 종료합니다.
     }
 
-    // 1) onAuthStateChange: SIGNED_IN / INITIAL_SESSION 이벤트에서 세션이 확인되면 /mypage 로 이동합니다.
+    // 1) onAuthStateChange: SIGNED_IN / INITIAL_SESSION 이벤트에서 세션 확인 후 온보딩 여부 체크
     const {
       data: { subscription },
-    } = client.auth.onAuthStateChange((event, session) => {
+    } = client.auth.onAuthStateChange(async (event, session) => {
       if (doneRef.current) return // 이미 다른 경로로 이동 중이면 무시합니다.
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
-        goTo('/mypage') // 세션이 있는 경우 마이페이지로 보냅니다.
+        // 온보딩 완료 여부 확인
+        const { data: profile } = await client
+          .from('profiles')
+          .select('onboarding_completed, full_name')
+          .eq('id', session.user.id)
+          .single()
+
+        if (!profile || !profile.onboarding_completed || !profile.full_name) {
+          goTo('/onboarding') // 온보딩 미완료 시 온보딩 페이지로
+        } else {
+          goTo('/mypage') // 온보딩 완료 시 마이페이지로
+        }
       }
     })
 
@@ -49,7 +68,18 @@ export default function AuthCallbackPage() {
         const { data, error } = await client.auth.getSession() // 현재 세션 정보를 가져옵니다.
         if (doneRef.current) return // 중간에 완료되었으면 즉시 중단합니다.
         if (!error && data.session?.user) {
-          goTo('/mypage') // 세션이 있으면 마이페이지로 이동하고 함수 종료합니다.
+          // 온보딩 완료 여부 확인
+          const { data: profile } = await client
+            .from('profiles')
+            .select('onboarding_completed, full_name')
+            .eq('id', data.session.user.id)
+            .single()
+
+          if (!profile || !profile.onboarding_completed || !profile.full_name) {
+            goTo('/onboarding') // 온보딩 미완료
+          } else {
+            goTo('/mypage') // 온보딩 완료
+          }
           return
         }
       }

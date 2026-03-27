@@ -95,7 +95,7 @@ npx playwright show-report       # 마지막 결과 리포트
 /login              → LoginPage      (Layout 없음)
 /admin              → AdminPage      (자체 사이드바, Layout 없음)
                       ├─ 접근: VITE_ADMIN_EMAIL과 동일한 이메일
-                      └─ 슈퍼어드민: catchmarsterdmin@gmail.com만 Audit Logs, Settings 고급 기능 접근
+                      └─ 슈퍼어드민: catchmasterdmin@gmail.com만 Audit Logs, Settings 고급 기능 접근
 
 <Layout>  ← TopNav(56px) + BottomNav(60px) 포함
   /home             → Home
@@ -122,7 +122,7 @@ npx playwright show-report       # 마지막 결과 리포트
 - **`services/notify.py`** — 1:1 문의 시 Discord 웹훅 전송. 오류 조용히 억제.
 - **`api/admin.py`** — 관리자 OS API (9개 엔드포인트). `_VALID_ADMIN_TOKENS` 집합으로 토큰 검증 (환경변수 + 기본값 모두 허용). SUPABASE_URL은 프로젝트 ID 포함 여부로 자동 교정.
 
-### 어드민 슈퍼 관리자 (`SUPER_ADMIN_EMAIL = 'catchmarsterdmin@gmail.com'`)
+### 어드민 슈퍼 관리자 (`SUPER_ADMIN_EMAIL = 'catchmasterdmin@gmail.com'`)
 
 - `AdminSidebar.tsx`에 상수 정의
 - 슈퍼어드민 전용 기능: Audit Logs (`AuditLogsMenu.tsx`), Server Logs (`ServerLogsMenu.tsx`), Settings → 마스킹 보안키, Settings → 권한 레벨 관리

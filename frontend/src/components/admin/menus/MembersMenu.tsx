@@ -6,6 +6,9 @@ interface MemberRow {
   id: string
   email: string | null
   display_name: string | null
+  full_name: string | null
+  birthdate: string | null
+  phone_number: string | null
   provider: string | null
   joined_at: string | null
   marketing_agreement: boolean
@@ -34,6 +37,30 @@ function maskEmail(email: string | null): string {
 // UUID 마스킹
 function maskId(id: string): string {
   return id.slice(0, 8) + '****-****-****-' + id.slice(-4)
+}
+
+// 이름 마스킹: 홍길동 → 홍*동
+function maskName(name: string | null): string {
+  if (!name) return '미등록'
+  if (name.length <= 1) return name
+  if (name.length === 2) return name[0] + '*'
+  return name[0] + '*'.repeat(name.length - 2) + name[name.length - 1]
+}
+
+// 생년월일 마스킹: 1990-01-01 → 1990-**-**
+function maskBirthdate(date: string | null): string {
+  if (!date) return '미등록'
+  const parts = date.split('-')
+  if (parts.length !== 3) return '****-**-**'
+  return `${parts[0]}-**-**`
+}
+
+// 핸드폰 마스킹: 010-1234-5678 → 010-****-5678
+function maskPhone(phone: string | null): string {
+  if (!phone) return '미등록'
+  const parts = phone.split('-')
+  if (parts.length !== 3) return '***-****-****'
+  return `${parts[0]}-****-${parts[2]}`
 }
 
 export default function MembersMenu({ isSuperAdmin }: Props) {
@@ -121,11 +148,6 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
   }
 
-  function formatDateTime(iso: string | null) {
-    if (!iso) return '-'
-    const d = new Date(iso)
-    return `${formatDate(iso)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-  }
 
   function providerBadge(provider: string | null) {
     if (!provider) return null
@@ -247,7 +269,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
           <>
             {/* PC 테이블 헤더 */}
             <div className="hidden md:grid" style={{
-              gridTemplateColumns: '2fr 80px 110px 110px 70px 70px',
+              gridTemplateColumns: '1.5fr 90px 90px 110px 100px 80px 80px',
               padding: '10px 16px',
               borderBottom: '1px solid rgba(255,255,255,0.06)',
               fontSize: '0.7rem', fontWeight: 700,
@@ -255,21 +277,26 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
               textTransform: 'uppercase', letterSpacing: '0.05em',
             }}>
               <span>이메일 / ID</span>
+              <span>이름</span>
+              <span>생년월일</span>
+              <span>핸드폰</span>
               <span>소셜</span>
               <span>가입일</span>
-              <span>마지막 접속</span>
               <span>마케팅</span>
-              <span>이름</span>
             </div>
 
             {members.map(member => {
               const emailDisplay = unmasked ? (member.email ?? '이메일 미등록') : maskEmail(member.email)
               const idDisplay = unmasked ? member.id : maskId(member.id)
+              const nameDisplay = unmasked ? (member.full_name ?? '미등록') : maskName(member.full_name)
+              const birthdateDisplay = unmasked ? (member.birthdate ?? '미등록') : maskBirthdate(member.birthdate)
+              const phoneDisplay = unmasked ? (member.phone_number ?? '미등록') : maskPhone(member.phone_number)
+
               return (
                 <div key={member.id}>
                   {/* PC 행 */}
                   <div className="hidden md:grid" style={{
-                    gridTemplateColumns: '2fr 80px 110px 110px 70px 70px',
+                    gridTemplateColumns: '1.5fr 90px 90px 110px 100px 80px 80px',
                     padding: '11px 16px',
                     borderBottom: '1px solid rgba(255,255,255,0.04)',
                     alignItems: 'center',
@@ -285,23 +312,26 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                         {idDisplay}
                       </div>
                     </div>
-                    <div>{providerBadge(member.provider)}</div>
-                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)' }}>
-                      {formatDate(member.created_at)}
+                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>
+                      {nameDisplay}
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)' }}>
-                      {formatDateTime(member.updated_at)}
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
+                      {birthdateDisplay}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
+                      {phoneDisplay}
+                    </div>
+                    <div>{providerBadge(member.provider)}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)' }}>
+                      {formatDate(member.created_at)}
                     </div>
                     <div>
                       <span style={{
                         fontSize: '0.7rem', fontWeight: 700,
                         color: member.marketing_agreement ? '#22c55e' : 'rgba(255,255,255,0.25)',
                       }}>
-                        {member.marketing_agreement ? '● 동의' : '○ 미동의'}
+                        {member.marketing_agreement ? '● ' : '○ '}
                       </span>
-                    </div>
-                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)' }}>
-                      {member.display_name ?? '-'}
                     </div>
                   </div>
 
@@ -318,12 +348,16 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                       </div>
                       {member.provider && <div style={{ flexShrink: 0 }}>{providerBadge(member.provider)}</div>}
                     </div>
-                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace', marginBottom: 4 }}>
+                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace', marginBottom: 6 }}>
                       {idDisplay}
                     </div>
-                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>
+                      <span>👤 {nameDisplay}</span>
+                      <span>🎂 {birthdateDisplay}</span>
+                      <span>📱 {phoneDisplay}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: 6 }}>
                       <span>가입: {formatDate(member.created_at)}</span>
-                      {member.display_name && <span>이름: {member.display_name}</span>}
                       <span style={{ color: member.marketing_agreement ? '#22c55e' : 'rgba(255,255,255,0.25)' }}>
                         마케팅 {member.marketing_agreement ? '동의' : '미동의'}
                       </span>

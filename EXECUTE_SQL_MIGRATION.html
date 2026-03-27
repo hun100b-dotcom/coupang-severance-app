@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔧 DB 마이그레이션 실행 가이드</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 900px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #333;
+      margin: 0 0 10px 0;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: #666;
+      margin: 0 0 30px 0;
+      font-size: 14px;
+    }
+    .step {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border-left: 4px solid #667eea;
+    }
+    .step-number {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 28px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    .step-title {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 14px 28px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: transform 0.2s;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 10px;
+      margin-top: 12px;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102,126,234,0.4);
+    }
+    .code {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      margin: 15px 0;
+      line-height: 1.5;
+      max-height: 400px;
+      overflow-y: auto;
+      cursor: pointer;
+    }
+    .code:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .warning {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      color: #856404;
+    }
+    .success {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      color: #155724;
+    }
+    #copyStatus {
+      color: #28a745;
+      font-weight: 600;
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 DB 마이그레이션 실행 가이드</h1>
+    <p class="subtitle">이름/생년월일/핸드폰 수집 기능 활성화</p>
+
+    <div class="warning">
+      <strong>⚠️ 중요:</strong> 아래 SQL을 Supabase SQL Editor에서 실행해야 프론트엔드 기능이 정상 작동합니다.
+    </div>
+
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">1</span>
+        Supabase SQL Editor 열기
+      </div>
+      <div class="step-content">
+        아래 버튼을 클릭하여 Supabase SQL Editor를 새 탭에서 엽니다.
+        <div style="margin-top: 12px;">
+          <a href="https://supabase.com/dashboard/project/hmjxrqhcwjyfkvlcejfc/sql/new" target="_blank" class="btn">
+            🚀 Supabase SQL Editor 열기
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">2</span>
+        마이그레이션 SQL 복사
+      </div>
+      <div class="step-content">
+        아래 SQL을 복사합니다. (코드 블록 클릭 시 자동 복사됩니다)
+        <div class="code" id="sqlCode" onclick="copySQL()" title="클릭하여 복사">-- 006_add_user_identity.sql
+-- 사용자 실명/생년월일/핸드폰 수집을 위한 스키마 확장
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+-- ── 1. profiles 테이블 컬럼 추가 ──────────────────────────────────────
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS full_name     text,           -- 실명
+  ADD COLUMN IF NOT EXISTS birthdate     date,           -- 생년월일
+  ADD COLUMN IF NOT EXISTS phone_number  text,           -- 핸드폰번호
+  ADD COLUMN IF NOT EXISTS terms_agreed_at timestamptz,  -- 약관 동의 시각
+  ADD COLUMN IF NOT EXISTS onboarding_completed boolean DEFAULT false; -- 온보딩 완료 여부
+
+-- ── 2. 이메일 NULL 정리 및 NOT NULL 제약 추가 ────────────────────────
+-- 기존 NULL 이메일을 임시값으로 변경
+UPDATE public.profiles
+SET email = 'unknown-' || id || '@catchapp.temp'
+WHERE email IS NULL;
+
+-- NOT NULL 제약 추가
+ALTER TABLE public.profiles
+  ALTER COLUMN email SET NOT NULL;
+
+-- ── 3. display_name 기본값 설정 ──────────────────────────────────────
+UPDATE public.profiles
+SET display_name = COALESCE(full_name, split_part(email, '@', 1), '사용자')
+WHERE display_name IS NULL OR display_name = '';
+
+ALTER TABLE public.profiles
+  ALTER COLUMN display_name SET DEFAULT '사용자';
+
+-- ── 4. 유효성 제약 추가 ───────────────────────────────────────────────
+-- 생년월일: 18세 이상만 가입 가능
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_birthdate_adult
+  CHECK (birthdate IS NULL OR birthdate <= (CURRENT_DATE - INTERVAL '18 years'));
+
+-- 핸드폰번호: 010-XXXX-XXXX 또는 01X-XXX-XXXX 또는 01X-XXXX-XXXX 형식
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_phone_format
+  CHECK (phone_number IS NULL OR phone_number ~ '^01[016789]-\d{3,4}-\d{4}$');
+
+-- ── 5. 인덱스 추가 (검색 성능 향상) ──────────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
+CREATE INDEX IF NOT EXISTS idx_profiles_full_name ON public.profiles(full_name);
+CREATE INDEX IF NOT EXISTS idx_profiles_birthdate ON public.profiles(birthdate);
+CREATE INDEX IF NOT EXISTS idx_profiles_phone_number ON public.profiles(phone_number);
+CREATE INDEX IF NOT EXISTS idx_profiles_onboarding ON public.profiles(onboarding_completed);
+
+-- ── 6. RLS 정책은 이미 004_security_rls.sql에 있으므로 추가 작업 불필요 ──
+
+-- ── 완료 메시지 ────────────────────────────────────────────────────────
+DO $$
+BEGIN
+  RAISE NOTICE '✅ 006_add_user_identity.sql 마이그레이션 완료';
+  RAISE NOTICE '  - full_name, birthdate, phone_number 컬럼 추가';
+  RAISE NOTICE '  - 이메일 NOT NULL 제약 추가';
+  RAISE NOTICE '  - 유효성 제약 및 인덱스 추가';
+  RAISE NOTICE '  - 프론트엔드 온보딩 페이지 배포 완료';
+END $$;</div>
+        <div id="copyStatus">
+          ✅ SQL이 클립보드에 복사되었습니다!
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">3</span>
+        SQL Editor에 붙여넣기 후 실행
+      </div>
+      <div class="step-content">
+        1단계에서 연 Supabase SQL Editor에 복사한 SQL을 붙여넣고 <strong>RUN</strong> 버튼을 클릭합니다.
+        <br><br>
+        <strong>성공 메시지:</strong>
+        <pre style="background: #f0f0f0; padding: 10px; border-radius: 6px; font-size: 13px;">
+✅ 006_add_user_identity.sql 마이그레이션 완료
+   - full_name, birthdate, phone_number 컬럼 추가
+   - 이메일 NOT NULL 제약 추가
+   - 유효성 제약 및 인덱스 추가</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">4</span>
+        프론트엔드 배포 확인
+      </div>
+      <div class="step-content">
+        SQL 실행 후 약 2-3분 뒤 Vercel 자동 배포가 완료됩니다.
+        <br><br>
+        <a href="https://coupang-severance-app.vercel.app" target="_blank" class="btn">
+          🌐 서비스 확인하기
+        </a>
+      </div>
+    </div>
+
+    <div class="success">
+      <strong>✅ 구현 완료 항목:</strong><br>
+      • 온보딩 페이지: 최초 로그인 시 이름/생년월일/핸드폰 입력<br>
+      • 어드민 회원 관리: 이름/생년월일/핸드폰 표시 (마스킹 처리)<br>
+      • DB 스키마 확장: full_name, birthdate, phone_number 컬럼 추가<br>
+      • 보안: 개인정보 마스킹 + 보안키 해제 기능
+    </div>
+
+    <div style="margin-top: 30px; text-align: center;">
+      <button onclick="copySQL()" class="btn">
+        📋 SQL 복사
+      </button>
+      <a href="https://coupang-severance-app.vercel.app/admin" target="_blank" class="btn" style="background: #6c757d;">
+        🔍 어드민 페이지 열기
+      </a>
+    </div>
+  </div>
+
+  <script>
+    async function copySQL() {
+      const sql = document.getElementById('sqlCode').textContent;
+      try {
+        await navigator.clipboard.writeText(sql);
+        const status = document.getElementById('copyStatus');
+        status.style.display = 'block';
+        setTimeout(() => {
+          status.style.display = 'none';
+        }, 3000);
+      } catch (err) {
+        alert('복사 실패. 수동으로 선택하여 복사해주세요.');
+      }
+    }
+  </script>
+</body>
+</html>
