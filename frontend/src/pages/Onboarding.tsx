@@ -16,6 +16,7 @@ export default function OnboardingPage() {
   const [agreePrivacy, setAgreePrivacy] = useState(false) // 개인정보 처리방침 (필수)
   const [agreeMarketingSMS, setAgreeMarketingSMS] = useState(false) // 마케팅 SMS (선택)
   const [agreeMarketingEmail, setAgreeMarketingEmail] = useState(false) // 마케팅 이메일 (선택)
+  const [agreeMarketingPhone, setAgreeMarketingPhone] = useState(false) // 마케팅 전화 (선택)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -97,7 +98,11 @@ export default function OnboardingPage() {
           phone_number: phoneNumber,
           display_name: fullName.trim(),
           terms_agreed_at: new Date().toISOString(),
-          marketing_agreement: agreeMarketingSMS || agreeMarketingEmail, // 기존 필드 유지 (마이그레이션 전)
+          // 정보통신망법 제50조: 전화/SMS/이메일 각각 별도 동의
+          marketing_sms: agreeMarketingSMS,
+          marketing_email: agreeMarketingEmail,
+          marketing_phone: agreeMarketingPhone,
+          marketing_agreed_at: (agreeMarketingSMS || agreeMarketingEmail || agreeMarketingPhone) ? new Date().toISOString() : null,
           onboarding_completed: true,
           updated_at: new Date().toISOString(),
         })
@@ -252,6 +257,17 @@ export default function OnboardingPage() {
                 />
                 <span className="text-sm text-gray-600 group-hover:text-blue-600 transition-colors">
                   [선택] 이메일 마케팅 수신 동의
+                </span>
+              </label>
+              <label className="flex items-start gap-3 cursor-pointer group mt-2">
+                <input
+                  type="checkbox"
+                  checked={agreeMarketingPhone}
+                  onChange={(e) => setAgreeMarketingPhone(e.target.checked)}
+                  className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-500 mt-0.5"
+                />
+                <span className="text-sm text-gray-600 group-hover:text-blue-600 transition-colors">
+                  [선택] 전화(음성) 마케팅 수신 동의
                 </span>
               </label>
             </div>
