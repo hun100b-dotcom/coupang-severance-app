@@ -122,14 +122,24 @@ export default function MyPage() {
   // ── 1:1 문의 저장 핸들러
   const handleCreateInquiry = async (payload: { title: string; content: string }) => {
     if (!supabase) return
-    await supabase.from('inquiries').insert({
+    const { data, error } = await supabase.from('inquiries').insert({
       user_id: user.raw.id,
       title: payload.title,
       category: '기타',
       content: payload.content,
       status: '대기중',
-    })
-    notifyNewInquiry({ title: payload.title, content: payload.content, userId: user.raw.id, userName: displayName })
+    }).select('id').single()
+
+    if (!error && data?.id) {
+      // 개인정보보호법 준수: Discord로 개인정보를 전송하지 않고 inquiry_id만 전송
+      notifyNewInquiry({
+        inquiryId: data.id,
+        title: payload.title,
+        content: payload.content,
+        userId: user.raw.id,
+        userName: displayName
+      })
+    }
     await refreshInquiries()
   }
 

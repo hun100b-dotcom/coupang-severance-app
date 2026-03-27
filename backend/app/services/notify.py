@@ -32,18 +32,20 @@ class NotifyResult(TypedDict):
 
 async def notify_new_inquiry(
     *,
-    title: str,
-    content: str,
+    inquiry_id: str,
+    title: str = "",
+    content: str = "",
     user_id: Optional[str] = None,
     user_name: Optional[str] = None,
 ) -> NotifyResult:
     """
     새 1:1 문의가 접수됐을 때 호출되는 비동기 함수입니다.
 
-    title   : 사용자가 입력한 문의 제목
-    content : 사용자가 입력한 문의 내용
-    user_id : Supabase auth.users.id (있으면 함께 전송, 없으면 생략)
-    user_name: 화면에 노출되는 사용자 이름(선택)
+    개인정보보호법 제17조 준수: Discord Inc. (미국 법인)로의 개인정보 제3자 제공 방지를 위해
+    이메일, 이름, 문의 내용을 전송하지 않고, 문의 ID만 전송합니다.
+
+    inquiry_id: 문의 고유 ID (관리자 페이지 링크용)
+    title, content, user_id, user_name: 하위 호환성 유지용 (실제로는 사용하지 않음)
     """
 
     # 웹훅 URL이 설정되어 있지 않으면 아무 것도 하지 않고 종료합니다.
@@ -51,24 +53,20 @@ async def notify_new_inquiry(
         print("[notify_new_inquiry] DISCORD_WEBHOOK_URL 미설정: 알림 전송을 건너뜁니다.")
         return {"ok": False, "reason": "webhook_not_configured", "status_code": None}
 
-    # Discord Webhook 포맷에 맞춘 간단한 메시지 페이로드를 구성합니다.
-    # - content: 기본 텍스트
-    # - embeds: 제목/본문/사용자 정보 등을 구조화해서 함께 보냅니다.
-    lines = []
-    if user_name:
-        lines.append(f"보낸 사람: {user_name}")
-    if user_id:
-        lines.append(f"user_id: `{user_id}`")
-    summary = "\n".join(lines) if lines else "사용자 정보 없음"
+    # 개인정보보호법 준수: 개인정보를 Discord로 전송하지 않음
+    # 관리자는 Discord 알림을 클릭하여 관리자 페이지에서 문의 내용 확인
+    admin_url = f"https://coupang-severance-app.vercel.app/admin"  # 실제 프로덕션 URL
 
     payload = {
-        "content": f"[CATCH] 새로운 문의가 접수되었습니다: **{title}**",  # 상단에 한 줄 요약을 보여줍니다.
+        "content": f"[CATCH] 새로운 문의가 접수되었습니다 (#{inquiry_id[:8]})",
         "embeds": [
             {
-                "title": title,
-                "description": content[:2000],  # 디스코드 제한을 고려해 최대 길이를 잘라줍니다.
+                "title": "🔔 신규 문의 알림",
+                "description": "관리자 페이지에서 문의 내용을 확인하세요.",
+                "color": 3447003,  # 파란색
                 "fields": [
-                    {"name": "요약", "value": summary, "inline": False},
+                    {"name": "문의 ID", "value": f"`{inquiry_id}`", "inline": False},
+                    {"name": "확인 링크", "value": f"[관리자 페이지 열기]({admin_url})", "inline": False},
                 ],
             }
         ],

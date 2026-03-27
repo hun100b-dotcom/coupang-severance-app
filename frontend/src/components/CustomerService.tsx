@@ -184,19 +184,23 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
       return
     }
     try {
-      const { error } = await supabase.from('inquiries').insert([
+      const { data, error } = await supabase.from('inquiries').insert([
         { user_id: user.id, title: `[${inquiryCategory}] 새 문의`, category: inquiryCategory, content: inquiryText.trim(), status: '대기중' },
-      ])
+      ]).select('id').single()
+
       if (error) throw error
 
-      // Discord 알림은 Supabase Edge Function을 통해 서버사이드에서 발송합니다.
+      // 개인정보보호법 준수: Discord로 개인정보를 전송하지 않고, inquiry_id만 전송합니다.
       // 알림 실패가 문의 저장 성공 여부에 영향을 주지 않도록 await하지 않습니다.
-      notifyNewInquiry({
-        title: `[${inquiryCategory}] 새 문의`,
-        content: inquiryText.trim(),
-        userId: user.id,
-        category: inquiryCategory,
-      })
+      if (data?.id) {
+        notifyNewInquiry({
+          inquiryId: data.id,
+          title: `[${inquiryCategory}] 새 문의`,  // 하위 호환성 유지 (실제로는 미사용)
+          content: inquiryText.trim(),
+          userId: user.id,
+          category: inquiryCategory,
+        })
+      }
 
       setInquiryText('')
       setInquiryCategory('')

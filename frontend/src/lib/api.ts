@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { supabase } from './supabase'
 
 const baseURL = typeof import.meta.env.VITE_API_URL === 'string' && import.meta.env.VITE_API_URL
   ? import.meta.env.VITE_API_URL.replace(/\/$/, '') // 끝 슬래시 제거
@@ -18,32 +17,27 @@ export const getClickCount = () =>
 export const registerClick = (service: 'severance' | 'unemployment' | 'weekly_allowance' | 'annual_leave' | 'benefits') =>
   api.post(`/click/${service}`).then(r => r.data)
 
-// ── 1:1 문의 알림 (Supabase Edge Function → Discord Webhook) ─────────
-// 브라우저에서 Discord Webhook을 직접 호출하지 않고,
-// Supabase Edge Function을 통해 서버사이드에서 처리합니다.
-// Webhook URL은 Supabase Secret에서만 관리하므로 코드에 노출되지 않습니다.
+// ── 1:1 문의 알림 (FastAPI 백엔드 → Discord Webhook) ─────────
+// 개인정보보호법 제17조 준수: Discord Inc. (미국 법인)로 개인정보를 전송하지 않고,
+// inquiry_id만 전송하여 관리자가 관리자 페이지에서 확인하도록 합니다.
 export async function notifyNewInquiry(payload: {
-  title: string
-  content: string
+  inquiryId: string  // 필수: Supabase inquiries 테이블의 UUID
+  title?: string      // 하위 호환성 유지 (실제로는 미사용)
+  content?: string
   userId?: string
   userName?: string
   category?: string
 }) {
   try {
-    if (!supabase) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다')
-
-    // Edge Function에 전달할 메시지를 구성합니다.
-    // title + content를 합쳐 하나의 message 필드로 전달합니다.
-    const { error } = await supabase.functions.invoke('notify-inquiry', {
-      body: {
-        message: `[${payload.title}]\n${payload.content}`,
-        category: payload.category ?? '기타',
-        userId: payload.userId,
-        createdAt: new Date().toISOString(),
-      },
+    // FastAPI 백엔드 /api/inquiry/notify 엔드포인트 호출
+    await api.post('/inquiry/notify', {
+      inquiry_id: payload.inquiryId,
+      title: payload.title || '',
+      content: payload.content || '',
+      user_id: payload.userId || null,
+      user_name: payload.userName || null,
     })
 
-    if (error) throw error
     return { success: true }
   } catch (err) {
     // 알림 실패는 문의 저장 자체를 막지 않음 — 콘솔 로그만 기록
