@@ -112,7 +112,7 @@ export default function AuthCallbackPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center p-4 relative z-[1]">
       <div className="w-10 h-10 border-3 border-[#3182F6] border-t-transparent rounded-full animate-spin mb-4" />
       <p className="text-[#191F28] font-medium">{status}</p>
       <p className="text-sm text-[#8B95A1] mt-2">잠시만 기다려 주세요.</p>

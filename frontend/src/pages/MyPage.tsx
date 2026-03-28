@@ -101,7 +101,7 @@ export default function MyPage() {
   // 로딩 중
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4 relative z-[1]">
         <p className="text-sm text-[#8B95A1]">로그인 정보를 확인하는 중입니다...</p>
       </div>
     )
@@ -110,7 +110,7 @@ export default function MyPage() {
   // 로그인 안 됨
   if (!isLoggedIn || !user) {
     return (
-      <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4 relative z-[1]">
         <p className="text-sm text-[#8B95A1]">로그인이 필요합니다. 이동 중...</p>
       </div>
     )

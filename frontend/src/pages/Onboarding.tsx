@@ -151,14 +151,14 @@ export default function OnboardingPage() {
   // 로딩 중일 때 표시
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative z-[1]">
         <p className="text-[#191F28] font-medium">로딩 중...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative z-[1] px-4 py-8">
       <div className="w-full max-w-[520px]">
         {/* 상단 로고 */}
         <div className="text-center mb-8">
