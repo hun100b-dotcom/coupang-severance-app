@@ -3,7 +3,7 @@
 -- ─────────────────────────────────────────────────────────────────────
 --
 -- 변경 사항:
---   1. is_super_admin() 함수 업데이트: catchmarsterdmin@gmail.com은 항상 슈퍼 관리자
+--   1. is_super_admin() 함수 업데이트: catchmasterdmin@gmail.com은 항상 슈퍼 관리자
 --   2. admin_accounts role 체크 제약 완화 (커스텀 역할 지원)
 --   3. system_settings에 permission_levels, member_unmask_key 키 추가
 --   4. system_settings anon 읽기 허용 (CMS 배너 공개 조회)
@@ -11,11 +11,11 @@
 -- 실행 방법: Supabase Dashboard → SQL Editor → 이 파일 붙여넣기 후 실행
 
 -- ── 1. is_super_admin 함수 업데이트 ─────────────────────────────────
--- catchmarsterdmin@gmail.com은 admin_accounts 등록 없이도 슈퍼 관리자
+-- catchmasterdmin@gmail.com은 admin_accounts 등록 없이도 슈퍼 관리자
 CREATE OR REPLACE FUNCTION public.is_super_admin()
 RETURNS boolean LANGUAGE sql SECURITY DEFINER STABLE AS $$
   SELECT
-    auth.email() = 'catchmarsterdmin@gmail.com'
+    auth.email() = 'catchmasterdmin@gmail.com'
     OR EXISTS (
       SELECT 1
       FROM public.admin_accounts
@@ -64,14 +64,14 @@ CREATE POLICY "system_settings_write_admin"
 
 -- ── 5. 최초 슈퍼 관리자 등록 (이미 존재하면 skip) ──────────────────
 INSERT INTO public.admin_accounts (email, role, display_name, is_active)
-VALUES ('catchmarsterdmin@gmail.com', 'super_admin', '최고 관리자', true)
+VALUES ('catchmasterdmin@gmail.com', 'super_admin', '최고 관리자', true)
 ON CONFLICT (email) DO NOTHING;
 
 -- ── 완료 메시지 ──────────────────────────────────────────────────────
 DO $$
 BEGIN
   RAISE NOTICE '✅ 005_super_admin_setup.sql 마이그레이션 완료';
-  RAISE NOTICE '  - is_super_admin() 업데이트: catchmarsterdmin@gmail.com 강제 허용';
+  RAISE NOTICE '  - is_super_admin() 업데이트: catchmasterdmin@gmail.com 강제 허용';
   RAISE NOTICE '  - admin_accounts role 제약 완화 (커스텀 역할 가능)';
   RAISE NOTICE '  - permission_levels, member_unmask_key 설정 키 추가';
   RAISE NOTICE '  - system_settings anon 읽기 허용';

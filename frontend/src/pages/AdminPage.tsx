@@ -38,21 +38,64 @@ const DEFAULT_PERMS: Record<string, PermLevel> = {
     label: '관리자', color: '#3182f6',
     permissions: { dashboard:true, target:true, inquiries:true, notices:true, members:true, accounts:false, settings:false, audit_logs:false, server_logs:false },
   },
+  viewer: {
+    label: '뷰어', color: '#8b95a1',
+    permissions: { dashboard:true, target:false, inquiries:true, notices:false, members:false, accounts:false, settings:false, audit_logs:false, server_logs:false },
+  },
 }
 
 export default function AdminPage() {
   const { user, isLoggedIn, loading, logout } = useAuth()
   const navigate = useNavigate()
-  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL ?? ''
-  const isAdmin = isLoggedIn && !!user?.email && user.email === adminEmail
-  const isSuperAdmin = isAdmin && user?.email === SUPER_ADMIN_EMAIL
 
   const [activeMenu, setActiveMenu] = useState<AdminMenu>('dashboard')
   const [permLevels, setPermLevels] = useState<Record<string, PermLevel>>(DEFAULT_PERMS)
+  const [adminRole, setAdminRole] = useState<string | null>(null)
+  const [adminChecked, setAdminChecked] = useState(false)
+
+  // DB admin_accounts 테이블에서 관리자 여부 확인
+  useEffect(() => {
+    if (loading || !isLoggedIn || !user?.email) return
+    const email = user.email
+
+    // 슈퍼 관리자 이메일은 항상 허용
+    if (email === SUPER_ADMIN_EMAIL) {
+      setAdminRole('super_admin')
+      setAdminChecked(true)
+      return
+    }
+
+    // VITE_ADMIN_EMAIL 환경변수 체크 (하위 호환)
+    const envAdminEmail = import.meta.env.VITE_ADMIN_EMAIL ?? ''
+    if (envAdminEmail && email === envAdminEmail) {
+      setAdminRole('super_admin')
+      setAdminChecked(true)
+      return
+    }
+
+    // DB에서 admin_accounts 조회
+    if (!supabase) { setAdminChecked(true); return }
+    ;(async () => {
+      try {
+        const { data } = await supabase
+          .from('admin_accounts')
+          .select('role, is_active')
+          .eq('email', email)
+          .single()
+        if (data?.is_active) {
+          setAdminRole(data.role)
+        }
+      } catch { /* 관리자 아님 */ }
+      setAdminChecked(true)
+    })()
+  }, [loading, isLoggedIn, user?.email])
+
+  const isAdmin = adminChecked && adminRole !== null
+  const isSuperAdmin = adminRole === 'super_admin'
 
   useEffect(() => {
-    if (!loading && !isAdmin) navigate('/home')
-  }, [loading, isAdmin, navigate])
+    if (adminChecked && !isAdmin) navigate('/home')
+  }, [adminChecked, isAdmin, navigate])
 
   // DB에서 권한 레벨 로드
   useEffect(() => {
@@ -69,13 +112,13 @@ export default function AdminPage() {
     })()
   }, [])
 
-  if (loading) return null
+  if (loading || !adminChecked) return null
   if (!isAdmin) return null
 
   const handleLogout = () => { logout(); navigate('/home') }
 
   // 현재 사용자 역할 + 권한
-  const currentRole = isSuperAdmin ? 'super_admin' : 'admin'
+  const currentRole = adminRole ?? 'admin'
   const currentPerms = permLevels[currentRole]?.permissions ?? DEFAULT_PERMS.admin.permissions
   const currentRoleLabel = permLevels[currentRole]?.label ?? '관리자'
   const currentRoleColor = permLevels[currentRole]?.color ?? '#3182f6'

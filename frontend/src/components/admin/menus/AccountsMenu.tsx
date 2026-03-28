@@ -208,7 +208,7 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
         }}>
           ⚠️ 등록된 관리자 계정이 없습니다. 최초 슈퍼 관리자는 <strong>Supabase SQL Editor</strong>에서 직접 INSERT해야 합니다:<br />
           <code style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: 4, display: 'inline-block', marginTop: 4 }}>
-            INSERT INTO admin_accounts (email, role) VALUES ('catchmarsterdmin@gmail.com', 'super_admin');
+            INSERT INTO admin_accounts (email, role) VALUES ('catchmasterdmin@gmail.com', 'super_admin');
           </code>
         </div>
       )}

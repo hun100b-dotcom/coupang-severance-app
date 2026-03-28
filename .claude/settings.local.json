@@ -1,37 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "mcp__claude_ai_Notion__notion-create-pages",
-      "mcp__claude_ai_Notion__notion-fetch",
-      "mcp__claude_ai_Notion__notion-create-database",
-      "mcp__claude_ai_Notion__notion-update-page",
-      "Bash(npm run:*)",
-      "Bash(ls:*)",
-      "mcp__claude_ai_Vercel__list_teams",
-      "mcp__claude_ai_Supabase__list_projects",
-      "mcp__claude_ai_Supabase__get_project",
-      "mcp__claude_ai_Vercel__list_projects",
+      "Bash(copy CLAUDE.md \"CLAUDE.md.old.backup\")",
+      "Bash(git add CLAUDE.md docs/ .claude/commands/)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nrefactor: CLAUDE.md 대폭 슬림화 (296줄 → 85줄) + 문서 체계화\n\n## ✅ 변경 사항\n\n### CLAUDE.md 리팩토링\n- **Before**: 296줄 (모든 정보 집중)\n- **After**: 85줄 (핵심만 유지, 71% 감소)\n- **백업**: CLAUDE.md.backup.20260327-230808 (원본 100% 보존)\n\n### 문서 분산 (데이터 무결성 100%)\n- `docs/development.md` (54줄) ← 개발 명령어\n- `docs/architecture.md` (84줄) ← 아키텍처 상세\n- `docs/environment.md` (29줄) ← 환경 변수\n- `docs/database.md` (35줄) ← Supabase 테이블\n- `docs/mcp-guide.md` (143줄) ← MCP 사용 가이드 (신규)\n\n### 슬래시 커맨드 추가\n- `.claude/commands/test-mcp.md` ← MCP 전체 테스트\n- `.claude/commands/dev.md` ← 개발 서버 시작\n- `.claude/commands/deploy.md` ← 배포 체크리스트\n\n## 🎯 핵심 개선\n\n1. **토큰 효율성**: 매번 로드되는 CLAUDE.md가 71% 감소\n2. **MCP 우선 사용**: MCP 가이드 추가로 자동화 강화\n3. **빠른 접근**: 슬래시 커맨드로 자주 쓰는 작업 즉시 실행\n4. **문서 구조화**: 상세 정보는 docs/ 참조\n\n## 📋 데이터 무결성\n\n- ✅ 원본 데이터 100% 보존 (0줄 손실)\n- ✅ 백업 2개 생성 (backup + old)\n- ✅ 모든 문서 상호 참조 링크 추가\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(mcp list)",
+      "Bash(npx -y @modelcontextprotocol/inspector supabase)",
       "mcp__claude_ai_Supabase__execute_sql",
       "mcp__claude_ai_Supabase__apply_migration",
-      "Bash(npx vercel:*)",
-      "Read(//c/Users/hun10/.vercel/**)",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); servers=d.get\\(''''mcpServers'''',{}\\); print\\([\\(k, list\\(v.keys\\(\\)\\)\\) for k,v in servers.items\\(\\)]\\)\")",
-      "Read(//c/Users/hun10/.claude/**)",
-      "mcp__claude_ai_Vercel__get_project",
-      "Bash(echo $VERCEL_TOKEN)",
-      "Bash(\"C:/Users/hun10/OneDrive/바탕 화면/Github/coupang-severance-app/frontend/.env.local\")",
-      "mcp__claude_ai_Vercel__get_deployment",
-      "mcp__claude_ai_Notion__notion-search",
-      "mcp__claude_ai_Supabase__list_tables",
-      "mcp__claude_ai_Notion__notion-create-comment",
-      "mcp__claude_ai_Notion__notion-move-pages",
-      "Skill(update-config)",
-      "mcp__claude_ai_Vercel__get_deployment_build_logs",
-      "Bash(curl -s -X POST \"https://discord.com/api/webhooks/1484194639916433510/u60qAWYiRa5AmjgfUEl2-5TkoGKOvlSHwcRBK3YuxEZDQJM--JJ9VKJDBttu4j6eYWqY\" -H \"Content-Type: application/json\" -d \"{\"\"content\"\":\"\"test from my PC\"\"}\" --max-time 10 -w \"\\\\nHTTP_STATUS:%{http_code}\")",
-      "Bash(curl -s -X POST \"https://discord.com/api/webhooks/1484912164211789926/BHyKtOY0wX-yGZEevjQaCd_do9tK_Q12b5xEflHqNvDbMGAkkMtSi1DOMX5JQtbX4_PC\" -H \"Content-Type: application/json\" -d \"{\"\"content\"\":\"\"[CATCH] 새 Webhook URL 테스트 - 정상 작동 확인\"\"}\" --max-time 10 -w \"\\\\nHTTP_STATUS:%{http_code}\")",
-      "Bash(curl -s -X POST \"https://discord.com/api/webhooks/1484912164211789926/BHyKtOY0wX-yGZEevjQaCd_do9tK_Q12b5xEflHqNvDbMGAkkMtSi1DOMX5JQtbX4_PC\" -H \"Content-Type: application/json\" --data-ascii \"{\"\"content\"\":\"\"CATCH test message\"\"}\" --max-time 10 -w \"\\\\nHTTP_STATUS:%{http_code}\")",
-      "Bash(curl -s -X POST \"https://coupang-severance-app.onrender.com/api/inquiry/notify\" -H \"Content-Type: application/json\" --data-ascii \"{\"\"title\"\":\"\"[test] new inquiry\"\",\"\"content\"\":\"\"Discord notification test\"\",\"\"user_id\"\":null,\"\"user_name\"\":null}\" --max-time 60)",
-      "Bash(npm install:*)"
-    ]
+      "mcp__claude_ai_Vercel__list_teams",
+      "mcp__claude_ai_Vercel__list_deployments",
+      "WebFetch(domain:coupang-severance-app.vercel.app)",
+      "mcp__claude_ai_Supabase__list_projects"
+    ],
+    "deny": [],
+    "ask": []
   }
 }
