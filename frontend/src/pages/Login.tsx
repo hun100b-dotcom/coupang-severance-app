@@ -51,6 +51,9 @@ export default function LoginPage() {
         provider,
         options: {
           redirectTo: getRedirectUrl(),
+          queryParams: provider === 'google'
+            ? { prompt: 'select_account' }
+            : { prompt: 'login' },
         },
       })
 

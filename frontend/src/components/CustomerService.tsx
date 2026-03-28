@@ -156,7 +156,7 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
     }
     setIsAuthLoading(true)
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: AUTH_CALLBACK_URL } })
+      const { data, error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: AUTH_CALLBACK_URL, queryParams: provider === 'google' ? { prompt: 'select_account' } : { prompt: 'login' } } })
       if (error) {
         alert(`로그인 오류: ${error.message}`)
         return
