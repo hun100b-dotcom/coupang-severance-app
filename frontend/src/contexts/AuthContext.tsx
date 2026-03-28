@@ -16,10 +16,10 @@ interface AppUser {
 interface AuthContextValue {
   user: AppUser | null
   isLoggedIn: boolean
-  loading: boolean
-  needsOnboarding: boolean // 온보딩 필요 여부
+  loading: boolean         // 세션 확인 완료 여부 (빠르게 해제)
+  needsOnboarding: boolean // 온보딩 필요 여부 (비동기 확인)
   logout: () => Promise<void>
-  refreshOnboardingStatus: () => Promise<void> // 온보딩 완료 후 상태 갱신용
+  refreshOnboardingStatus: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -45,24 +45,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
 
-  // 프로필에서 온보딩 완료 여부 확인
+  // 프로필에서 온보딩 완료 여부 확인 (타임아웃 포함)
   const checkOnboarding = useCallback(async (userId: string) => {
-    if (!supabase) return
+    if (!supabase) {
+      setNeedsOnboarding(true)
+      return
+    }
     try {
-      const { data: profile } = await supabase
+      // 5초 타임아웃 (쿼리가 무한 대기되는 것 방지)
+      const queryPromise = supabase
         .from('profiles')
         .select('onboarding_completed, full_name')
         .eq('id', userId)
         .maybeSingle()
 
+      const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) =>
+        setTimeout(() => resolve({ data: null, error: { message: 'timeout' } }), 5000)
+      )
+
+      const { data: profile, error } = await Promise.race([queryPromise, timeoutPromise])
+
+      if (error) {
+        console.error('[AuthContext] 프로필 조회 오류:', error.message)
+        setNeedsOnboarding(true)
+        return
+      }
+
       const completed = !!(profile?.onboarding_completed && profile?.full_name)
       setNeedsOnboarding(!completed)
-    } catch {
-      setNeedsOnboarding(true) // 조회 실패 시 온보딩 필요로 처리
+    } catch (err) {
+      console.error('[AuthContext] 프로필 확인 실패:', err)
+      setNeedsOnboarding(true)
     }
   }, [])
 
-  // 외부에서 온보딩 완료 후 상태 갱신할 때 사용
   const refreshOnboardingStatus = useCallback(async () => {
     if (user) {
       await checkOnboarding(user.id)
@@ -78,24 +94,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let mounted = true
 
+    // 핵심 변경: 세션 확인과 온보딩 체크를 분리
+    // loading은 세션 확인 즉시 해제, 온보딩은 비동기로 따로 처리
     const init = async () => {
       try {
         const { data: { session } } = await client.auth.getSession()
         if (!mounted) return
         if (session?.user) {
           setUser(mapSupabaseUserToAppUser(session.user))
-          await checkOnboarding(session.user.id)
+          // loading을 먼저 해제한 후 온보딩 체크 (UI 차단 방지)
+          setLoading(false)
+          checkOnboarding(session.user.id) // await 없이 비동기 실행
         } else {
           setUser(null)
           setNeedsOnboarding(false)
+          setLoading(false)
         }
       } catch {
         if (mounted) {
           setUser(null)
           setNeedsOnboarding(false)
+          setLoading(false)
         }
-      } finally {
-        if (mounted) setLoading(false)
       }
     }
 
@@ -105,10 +125,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return
       if (session?.user) {
         setUser(mapSupabaseUserToAppUser(session.user))
-        await checkOnboarding(session.user.id)
+        if (loading) setLoading(false) // 아직 로딩 중이면 해제
+        checkOnboarding(session.user.id)
       } else {
         setUser(null)
         setNeedsOnboarding(false)
+        if (loading) setLoading(false)
       }
     })
 
