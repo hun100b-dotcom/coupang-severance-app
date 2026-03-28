@@ -31,7 +31,7 @@ function calcDaysFrom(iso: string | null | undefined): number | null {
 
 export default function MyPage() {
   const navigate = useNavigate()
-  const { isLoggedIn, user, loading, logout } = useAuth()
+  const { isLoggedIn, user, loading, logout, needsOnboarding } = useAuth()
 
   // ── 모달 상태
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false)
@@ -45,12 +45,14 @@ export default function MyPage() {
   const [reports, setReports] = useState<ReportRow[]>([])
   const [loadingReports, setLoadingReports] = useState(true)
 
-  // 로그인되지 않으면 로그인 페이지로 이동
+  // 로그인되지 않으면 로그인 페이지로, 온보딩 미완료면 온보딩으로 이동
   useEffect(() => {
     if (!loading && !isLoggedIn) {
       navigate('/login', { replace: true })
+    } else if (!loading && isLoggedIn && needsOnboarding) {
+      navigate('/onboarding', { replace: true })
     }
-  }, [loading, isLoggedIn, navigate])
+  }, [loading, isLoggedIn, needsOnboarding, navigate])
 
   // ── 문의 내역 조회
   const refreshInquiries = useCallback(async () => {

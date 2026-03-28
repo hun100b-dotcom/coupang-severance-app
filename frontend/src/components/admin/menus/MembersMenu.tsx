@@ -12,7 +12,10 @@ interface MemberRow {
   phone_number: string | null
   provider: string | null
   joined_at: string | null
-  marketing_agreement: boolean
+  marketing_sms: boolean
+  marketing_email: boolean
+  marketing_phone: boolean
+  onboarding_completed: boolean
   updated_at: string | null
   created_at: string
 }
@@ -90,8 +93,8 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
         .order('created_at', { ascending: false })
 
       if (searchEmail.trim()) query = query.ilike('email', `%${searchEmail.trim()}%`)
-      if (filterMarketing === 'true') query = query.eq('marketing_agreement', true)
-      else if (filterMarketing === 'false') query = query.eq('marketing_agreement', false)
+      if (filterMarketing === 'true') query = query.or('marketing_sms.eq.true,marketing_email.eq.true,marketing_phone.eq.true')
+      else if (filterMarketing === 'false') query = query.eq('marketing_sms', false).eq('marketing_email', false).eq('marketing_phone', false)
 
       const from = (page - 1) * PAGE_SIZE
       const to = from + PAGE_SIZE - 1
@@ -276,7 +279,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
           <>
             {/* PC 테이블 헤더 */}
             <div className="hidden md:grid" style={{
-              gridTemplateColumns: '1.5fr 90px 90px 110px 100px 80px 80px',
+              gridTemplateColumns: '1.5fr 90px 90px 110px 80px 80px 80px 80px',
               padding: '10px 16px',
               borderBottom: '1px solid rgba(255,255,255,0.06)',
               fontSize: '0.7rem', fontWeight: 700,
@@ -289,6 +292,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
               <span>핸드폰</span>
               <span>소셜</span>
               <span>가입일</span>
+              <span>온보딩</span>
               <span>마케팅</span>
             </div>
 
@@ -303,7 +307,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                 <div key={member.id}>
                   {/* PC 행 */}
                   <div className="hidden md:grid" style={{
-                    gridTemplateColumns: '1.5fr 90px 90px 110px 100px 80px 80px',
+                    gridTemplateColumns: '1.5fr 90px 90px 110px 80px 80px 80px 80px',
                     padding: '11px 16px',
                     borderBottom: '1px solid rgba(255,255,255,0.04)',
                     alignItems: 'center',
@@ -334,11 +338,25 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                     </div>
                     <div>
                       <span style={{
-                        fontSize: '0.7rem', fontWeight: 700,
-                        color: member.marketing_agreement ? '#22c55e' : 'rgba(255,255,255,0.25)',
+                        fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', borderRadius: 6,
+                        background: member.onboarding_completed ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.05)',
+                        color: member.onboarding_completed ? '#22c55e' : 'rgba(255,255,255,0.3)',
                       }}>
-                        {member.marketing_agreement ? '● ' : '○ '}
+                        {member.onboarding_completed ? '완료' : '미완'}
                       </span>
+                    </div>
+                    <div>
+                      {(() => {
+                        const hasMarketing = member.marketing_sms || member.marketing_email || member.marketing_phone
+                        return (
+                          <span style={{
+                            fontSize: '0.7rem', fontWeight: 700,
+                            color: hasMarketing ? '#22c55e' : 'rgba(255,255,255,0.25)',
+                          }}>
+                            {hasMarketing ? '● ' : '○ '}
+                          </span>
+                        )
+                      })()}
                     </div>
                   </div>
 
@@ -365,8 +383,16 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                     </div>
                     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: 6 }}>
                       <span>가입: {formatDate(member.created_at)}</span>
-                      <span style={{ color: member.marketing_agreement ? '#22c55e' : 'rgba(255,255,255,0.25)' }}>
-                        마케팅 {member.marketing_agreement ? '동의' : '미동의'}
+                      <span style={{
+                        color: member.onboarding_completed ? '#22c55e' : 'rgba(255,255,255,0.25)',
+                      }}>
+                        온보딩 {member.onboarding_completed ? '완료' : '미완'}
+                      </span>
+                      <span style={{
+                        color: (member.marketing_sms || member.marketing_email || member.marketing_phone)
+                          ? '#22c55e' : 'rgba(255,255,255,0.25)',
+                      }}>
+                        마케팅 {(member.marketing_sms || member.marketing_email || member.marketing_phone) ? '동의' : '미동의'}
                       </span>
                     </div>
                   </div>

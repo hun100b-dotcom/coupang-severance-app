@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext' // 전역 로그인 상태
 import AnimatedBackground from './components/AnimatedBackground' // 배경 애니메이션 컴포넌트를 가져옵니다.
 import Layout from './components/Layout' // 상단/하단 네비바를 포함한 전역 레이아웃 컴포넌트입니다.
 import ProtectedRoute from './components/ProtectedRoute' // 로그인 필요 페이지를 보호하는 래퍼 컴포넌트를 가져옵니다.
+import OnboardingGuard from './components/OnboardingGuard' // 온보딩 미완료 사용자 리다이렉트 가드
 import Intro from './pages/Intro' // 인트로(홈) 페이지 컴포넌트를 가져옵니다.
 import Home from './pages/Home' // 기존 메인 화면 컴포넌트를 가져옵니다.
 import SeveranceFlow from './pages/SeveranceFlow' // 퇴직금 계산 플로우 페이지를 가져옵니다.
@@ -49,7 +50,7 @@ export default function App() {
 
           {/* ── 네비바(TopNav + BottomNav)가 있는 일반 페이지 ──
               Layout 컴포넌트가 Outlet을 통해 중첩 라우트를 렌더링합니다. */}
-          <Route element={<Layout />}>
+          <Route element={<OnboardingGuard><Layout /></OnboardingGuard>}>
             {/* 메인 홈 화면 */}
             <Route path="/home" element={<Home />} />
             {/* 퇴직금 계산 플로우 */}

@@ -5,27 +5,34 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 
 export default function OnboardingPage() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, needsOnboarding, refreshOnboardingStatus } = useAuth()
   const navigate = useNavigate()
 
   const [fullName, setFullName] = useState('')
   const [birthdate, setBirthdate] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
-  const [agreePersonalInfo, setAgreePersonalInfo] = useState(false) // 개인정보 수집·이용 동의 (필수)
-  const [agreeTerms, setAgreeTerms] = useState(false) // 서비스 이용약관 (필수)
-  const [agreePrivacy, setAgreePrivacy] = useState(false) // 개인정보 처리방침 (필수)
-  const [agreeMarketingSMS, setAgreeMarketingSMS] = useState(false) // 마케팅 SMS (선택)
-  const [agreeMarketingEmail, setAgreeMarketingEmail] = useState(false) // 마케팅 이메일 (선택)
-  const [agreeMarketingPhone, setAgreeMarketingPhone] = useState(false) // 마케팅 전화 (선택)
+  const [agreePersonalInfo, setAgreePersonalInfo] = useState(false)
+  const [agreeTerms, setAgreeTerms] = useState(false)
+  const [agreePrivacy, setAgreePrivacy] = useState(false)
+  const [agreeMarketingSMS, setAgreeMarketingSMS] = useState(false)
+  const [agreeMarketingEmail, setAgreeMarketingEmail] = useState(false)
+  const [agreeMarketingPhone, setAgreeMarketingPhone] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // 로그인 안 된 사용자는 로그인 페이지로 리다이렉트
+  // 로그인 안 된 사용자는 로그인 페이지로
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/login')
+      navigate('/login', { replace: true })
     }
   }, [authLoading, user, navigate])
+
+  // 이미 온보딩 완료한 사용자는 홈으로
+  useEffect(() => {
+    if (!authLoading && user && !needsOnboarding) {
+      navigate('/home', { replace: true })
+    }
+  }, [authLoading, user, needsOnboarding, navigate])
 
   // 핸드폰 번호 자동 포맷팅 (010-1234-5678)
   const handlePhoneChange = (value: string) => {
@@ -65,7 +72,7 @@ export default function OnboardingPage() {
       return
     }
 
-    // 핸드폰 번호 형식 검증 (010-XXXX-XXXX)
+    // 핸드폰 번호 형식 검증
     const phoneRegex = /^01[016789]-\d{3,4}-\d{4}$/
     if (!phoneRegex.test(phoneNumber)) {
       setError('올바른 핸드폰 번호 형식이 아닙니다. (예: 010-1234-5678)')
@@ -90,28 +97,49 @@ export default function OnboardingPage() {
     try {
       if (!user || !supabase) throw new Error('로그인 정보를 확인할 수 없습니다.')
 
-      const { error: updateError } = await supabase
+      // upsert 패턴: 프로필이 없을 수도 있으므로 먼저 update, 실패 시 확인
+      const updatePayload = {
+        full_name: fullName.trim(),
+        birthdate,
+        phone_number: phoneNumber,
+        display_name: fullName.trim(),
+        terms_agreed_at: new Date().toISOString(),
+        marketing_sms: agreeMarketingSMS,
+        marketing_email: agreeMarketingEmail,
+        marketing_phone: agreeMarketingPhone,
+        marketing_agreed_at: (agreeMarketingSMS || agreeMarketingEmail || agreeMarketingPhone)
+          ? new Date().toISOString()
+          : null,
+        onboarding_completed: true,
+        updated_at: new Date().toISOString(),
+      }
+
+      const { error: updateError, count } = await supabase
         .from('profiles')
-        .update({
-          full_name: fullName.trim(),
-          birthdate,
-          phone_number: phoneNumber,
-          display_name: fullName.trim(),
-          terms_agreed_at: new Date().toISOString(),
-          // 정보통신망법 제50조: 전화/SMS/이메일 각각 별도 동의
-          marketing_sms: agreeMarketingSMS,
-          marketing_email: agreeMarketingEmail,
-          marketing_phone: agreeMarketingPhone,
-          marketing_agreed_at: (agreeMarketingSMS || agreeMarketingEmail || agreeMarketingPhone) ? new Date().toISOString() : null,
-          onboarding_completed: true,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updatePayload, { count: 'exact' })
         .eq('id', user.id)
 
       if (updateError) throw updateError
 
+      // update가 0행에 영향을 줬으면 프로필이 없는 것 → 직접 에러 표시
+      if (count === 0) {
+        // 프로필이 아직 생성되지 않은 경우 (트리거 실패 등)
+        console.warn('[온보딩] 프로필 행이 없음 - 새로 삽입 시도')
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email ?? '',
+            ...updatePayload,
+          })
+        if (insertError) throw insertError
+      }
+
+      // AuthContext의 온보딩 상태 갱신
+      await refreshOnboardingStatus()
+
       // 홈으로 이동
-      navigate('/home')
+      navigate('/home', { replace: true })
     } catch (err) {
       console.error('온보딩 저장 실패:', err)
       setError(err instanceof Error ? err.message : '정보 저장에 실패했습니다.')
@@ -137,7 +165,7 @@ export default function OnboardingPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#3182F6] overflow-hidden mb-4 shadow-lg shadow-blue-500/30">
             <img src="/catch-logo.png" alt="CATCH" className="w-full h-full object-contain p-2" />
           </div>
-          <h1 className="text-2xl font-bold text-[#191F28] mb-2">환영합니다! 👋</h1>
+          <h1 className="text-2xl font-bold text-[#191F28] mb-2">환영합니다!</h1>
           <p className="text-sm text-[#4E5968]">서비스 이용을 위해 추가 정보를 입력해 주세요.</p>
         </div>
 
@@ -187,11 +215,11 @@ export default function OnboardingPage() {
             />
           </div>
 
-          {/* 개인정보 수집·이용 고지 (개인정보보호법 제15조, 제22조 준수) */}
+          {/* 개인정보 수집 안내 */}
           <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
-            <p className="font-semibold text-sm text-[#191F28] mb-3">📋 개인정보 수집·이용 안내</p>
+            <p className="font-semibold text-sm text-[#191F28] mb-3">개인정보 수집 안내</p>
             <ul className="text-xs text-gray-700 space-y-1.5 leading-relaxed">
-              <li>• <span className="font-semibold">수집 목적:</span> 퇴직금·실업급여 계산 결과 저장 및 1:1 상담 제공</li>
+              <li>• <span className="font-semibold">수집 목적:</span> 퇴직금 계산 결과 저장 및 1:1 상담 제공</li>
               <li>• <span className="font-semibold">수집 항목:</span> 이메일, 실명, 생년월일, 핸드폰번호</li>
               <li>• <span className="font-semibold">보유 기간:</span> 회원 탈퇴 시까지 (탈퇴 후 즉시 파기)</li>
               <li>• <span className="font-semibold">거부 권리:</span> 동의를 거부할 수 있으나, 서비스 이용이 제한됩니다.</li>
@@ -200,7 +228,6 @@ export default function OnboardingPage() {
 
           {/* 약관 동의 */}
           <div className="mb-6 space-y-3">
-            {/* 필수 동의 */}
             <label className="flex items-start gap-3 cursor-pointer group">
               <input
                 type="checkbox"
@@ -209,7 +236,7 @@ export default function OnboardingPage() {
                 className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-500 mt-0.5"
               />
               <span className="text-sm text-[#191F28] group-hover:text-blue-600 transition-colors">
-                <span className="font-semibold text-red-500">[필수]</span> 개인정보 수집·이용에 동의합니다.
+                <span className="font-semibold text-red-500">[필수]</span> 개인정보 수집 이용에 동의합니다.
               </span>
             </label>
             <label className="flex items-start gap-3 cursor-pointer group">
@@ -276,7 +303,7 @@ export default function OnboardingPage() {
           {/* 에러 메시지 */}
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200">
-              <p className="text-sm text-red-600">⚠️ {error}</p>
+              <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
 
@@ -289,9 +316,8 @@ export default function OnboardingPage() {
             {loading ? '저장 중...' : '시작하기'}
           </button>
 
-          {/* 안내 문구 */}
           <p className="text-xs text-gray-400 text-center mt-4">
-            입력하신 개인정보는 Supabase RLS로 보호되며, 관리자 접근 로그가 기록됩니다.
+            입력하신 개인정보는 안전하게 보호됩니다.
           </p>
         </form>
       </div>
