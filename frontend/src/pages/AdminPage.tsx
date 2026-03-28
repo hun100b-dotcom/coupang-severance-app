@@ -1,8 +1,9 @@
 // Admin OS — 전문 관리자 대시보드
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import { logAdminAction } from '../lib/adminAuditLog'
 import AdminSidebar, { type AdminMenu, SUPER_ADMIN_EMAIL } from '../components/admin/AdminSidebar'
 import DashboardMenu from '../components/admin/menus/DashboardMenu'
 import TargetMenu from '../components/admin/menus/TargetMenu'
@@ -52,6 +53,7 @@ export default function AdminPage() {
   const [permLevels, setPermLevels] = useState<Record<string, PermLevel>>(DEFAULT_PERMS)
   const [adminRole, setAdminRole] = useState<string | null>(null)
   const [adminChecked, setAdminChecked] = useState(false)
+  const loginLogged = useRef(false)
 
   // DB admin_accounts 테이블에서 관리자 여부 확인
   useEffect(() => {
@@ -92,6 +94,14 @@ export default function AdminPage() {
 
   const isAdmin = adminChecked && adminRole !== null
   const isSuperAdmin = adminRole === 'super_admin'
+
+  // 관리자 접속 감사 로그
+  useEffect(() => {
+    if (isAdmin && !loginLogged.current) {
+      loginLogged.current = true
+      logAdminAction('admin.login', 'admin_page', undefined, { role: adminRole })
+    }
+  }, [isAdmin, adminRole])
 
   useEffect(() => {
     if (adminChecked && !isAdmin) navigate('/home')

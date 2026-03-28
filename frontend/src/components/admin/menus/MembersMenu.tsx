@@ -134,7 +134,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
       }
       if (unlockKey === storedKey) {
         // 마스킹 해제 감사 로그 기록
-        await logAdminAction('unmask_members', undefined, {
+        await logAdminAction('unmask_members', 'profiles', undefined, {
           timestamp: new Date().toISOString(),
           member_count: members.length,
         })

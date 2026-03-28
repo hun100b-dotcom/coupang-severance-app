@@ -180,10 +180,11 @@ def admin_stats(x_admin_token: Optional[str] = Header(default=None)):
 
     with ThreadPoolExecutor(max_workers=7) as pool:
         futures = {
-            "users":         pool.submit(fetch, "profiles",     {"select": "count", "head": "true"}, True),
-            "users_today":   pool.submit(fetch, "profiles",     {"select": "count", "head": "true", "created_at": f"gte.{today}"}, True),
-            "users_week":    pool.submit(fetch, "profiles",     {"select": "count", "head": "true", "created_at": f"gte.{week_ago}"}, True),
-            "marketing":     pool.submit(fetch, "profiles",     {"select": "count", "head": "true", "marketing_agreement": "eq.true"}, True),
+            "users":         pool.submit(fetch, "profiles",     {"select": "id", "limit": "0"}, True),
+            "users_today":   pool.submit(fetch, "profiles",     {"select": "id", "limit": "0", "created_at": f"gte.{today}"}, True),
+            "users_week":    pool.submit(fetch, "profiles",     {"select": "id", "limit": "0", "created_at": f"gte.{week_ago}"}, True),
+            "marketing":     pool.submit(fetch, "profiles",     {"select": "id", "limit": "0",
+                                                                  "or": "(marketing_sms.eq.true,marketing_email.eq.true,marketing_phone.eq.true)"}, True),
             "reports":       pool.submit(fetch, "reports",      {"select": "*", "order": "created_at.desc", "limit": "1000"}),
             "inquiries":     pool.submit(fetch, "inquiries",    {"select": "*", "order": "created_at.desc", "limit": "500"}),
             "clicks":        pool.submit(fetch, "click_counter",{"select": "*"}),
