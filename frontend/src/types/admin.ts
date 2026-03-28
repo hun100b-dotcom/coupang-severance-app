@@ -97,6 +97,61 @@ export interface BlockedIp {
   expires_at: string | null
 }
 
+// ── 타겟 인사이트 (통합 분석) ────────────────────────────
+export interface TargetInsights {
+  overview: {
+    total_users: number
+    active_users: number
+    total_reports: number
+    total_inquiries: number
+    conversion_rate: number
+    eligible_rate: number
+    avg_severance: number
+    total_severance: number
+    marketing_rate: number
+    onboarding_rate: number
+  }
+  funnel: {
+    visitors: number
+    signups: number
+    calculations: number
+    eligible: number
+  }
+  companies: CompanyTarget[]
+  segments: {
+    by_duration: SegmentItem[]
+    by_wage: SegmentItem[]
+    heatmap: number[][]
+    duration_labels: string[]
+    wage_labels: string[]
+  }
+  revenue: {
+    total_eligible_severance: number
+    avg_severance: number
+    high_value_count: number
+    segments: { label: string; count: number; total: number }[]
+  }
+  demographics: {
+    by_provider: { label: string; count: number }[]
+    marketing: { sms: number; email: number; phone: number; none: number }
+    onboarding_completed: number
+    onboarding_pending: number
+  }
+  service_usage: {
+    total: number
+    severance: number
+    unemployment: number
+  }
+  inquiry_analysis: {
+    by_category: { label: string; count: number }[]
+    by_status: { label: string; count: number }[]
+    avg_response_hours: number
+    total: number
+  }
+  tags: { tag: string; count: number }[]
+  growth: { month: string; count: number }[]
+}
+
 // ── 감사 로그 ────────────────────────────────────────────
 export interface AuditLog {
   id: string

@@ -283,6 +283,8 @@ export const getTargetCompanies = () =>
   api.get('/admin/target/companies', { headers: H() }).then(r => r.data)
 export const getTargetSegments = () =>
   api.get('/admin/target/segments', { headers: H() }).then(r => r.data)
+export const getTargetInsights = () =>
+  api.get('/admin/target/insights', { headers: H() }).then(r => r.data)
 
 // Inquiries
 export const getAdminInquiries = (params: object) =>

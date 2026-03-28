@@ -364,6 +364,293 @@ def target_segments(x_admin_token: Optional[str] = Header(default=None)):
     }
 
 
+@router.get("/admin/target/insights")
+def target_insights(x_admin_token: Optional[str] = Header(default=None)):
+    """종합 타겟 인사이트 — 전 서비스 사용자 데이터 통합 분석"""
+    _check_admin(x_admin_token)
+
+    def fetch(path, params, count=False):
+        try:
+            return _sb_get(path, params, count=count)
+        except Exception:
+            return None
+
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        futures = {
+            "profiles": pool.submit(fetch, "profiles", {
+                "select": "id,provider,created_at,marketing_sms,marketing_email,marketing_phone,onboarding_completed",
+                "limit": "5000",
+            }),
+            "profiles_count": pool.submit(fetch, "profiles",
+                                          {"select": "id", "limit": "0"}, True),
+            "reports": pool.submit(fetch, "reports", {
+                "select": "user_id,company_name,payload,created_at",
+                "order": "created_at.desc", "limit": "5000",
+            }),
+            "inquiries": pool.submit(fetch, "inquiries", {
+                "select": "category,status,created_at,updated_at,answer",
+                "limit": "3000",
+            }),
+            "clicks": pool.submit(fetch, "click_counter", {"select": "*"}),
+        }
+        results = {k: v.result() for k, v in futures.items()}
+
+    def _json(res):
+        try:
+            return res.json() if res and res.status_code == 200 else []
+        except Exception:
+            return []
+
+    profiles = _json(results["profiles"])
+    reports = _json(results["reports"])
+    inquiries = _json(results["inquiries"])
+    clicks_raw = _json(results["clicks"])
+    total_users = (
+        _count_header(results["profiles_count"])
+        if results["profiles_count"] else len(profiles)
+    )
+
+    # ── Overview ──────────────────────────────────────────
+    unique_reporters: set[str] = set()
+    for r in reports:
+        uid = r.get("user_id")
+        if uid:
+            unique_reporters.add(uid)
+    active_users = len(unique_reporters)
+
+    eligible_reports = [
+        r for r in reports if (r.get("payload") or {}).get("eligible")
+    ]
+    total_severance = sum(
+        (r.get("payload") or {}).get("severance", 0) for r in eligible_reports
+    )
+    avg_severance = (
+        round(total_severance / len(eligible_reports)) if eligible_reports else 0
+    )
+    conversion_rate = round(active_users / max(total_users, 1) * 100, 1)
+    eligible_rate = round(
+        len(eligible_reports) / max(len(reports), 1) * 100, 1
+    )
+    marketing_count = sum(
+        1 for p in profiles
+        if p.get("marketing_sms") or p.get("marketing_email")
+        or p.get("marketing_phone")
+    )
+    marketing_rate = round(marketing_count / max(total_users, 1) * 100, 1)
+    onboarded = sum(1 for p in profiles if p.get("onboarding_completed"))
+    onboarding_rate = round(onboarded / max(total_users, 1) * 100, 1)
+
+    # ── Clicks ────────────────────────────────────────────
+    click_total = click_sev = click_unemp = 0
+    for row in clicks_raw:
+        click_total += row.get("total", 0)
+        click_sev += row.get("severance", 0)
+        click_unemp += row.get("unemployment", 0)
+
+    # ── Companies ─────────────────────────────────────────
+    company_counts: dict[str, int] = {}
+    for r in reports:
+        name = r.get("company_name") or "기타"
+        company_counts[name] = company_counts.get(name, 0) + 1
+    total_report_cnt = max(sum(company_counts.values()), 1)
+    companies_list = sorted(
+        [{"name": k, "count": v, "pct": round(v / total_report_cnt * 100, 1)}
+         for k, v in company_counts.items()],
+        key=lambda x: -x["count"],
+    )
+
+    # ── Segments + Heatmap ────────────────────────────────
+    dur_labels = ["3개월 미만", "3~6개월", "6개월~1년", "1년 이상"]
+    wage_labels = ["5만원 미만", "5~8만원", "8~12만원", "12만원 이상"]
+    dur_bins = {la: 0 for la in dur_labels}
+    wage_bins = {la: 0 for la in wage_labels}
+    heatmap = [[0] * 4 for _ in range(4)]
+
+    for r in reports:
+        p = r.get("payload") or {}
+        wd = p.get("work_days") or 0
+        aw = p.get("average_wage") or 0
+        di = 0 if wd < 90 else (1 if wd < 180 else (2 if wd < 365 else 3))
+        wi = 0 if aw < 50000 else (1 if aw < 80000 else (2 if aw < 120000 else 3))
+        dur_bins[dur_labels[di]] += 1
+        wage_bins[wage_labels[wi]] += 1
+        heatmap[di][wi] += 1
+
+    # ── Revenue ───────────────────────────────────────────
+    rev_keys = [
+        "100만원 미만", "100~300만원", "300~500만원",
+        "500만~1000만원", "1000만원 이상",
+    ]
+    rev_bins: dict[str, dict] = {k: {"count": 0, "total": 0} for k in rev_keys}
+    high_value = 0
+    for r in eligible_reports:
+        sev = (r.get("payload") or {}).get("severance", 0)
+        idx = (
+            0 if sev < 1_000_000
+            else 1 if sev < 3_000_000
+            else 2 if sev < 5_000_000
+            else 3 if sev < 10_000_000
+            else 4
+        )
+        rev_bins[rev_keys[idx]]["count"] += 1
+        rev_bins[rev_keys[idx]]["total"] += sev
+        if sev >= 3_000_000:
+            high_value += 1
+
+    # ── Demographics ──────────────────────────────────────
+    provider_counts: dict[str, int] = {}
+    monthly_signups: dict[str, int] = {}
+    for p in profiles:
+        prov = p.get("provider") or "unknown"
+        provider_counts[prov] = provider_counts.get(prov, 0) + 1
+        month = (p.get("created_at") or "")[:7]
+        if month:
+            monthly_signups[month] = monthly_signups.get(month, 0) + 1
+    mkt_detail = {
+        "sms": sum(1 for p in profiles if p.get("marketing_sms")),
+        "email": sum(1 for p in profiles if p.get("marketing_email")),
+        "phone": sum(1 for p in profiles if p.get("marketing_phone")),
+        "none": sum(
+            1 for p in profiles
+            if not (p.get("marketing_sms") or p.get("marketing_email")
+                    or p.get("marketing_phone"))
+        ),
+    }
+
+    # ── Inquiry Intelligence ──────────────────────────────
+    inq_cat: dict[str, int] = {}
+    inq_stat: dict[str, int] = {}
+    resp_times: list[float] = []
+    for i in inquiries:
+        cat = i.get("category") or "기타"
+        inq_cat[cat] = inq_cat.get(cat, 0) + 1
+        st = i.get("status") or "unknown"
+        inq_stat[st] = inq_stat.get(st, 0) + 1
+        if i.get("answer") and i.get("created_at") and i.get("updated_at"):
+            try:
+                c_dt = datetime.fromisoformat(
+                    i["created_at"].replace("Z", "+00:00"))
+                u_dt = datetime.fromisoformat(
+                    i["updated_at"].replace("Z", "+00:00"))
+                h = (u_dt - c_dt).total_seconds() / 3600
+                if h > 0:
+                    resp_times.append(h)
+            except Exception:
+                pass
+    avg_resp = round(sum(resp_times) / len(resp_times), 1) if resp_times else 0
+
+    # ── Computed Tags ─────────────────────────────────────
+    user_map: dict[str, list] = {}
+    for r in reports:
+        uid = r.get("user_id")
+        if uid:
+            user_map.setdefault(uid, []).append(r)
+
+    tags: dict[str, int] = {
+        "퇴직금_적격자": 0, "고액_수급자": 0, "장기근속자": 0,
+        "분쟁_위험군": 0, "다중_사업장": 0, "반복_이용자": 0,
+    }
+    for uid, urs in user_map.items():
+        cos: set[str] = set()
+        elig = hv = lt = disp = False
+        for r in urs:
+            pl = r.get("payload") or {}
+            cos.add(r.get("company_name") or "")
+            if pl.get("eligible"):
+                elig = True
+                if pl.get("severance", 0) >= 3_000_000:
+                    hv = True
+            if (pl.get("work_days") or 0) >= 365:
+                lt = True
+                if not pl.get("eligible"):
+                    disp = True
+        if elig:
+            tags["퇴직금_적격자"] += 1
+        if hv:
+            tags["고액_수급자"] += 1
+        if lt:
+            tags["장기근속자"] += 1
+        if disp:
+            tags["분쟁_위험군"] += 1
+        if len(cos) > 1:
+            tags["다중_사업장"] += 1
+        if len(urs) > 1:
+            tags["반복_이용자"] += 1
+
+    week_ago = (datetime.utcnow() - timedelta(days=7)).isoformat()
+    new_w = sum(1 for p in profiles if (p.get("created_at") or "") > week_ago)
+    if new_w > 0:
+        tags["신규_유저"] = new_w
+
+    return {
+        "overview": {
+            "total_users": total_users,
+            "active_users": active_users,
+            "total_reports": len(reports),
+            "total_inquiries": len(inquiries),
+            "conversion_rate": conversion_rate,
+            "eligible_rate": eligible_rate,
+            "avg_severance": avg_severance,
+            "total_severance": total_severance,
+            "marketing_rate": marketing_rate,
+            "onboarding_rate": onboarding_rate,
+        },
+        "funnel": {
+            "visitors": click_total,
+            "signups": total_users,
+            "calculations": len(reports),
+            "eligible": len(eligible_reports),
+        },
+        "companies": companies_list,
+        "segments": {
+            "by_duration": [{"label": k, "count": v} for k, v in dur_bins.items()],
+            "by_wage": [{"label": k, "count": v} for k, v in wage_bins.items()],
+            "heatmap": heatmap,
+            "duration_labels": dur_labels,
+            "wage_labels": wage_labels,
+        },
+        "revenue": {
+            "total_eligible_severance": total_severance,
+            "avg_severance": avg_severance,
+            "high_value_count": high_value,
+            "segments": [
+                {"label": k, "count": v["count"], "total": v["total"]}
+                for k, v in rev_bins.items()
+            ],
+        },
+        "demographics": {
+            "by_provider": sorted(
+                [{"label": k, "count": v} for k, v in provider_counts.items()],
+                key=lambda x: -x["count"],
+            ),
+            "marketing": mkt_detail,
+            "onboarding_completed": onboarded,
+            "onboarding_pending": total_users - onboarded,
+        },
+        "service_usage": {
+            "total": click_total,
+            "severance": click_sev,
+            "unemployment": click_unemp,
+        },
+        "inquiry_analysis": {
+            "by_category": sorted(
+                [{"label": k, "count": v} for k, v in inq_cat.items()],
+                key=lambda x: -x["count"],
+            ),
+            "by_status": [
+                {"label": k, "count": v} for k, v in inq_stat.items()
+            ],
+            "avg_response_hours": avg_resp,
+            "total": len(inquiries),
+        },
+        "tags": [{"tag": k, "count": v} for k, v in tags.items() if v > 0],
+        "growth": [
+            {"month": k, "count": v}
+            for k, v in sorted(monthly_signups.items())
+        ],
+    }
+
+
 # ── Inquiries CRM ─────────────────────────────────────────
 
 @router.get("/admin/inquiries")
