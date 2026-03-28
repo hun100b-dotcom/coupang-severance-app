@@ -98,6 +98,13 @@ export default function MyPage() {
     fetch()
   }, [isLoggedIn, user])
 
+  // 프로필 조회 로그 기록 (페이지 진입 시) — 반드시 early return 전에 선언해야 React Hooks 규칙 준수
+  useEffect(() => {
+    if (user) {
+      logAccess('view_profile')
+    }
+  }, [user])
+
   // 로딩 중
   if (loading) {
     return (
@@ -121,13 +128,6 @@ export default function MyPage() {
   const avatarUrl: string | undefined = rawMeta.avatar_url ?? rawMeta.picture ?? user.avatarUrl
   const joinedAt: string | null = (rawMeta.joined_at as string | undefined) ?? (user.raw.created_at ?? null)
   const daysWithCatch = calcDaysFrom(joinedAt)
-
-  // 프로필 조회 로그 기록 (페이지 진입 시)
-  useEffect(() => {
-    if (user) {
-      logAccess('view_profile')
-    }
-  }, [user])
 
   // ── 1:1 문의 저장 핸들러
   const handleCreateInquiry = async (payload: { title: string; content: string }) => {
