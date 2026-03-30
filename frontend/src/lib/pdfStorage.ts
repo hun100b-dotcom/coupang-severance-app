@@ -42,8 +42,9 @@ export async function uploadPdf(
     return { success: false, error: `PDF는 최대 ${MAX_PDFS}개까지 저장할 수 있어요. 기존 PDF를 삭제한 후 다시 시도해 주세요.` }
   }
 
-  // Storage 업로드 (경로: userId/timestamp_fileName)
-  const storagePath = `${userId}/${Date.now()}_${file.name}`
+  // Storage 업로드 (경로: userId/timestamp_uuid.pdf — 한글 파일명 인코딩 문제 방지)
+  const safeId = crypto.randomUUID().slice(0, 8)
+  const storagePath = `${userId}/${Date.now()}_${safeId}.pdf`
   const { error: uploadError } = await supabase.storage
     .from(BUCKET)
     .upload(storagePath, file, { contentType: 'application/pdf', upsert: false })
