@@ -12,6 +12,7 @@ import { ProfileCard } from '../components/mypage/ProfileCard'
 import { SavedResultsList } from '../components/mypage/SavedResultsList'
 import { SavedResultDetail } from '../components/mypage/SavedResultDetail'
 import { QuickActions } from '../components/mypage/QuickActions'
+import SavedPdfList from '../components/mypage/SavedPdfList'
 import { SupportSection } from '../components/mypage/SupportSection'
 import { InquiryModal } from '../components/mypage/InquiryModal'
 import type { InquiryItem } from '../components/mypage/InquiryHistory'
@@ -236,7 +237,10 @@ export default function MyPage() {
           onGoCalculate={() => navigate('/severance')}
         />
 
-        {/* ③ 빠른 계산 바로가기 */}
+        {/* ③ 내 PDF 관리 */}
+        <SavedPdfList />
+
+        {/* ④ 빠른 계산 바로가기 */}
         <QuickActions onOpenInquiry={() => setInquiryModalOpen(true)} />
 
         {/* ④ 고객지원 */}

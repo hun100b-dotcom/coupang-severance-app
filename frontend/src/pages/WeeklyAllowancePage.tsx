@@ -1,15 +1,16 @@
 // 주휴수당 계산 페이지 — 한 질문씩 설문 플로우 → 간편/PDF 정밀계산
 // 근거: 근로기준법 제55조(주휴일), 제18조(단시간 근로자 적용 제외)
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Calendar, AlertCircle, CheckCircle2, Info,
-  FileText, Calculator, ChevronRight, Upload, Loader2, Save, Clock,
+  FileText, Calculator, ChevronRight, Loader2, Save, Clock,
 } from 'lucide-react'
 import {
   CalcHeader, CalcPageWrapper, CalcContentArea,
 } from '../components/calc/CalcLayout'
+import PdfSourceSelector from '../components/calc/PdfSourceSelector'
 import {
   calcWeeklyAllowancePrecise,
   extractWeeklyAllowanceCompanies,
@@ -72,7 +73,6 @@ export default function WeeklyAllowancePage() {
   const [pdfLoading, setPdfLoading] = useState(false)
   const [pdfResult, setPdfResult] = useState<WeeklyAllowancePreciseResult | null>(null)
   const [pdfError, setPdfError] = useState('')
-  const fileRef = useRef<HTMLInputElement>(null)
 
   const wage = Number(survey.hourlyWage.replace(/,/g, ''))
   const hours = Number(survey.dailyHours)
@@ -142,10 +142,8 @@ export default function WeeklyAllowancePage() {
     }
   }
 
-  // ── PDF 파일 선택
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-    if (!f) return
+  // ── PDF 파일 선택 (File 직접 수신)
+  const handlePdfFile = async (f: File) => {
     setPdfFile(f); setPdfCompanies(null); setPdfCompany(''); setPdfResult(null); setPdfError('')
     setPdfLoading(true)
     try {
@@ -599,21 +597,12 @@ export default function WeeklyAllowancePage() {
                     주차별 주휴수당을 자동으로 계산해 드려요.
                   </p>
 
-                  <div>
-                    <input type="file" accept=".pdf" ref={fileRef} onChange={handleFileChange} className="hidden" />
-                    <button type="button" onClick={() => fileRef.current?.click()}
-                      className="w-full rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/50 px-4 py-5 flex flex-col items-center gap-2 hover:bg-blue-50 transition-colors active:scale-[0.98]">
-                      <Upload className="w-6 h-6 text-blue-400" />
-                      {pdfFile ? (
-                        <p className="text-sm font-semibold text-blue-700">{pdfFile.name}</p>
-                      ) : (
-                        <>
-                          <p className="text-sm font-semibold text-blue-600">PDF 파일 선택</p>
-                          <p className="text-[11px] text-blue-400">근로복지공단 일용근로내역서</p>
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  {/* PDF 소스 선택 (저장된 PDF / 새 업로드) */}
+                  <PdfSourceSelector
+                    onFileSelect={handlePdfFile}
+                    accentColor="emerald"
+                    currentFile={pdfFile}
+                  />
 
                   {pdfLoading && (
                     <div className="flex items-center justify-center gap-2 py-2">

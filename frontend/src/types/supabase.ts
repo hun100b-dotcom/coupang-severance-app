@@ -78,6 +78,16 @@ export interface Notice {
   updated_at: string
 }
 
+/** saved_pdfs 테이블 한 행 — 저장된 PDF 메타데이터 */
+export interface SavedPdf {
+  id: string
+  user_id: string
+  file_name: string
+  storage_path: string
+  file_size: number
+  created_at: string
+}
+
 /** reports 테이블 한 행 - 리스트/상세 공통 */
 export interface ReportRow {
   id: string

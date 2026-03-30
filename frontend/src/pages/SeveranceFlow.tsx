@@ -1,6 +1,6 @@
 // 퇴직금 계산 페이지 — 4단계 설문 플로우 → 간편/PDF 정밀계산
 // 근거: 근로자퇴직급여 보장법 제8조
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   CalcHeader, CalcStepCard, CalcStepIcon, CalcChoiceButton,
@@ -13,6 +13,7 @@ import ResultSeverance from './ResultSeverance'
 import { calcSeverancePrecise, calcSeveranceSimple, extractSeveranceCompanies, SeverancePreciseResult, SeveranceSimpleResult } from '../lib/api'
 import { COMPANIES, Company } from '../lib/constants'
 import { Briefcase, HelpCircle, Clock, FileText, Check, Upload } from 'lucide-react'
+import PdfSourceSelector from '../components/calc/PdfSourceSelector'
 import NonEligibleResult from '../components/non-eligible/NonEligibleResult'
 
 type Step = 1 | 2 | 3 | 4
@@ -46,7 +47,7 @@ export default function SeveranceFlow() {
   // 정밀계산 입력값
   const [endDate, setEndDate] = useState('')
   const [file, setFile] = useState<File | null>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
+  // fileRef는 PdfSourceSelector 내부에서 관리
   const [pdfCompanies, setPdfCompanies] = useState<string[]>([])
   const [selectedPdfCompany, setSelectedPdfCompany] = useState<string | null>(null)
   const [extractLoading, setExtractLoading] = useState(false)
@@ -322,32 +323,12 @@ export default function SeveranceFlow() {
                 subtitle="근로복지공단 일용근로·노무제공내역서 PDF를 올려주세요"
               />
 
-              {/* 드롭존 */}
-              <div
-                className={`dropzone ${file ? 'active' : ''}`}
-                onClick={() => fileRef.current?.click()}
-              >
-                {file ? (
-                  <>
-                    <div className="text-3xl mb-2">✅</div>
-                    <p className="font-bold text-blue-500">{file.name}</p>
-                    <p className="text-[12px] text-[#8b95a1] mt-1">다른 파일로 교체하려면 클릭하세요</p>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-4xl mb-2">📤</div>
-                    <p className="font-bold text-[#191f28]">여기를 클릭해서 PDF 업로드</p>
-                    <p className="text-[12px] text-[#8b95a1] mt-1">PDF 파일만 가능해요</p>
-                  </>
-                )}
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept=".pdf"
-                  style={{ display: 'none' }}
-                  onChange={e => { const f = e.target.files?.[0]; if (f) onPdfSelect(f) }}
-                />
-              </div>
+              {/* PDF 소스 선택 (저장된 PDF / 새 업로드) */}
+              <PdfSourceSelector
+                onFileSelect={onPdfSelect}
+                accentColor="blue"
+                currentFile={file}
+              />
 
               {/* PDF 발급 가이드 */}
               <button type="button" onClick={() => setPdfGuideOpen(true)}
