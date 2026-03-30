@@ -140,7 +140,7 @@ export function CalcStepCard({ motionKey, children, className = '' }: CalcStepCa
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -40 }}
       transition={{ duration: 0.28 }}
-      className={`flex flex-col gap-4 ${className}`}
+      className={`flex flex-col gap-4 rounded-[20px] bg-white/70 backdrop-blur-2xl border border-white/40 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.03)] p-5 sm:p-7 ${className}`}
     >
       {children}
     </motion.div>
