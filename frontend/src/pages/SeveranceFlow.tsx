@@ -1,14 +1,18 @@
+// 퇴직금 계산 페이지 — 4단계 설문 플로우 → 간편/PDF 정밀계산
+// 근거: 근로자퇴직급여 보장법 제8조
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import GlassCard from '../components/GlassCard'
-import { PrimaryButton, SecondaryButton, ChoiceButton } from '../components/Button'
-import ProgressSummary from '../components/ProgressSummary'
+import {
+  CalcHeader, CalcStepCard, CalcStepIcon, CalcChoiceButton,
+  CalcNextButton, CalcBackButton, CalcInputCard, CalcModeSelector,
+  CalcErrorMsg, CalcPageWrapper, CalcContentArea, AnimatePresence,
+} from '../components/calc/CalcLayout'
 import LoadingOverlay from '../components/LoadingOverlay'
 import PdfGuide from '../components/PdfGuide'
 import ResultSeverance from './ResultSeverance'
 import { calcSeverancePrecise, calcSeveranceSimple, extractSeveranceCompanies, SeverancePreciseResult, SeveranceSimpleResult } from '../lib/api'
 import { COMPANIES, Company } from '../lib/constants'
-import { Check } from 'lucide-react'
+import { Briefcase, HelpCircle, Clock, FileText, Check, Upload } from 'lucide-react'
 import NonEligibleResult from '../components/non-eligible/NonEligibleResult'
 
 type Step = 1 | 2 | 3 | 4
@@ -33,30 +37,13 @@ const INIT: State = {
   calcMode: null, failed: false, result: null, resultType: null,
 }
 
-// 스텝별 진행도 빌더
-function buildSteps(s: State, selectedPdfCompany: string | null) {
-  const compLabel = selectedPdfCompany
-    ? (selectedPdfCompany.length > 12 ? selectedPdfCompany.slice(0, 12) + '…' : selectedPdfCompany)
-    : s.company === '기타' && s.companyOther
-      ? s.companyOther.slice(0, 12)
-      : s.company || '회사 선택'
-  const modeLabel = s.calcMode === 'precise' ? '정밀 계산' : s.calcMode === 'simple' ? '쉬운 계산' : '계산 방식'
-  const steps: { label: string; done?: boolean; current?: boolean }[] = [
-    { label: `① ${compLabel}`, done: !!s.company && s.step > 1, current: s.step === 1 },
-    { label: '② 자격 확인', done: s.step > 2 && !s.failed, current: s.step === 2 },
-    { label: `③ ${modeLabel}`, done: !!s.calcMode && s.step > 3, current: s.step === 3 },
-    { label: '④ 계산', done: !!s.result, current: s.step === 4 },
-  ]
-  return steps
-}
-
 export default function SeveranceFlow() {
   const [s, setS] = useState<State>(INIT)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  // Precise inputs
+  // 정밀계산 입력값
   const [endDate, setEndDate] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -65,7 +52,7 @@ export default function SeveranceFlow() {
   const [extractLoading, setExtractLoading] = useState(false)
   const [pdfGuideOpen, setPdfGuideOpen] = useState(false)
 
-  // Simple inputs
+  // 간편계산 입력값
   const [workDays, setWorkDays] = useState('')
   const [avgWage, setAvgWage] = useState('')
 
@@ -99,14 +86,12 @@ export default function SeveranceFlow() {
     const reason = s.q1 === false
       ? '퇴직급여법상 계속근로기간 1년 이상이 필요해요. 1년이 되면 다시 확인해 보세요.'
       : '주 15시간 이상 근무해야 퇴직금 수급 자격이 생겨요.'
-
     return <NonEligibleResult reason={reason} onRestart={reset} />
   }
 
-  // ── 계산 실행 ──────────────────────────────────
+  // ── 계산 실행 (로직 불변) ──────────────────────
   async function runPrecise() {
     if (!file) { setError('PDF 파일을 업로드해 주세요.'); return }
-    // PDF 회사가 추출됐으면 반드시 칩 선택 필요 (설문 step1 회사와 완전 분리)
     if (pdfCompanies.length > 0 && !selectedPdfCompany) {
       setError('계산할 사업장을 선택해 주세요.')
       return
@@ -114,11 +99,9 @@ export default function SeveranceFlow() {
     setError(''); setLoading(true)
     const fd = new FormData()
     fd.append('file', file)
-    // 항상 PDF 추출 사업장 기준으로 계산 (step1 설문 선택과 무관)
     fd.append('company', '기타')
     fd.append('company_other', selectedPdfCompany ?? '')
     if (endDate) fd.append('end_date', endDate)
-    // 최소 3초 로딩
     const [res] = await Promise.allSettled([
       calcSeverancePrecise(fd),
       new Promise(r => setTimeout(r, 3000)),
@@ -126,10 +109,7 @@ export default function SeveranceFlow() {
     setLoading(false)
     if (res.status === 'fulfilled') {
       setS(p => ({
-        ...p,
-        result: res.value,
-        resultType: 'precise',
-        step: 4,
+        ...p, result: res.value, resultType: 'precise', step: 4,
         displayCompany: selectedPdfCompany || undefined,
       }))
     } else {
@@ -137,24 +117,17 @@ export default function SeveranceFlow() {
         response?: { status?: number; data?: { detail?: string | Array<{ msg?: string }> } }
         message?: string
       }
-      // 디버깅: 브라우저 콘솔에서 전체 오류 확인
       console.error('[퇴직금 정밀계산 오류]', err?.response?.data ?? err?.message ?? err)
-
       const detail = err?.response?.data?.detail
       let msg: string
-      if (typeof detail === 'string') {
-        msg = detail
-      } else if (Array.isArray(detail) && detail[0]?.msg) {
-        msg = detail[0].msg
-      } else if (err?.message === 'Network Error') {
-        msg = '서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.'
-      } else if (err?.response?.status === 504 || (err?.message ?? '').includes('timeout')) {
-        msg = '요청 시간이 초과됐어요. 잠시 후 다시 시도해 주세요.'
-      } else {
+      if (typeof detail === 'string') { msg = detail }
+      else if (Array.isArray(detail) && detail[0]?.msg) { msg = detail[0].msg }
+      else if (err?.message === 'Network Error') { msg = '서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.' }
+      else if (err?.response?.status === 504 || (err?.message ?? '').includes('timeout')) { msg = '요청 시간이 초과됐어요. 잠시 후 다시 시도해 주세요.' }
+      else {
         const status = err?.response?.status
         const extra = typeof detail === 'object' && detail !== null
-          ? ` (${JSON.stringify(detail).slice(0, 80)}…)`
-          : status ? ` (HTTP ${status})` : ''
+          ? ` (${JSON.stringify(detail).slice(0, 80)}…)` : status ? ` (HTTP ${status})` : ''
         msg = `계산 중 오류가 발생했어요.${extra}`
       }
       setError(msg)
@@ -178,134 +151,7 @@ export default function SeveranceFlow() {
     }
   }
 
-  const wrap = (content: JSX.Element, stepN: Step) => (
-    <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
-      {loading && <LoadingOverlay message="퇴직금을 계산하고 있어요.." />}
-      <div style={{ width: '100%', maxWidth: 480 }}>
-        <GlassCard className="p-5 sm:p-8">
-          <ProgressSummary steps={buildSteps(s, selectedPdfCompany)} totalSteps={4} currentStep={stepN} />
-          {content}
-        </GlassCard>
-      </div>
-    </div>
-  )
-
-  // ── STEP 1: 회사 선택 ─────────────────────────
-  if (s.step === 1) return wrap(
-    <>
-      <h2 className="heading-md" style={{ marginBottom: 6 }}>어디에서 근무하셨나요?</h2>
-      <p style={{ fontSize: '0.9rem', color: 'var(--toss-text-2)', marginBottom: 20 }}>근무처를 선택해 주세요.</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-        {COMPANIES.map(c => (
-          <ChoiceButton
-            key={c}
-            selected={s.company === c}
-            onClick={() => setS(p => ({ ...p, company: c as Company, companyOther: '' }))}
-          >
-            {c}
-          </ChoiceButton>
-        ))}
-      </div>
-      {s.company === '기타' && (
-        <div style={{ marginBottom: 20 }}>
-          <input
-            type="text"
-            placeholder="회사명을 직접 입력해 주세요"
-            value={s.companyOther}
-            onChange={e => setS(p => ({ ...p, companyOther: e.target.value }))}
-          />
-        </div>
-      )}
-      <PrimaryButton
-        disabled={!s.company || (s.company === '기타' && !s.companyOther)}
-        onClick={() => go(2)}
-      >
-        다음
-      </PrimaryButton>
-      <SecondaryButton style={{ marginTop: 10 }} onClick={() => navigate('/home')}>← 홈으로</SecondaryButton>
-    </>,
-    1,
-  )
-
-  // ── STEP 2: Q1 — 1년 이상 ────────────────────
-  if (s.step === 2) return wrap(
-    <>
-      <h2 className="heading-md" style={{ marginBottom: 6 }}>
-        {s.company}에서 첫 출근부터 마지막 퇴근까지 <span style={{ color: 'var(--toss-blue)' }}>1년 넘게</span> 일하셨나요?
-      </h2>
-      <p style={{ fontSize: '0.9rem', color: 'var(--toss-text-2)', marginBottom: 20 }}>
-        퇴직급여법상 계속근로기간 1년이 필요해요.
-      </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-        <ChoiceButton icon="✅" selected={s.q1 === true} onClick={() => setS(p => ({ ...p, q1: true }))}>
-          예, 1년 이상 일했어요
-        </ChoiceButton>
-        <ChoiceButton icon="❌" selected={s.q1 === false} onClick={() => setS(p => ({ ...p, q1: false, failed: true }))}>
-          아니요, 1년 미만이에요
-        </ChoiceButton>
-      </div>
-      {s.q1 === true && <PrimaryButton onClick={() => go(3)}>다음</PrimaryButton>}
-      <SecondaryButton style={{ marginTop: 10 }} onClick={() => go(1)}>← 이전으로</SecondaryButton>
-    </>,
-    2,
-  )
-
-  // ── STEP 3: Q2 — 주 15시간 & 계산 방식 ──────
-  if (s.step === 3) return wrap(
-    <>
-      <h2 className="heading-md" style={{ marginBottom: 6 }}>
-        주 평균 <span style={{ color: 'var(--toss-blue)' }}>15시간 이상</span> 근무하셨나요?
-      </h2>
-      <p style={{ fontSize: '0.9rem', color: 'var(--toss-text-2)', marginBottom: 20 }}>
-        4주 평균 주 15시간 이상이어야 퇴직금을 받을 수 있어요.
-      </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-        <ChoiceButton icon="✅" selected={s.q2 === true} onClick={() => setS(p => ({ ...p, q2: true }))}>
-          예, 15시간 이상이에요
-        </ChoiceButton>
-        <ChoiceButton icon="❌" selected={s.q2 === false} onClick={() => setS(p => ({ ...p, q2: false, failed: true }))}>
-          아니요, 15시간 미만이에요
-        </ChoiceButton>
-      </div>
-
-      {s.q2 === true && (
-        <>
-          <div className="divider" />
-          <h2 className="heading-md" style={{ marginBottom: 6 }}>어떻게 계산할까요?</h2>
-          <p style={{ fontSize: '0.9rem', color: 'var(--toss-text-2)', marginBottom: 16 }}>
-            PDF를 올리면 자동으로, 직접 입력하면 빠르게 계산해요.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-            <ChoiceButton
-              icon="📄"
-              selected={s.calcMode === 'precise'}
-              onClick={() => setS(p => ({ ...p, calcMode: 'precise' }))}
-            >
-              <div>
-                <div>정밀 계산 — PDF 자동 분석</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', fontWeight: 400 }}>근로복지공단 일용근로내역서 업로드</div>
-              </div>
-            </ChoiceButton>
-            <ChoiceButton
-              icon="✏️"
-              selected={s.calcMode === 'simple'}
-              onClick={() => setS(p => ({ ...p, calcMode: 'simple' }))}
-            >
-              <div>
-                <div>쉬운 계산 — 직접 입력</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', fontWeight: 400 }}>근무일수·평균임금 직접 입력</div>
-              </div>
-            </ChoiceButton>
-          </div>
-          {s.calcMode && <PrimaryButton onClick={() => go(4)}>다음</PrimaryButton>}
-        </>
-      )}
-      <SecondaryButton style={{ marginTop: 10 }} onClick={() => go(2)}>← 이전으로</SecondaryButton>
-    </>,
-    3,
-  )
-
-  // PDF 업로드 시 사업장 추출
+  // PDF 업로드 시 사업장 추출 (로직 불변)
   async function onPdfSelect(f: File) {
     setFile(f)
     setPdfCompanies([])
@@ -325,159 +171,302 @@ export default function SeveranceFlow() {
     }
   }
 
-  // ── STEP 4A: 정밀 계산 ───────────────────────
-  if (s.step === 4 && s.calcMode === 'precise') return wrap(
-    <>
-      <h2 className="heading-md" style={{ marginBottom: 6 }}>📄 근로내역서 PDF 업로드</h2>
-      <p style={{ fontSize: '0.9rem', color: 'var(--toss-text-2)', marginBottom: 20 }}>
-        근로복지공단 고용·산재보험 포털에서 발급받은<br />
-        <strong>일용근로·노무제공내역서 PDF</strong>를 올려주세요.
-      </p>
+  // ── 뒤로가기 핸들러 ──
+  const handleBack = () => {
+    if (s.step === 1) { navigate('/home'); return }
+    if (s.step === 4) { go(3); return }
+    go((s.step - 1) as Step)
+  }
 
-      {/* 드롭존 */}
-      <div
-        className={`dropzone ${file ? 'active' : ''}`}
-        onClick={() => fileRef.current?.click()}
-      >
-        {file ? (
-          <>
-            <div style={{ fontSize: '2rem', marginBottom: 8 }}>✅</div>
-            <p style={{ fontWeight: 700, color: 'var(--toss-blue)' }}>{file.name}</p>
-            <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginTop: 4 }}>다른 파일로 교체하려면 클릭하세요</p>
-          </>
-        ) : (
-          <>
-            <div style={{ fontSize: '2.5rem', marginBottom: 8 }}>📤</div>
-            <p style={{ fontWeight: 700, color: 'var(--toss-text)' }}>여기를 클릭해서 PDF 업로드</p>
-            <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginTop: 4 }}>PDF 파일만 가능해요</p>
-          </>
-        )}
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".pdf"
-          style={{ display: 'none' }}
-          onChange={e => { const f = e.target.files?.[0]; if (f) onPdfSelect(f) }}
-        />
-      </div>
+  // ── 렌더링 ─────────────────────────────────────
+  return (
+    <CalcPageWrapper>
+      {loading && <LoadingOverlay message="퇴직금을 계산하고 있어요.." />}
 
-      {/* PDF 발급 가이드 트리거 */}
-      <button
-        type="button"
-        onClick={() => setPdfGuideOpen(true)}
-        className="pdf-guide-trigger"
-      >
-        ❓ 근로내역서 PDF는 어디서 받나요?
-        <br />
-        (클릭해서 발급 방법 보기)
-      </button>
+      <CalcHeader
+        title="퇴직금 계산기"
+        icon={<Briefcase className="w-4 h-4" />}
+        accentColor="blue"
+        onBack={handleBack}
+        progress={{ current: s.step, total: 4 }}
+      />
 
-      {/* 사업장 선택 카드 — 세로 스크롤 리스트 */}
-      {extractLoading && (
-        <div className="company-select-card mt-4" style={{ textAlign: 'center', color: 'var(--toss-text-2)' }}>
-          <p style={{ fontSize: '0.9rem' }}>📂 PDF 분석 중…</p>
-        </div>
-      )}
-      {!extractLoading && pdfCompanies.length > 0 && (
-        <div className="company-select-card mt-4">
-          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--toss-text)', marginBottom: 10 }}>
-            계산할 사업장을 선택하세요
-            <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--toss-text-3)', marginLeft: 6 }}>
-              ({pdfCompanies.length}개 추출됨)
-            </span>
-          </p>
-          <div className="company-list-scroll">
-            {pdfCompanies.map(name => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => setSelectedPdfCompany(prev => prev === name ? null : name)}
-                className={`company-item ${selectedPdfCompany === name ? 'selected' : ''}`}
+      <CalcContentArea>
+        <AnimatePresence mode="wait">
+
+          {/* ── STEP 1: 회사 선택 ── */}
+          {s.step === 1 && (
+            <CalcStepCard motionKey="sev-step1">
+              <CalcStepIcon
+                icon={<Briefcase className="w-7 h-7" />}
+                accentColor="blue"
+                title="어디에서 근무하셨나요?"
+                subtitle="근무처를 선택해 주세요"
+              />
+              <div className="flex flex-col gap-3">
+                {COMPANIES.map(c => (
+                  <CalcChoiceButton
+                    key={c}
+                    selected={s.company === c}
+                    accentColor="blue"
+                    onClick={() => setS(p => ({ ...p, company: c as Company, companyOther: '' }))}
+                  >
+                    {c}
+                  </CalcChoiceButton>
+                ))}
+              </div>
+              {/* 기타 직접 입력 */}
+              {s.company === '기타' && (
+                <CalcInputCard>
+                  <input
+                    type="text"
+                    placeholder="회사명을 직접 입력해 주세요"
+                    value={s.companyOther}
+                    onChange={e => setS(p => ({ ...p, companyOther: e.target.value }))}
+                    className="w-full px-4 py-4 rounded-2xl border border-white/60 bg-white/70 text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 text-center"
+                  />
+                </CalcInputCard>
+              )}
+              <CalcNextButton
+                disabled={!s.company || (s.company === '기타' && !s.companyOther)}
+                accentColor="blue"
+                onClick={() => go(2)}
+              />
+              <CalcBackButton onClick={() => navigate('/home')}>← 홈으로</CalcBackButton>
+            </CalcStepCard>
+          )}
+
+          {/* ── STEP 2: Q1 — 1년 이상 근무 여부 ── */}
+          {s.step === 2 && (
+            <CalcStepCard motionKey="sev-step2">
+              <CalcStepIcon
+                icon={<HelpCircle className="w-7 h-7" />}
+                accentColor="blue"
+                title={<>첫 출근부터 마지막 퇴근까지 <span className="text-blue-500">1년 넘게</span> 일하셨나요?</>}
+                subtitle="퇴직급여법상 계속근로기간 1년이 필요해요"
+              />
+              <div className="flex flex-col gap-3">
+                <CalcChoiceButton icon="✅" selected={s.q1 === true} accentColor="blue"
+                  onClick={() => setS(p => ({ ...p, q1: true }))}
+                  sub="퇴직금 수급 자격이 돼요">
+                  예, 1년 이상 일했어요
+                </CalcChoiceButton>
+                <CalcChoiceButton icon="❌" selected={s.q1 === false} accentColor="blue"
+                  onClick={() => setS(p => ({ ...p, q1: false, failed: true }))}
+                  sub="아쉽지만 자격이 안 돼요">
+                  아니요, 1년 미만이에요
+                </CalcChoiceButton>
+              </div>
+              {s.q1 === true && (
+                <CalcNextButton disabled={false} accentColor="blue" onClick={() => go(3)} />
+              )}
+              <CalcBackButton onClick={() => go(1)} />
+            </CalcStepCard>
+          )}
+
+          {/* ── STEP 3: Q2 — 주 15시간 & 계산 방식 선택 ── */}
+          {s.step === 3 && (
+            <CalcStepCard motionKey="sev-step3">
+              {/* 주 15시간 질문 */}
+              <CalcStepIcon
+                icon={<Clock className="w-7 h-7" />}
+                accentColor="blue"
+                title={<>주 평균 <span className="text-blue-500">15시간 이상</span> 근무하셨나요?</>}
+                subtitle="4주 평균 주 15시간 이상이어야 퇴직금을 받을 수 있어요"
+              />
+              <div className="flex flex-col gap-3">
+                <CalcChoiceButton icon="✅" selected={s.q2 === true} accentColor="blue"
+                  onClick={() => setS(p => ({ ...p, q2: true }))}
+                  sub="퇴직금 계산을 진행할게요">
+                  예, 15시간 이상이에요
+                </CalcChoiceButton>
+                <CalcChoiceButton icon="❌" selected={s.q2 === false} accentColor="blue"
+                  onClick={() => setS(p => ({ ...p, q2: false, failed: true }))}
+                  sub="주 15시간 미만은 대상이 아니에요">
+                  아니요, 15시간 미만이에요
+                </CalcChoiceButton>
+              </div>
+
+              {/* q2 통과 시 계산 방식 선택 표시 */}
+              {s.q2 === true && (
+                <>
+                  <div className="w-full h-px bg-white/40 my-2" />
+                  <CalcStepIcon
+                    icon={<FileText className="w-7 h-7" />}
+                    accentColor="blue"
+                    title="어떻게 계산할까요?"
+                    subtitle="PDF를 올리면 자동으로, 직접 입력하면 빠르게 계산해요"
+                  />
+                  <CalcModeSelector
+                    accentColor="blue"
+                    onSimple={() => { setS(p => ({ ...p, calcMode: 'simple' })); go(4) }}
+                    onPdf={() => { setS(p => ({ ...p, calcMode: 'precise' })); go(4) }}
+                    simpleLabel="쉬운 계산"
+                    simpleDesc="근무일수·평균임금 직접 입력"
+                    pdfLabel="정밀 계산"
+                    pdfDesc="근로복지공단 일용근로내역서 업로드"
+                  />
+                </>
+              )}
+              <CalcBackButton onClick={() => go(2)} />
+            </CalcStepCard>
+          )}
+
+          {/* ── STEP 4A: 정밀 계산 (PDF 업로드) ── */}
+          {s.step === 4 && s.calcMode === 'precise' && (
+            <CalcStepCard motionKey="sev-step4a">
+              <CalcStepIcon
+                icon={<Upload className="w-7 h-7" />}
+                accentColor="blue"
+                title="근로내역서 PDF 업로드"
+                subtitle="근로복지공단 일용근로·노무제공내역서 PDF를 올려주세요"
+              />
+
+              {/* 드롭존 */}
+              <div
+                className={`dropzone ${file ? 'active' : ''}`}
+                onClick={() => fileRef.current?.click()}
               >
-                <span className="company-item-dot">
-                  {selectedPdfCompany === name
-                    ? <Check size={14} strokeWidth={2.5} />
-                    : <span style={{ width: 14, height: 14, borderRadius: '50%', border: '1.5px solid #cbd5e1', display: 'inline-block' }} />
-                  }
-                </span>
-                <span className="company-item-name">{name}</span>
+                {file ? (
+                  <>
+                    <div className="text-3xl mb-2">✅</div>
+                    <p className="font-bold text-blue-500">{file.name}</p>
+                    <p className="text-[12px] text-[#8b95a1] mt-1">다른 파일로 교체하려면 클릭하세요</p>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-4xl mb-2">📤</div>
+                    <p className="font-bold text-[#191f28]">여기를 클릭해서 PDF 업로드</p>
+                    <p className="text-[12px] text-[#8b95a1] mt-1">PDF 파일만 가능해요</p>
+                  </>
+                )}
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".pdf"
+                  style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) onPdfSelect(f) }}
+                />
+              </div>
+
+              {/* PDF 발급 가이드 */}
+              <button type="button" onClick={() => setPdfGuideOpen(true)}
+                className="text-[13px] text-[#8b95a1] underline underline-offset-2 hover:text-blue-500 transition-colors">
+                ❓ 근로내역서 PDF는 어디서 받나요?
               </button>
-            ))}
-          </div>
-        </div>
-      )}
 
-      <div style={{ marginTop: 20, marginBottom: 20 }}>
-        <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: 'var(--toss-text)', marginBottom: 8 }}>
-          마지막 근무일 (선택)
-        </label>
-        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
-        <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginTop: 4 }}>
-          비워두면 PDF의 마지막 근무일을 사용해요.
-        </p>
-      </div>
+              {/* 사업장 선택 */}
+              {extractLoading && (
+                <CalcInputCard className="text-center">
+                  <p className="text-[14px] text-[#8b95a1]">📂 PDF 분석 중…</p>
+                </CalcInputCard>
+              )}
+              {!extractLoading && pdfCompanies.length > 0 && (
+                <CalcInputCard>
+                  <p className="text-[14px] font-bold text-[#191f28] mb-3">
+                    계산할 사업장을 선택하세요
+                    <span className="text-[12px] font-normal text-[#8b95a1] ml-2">
+                      ({pdfCompanies.length}개 추출됨)
+                    </span>
+                  </p>
+                  <div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto">
+                    {pdfCompanies.map(name => (
+                      <button key={name} type="button"
+                        onClick={() => setSelectedPdfCompany(prev => prev === name ? null : name)}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
+                          selectedPdfCompany === name
+                            ? 'bg-blue-50 border border-blue-200'
+                            : 'bg-white/50 border border-white/40 hover:bg-white/80'
+                        }`}>
+                        <span className="shrink-0">
+                          {selectedPdfCompany === name
+                            ? <Check size={14} strokeWidth={2.5} className="text-blue-500" />
+                            : <span className="w-3.5 h-3.5 rounded-full border-[1.5px] border-slate-300 inline-block" />
+                          }
+                        </span>
+                        <span className="text-[14px] font-medium text-[#191f28]">{name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </CalcInputCard>
+              )}
 
-      {error && (
-        <div style={{ padding: '12px 16px', background: 'rgba(240,68,82,0.08)', border: '1px solid rgba(240,68,82,0.2)', borderRadius: 12, marginBottom: 16, color: '#cc2233', fontSize: '0.9rem', fontWeight: 600 }}>
-          ⚠️ {error}
-        </div>
-      )}
+              {/* 마지막 근무일 */}
+              <CalcInputCard>
+                <label className="block text-[14px] font-semibold text-[#191f28] mb-2">
+                  마지막 근무일 (선택)
+                </label>
+                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
+                  className="w-full px-4 py-4 rounded-2xl border border-white/60 bg-white/70 text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 text-center"
+                />
+                <p className="text-[12px] text-[#8b95a1] mt-2">
+                  비워두면 PDF의 마지막 근무일을 사용해요
+                </p>
+              </CalcInputCard>
 
-      <PrimaryButton
-        onClick={runPrecise}
-        disabled={!file || extractLoading || (pdfCompanies.length > 0 && !selectedPdfCompany)}
-      >
-        계산하기
-      </PrimaryButton>
-      <SecondaryButton style={{ marginTop: 10 }} onClick={() => go(3)}>← 이전으로</SecondaryButton>
+              {error && <CalcErrorMsg message={error} />}
 
-      {pdfGuideOpen && <PdfGuide onClose={() => setPdfGuideOpen(false)} />}
-    </>,
-    4,
-  )
+              <CalcNextButton
+                disabled={!file || extractLoading || (pdfCompanies.length > 0 && !selectedPdfCompany)}
+                accentColor="blue"
+                onClick={runPrecise}
+              >
+                계산하기
+              </CalcNextButton>
+              <CalcBackButton onClick={() => go(3)} />
 
-  // ── STEP 4B: 쉬운 계산 ───────────────────────
-  return wrap(
-    <>
-      <h2 className="heading-md" style={{ marginBottom: 6 }}>✏️ 직접 입력해서 계산하기</h2>
-      <p style={{ fontSize: '0.9rem', color: 'var(--toss-text-2)', marginBottom: 20 }}>
-        근무일수와 평균 일당을 입력하면 예상 퇴직금을 바로 알 수 있어요.
-      </p>
+              {pdfGuideOpen && <PdfGuide onClose={() => setPdfGuideOpen(false)} />}
+            </CalcStepCard>
+          )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 20 }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: 8 }}>전체 근무일수 (일)</label>
-          <input
-            type="number"
-            placeholder="예: 400"
-            value={workDays}
-            onChange={e => setWorkDays(e.target.value)}
-          />
-          <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginTop: 4 }}>첫 출근 ~ 마지막 퇴근까지의 총 일수</p>
-        </div>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: 8 }}>평균 일당 (원)</label>
-          <input
-            type="number"
-            placeholder="예: 150000"
-            value={avgWage}
-            onChange={e => setAvgWage(e.target.value)}
-          />
-          <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginTop: 4 }}>최근 3개월 총 지급액 ÷ 근무일수</p>
-        </div>
-      </div>
+          {/* ── STEP 4B: 쉬운 계산 (직접 입력) ── */}
+          {s.step === 4 && s.calcMode === 'simple' && (
+            <CalcStepCard motionKey="sev-step4b">
+              <CalcStepIcon
+                icon={<Briefcase className="w-7 h-7" />}
+                accentColor="blue"
+                title="직접 입력해서 계산하기"
+                subtitle="근무일수와 평균 일당을 입력하면 예상 퇴직금을 바로 알 수 있어요"
+              />
 
-      {error && (
-        <div style={{ padding: '12px 16px', background: 'rgba(240,68,82,0.08)', border: '1px solid rgba(240,68,82,0.2)', borderRadius: 12, marginBottom: 16, color: '#cc2233', fontSize: '0.9rem', fontWeight: 600 }}>
-          ⚠️ {error}
-        </div>
-      )}
+              <CalcInputCard>
+                <div className="flex flex-col gap-5">
+                  <div>
+                    <label className="block text-[14px] font-semibold text-[#191f28] mb-2">전체 근무일수 (일)</label>
+                    <input
+                      type="number"
+                      placeholder="예: 400"
+                      value={workDays}
+                      onChange={e => setWorkDays(e.target.value)}
+                      className="w-full px-4 py-4 rounded-2xl border border-white/60 bg-white/70 text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 text-center"
+                    />
+                    <p className="text-[12px] text-[#8b95a1] mt-1.5">첫 출근 ~ 마지막 퇴근까지의 총 일수</p>
+                  </div>
+                  <div>
+                    <label className="block text-[14px] font-semibold text-[#191f28] mb-2">평균 일당 (원)</label>
+                    <input
+                      type="number"
+                      placeholder="예: 150000"
+                      value={avgWage}
+                      onChange={e => setAvgWage(e.target.value)}
+                      className="w-full px-4 py-4 rounded-2xl border border-white/60 bg-white/70 text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 text-center"
+                    />
+                    <p className="text-[12px] text-[#8b95a1] mt-1.5">최근 3개월 총 지급액 ÷ 근무일수</p>
+                  </div>
+                </div>
+              </CalcInputCard>
 
-      <PrimaryButton onClick={runSimple} disabled={!workDays || !avgWage}>
-        계산하기
-      </PrimaryButton>
-      <SecondaryButton style={{ marginTop: 10 }} onClick={() => go(3)}>← 이전으로</SecondaryButton>
-    </>,
-    4,
+              {error && <CalcErrorMsg message={error} />}
+
+              <CalcNextButton disabled={!workDays || !avgWage} accentColor="blue" onClick={runSimple}>
+                계산하기
+              </CalcNextButton>
+              <CalcBackButton onClick={() => go(3)} />
+            </CalcStepCard>
+          )}
+
+        </AnimatePresence>
+      </CalcContentArea>
+    </CalcPageWrapper>
   )
 }

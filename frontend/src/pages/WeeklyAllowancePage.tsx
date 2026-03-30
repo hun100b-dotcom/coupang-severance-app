@@ -4,9 +4,12 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ChevronLeft, Calendar, AlertCircle, CheckCircle2, Info,
-  FileText, Calculator, ChevronRight, Upload, Loader2, Save,
+  Calendar, AlertCircle, CheckCircle2, Info,
+  FileText, Calculator, ChevronRight, Upload, Loader2, Save, Clock,
 } from 'lucide-react'
+import {
+  CalcHeader, CalcPageWrapper, CalcContentArea,
+} from '../components/calc/CalcLayout'
 import {
   calcWeeklyAllowancePrecise,
   extractWeeklyAllowanceCompanies,
@@ -183,50 +186,22 @@ export default function WeeklyAllowancePage() {
   const canRunPrecise = pdfFile && pdfCompany && wage > 0 && !pdfLoading &&
     (pdfCompany !== '기타' || pdfOther.trim())
 
-  // ── 진행 바 퍼센트 계산
-  const progressPct = step === 'survey'
-    ? Math.round((surveyStep / SURVEY_TOTAL) * 100)
-    : step === 'mode' ? 100
-    : 100
-
   // ── 각 설문 단계 컨텐츠
   const WORK_TYPES = ['단기 알바', '일용직', '파트타임', '기타']
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-10">
-      {/* 헤더 */}
-      <header className="sticky top-0 z-30 w-full max-w-[460px] py-3 mb-1">
-        <div className="flex items-center gap-2 px-2 py-2 rounded-2xl bg-white/60 backdrop-blur-2xl border border-white/50 shadow-[0_2px_12px_rgba(49,130,246,0.07)]">
-          <button type="button" onClick={handleBack}
-            className="p-1.5 rounded-xl hover:bg-black/5 transition-colors active:scale-95">
-            <ChevronLeft className="w-5 h-5 text-[#191f28]" />
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-xl bg-emerald-100 flex items-center justify-center">
-              <Calendar className="w-4 h-4 text-emerald-600" />
-            </div>
-            <h1 className="text-[17px] font-extrabold text-[#191f28] tracking-tight">주휴수당 계산기</h1>
-          </div>
-          {/* 진행 바 */}
-          {step === 'survey' && (
-            <div className="ml-auto flex items-center gap-2">
-              <span className="text-[10px] font-semibold text-emerald-600">{surveyStep + 1}/{SURVEY_TOTAL}</span>
-            </div>
-          )}
-        </div>
-        {/* 상단 진행 바 */}
-        {step === 'survey' && (
-          <div className="mt-2 w-full h-1 rounded-full bg-gray-100 overflow-hidden">
-            <motion.div
-              className="h-full rounded-full bg-emerald-400"
-              animate={{ width: `${progressPct}%` }}
-              transition={{ duration: 0.3 }}
-            />
-          </div>
-        )}
-      </header>
+    <CalcPageWrapper>
+      {/* 통일 헤더 */}
+      <CalcHeader
+        title="주휴수당 계산기"
+        icon={<Clock className="w-4 h-4" />}
+        accentColor="emerald"
+        onBack={handleBack}
+        progress={step === 'survey' ? { current: surveyStep + 1, total: SURVEY_TOTAL } : undefined}
+        showProgress={step === 'survey'}
+      />
 
-      <div className="w-full max-w-[460px] flex flex-col gap-4">
+      <CalcContentArea>
         <AnimatePresence mode="wait">
 
           {/* ═══ 설문 플로우 ═══ */}
@@ -765,7 +740,7 @@ export default function WeeklyAllowancePage() {
           )}
 
         </AnimatePresence>
-      </div>
-    </div>
+      </CalcContentArea>
+    </CalcPageWrapper>
   )
 }

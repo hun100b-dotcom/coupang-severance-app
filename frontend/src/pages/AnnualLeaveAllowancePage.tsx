@@ -4,9 +4,12 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ChevronLeft, Calendar, AlertCircle, CheckCircle2, Info,
+  Calendar, AlertCircle, CheckCircle2, Info,
   FileText, Calculator, ChevronRight, Upload, Loader2, Save, User, Clock,
 } from 'lucide-react'
+import {
+  CalcHeader, CalcPageWrapper, CalcContentArea,
+} from '../components/calc/CalcLayout'
 import {
   calcAnnualLeavePrecise,
   extractAnnualLeaveCompanies,
@@ -293,7 +296,6 @@ export default function AnnualLeaveAllowancePage() {
   const canRunPrecise = pdfFile && pdfCompany && survey.hireDate && !pdfLoading &&
     (pdfCompany !== '기타' || pdfOther.trim())
 
-  const progressPct = step === 'survey' ? Math.round((surveyStep / totalSteps) * 100) : 100
 
   // ── 현재 스텝의 실제 의미 (동적 스텝 매핑)
   // isStillWorking=false: 0→재직여부, 1→입사일, 2→퇴직일, 3→목적, 4→사용연차, 5→일급
@@ -311,38 +313,18 @@ export default function AnnualLeaveAllowancePage() {
   const curStep = actualStep()
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-10">
-      {/* 헤더 */}
-      <header className="sticky top-0 z-30 w-full max-w-[460px] py-3 mb-1">
-        <div className="flex items-center gap-2 px-2 py-2 rounded-2xl bg-white/60 backdrop-blur-2xl border border-white/50 shadow-[0_2px_12px_rgba(49,130,246,0.07)]">
-          <button type="button" onClick={handleBack}
-            className="p-1.5 rounded-xl hover:bg-black/5 transition-colors active:scale-95">
-            <ChevronLeft className="w-5 h-5 text-[#191f28]" />
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-xl bg-amber-100 flex items-center justify-center">
-              <Calendar className="w-4 h-4 text-amber-600" />
-            </div>
-            <h1 className="text-[17px] font-extrabold text-[#191f28] tracking-tight">연차수당 계산기</h1>
-          </div>
-          {step === 'survey' && (
-            <div className="ml-auto">
-              <span className="text-[10px] font-semibold text-amber-600">{surveyStep + 1}/{totalSteps}</span>
-            </div>
-          )}
-        </div>
-        {step === 'survey' && (
-          <div className="mt-2 w-full h-1 rounded-full bg-gray-100 overflow-hidden">
-            <motion.div
-              className="h-full rounded-full bg-amber-400"
-              animate={{ width: `${progressPct}%` }}
-              transition={{ duration: 0.3 }}
-            />
-          </div>
-        )}
-      </header>
+    <CalcPageWrapper>
+      {/* 통일 헤더 */}
+      <CalcHeader
+        title="연차수당 계산기"
+        icon={<Calendar className="w-4 h-4" />}
+        accentColor="amber"
+        onBack={handleBack}
+        progress={step === 'survey' ? { current: surveyStep + 1, total: totalSteps } : undefined}
+        showProgress={step === 'survey'}
+      />
 
-      <div className="w-full max-w-[460px] flex flex-col gap-4">
+      <CalcContentArea>
         <AnimatePresence mode="wait">
 
           {/* ═══ 설문 플로우 ═══ */}
@@ -898,7 +880,7 @@ export default function AnnualLeaveAllowancePage() {
           )}
 
         </AnimatePresence>
-      </div>
-    </div>
+      </CalcContentArea>
+    </CalcPageWrapper>
   )
 }
