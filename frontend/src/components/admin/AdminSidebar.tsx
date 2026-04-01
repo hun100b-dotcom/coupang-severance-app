@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
 export type AdminMenu =
-  | 'dashboard' | 'target' | 'inquiries' | 'notices'
+  | 'dashboard' | 'target' | 'jobs' | 'inquiries' | 'notices'
   | 'members' | 'accounts' | 'settings'
   | 'audit_logs' | 'server_logs'
 

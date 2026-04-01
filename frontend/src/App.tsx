@@ -21,6 +21,8 @@ import WeeklyAllowancePage from './pages/WeeklyAllowancePage' // 주휴수당 �
 import AnnualLeaveAllowancePage from './pages/AnnualLeaveAllowancePage' // 연차수당 계산 페이지
 import MyBenefitsPage from './pages/MyBenefitsPage' // 나의 혜택 페이지
 import NoticesPage from './pages/NoticesPage' // 공지사항 전체 목록 페이지
+import JobsPage from './pages/JobsPage' // 채용정보 피드
+import CalculatorPage from './pages/CalculatorPage' // 계산기 허브 (4개 서비스 선택)
 import PrivacyPolicyPage from './pages/PrivacyPolicy' // 개인정보 처리방침
 import TermsOfServicePage from './pages/TermsOfService' // 서비스 이용약관
 
@@ -53,6 +55,10 @@ export default function App() {
           <Route element={<OnboardingGuard><Layout /></OnboardingGuard>}>
             {/* 메인 홈 화면 */}
             <Route path="/home" element={<Home />} />
+            {/* 채용정보 피드 */}
+            <Route path="/jobs" element={<JobsPage />} />
+            {/* 계산기 허브 (4개 서비스 선택) */}
+            <Route path="/calculator" element={<CalculatorPage />} />
             {/* 퇴직금 계산 플로우 */}
             <Route path="/severance" element={<SeveranceFlow />} />
             {/* 실업급여 계산 플로우 */}

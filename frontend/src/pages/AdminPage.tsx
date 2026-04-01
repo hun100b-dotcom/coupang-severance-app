@@ -14,10 +14,12 @@ import AuditLogsMenu from '../components/admin/menus/AuditLogsMenu'
 import NoticesMenu from '../components/admin/menus/NoticesMenu'
 import MembersMenu from '../components/admin/menus/MembersMenu'
 import AccountsMenu from '../components/admin/menus/AccountsMenu'
+import JobsMenu from '../components/admin/menus/JobsMenu'
 
 const ALL_MENUS: { key: AdminMenu; icon: string; label: string }[] = [
   { key: 'dashboard',  icon: '🏠', label: 'Dashboard'   },
   { key: 'target',     icon: '🎯', label: 'Target'       },
+  { key: 'jobs',       icon: '💼', label: '채용공고'      },
   { key: 'inquiries',  icon: '💬', label: 'Inquiries'    },
   { key: 'notices',    icon: '📢', label: '공지사항'      },
   { key: 'members',    icon: '👥', label: '회원 관리'     },
@@ -33,15 +35,15 @@ interface PermLevel { label: string; color: string; permissions: Record<string, 
 const DEFAULT_PERMS: Record<string, PermLevel> = {
   super_admin: {
     label: '슈퍼 관리자', color: '#f04040',
-    permissions: { dashboard:true, target:true, inquiries:true, notices:true, members:true, accounts:true, settings:true, audit_logs:true, server_logs:true },
+    permissions: { dashboard:true, target:true, jobs:true, inquiries:true, notices:true, members:true, accounts:true, settings:true, audit_logs:true, server_logs:true },
   },
   admin: {
     label: '관리자', color: '#3182f6',
-    permissions: { dashboard:true, target:true, inquiries:true, notices:true, members:true, accounts:false, settings:false, audit_logs:false, server_logs:false },
+    permissions: { dashboard:true, target:true, jobs:true, inquiries:true, notices:true, members:true, accounts:false, settings:false, audit_logs:false, server_logs:false },
   },
   viewer: {
     label: '뷰어', color: '#8b95a1',
-    permissions: { dashboard:true, target:false, inquiries:true, notices:false, members:false, accounts:false, settings:false, audit_logs:false, server_logs:false },
+    permissions: { dashboard:true, target:false, jobs:false, inquiries:true, notices:false, members:false, accounts:false, settings:false, audit_logs:false, server_logs:false },
   },
 }
 
@@ -149,6 +151,7 @@ export default function AdminPage() {
     switch (activeMenu) {
       case 'dashboard':   return <DashboardMenu />
       case 'target':      return <TargetMenu />
+      case 'jobs':        return <JobsMenu />
       case 'inquiries':   return <InquiriesMenu />
       case 'notices':     return <NoticesMenu />
       case 'members':     return <MembersMenu isSuperAdmin={isSuperAdmin} />

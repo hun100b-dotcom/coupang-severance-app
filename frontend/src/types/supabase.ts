@@ -88,6 +88,35 @@ export interface SavedPdf {
   created_at: string
 }
 
+/** job_postings 테이블 한 행 — 채용공고 */
+export interface JobPosting {
+  id: string
+  company_name: string
+  center_name: string
+  region: string
+  headcount: number
+  hourly_wage: number
+  work_hours: string
+  description: string
+  contact_phone: string
+  external_link: string
+  is_urgent: boolean
+  expires_at: string | null
+  status: 'active' | 'expired' | 'deleted'
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+/** job_favorites 테이블 한 행 — 즐겨찾기 (회사/센터) */
+export interface JobFavorite {
+  id: string
+  user_id: string
+  favorite_type: 'company' | 'center'
+  favorite_value: string
+  created_at: string
+}
+
 /** reports 테이블 한 행 - 리스트/상세 공통 */
 export interface ReportRow {
   id: string

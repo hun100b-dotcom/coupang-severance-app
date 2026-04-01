@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift, X, Bell } from 'lucide-react'
+import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift, X, Bell, MapPin, Briefcase } from 'lucide-react'
 import { getClickCount, registerClick } from '../lib/api'
+import type { JobPosting } from '../types/supabase'
 import { INTRO_COPIES } from '../lib/constants'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -75,6 +76,20 @@ export default function Home() {
   const [copyIdx, setCopyIdx] = useState(0)
   const [scrolled, setScrolled] = useState(false)
   const animatedCount = useCountUp(count)
+
+  // 채용정보 프리뷰 (최신 3건)
+  const [recentJobs, setRecentJobs] = useState<JobPosting[]>([])
+  useEffect(() => {
+    if (!supabase) return
+    supabase
+      .from('job_postings')
+      .select('*')
+      .eq('status', 'active')
+      .order('is_urgent', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(3)
+      .then(({ data }) => setRecentJobs((data ?? []) as JobPosting[]))
+  }, [])
 
   // CMS 공지/팝업 상태
   const [annoText, setAnnoText] = useState('')
@@ -301,6 +316,29 @@ export default function Home() {
           </div>
         </motion.div>
 
+        {/* ── 그린 CTA: 내 주변 단기알바 캐치하기 ── */}
+        <motion.button
+          custom={1}
+          variants={cardVariants}
+          initial="hidden"
+          animate="visible"
+          type="button"
+          onClick={() => navigate('/jobs')}
+          className="group w-full rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-emerald-200/50 bg-gradient-to-br from-[#10b981] to-[#059669] p-4 flex items-center gap-3 text-left relative overflow-hidden"
+          whileHover={{ scale: 1.01, y: -2 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer bg-[length:200%_100%] pointer-events-none" />
+          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+            <Briefcase className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-bold text-base">내 주변 단기알바 캐치하기</p>
+            <p className="text-white/90 text-sm">쿠팡 · CJ · 컬리 실시간 채용</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+        </motion.button>
+
         {/* ── 파란 CTA: 내 퇴직금 캐치하기 ── */}
         <motion.button
           custom={1}
@@ -324,6 +362,48 @@ export default function Home() {
           </div>
           <ChevronRight className="w-5 h-5 text-white flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
         </motion.button>
+
+        {/* ── 오늘의 채용정보 프리뷰 ── */}
+        {recentJobs.length > 0 && (
+          <motion.div
+            custom={2}
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
+            className="rounded-[32px] p-5 bg-white/50 backdrop-blur-xl border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[15px] font-extrabold text-[#191f28]">오늘의 채용정보</p>
+              <button onClick={() => navigate('/jobs')}
+                className="flex items-center gap-0.5 text-[13px] font-semibold text-[#3182f6] hover:underline">
+                전체보기 <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex flex-col gap-2">
+              {recentJobs.map(job => (
+                <button key={job.id} onClick={() => navigate('/jobs')}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-white/60 border border-white/40
+                    hover:bg-white/80 active:scale-[0.98] transition-all text-left">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[14px] font-bold text-[#191f28] truncate">{job.company_name}</span>
+                      {job.is_urgent && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold shrink-0">급구</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5 text-[12px] text-[#8b95a1]">
+                      <span className="flex items-center gap-0.5"><MapPin className="w-3 h-3" />{job.region}</span>
+                      {job.work_hours && <span>{job.work_hours}</span>}
+                    </div>
+                  </div>
+                  <span className="text-[15px] font-black text-[#3182f6] shrink-0">
+                    {job.hourly_wage.toLocaleString('ko-KR')}원
+                  </span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* ── 서브 카드 4개 그리드 ── */}
         <motion.div
