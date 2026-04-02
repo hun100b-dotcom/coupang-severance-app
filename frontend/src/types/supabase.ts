@@ -96,6 +96,7 @@ export interface JobPosting {
   region: string
   headcount: number
   hourly_wage: number
+  daily_wage: number        // 일급 금액 (원) — 20260402 추가
   work_hours: string
   description: string
   contact_phone: string
@@ -106,6 +107,46 @@ export interface JobPosting {
   created_by: string | null
   created_at: string
   updated_at: string
+}
+
+/** job_applications 테이블 한 행 — 채용 지원 내역 */
+export interface JobApplication {
+  id: string
+  user_id: string
+  job_posting_id: string
+  // 지원 상태: applied(지원완료) | confirmed(출근확정) | completed(출근완료) | cancelled(취소)
+  status: 'applied' | 'confirmed' | 'completed' | 'cancelled'
+  applied_at: string
+  work_date: string | null          // 출근 예정일 (YYYY-MM-DD)
+  work_confirmed_at: string | null  // 출근 확정 시각
+  note: string | null
+  created_at: string
+  // Supabase JOIN 시 포함되는 공고 상세 (선택)
+  job_postings?: Pick<JobPosting, 'company_name' | 'center_name' | 'region' | 'hourly_wage' | 'daily_wage' | 'work_hours'> | null
+}
+
+/** user_points 테이블 한 행 — 포인트 이력 */
+export interface UserPoint {
+  id: string
+  user_id: string
+  amount: number     // 양수: 적립 / 음수: 사용
+  reason: string     // '최초지원' | '출근완료' | '연속출근3일' | ... 등
+  ref_id: string | null
+  created_at: string
+}
+
+/** user_coupons 테이블 한 행 — 보유 쿠폰 */
+export interface UserCoupon {
+  id: string
+  user_id: string
+  coupon_type: 'coffee' | 'discount' | 'cashback'
+  title: string
+  description: string | null
+  coupon_code: string | null
+  is_used: boolean
+  expires_at: string | null
+  used_at: string | null
+  created_at: string
 }
 
 /** job_favorites 테이블 한 행 — 즐겨찾기 (회사/센터) */
