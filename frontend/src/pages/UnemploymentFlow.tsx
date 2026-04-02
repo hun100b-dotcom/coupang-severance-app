@@ -1,6 +1,6 @@
 // 실업급여 계산 페이지 — 4단계 설문 플로우 → 간편/PDF 정밀계산
 // 근거: 고용보험법 제40조(실업급여 수급요건)
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   CalcHeader, CalcStepCard, CalcStepIcon, CalcChoiceButton,
@@ -39,6 +39,12 @@ const INIT: State = {
 }
 
 export default function UnemploymentFlow() {
+  // ── SEO: 실업급여 계산기 페이지 탭 제목 설정 → 언마운트 시 기본 타이틀 복원 ──
+  useEffect(() => {
+    document.title = '실업급여 계산기 | CATCH'
+    return () => { document.title = 'CATCH - 쿠팡 일용직 퇴직금·실업급여 계산기' }
+  }, [])
+
   const [s, setS] = useState<State>(INIT)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

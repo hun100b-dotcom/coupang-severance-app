@@ -121,6 +121,12 @@ type SortKey = 'latest' | 'wage'
 // REGION_OPTIONS는 DB 데이터 로드 후 동적으로 생성합니다 (컴포넌트 내부로 이동)
 
 export default function JobsPage() {
+  // ── SEO: 채용정보 페이지 탭 제목 설정 → 언마운트 시 기본 타이틀 복원 ──
+  useEffect(() => {
+    document.title = '채용정보 | CATCH'
+    return () => { document.title = 'CATCH - 쿠팡 일용직 퇴직금·실업급여 계산기' }
+  }, [])
+
   const navigate = useNavigate()
   const { user, isLoggedIn } = useAuth()
   const [loading, setLoading] = useState(true)

@@ -2,15 +2,87 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
+
+    <!-- ───────────────────────────────────────────────
+         파비콘 & 모바일 홈화면 아이콘
+    ─────────────────────────────────────────────── -->
     <link rel="icon" type="image/png" href="/catch-logo.png" />
     <link rel="apple-touch-icon" href="/catch-logo.png" />
+
+    <!-- 뷰포트: 모바일 핀치줌 비활성화 (앱처럼 느끼게) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="description" content="일용직 퇴직금·실업급여 계산기 - 쿠팡, 마켓컬리, CJ대한통운" />
-    <title>퇴직금 한번에</title>
+
+    <!-- ───────────────────────────────────────────────
+         기본 SEO 메타태그
+         - description: 검색결과 스니펫에 표시되는 한 줄 설명
+         - keywords: 크롤러 힌트 (현재 Google은 순위에 반영 안 하지만 기타 엔진용)
+         - robots: 크롤링 및 인덱싱 허용
+         - author: 발행자 정보
+         - canonical: 중복 URL 방지 (www/non-www, query string 등)
+    ─────────────────────────────────────────────── -->
+    <title>CATCH - 쿠팡 일용직 퇴직금·실업급여 계산기</title>
+    <meta name="description" content="쿠팡·마켓컬리 일용직 퇴직금, 실업급여, 주휴수당, 연차수당 계산기. 3분만에 내 권리를 확인하세요." />
+    <meta name="keywords" content="쿠팡 퇴직금 계산기, 쿠팡 실업급여, 마켓컬리 퇴직금, 일용직 퇴직금, 쿠팡 풀필먼트 실업급여, 일용직 주휴수당, 쿠팡 연차수당" />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="CATCH" />
+    <link rel="canonical" href="https://coupang-severance-app.vercel.app" />
+
+    <!-- ───────────────────────────────────────────────
+         Open Graph (OG) 메타태그
+         - 카카오톡·페이스북·슬랙 등 SNS 공유 시 썸네일/제목/설명 제어
+         - og:image 권장 크기: 1200×630px (2:1 비율)
+    ─────────────────────────────────────────────── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="CATCH - 쿠팡 일용직 퇴직금·실업급여 계산기" />
+    <meta property="og:description" content="쿠팡·마켓컬리 일용직 근로자를 위한 퇴직금, 실업급여, 주휴수당 계산기. 내 권리를 3분 만에 확인하세요." />
+    <meta property="og:url" content="https://coupang-severance-app.vercel.app" />
+    <meta property="og:image" content="https://coupang-severance-app.vercel.app/og-image.png" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:site_name" content="CATCH" />
+
+    <!-- ───────────────────────────────────────────────
+         Twitter Card 메타태그
+         - summary_large_image: 큰 이미지 + 제목 + 설명 카드 형식
+         - 트위터/X 공유 시 표시
+    ─────────────────────────────────────────────── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CATCH - 쿠팡 일용직 퇴직금·실업급여 계산기" />
+    <meta name="twitter:description" content="쿠팡·마켓컬리 일용직 근로자를 위한 퇴직금, 실업급여, 주휴수당 계산기" />
+    <meta name="twitter:image" content="https://coupang-severance-app.vercel.app/og-image.png" />
+
+    <!-- ───────────────────────────────────────────────
+         JSON-LD 구조화 데이터 (Schema.org)
+         - Google 검색결과 리치 스니펫(별점·앱 정보 등) 생성에 활용
+         - WebApplication 타입: 앱 이름·카테고리·가격·URL 명시
+         - applicationCategory "FinanceApplication" → 금융/계산기 앱으로 분류
+    ─────────────────────────────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "CATCH",
+      "description": "쿠팡·마켓컬리 일용직 근로자를 위한 퇴직금, 실업급여, 주휴수당, 연차수당 계산기",
+      "url": "https://coupang-severance-app.vercel.app",
+      "applicationCategory": "FinanceApplication",
+      "inLanguage": "ko",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "KRW"
+      }
+    }
+    </script>
+
+    <!-- ───────────────────────────────────────────────
+         웹폰트: Pretendard (한국어 최적화 산세리프)
+         - preconnect: DNS 조회 + TCP 핸드셰이크 미리 수행해 로딩 단축
+         - crossorigin: CORS 헤더 필요한 폰트 리소스에 필수
+    ─────────────────────────────────────────────── -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   </head>
   <body>
+    <!-- React 앱 마운트 지점 — SPA 루트 -->
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

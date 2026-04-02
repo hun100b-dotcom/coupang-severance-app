@@ -66,6 +66,11 @@ const cardVariants = {
 }
 
 export default function Home() {
+  // ── SEO: 홈 페이지 탭 제목 설정 — 검색 결과에서 클릭을 유도하는 핵심 타이틀 ──
+  useEffect(() => {
+    document.title = 'CATCH - 쿠팡 일용직 퇴직금·실업급여 계산기'
+  }, [])
+
   const navigate = useNavigate()
   const { isLoggedIn } = useAuth()
   const { notices } = useNotices()

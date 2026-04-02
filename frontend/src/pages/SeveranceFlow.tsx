@@ -1,6 +1,6 @@
 // 퇴직금 계산 페이지 — 4단계 설문 플로우 → 간편/PDF 정밀계산
 // 근거: 근로자퇴직급여 보장법 제8조
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   CalcHeader, CalcStepCard, CalcStepIcon, CalcChoiceButton,
@@ -39,6 +39,12 @@ const INIT: State = {
 }
 
 export default function SeveranceFlow() {
+  // ── SEO: 페이지 진입 시 브라우저 탭 제목 변경 → 뒤로가기 시 원래대로 복원 ──
+  useEffect(() => {
+    document.title = '퇴직금 계산기 | CATCH'
+    return () => { document.title = 'CATCH - 쿠팡 일용직 퇴직금·실업급여 계산기' }
+  }, [])
+
   const [s, setS] = useState<State>(INIT)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
