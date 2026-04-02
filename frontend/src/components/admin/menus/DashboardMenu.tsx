@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { supabase } from '../../../lib/supabase'
 import { getAdminStats, getAdminAnalytics, getAdminInquiries } from '../../../lib/api'
 import type { AdminStats, AnalyticsResponse, AdminInquiry } from '../../../types/admin'
 import { logAdminAction } from '../../../lib/adminAuditLog'
@@ -63,7 +64,25 @@ export default function DashboardMenu() {
     }
   }
 
-  useEffect(() => { load() }, [range])
+  useEffect(() => {
+    // 초기 데이터 로드
+    load()
+
+    // 핵심 테이블 변경 시 대시보드 KPI 자동 갱신
+    // profiles, inquiries, reports 테이블에 변경이 생기면 통계를 다시 불러옵니다.
+    // Supabase 대시보드에서 해당 테이블들의 Realtime이 활성화되어 있어야 합니다.
+    const channel = supabase!
+      .channel('dashboard-realtime-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inquiries' }, () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reports' }, () => load())
+      .subscribe()
+
+    // 컴포넌트 언마운트 시 구독 해제 (메모리 누수 방지)
+    return () => {
+      supabase!.removeChannel(channel)
+    }
+  }, [range])
 
   if (loading) {
     return (

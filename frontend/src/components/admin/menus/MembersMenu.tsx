@@ -112,7 +112,29 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
     }
   }, [searchEmail, filterMarketing, page])
 
-  useEffect(() => { fetchMembers() }, [fetchMembers])
+  useEffect(() => {
+    // 초기 데이터 로드
+    fetchMembers()
+
+    // profiles 테이블 Realtime 구독 — INSERT/UPDATE/DELETE 모두 감지
+    // Supabase 대시보드에서 profiles 테이블 Realtime이 활성화되어 있어야 합니다.
+    const channel = supabase!
+      .channel('members-profiles-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        (_payload) => {
+          // 회원 데이터 변경 감지 시 목록 자동 갱신
+          fetchMembers()
+        }
+      )
+      .subscribe()
+
+    // 컴포넌트 언마운트 시 구독 해제 (메모리 누수 방지)
+    return () => {
+      supabase!.removeChannel(channel)
+    }
+  }, [fetchMembers])
 
   // 마스킹 해제 시도
   async function handleUnmask() {

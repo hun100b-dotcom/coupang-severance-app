@@ -1,6 +1,6 @@
 // 관리자 — 채용공고 관리 메뉴
 // 공고 목록 테이블 + 추가/수정 모달 + 삭제(soft delete) + 긴급 토글
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../contexts/AuthContext'
 import type { JobPosting } from '../../../types/supabase'
@@ -37,7 +37,7 @@ export default function JobsMenu() {
   // 필터: 전체/active/expired/deleted
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     if (!supabase) return
     setLoading(true)
     let query = supabase.from('job_postings').select('*').order('created_at', { ascending: false })
@@ -45,9 +45,31 @@ export default function JobsMenu() {
     const { data } = await query
     setJobs((data ?? []) as JobPosting[])
     setLoading(false)
-  }
+  }, [statusFilter])
 
-  useEffect(() => { fetchJobs() }, [statusFilter])
+  useEffect(() => {
+    // 초기 데이터 로드
+    fetchJobs()
+
+    // job_postings 테이블 Realtime 구독 — INSERT/UPDATE/DELETE 모두 감지
+    // Supabase 대시보드에서 job_postings 테이블 Realtime이 활성화되어 있어야 합니다.
+    const channel = supabase!
+      .channel('jobs-postings-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'job_postings' },
+        (_payload) => {
+          // 채용공고 변경 감지 시 목록 자동 갱신
+          fetchJobs()
+        }
+      )
+      .subscribe()
+
+    // 컴포넌트 언마운트 시 구독 해제 (메모리 누수 방지)
+    return () => {
+      supabase!.removeChannel(channel)
+    }
+  }, [fetchJobs])
 
   // 새 공고 추가 모달 열기
   const openCreate = () => {

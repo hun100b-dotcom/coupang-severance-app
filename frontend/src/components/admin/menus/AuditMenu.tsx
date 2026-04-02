@@ -125,7 +125,29 @@ export default function AuditMenu() {
     }
   }, [emailFilter, actionFilter, startDate, endDate, page])
 
-  useEffect(() => { fetchLogs() }, [fetchLogs])
+  useEffect(() => {
+    // 초기 데이터 로드
+    fetchLogs()
+
+    // audit_logs 테이블 Realtime 구독 — 새 로그 INSERT 시 자동 갱신
+    // Supabase 대시보드에서 audit_logs 테이블 Realtime이 활성화되어 있어야 합니다.
+    const channel = supabase!
+      .channel('audit-logs-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'audit_logs' },
+        (_payload) => {
+          // 감사 로그 변경 감지 시 목록 자동 갱신
+          fetchLogs()
+        }
+      )
+      .subscribe()
+
+    // 컴포넌트 언마운트 시 구독 해제 (메모리 누수 방지)
+    return () => {
+      supabase!.removeChannel(channel)
+    }
+  }, [fetchLogs])
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
