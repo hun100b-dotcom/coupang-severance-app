@@ -10,7 +10,7 @@ import {
   Star, ChevronRight, ChevronDown, Send, Rocket, Map,
   CheckCircle2, LogIn,
 } from 'lucide-react'
-// import { supabase } from '../lib/supabase'  // TODO: DB 공고 로드 시 활성화
+import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { listFavorites, addFavorite, removeFavorite, isFavorited } from '../lib/jobFavorites'
 import { applyToJob, getAppliedJobIds } from '../lib/jobApplications'
@@ -43,108 +43,63 @@ const HERO_COPIES = [
   { text: '매일 새로 올라오는 채용 공고를 놓치지 마세요', color: 'text-violet-200' },
 ]
 
-// ── 하드코딩 예시 데이터 6건 ──
-const SAMPLE_JOBS: JobCardData[] = [
-  {
-    id: 's1', company_name: '쿠팡풀필먼트서비스', center_name: '이천1물류센터',
-    region: '경기 이천', headcount: 30, hourly_wage: 12200, work_hours: '14:00~23:00',
-    contact_phone: '010-1234-5678', external_link: '', is_urgent: true,
-    expires_at: '2026-04-20', status: 'active', created_by: null,
-    created_at: '2026-04-02T06:00:00Z', updated_at: '2026-04-02T06:00:00Z',
-    description: '상하차 및 분류 작업\n중식 제공, 통근버스 운행\n4대보험 가입, 주 5일 근무\n작업복 및 안전장비 지급',
-    logo_url: '/logos/coupang.svg', daily_wage: 109800,
-    recruit_type: 'urgent_today', address_detail: '이천시 마장면',
-    benefits: ['4대보험', '중식제공', '셔틀버스', '작업복지급'],
-    apply_methods: [
-      { type: 'phone', label: '전화 지원', value: '010-1234-5678' },
-      { type: 'sms', label: '문자 지원', value: '010-1234-5678' },
-      { type: 'kakao', label: '카카오톡 문의', value: 'https://open.kakao.com/example' },
-    ],
-    map_query: '경기도 이천시 마장면 쿠팡 이천물류센터',
-  },
-  {
-    id: 's2', company_name: '컬리', center_name: '장지 풀콜드센터',
-    region: '서울 송파', headcount: 15, hourly_wage: 13000, work_hours: '22:00~07:00',
-    contact_phone: '010-2345-6789', external_link: 'https://www.kurly.com/careers', is_urgent: true,
-    expires_at: '2026-04-18', status: 'active', created_by: null,
-    created_at: '2026-04-02T05:00:00Z', updated_at: '2026-04-02T05:00:00Z',
-    description: '새벽배송 상품 포장 작업\n야간수당 별도, 석식 제공\n지하철 장지역 도보 5분\n냉장환경 근무',
-    logo_url: '/logos/kurly.png', daily_wage: 117000,
-    recruit_type: 'urgent_today', address_detail: '송파구 장지동',
-    benefits: ['야간수당', '석식제공', '역세권', '4대보험'],
-    apply_methods: [
-      { type: 'phone', label: '전화 지원', value: '010-2345-6789' },
-      { type: 'kakao', label: '카카오톡 문의', value: 'https://open.kakao.com/example2' },
-      { type: 'landing', label: '채용페이지 바로가기', value: 'https://www.kurly.com/careers' },
-    ],
-    map_query: '서울 송파구 장지동 컬리 풀콜드센터',
-  },
-  {
-    id: 's3', company_name: '쿠팡풀필먼트서비스', center_name: '덕평물류센터',
-    region: '경기 이천', headcount: 20, hourly_wage: 11800, work_hours: '09:00~18:00',
-    contact_phone: '010-3456-7890', external_link: '', is_urgent: true,
-    expires_at: '2026-04-25', status: 'active', created_by: null,
-    created_at: '2026-04-02T04:00:00Z', updated_at: '2026-04-02T04:00:00Z',
-    description: '주간 분류 작업\n석식 제공, 주차 가능\n4대보험 가입, 셔틀버스 운행',
-    logo_url: '/logos/coupang.svg', daily_wage: 106200,
-    recruit_type: 'urgent_tomorrow', address_detail: '이천시 백사면',
-    benefits: ['4대보험', '석식제공', '주차가능', '셔틀버스'],
-    apply_methods: [
-      { type: 'phone', label: '전화 지원', value: '010-3456-7890' },
-      { type: 'sms', label: '문자 지원', value: '010-3456-7890' },
-    ],
-    map_query: '경기도 이천시 백사면 쿠팡 덕평물류센터',
-  },
-  {
-    id: 's4', company_name: 'CJ대한통운', center_name: '군포허브',
-    region: '경기 군포', headcount: 15, hourly_wage: 11500, work_hours: '08:00~17:00',
-    contact_phone: '010-4567-8901', external_link: 'https://www.cjlogistics.com/ko/careers', is_urgent: true,
-    expires_at: '2026-04-22', status: 'active', created_by: null,
-    created_at: '2026-04-02T03:00:00Z', updated_at: '2026-04-02T03:00:00Z',
-    description: '택배 분류 작업\n중식 제공, 주차 가능\n4대보험 가입, 경력무관',
-    logo_url: '/logos/cj.svg', daily_wage: 103500,
-    recruit_type: 'urgent_tomorrow', address_detail: '군포시 산본동',
-    benefits: ['4대보험', '중식제공', '주차가능', '경력무관'],
-    apply_methods: [
-      { type: 'phone', label: '전화 지원', value: '010-4567-8901' },
-      { type: 'landing', label: '채용페이지 바로가기', value: 'https://www.cjlogistics.com/ko/careers' },
-    ],
-    map_query: '경기도 군포시 산본동 CJ대한통운 군포허브',
-  },
-  {
-    id: 's5', company_name: '컬리', center_name: '김포 물류센터',
-    region: '경기 김포', headcount: 25, hourly_wage: 12500, work_hours: '06:00~15:00',
-    contact_phone: '010-5678-9012', external_link: '', is_urgent: false,
-    expires_at: '2026-04-30', status: 'active', created_by: null,
-    created_at: '2026-04-02T02:00:00Z', updated_at: '2026-04-02T02:00:00Z',
-    description: '신선식품 검수 및 포장\n조식 제공, 통근버스 운행\n냉장환경 근무(방한복 지급)',
-    logo_url: '/logos/kurly.png', daily_wage: 112500,
-    recruit_type: 'regular', address_detail: '김포시 양촌읍',
-    benefits: ['조식제공', '셔틀버스', '방한복지급', '4대보험'],
-    apply_methods: [
-      { type: 'phone', label: '전화 지원', value: '010-5678-9012' },
-      { type: 'kakao', label: '카카오톡 문의', value: 'https://open.kakao.com/example3' },
-    ],
-    map_query: '경기도 김포시 양촌읍 컬리 김포물류센터',
-  },
-  {
-    id: 's6', company_name: '쿠팡풀필먼트서비스', center_name: '광주물류센터',
-    region: '경기 광주', headcount: 40, hourly_wage: 12000, work_hours: '09:00~18:00',
-    contact_phone: '010-6789-0123', external_link: '', is_urgent: false,
-    expires_at: '2026-05-10', status: 'active', created_by: null,
-    created_at: '2026-04-02T01:00:00Z', updated_at: '2026-04-02T01:00:00Z',
-    description: '상하차 및 포장 작업\n중식 제공, 셔틀버스 운행\n4대보험, 장기근무 우대',
-    logo_url: '/logos/coupang.svg', daily_wage: 108000,
-    recruit_type: 'regular', address_detail: '광주시 오포읍',
-    benefits: ['4대보험', '중식제공', '셔틀버스', '장기근무우대'],
-    apply_methods: [
-      { type: 'phone', label: '전화 지원', value: '010-6789-0123' },
-      { type: 'sms', label: '문자 지원', value: '010-6789-0123' },
-      { type: 'landing', label: '채용페이지 바로가기', value: 'https://www.coupang.com/careers' },
-    ],
-    map_query: '경기도 광주시 오포읍 쿠팡 광주물류센터',
-  },
-]
+// ── 회사명 → 로고 URL 매핑 ──
+// DB에 logo_url 컬럼이 없으므로 company_name으로 로컬 에셋을 찾음
+const COMPANY_LOGOS: Record<string, string> = {
+  '쿠팡': '/logos/coupang.svg',
+  '쿠팡풀필먼트서비스': '/logos/coupang.svg',
+  'CJ대한통운': '/logos/cj.svg',
+  'CJ': '/logos/cj.svg',
+  '컬리': '/logos/kurly.png',
+  '마켓컬리': '/logos/kurly.png',
+  'GS리테일': '/logos/gs.svg',
+  '롯데': '/logos/lotte.svg',
+}
+
+// ── DB JobPosting → UI JobCardData 변환 함수 ──
+// job_postings 테이블에는 logo_url, benefits, apply_methods 컬럼이 없으므로
+// company_name 및 다른 컬럼으로부터 UI에 필요한 값을 파생합니다.
+function toCardData(job: JobPosting): JobCardData {
+  // 오늘 날짜 (KST 기준 YYYY-MM-DD)
+  const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })
+  const createdStr = (job.created_at ?? '').slice(0, 10)
+
+  // recruit_type: is_urgent 여부 + 등록일이 오늘인지로 판별
+  // 오늘 등록된 급구 공고 → urgent_today / 이전에 등록된 급구 → urgent_tomorrow / 일반 → regular
+  let recruit_type: 'urgent_today' | 'urgent_tomorrow' | 'regular' = 'regular'
+  if (job.is_urgent) {
+    recruit_type = createdStr === todayStr ? 'urgent_today' : 'urgent_tomorrow'
+  }
+
+  // 로고: 회사명에 키워드가 포함되면 해당 로고, 없으면 기본 아이콘
+  const logoKey = Object.keys(COMPANY_LOGOS).find(k => job.company_name.includes(k))
+  const logo_url = logoKey ? COMPANY_LOGOS[logoKey] : '/logos/default.svg'
+
+  // 복리후생: description에서 파싱 (각 줄이 혜택 항목인 경우)
+  // description이 없거나 파싱 불가 시 빈 배열 → UI에서 description 텍스트로 대체 표시
+  const benefits: string[] = []
+
+  // 지원 방법: contact_phone / external_link로부터 빌드
+  const apply_methods: ApplyMethod[] = []
+  if (job.contact_phone) {
+    apply_methods.push({ type: 'phone', label: '전화 지원', value: job.contact_phone })
+    apply_methods.push({ type: 'sms', label: '문자 지원', value: job.contact_phone })
+  }
+  if (job.external_link) {
+    apply_methods.push({ type: 'landing', label: '채용페이지 바로가기', value: job.external_link })
+  }
+
+  return {
+    ...job,
+    logo_url,
+    recruit_type,
+    address_detail: job.region,  // DB에 상세주소 없음 → region으로 대체
+    benefits,
+    apply_methods,
+    // 카카오맵 검색어: "지역 회사명 센터명"
+    map_query: `${job.region} ${job.company_name} ${job.center_name}`,
+  }
+}
 
 // ── 섹션 설정 ──
 const SECTIONS = [
@@ -163,12 +118,16 @@ const CTA_MAP: Record<string, { icon: typeof Phone; bg: string; text: string }> 
 }
 
 type SortKey = 'latest' | 'wage'
-const REGION_OPTIONS = ['전체', '경기 이천', '경기 김포', '경기 광주', '경기 군포', '서울 송파']
+// REGION_OPTIONS는 DB 데이터 로드 후 동적으로 생성합니다 (컴포넌트 내부로 이동)
 
 export default function JobsPage() {
   const navigate = useNavigate()
   const { user, isLoggedIn } = useAuth()
   const [loading, setLoading] = useState(true)
+  // ── DB에서 불러온 공고 목록 (변환된 JobCardData 형태) ──
+  const [allJobs, setAllJobs] = useState<JobCardData[]>([])
+  // 에러 메시지 (DB 조회 실패 시)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [selectedJob, setSelectedJob] = useState<JobCardData | null>(null)
   const [regionFilter, setRegionFilter] = useState('전체')
   const [regionOpen, setRegionOpen] = useState(false)
@@ -191,6 +150,54 @@ export default function JobsPage() {
     return () => clearInterval(timer)
   }, [])
 
+  // ── Supabase job_postings 조회 함수 ──
+  // status = 'active' 인 공고만 가져와 JobCardData로 변환
+  const fetchJobs = async () => {
+    if (!supabase) { setLoading(false); return }
+    setFetchError(null)
+    try {
+      const { data, error } = await supabase
+        .from('job_postings')
+        .select('*')
+        .eq('status', 'active')        // 활성 공고만
+        .order('is_urgent', { ascending: false })  // 급구 먼저
+        .order('created_at', { ascending: false })  // 최신순
+      if (error) throw error
+      // DB 데이터를 UI 카드 데이터 형태로 변환
+      setAllJobs((data ?? []).map(job => toCardData(job as JobPosting)))
+    } catch (err) {
+      console.error('[공고 로드 오류]', err)
+      setFetchError('공고를 불러오지 못했어요. 잠시 후 다시 시도해주세요.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ── 최초 공고 로드 ──
+  useEffect(() => {
+    fetchJobs()
+  }, [])
+
+  // ── Supabase Realtime 구독 ──
+  // 어드민이 공고를 추가/수정/삭제하면 채용탭에 즉시 반영
+  useEffect(() => {
+    if (!supabase) return
+    const sb = supabase
+    const channel = sb
+      .channel('job_postings_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'job_postings' },
+        () => {
+          // 변경 감지 시 전체 목록 재조회
+          fetchJobs()
+        }
+      )
+      .subscribe()
+
+    return () => { sb.removeChannel(channel) }
+  }, [])
+
   // 즐겨찾기 + 지원 현황 동시 로드
   useEffect(() => {
     if (!isLoggedIn || !user) return
@@ -198,9 +205,12 @@ export default function JobsPage() {
     getAppliedJobIds(user.id).then(setAppliedMap)
   }, [isLoggedIn, user])
 
-  useEffect(() => { setLoading(false) }, [])
-
-  const allJobs = SAMPLE_JOBS
+  // ── 지역 옵션 동적 생성 ──
+  // DB에서 불러온 공고의 region 값으로부터 중복 제거 후 생성
+  const REGION_OPTIONS = useMemo(
+    () => ['전체', ...Array.from(new Set(allJobs.map(j => j.region))).sort()],
+    [allJobs]
+  )
 
   // 검색 + 필터 + 정렬
   const filtered = useMemo(() => {
@@ -247,12 +257,6 @@ export default function JobsPage() {
 
     // 이미 지원한 공고 → 중복 방지
     if (appliedMap[jobId]) return
-
-    // 샘플 데이터(s1~s6)는 DB에 없으므로 안내 메시지 표시
-    if (jobId.startsWith('s')) {
-      alert('현재 샘플 공고입니다. 실제 공고가 올라오면 지원하실 수 있어요!')
-      return
-    }
 
     setApplyingId(jobId)
     try {
@@ -394,6 +398,18 @@ export default function JobsPage() {
         {loading ? (
           <div className="flex items-center justify-center py-20 gap-2 text-[#8b95a1]">
             <Loader2 className="w-5 h-5 animate-spin" /><span className="text-[14px]">불러오는 중...</span>
+          </div>
+        ) : fetchError ? (
+          // DB 조회 실패 시 에러 카드 표시
+          <div className="rounded-[28px] p-10 bg-white/60 backdrop-blur-md border border-red-100 text-center">
+            <p className="text-[15px] font-bold text-red-500 mb-2">⚠️ 오류</p>
+            <p className="text-[13px] text-[#8b95a1]">{fetchError}</p>
+            <button
+              onClick={fetchJobs}
+              className="mt-4 px-5 py-2 rounded-xl bg-[#3182f6] text-white text-[13px] font-bold"
+            >
+              다시 불러오기
+            </button>
           </div>
         ) : sections.length === 0 ? (
           <div className="rounded-[28px] p-10 bg-white/60 backdrop-blur-md border border-white/60 text-center">

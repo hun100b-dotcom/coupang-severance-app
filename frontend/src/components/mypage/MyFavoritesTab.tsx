@@ -1,6 +1,15 @@
 // 📌 즐겨찾기 탭 — 저장한 채용 공고 목록
 // job_favorites 테이블에서 내가 저장한 회사/센터 목록과
 // 해당 회사의 현재 활성 공고를 함께 보여줍니다.
+//
+// ⚠️ "CJ만 나오는 문제" 원인 분석:
+//   - 이 탭은 job_favorites(내 즐겨찾기) → company_name 추출 → job_postings IN(company_names) 쿼리
+//   - 쿼리 자체는 user_id 기준으로 정상 동작함
+//   - CJ만 표시되는 이유: job_postings DB에 CJ 공고만 존재하기 때문
+//   - JobsPage가 SAMPLE_JOBS 하드코딩을 사용하는 동안 즐겨찾기 추가 시
+//     favorite_value에 "쿠팡풀필먼트서비스::이천1물류센터" 등이 저장되었지만
+//     실제 job_postings 테이블엔 CJ 공고만 있어 나머지가 히트되지 않음
+//   - 해결: JobsPage를 DB 연동으로 교체 + 어드민에서 실제 공고 등록
 import { useEffect, useState } from 'react'
 import { Star, MapPin, Clock, Loader2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
