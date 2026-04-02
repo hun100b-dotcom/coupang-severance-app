@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../contexts/AuthContext'
+import { awardPoints } from '../../../lib/jobApplications'
 import type { JobPosting } from '../../../types/supabase'
 
 // ── 공고 등록/수정 폼 타입 ──
@@ -13,6 +14,7 @@ interface JobForm {
   region: string
   headcount: number
   hourly_wage: number
+  daily_wage: number    // 일급 (시급 × 근무시간 계산 없이 직접 입력)
   work_hours: string
   description: string
   contact_phone: string
@@ -23,7 +25,7 @@ interface JobForm {
 
 const defaultForm: JobForm = {
   company_name: '', center_name: '', region: '',
-  headcount: 0, hourly_wage: 0, work_hours: '',
+  headcount: 0, hourly_wage: 0, daily_wage: 0, work_hours: '',
   description: '', contact_phone: '', external_link: '',
   is_urgent: false, expires_at: '',
 }
@@ -163,6 +165,7 @@ export default function JobsMenu() {
       region: job.region,
       headcount: job.headcount,
       hourly_wage: job.hourly_wage,
+      daily_wage: job.daily_wage ?? 0,   // DB에 저장된 일급 (없으면 0)
       work_hours: job.work_hours,
       description: job.description,
       contact_phone: job.contact_phone,
@@ -183,6 +186,7 @@ export default function JobsMenu() {
       region: form.region.trim(),
       headcount: form.headcount,
       hourly_wage: form.hourly_wage,
+      daily_wage: form.daily_wage,          // 일급 저장
       work_hours: form.work_hours.trim(),
       description: form.description.trim(),
       contact_phone: form.contact_phone.trim(),
@@ -225,6 +229,7 @@ export default function JobsMenu() {
 
   // 지원자 상태 변경 (어드민이 직접 처리)
   // newStatus: 'confirmed' (출근확정), 'completed' (출근완료), 'cancelled' (취소)
+  // 출근완료 처리 시 → 해당 지원자에게 포인트 +100P 자동 지급
   const handleUpdateStatus = async (
     appId: string,
     newStatus: 'confirmed' | 'completed' | 'cancelled',
@@ -243,6 +248,17 @@ export default function JobsMenu() {
         .update(updatePayload)
         .eq('id', appId)
       if (error) throw error
+
+      // 출근완료 처리 시 → 지원자 user_id 찾아서 포인트 +100P 지급
+      if (newStatus === 'completed') {
+        // applicants 배열에서 해당 지원 건의 user_id 조회
+        const targetApp = applicants.find(a => a.id === appId)
+        if (targetApp?.user_id) {
+          // 실패해도 상태 변경 자체는 성공 처리 (조용히 에러 로그만 기록)
+          await awardPoints(targetApp.user_id, 100, '출근 완료 (관리자 확인)', appId)
+        }
+      }
+
       // 목록 즉시 갱신
       await fetchApplicants()
     } catch (err) {
@@ -678,12 +694,18 @@ export default function JobsMenu() {
                 placeholder="경기 이천" style={inputStyle} />
             </label>
 
-            {/* 시급 + 인원 + 근무시간 */}
+            {/* 시급 + 일급 + 인원 + 근무시간 */}
             <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
               <label style={{ flex: 1 }}>
                 <span style={labelSpan}>시급 (원)</span>
                 <input type="number" value={form.hourly_wage || ''} onChange={e => setForm(f => ({ ...f, hourly_wage: parseInt(e.target.value) || 0 }))}
                   placeholder="12000" style={inputStyle} />
+              </label>
+              {/* 일급: 시급 × 근무시간 계산 없이 직접 입력 (예: 일당 계약직인 경우) */}
+              <label style={{ flex: 1 }}>
+                <span style={labelSpan}>일급 (원)</span>
+                <input type="number" value={form.daily_wage || ''} onChange={e => setForm(f => ({ ...f, daily_wage: parseInt(e.target.value) || 0 }))}
+                  placeholder="120000" style={inputStyle} />
               </label>
               <label style={{ flex: 1 }}>
                 <span style={labelSpan}>모집인원</span>

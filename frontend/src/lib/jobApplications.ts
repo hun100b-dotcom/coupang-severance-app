@@ -42,6 +42,7 @@ export async function hasApplied(userId: string, jobPostingId: string): Promise<
 
 // ── 지원하기 (공고 지원) ──
 // 성공 시 생성된 application의 id 반환, 실패 시 null
+// INSERT 성공 후 포인트 +50P 자동 지급 (공고 지원 이벤트)
 export async function applyToJob(
   userId: string,
   jobPostingId: string,
@@ -57,6 +58,10 @@ export async function applyToJob(
     .select('id')
     .single()
   if (error) { console.error('[지원하기 오류]', error); return null }
+
+  // 지원 성공 시 포인트 +50P 지급 (실패해도 지원 자체는 성공 처리)
+  await awardPoints(userId, 50, '채용 공고 지원', jobPostingId)
+
   return data?.id ?? null
 }
 
@@ -73,16 +78,18 @@ export async function cancelApplication(applicationId: string): Promise<boolean>
 
 // ── 포인트 지급 ──
 // user_points 테이블에 한 행 INSERT (amount > 0 = 적립, < 0 = 차감)
-// MyApplicationsTab의 셀프 체크인 시, 또는 어드민 처리 후 자동 호출
+// MyApplicationsTab의 셀프 체크인 시, 어드민 출근완료 처리 시, 지원하기 시 호출
+// refId: 관련 공고 ID 또는 지원 ID (추적용, 선택)
 export async function awardPoints(
   userId: string,
   amount: number,
   reason: string,
+  refId?: string,
 ): Promise<boolean> {
   if (!supabase) return false
   const { error } = await supabase
     .from('user_points')
-    .insert({ user_id: userId, amount, reason })
+    .insert({ user_id: userId, amount, reason, ref_id: refId ?? null })
   if (error) { console.error('[포인트 지급 오류]', error); return false }
   return true
 }

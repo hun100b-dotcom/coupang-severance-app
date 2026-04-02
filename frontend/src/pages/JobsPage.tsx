@@ -149,6 +149,9 @@ export default function JobsPage() {
   const [applyingId, setApplyingId] = useState<string | null>(null)
   // 로그인 유도 모달 표시 여부
   const [loginPromptOpen, setLoginPromptOpen] = useState(false)
+  // 인라인 토스트 메시지 (alert 대체 — 2초 후 자동 소멸)
+  const [toastMsg, setToastMsg] = useState<string | null>(null)
+  const [toastType, setToastType] = useState<'success' | 'error'>('success')
 
   // 히어로 문구 로테이션
   useEffect(() => {
@@ -240,14 +243,23 @@ export default function JobsPage() {
   const sections = SECTIONS.map(s => ({ ...s, jobs: filtered.filter(j => j.recruit_type === s.type) })).filter(s => s.jobs.length > 0)
 
   // 즐겨찾기 토글
+  // 로그인하지 않은 상태에서 별 클릭 시 → 로그인 유도 모달 표시
   const toggleFav = async (type: 'company' | 'center', value: string) => {
-    if (!isLoggedIn || !user) return
+    if (!isLoggedIn || !user) { setLoginPromptOpen(true); return }
     if (isFavorited(favorites, type, value)) {
       await removeFavorite(user.id, type, value)
     } else {
       await addFavorite(user.id, type, value)
     }
     setFavorites(await listFavorites(user.id))
+  }
+
+  // ── 인라인 토스트 표시 헬퍼 ──
+  // alert() 대신 상단 fixed 배너로 2초간 표시 후 자동 사라짐
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToastMsg(msg)
+    setToastType(type)
+    setTimeout(() => setToastMsg(null), 2000)
   }
 
   // ── 지원하기 핸들러 ──
@@ -268,11 +280,11 @@ export default function JobsPage() {
     try {
       const appId = await applyToJob(user.id, jobId)
       if (appId) {
-        // 성공 시 지원 목록 갱신
+        // 성공 시 지원 목록 갱신 + 토스트 표시 (+50P 자동 지급은 applyToJob 내부에서 처리)
         setAppliedMap(prev => ({ ...prev, [jobId]: appId }))
-        alert('지원이 완료됐어요! 마이페이지 → 지원현황에서 확인하세요.')
+        showToast('지원 완료! (+50P) 마이페이지 → 지원현황에서 확인하세요.', 'success')
       } else {
-        alert('지원 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
+        showToast('지원 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error')
       }
     } finally {
       setApplyingId(null)
@@ -284,6 +296,28 @@ export default function JobsPage() {
 
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-28">
+
+      {/* ── 인라인 토스트 배너 (alert 대체) ──
+          fixed 상단 배너: 2초간 표시 후 AnimatePresence로 부드럽게 사라짐 */}
+      <AnimatePresence>
+        {toastMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className={`fixed top-4 left-1/2 -translate-x-1/2 z-[300] w-[calc(100%-32px)] max-w-[428px]
+              px-4 py-3 rounded-2xl shadow-lg text-sm font-semibold text-center
+              ${toastType === 'success'
+                ? 'bg-[#3182f6] text-white'
+                : 'bg-red-500 text-white'
+              }`}
+          >
+            {toastMsg}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="w-full max-w-[460px] flex flex-col gap-4">
 
         {/* ── 히어로 카드 — 생동감 있는 그래디언트 + 로테이션 문구 ── */}

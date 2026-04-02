@@ -11,7 +11,7 @@
 //     실제 job_postings 테이블엔 CJ 공고만 있어 나머지가 히트되지 않음
 //   - 해결: JobsPage를 DB 연동으로 교체 + 어드민에서 실제 공고 등록
 import { useEffect, useState } from 'react'
-import { Star, MapPin, Clock, Loader2 } from 'lucide-react'
+import { Star, MapPin, Clock, Loader2, AlertCircle, RefreshCw } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { listFavorites, removeFavorite } from '../../lib/jobFavorites'
 import type { JobFavorite, JobPosting } from '../../types/supabase'
@@ -26,10 +26,14 @@ export default function MyFavoritesTab({ userId }: Props) {
   // 즐겨찾기한 회사의 현재 공고
   const [jobs, setJobs] = useState<JobPosting[]>([])
   const [loading, setLoading] = useState(true)
+  // 데이터 로드 실패 시 에러 메시지 (null이면 정상)
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   // 데이터 불러오기 (즐겨찾기 + 해당 회사 공고)
+  // try-catch로 에러 상태를 관리하여 빈 화면 대신 에러 UI 표시
   const loadData = async () => {
     setLoading(true)
+    setFetchError(null)
     try {
       // 1단계: 즐겨찾기 목록 조회
       const favs = await listFavorites(userId)
@@ -51,7 +55,7 @@ export default function MyFavoritesTab({ userId }: Props) {
 
       if (companyNames.length === 0) { setJobs([]); return }
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('job_postings')
         .select('*')
         .in('company_name', companyNames)
@@ -59,9 +63,13 @@ export default function MyFavoritesTab({ userId }: Props) {
         .order('is_urgent', { ascending: false })
         .order('created_at', { ascending: false })
 
+      // Supabase 쿼리 에러 시 throw하여 catch 블록으로 이동
+      if (error) throw error
+
       setJobs((data ?? []) as JobPosting[])
     } catch (err) {
       console.error('[즐겨찾기 탭 오류]', err)
+      setFetchError('불러오기 실패. 다시 시도해주세요.')
     } finally {
       setLoading(false)
     }
@@ -81,6 +89,26 @@ export default function MyFavoritesTab({ userId }: Props) {
       <div className="flex items-center justify-center py-16">
         <Loader2 className="w-5 h-5 animate-spin text-[#3182f6]" />
         <span className="ml-2 text-[13px] text-[#8b95a1]">불러오는 중...</span>
+      </div>
+    )
+  }
+
+  // ── 에러 상태 UI ──
+  // 빈 화면 대신 에러 메시지 + 재시도 버튼 표시
+  if (fetchError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-4">
+        <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
+          <AlertCircle className="w-8 h-8 text-red-300" />
+        </div>
+        <p className="text-[14px] font-bold text-[#4e5968]">{fetchError}</p>
+        <button
+          onClick={loadData}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#3182f6] text-white text-[13px] font-bold"
+        >
+          <RefreshCw className="w-4 h-4" />
+          다시 시도
+        </button>
       </div>
     )
   }

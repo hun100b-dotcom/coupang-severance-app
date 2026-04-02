@@ -4,7 +4,7 @@
 // ✅ Supabase Realtime 구독으로 어드민이 상태를 바꾸면 즉시 반영
 // ✅ 출근확정 상태의 공고 중 오늘이 출근일이면 "출근완료 체크" 버튼 표시
 import { useEffect, useState, useCallback } from 'react'
-import { MapPin, Clock, Loader2, CheckCircle2, XCircle, Calendar, UserCheck } from 'lucide-react'
+import { MapPin, Clock, Loader2, CheckCircle2, XCircle, Calendar, UserCheck, AlertCircle, RefreshCw } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { listApplications } from '../../lib/jobApplications'
 import { awardPoints } from '../../lib/jobApplications'
@@ -54,16 +54,26 @@ const FILTER_TABS: { key: FilterStatus; label: string }[] = [
 export default function MyApplicationsTab({ userId }: Props) {
   const [applications, setApplications] = useState<JobApplication[]>([])
   const [loading, setLoading] = useState(true)
+  // 데이터 로드 실패 시 에러 메시지 (null이면 정상)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   // 현재 선택된 상태 필터
   const [filter, setFilter] = useState<FilterStatus>('all')
   // 셀프 체크인 처리 중인 지원 ID (중복 클릭 방지)
   const [checkingIn, setCheckingIn] = useState<string | null>(null)
 
   // ── 데이터 로드 함수 (Realtime 이벤트 수신 시에도 재사용) ──
+  // try-catch로 감싸서 네트워크 오류 / Supabase 에러를 화면에 표시
   const fetchApplications = useCallback(async () => {
-    const data = await listApplications(userId)
-    setApplications(data)
-    setLoading(false)
+    setFetchError(null)
+    try {
+      const data = await listApplications(userId)
+      setApplications(data)
+    } catch (err) {
+      console.error('[지원현황 로드 오류]', err)
+      setFetchError('불러오기 실패. 다시 시도해주세요.')
+    } finally {
+      setLoading(false)
+    }
   }, [userId])
 
   // ── 최초 로드 ──
@@ -147,6 +157,26 @@ export default function MyApplicationsTab({ userId }: Props) {
       <div className="flex items-center justify-center py-16">
         <Loader2 className="w-5 h-5 animate-spin text-[#3182f6]" />
         <span className="ml-2 text-[13px] text-[#8b95a1]">불러오는 중...</span>
+      </div>
+    )
+  }
+
+  // ── 에러 상태 UI ──
+  // 네트워크 오류 또는 Supabase 에러 발생 시 재시도 버튼 표시
+  if (fetchError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-4">
+        <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
+          <AlertCircle className="w-8 h-8 text-red-300" />
+        </div>
+        <p className="text-[14px] font-bold text-[#4e5968]">{fetchError}</p>
+        <button
+          onClick={() => { setLoading(true); fetchApplications() }}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#3182f6] text-white text-[13px] font-bold"
+        >
+          <RefreshCw className="w-4 h-4" />
+          다시 시도
+        </button>
       </div>
     )
   }

@@ -82,19 +82,35 @@ export default function Home() {
   const [scrolled, setScrolled] = useState(false)
   const animatedCount = useCountUp(count)
 
-  // 채용정보 프리뷰 (최신 3건)
+  // 채용정보 프리뷰 (is_urgent=true 우선, 최대 3건)
   const [recentJobs, setRecentJobs] = useState<JobPosting[]>([])
-  useEffect(() => {
-    if (!supabase) return
-    supabase
-      .from('job_postings')
-      .select('*')
-      .eq('status', 'active')
-      .order('is_urgent', { ascending: false })
-      .order('created_at', { ascending: false })
-      .limit(3)
-      .then(({ data }) => setRecentJobs((data ?? []) as JobPosting[]))
+  const [jobsLoading, setJobsLoading] = useState(true)   // 로딩 상태 (스켈레톤 표시용)
+  const [jobsError, setJobsError] = useState(false)       // 에러 상태 (재시도 버튼 표시용)
+
+  // 채용 프리뷰 로드 함수 (에러 시 재시도 가능하도록 분리)
+  const fetchRecentJobs = useCallback(async () => {
+    if (!supabase) { setJobsLoading(false); return }
+    setJobsLoading(true)
+    setJobsError(false)
+    try {
+      const { data, error } = await supabase
+        .from('job_postings')
+        .select('*')
+        .eq('status', 'active')
+        .order('is_urgent', { ascending: false })  // 급구 공고 우선
+        .order('created_at', { ascending: false })
+        .limit(3)
+      if (error) throw error
+      setRecentJobs((data ?? []) as JobPosting[])
+    } catch (err) {
+      console.error('[홈 채용 프리뷰 오류]', err)
+      setJobsError(true)
+    } finally {
+      setJobsLoading(false)
+    }
   }, [])
+
+  useEffect(() => { fetchRecentJobs() }, [fetchRecentJobs])
 
   // CMS 공지/팝업 상태
   const [annoText, setAnnoText] = useState('')
@@ -369,7 +385,8 @@ export default function Home() {
         </motion.button>
 
         {/* ── 오늘의 채용정보 프리뷰 ── */}
-        {recentJobs.length > 0 && (
+        {/* 로딩 중 / 에러 / 공고 있을 때만 카드 표시 */}
+        {(jobsLoading || jobsError || recentJobs.length > 0) && (
           <motion.div
             custom={2}
             variants={cardVariants}
@@ -381,44 +398,85 @@ export default function Home() {
               <p className="text-[15px] font-extrabold text-[#191f28]">오늘의 채용정보</p>
               <button onClick={() => navigate('/jobs')}
                 className="flex items-center gap-0.5 text-[13px] font-semibold text-[#3182f6] hover:underline">
-                전체보기 <ChevronRight className="w-4 h-4" />
+                더 보기 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="flex flex-col gap-2">
-              {recentJobs.map(job => (
-                <button key={job.id} onClick={() => navigate('/jobs')}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-white/60 border border-white/40
-                    hover:bg-white/80 active:scale-[0.98] transition-all text-left">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[14px] font-bold text-[#191f28] truncate">{job.company_name}</span>
-                      {job.is_urgent && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold shrink-0">급구</span>
+
+            {/* 로딩 스켈레톤 */}
+            {jobsLoading && (
+              <div className="flex flex-col gap-2">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-white/60 border border-white/40">
+                    <div className="flex-1 flex flex-col gap-1.5">
+                      <div className="h-3.5 w-28 rounded-lg bg-gray-200/70 animate-pulse" />
+                      <div className="h-3 w-20 rounded-lg bg-gray-200/50 animate-pulse" />
+                    </div>
+                    <div className="h-5 w-16 rounded-lg bg-gray-200/60 animate-pulse shrink-0" />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 에러 상태 — 재시도 버튼 표시 */}
+            {!jobsLoading && jobsError && (
+              <div className="flex flex-col items-center gap-2 py-4">
+                <p className="text-[13px] text-[#8b95a1]">공고를 불러오지 못했어요</p>
+                <button
+                  onClick={fetchRecentJobs}
+                  className="text-[12px] font-semibold text-[#3182f6] hover:underline"
+                >
+                  다시 시도
+                </button>
+              </div>
+            )}
+
+            {/* 공고 카드 목록 */}
+            {!jobsLoading && !jobsError && (
+              <div className="flex flex-col gap-2">
+                {recentJobs.map(job => (
+                  <button key={job.id} onClick={() => navigate('/jobs')}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-white/60 border border-white/40
+                      hover:bg-white/80 active:scale-[0.98] transition-all text-left">
+                    <div className="flex-1 min-w-0">
+                      {/* 회사명 + 급구 뱃지 */}
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[14px] font-bold text-[#191f28] truncate">{job.company_name}</span>
+                        {job.is_urgent && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold shrink-0">급구</span>
+                        )}
+                      </div>
+                      {/* 센터명 */}
+                      {job.center_name && (
+                        <p className="text-[11px] text-[#8b95a1] truncate">{job.center_name}</p>
+                      )}
+                      {/* 지역 + 근무시간 */}
+                      <div className="flex items-center gap-2 mt-0.5 text-[12px] text-[#8b95a1]">
+                        <span className="flex items-center gap-0.5"><MapPin className="w-3 h-3" />{job.region}</span>
+                        {job.work_hours && <span>{job.work_hours}</span>}
+                      </div>
+                    </div>
+                    {/* 일급이 있으면 일급 표시, 없으면 시급 표시 */}
+                    <div className="text-right shrink-0">
+                      {job.daily_wage > 0 ? (
+                        <>
+                          <p className="text-[10px] text-[#8b95a1] leading-tight">일급</p>
+                          <p className="text-[15px] font-black text-[#3182f6] leading-tight">
+                            {job.daily_wage.toLocaleString('ko-KR')}원
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-[10px] text-[#8b95a1] leading-tight">시급</p>
+                          <p className="text-[15px] font-black text-[#3182f6] leading-tight">
+                            {job.hourly_wage.toLocaleString('ko-KR')}원
+                          </p>
+                        </>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-[12px] text-[#8b95a1]">
-                      <span className="flex items-center gap-0.5"><MapPin className="w-3 h-3" />{job.region}</span>
-                      {job.work_hours && <span>{job.work_hours}</span>}
-                    </div>
-                  </div>
-                  {/* 일급이 있으면 일급 표시, 없으면 시급 표시 */}
-                  <div className="text-right shrink-0">
-                    {job.daily_wage > 0 ? (
-                      <>
-                        <p className="text-[10px] text-[#8b95a1] leading-tight">일급</p>
-                        <p className="text-[15px] font-black text-[#3182f6] leading-tight">
-                          {job.daily_wage.toLocaleString('ko-KR')}원
-                        </p>
-                      </>
-                    ) : (
-                      <p className="text-[15px] font-black text-[#3182f6]">
-                        {job.hourly_wage.toLocaleString('ko-KR')}원
-                      </p>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
 
