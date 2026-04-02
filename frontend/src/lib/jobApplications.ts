@@ -71,6 +71,22 @@ export async function cancelApplication(applicationId: string): Promise<boolean>
   return true
 }
 
+// ── 포인트 지급 ──
+// user_points 테이블에 한 행 INSERT (amount > 0 = 적립, < 0 = 차감)
+// MyApplicationsTab의 셀프 체크인 시, 또는 어드민 처리 후 자동 호출
+export async function awardPoints(
+  userId: string,
+  amount: number,
+  reason: string,
+): Promise<boolean> {
+  if (!supabase) return false
+  const { error } = await supabase
+    .from('user_points')
+    .insert({ user_id: userId, amount, reason })
+  if (error) { console.error('[포인트 지급 오류]', error); return false }
+  return true
+}
+
 // ── 여러 공고에 대한 지원 여부를 한 번에 확인 ──
 // key: job_posting_id, value: application id (지원한 경우)
 export async function getAppliedJobIds(

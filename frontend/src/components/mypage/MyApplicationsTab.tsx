@@ -1,9 +1,13 @@
 // 📋 지원현황 탭 — 내가 지원한 공고 목록
 // job_applications 테이블에서 내 지원 내역을 상태별로 필터링해서 보여줍니다.
 // 상태: 전체 / 지원중(applied) / 출근확정(confirmed) / 출근완료(completed)
-import { useEffect, useState } from 'react'
-import { MapPin, Clock, Loader2, CheckCircle2, XCircle, Calendar } from 'lucide-react'
+// ✅ Supabase Realtime 구독으로 어드민이 상태를 바꾸면 즉시 반영
+// ✅ 출근확정 상태의 공고 중 오늘이 출근일이면 "출근완료 체크" 버튼 표시
+import { useEffect, useState, useCallback } from 'react'
+import { MapPin, Clock, Loader2, CheckCircle2, XCircle, Calendar, UserCheck } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
 import { listApplications } from '../../lib/jobApplications'
+import { awardPoints } from '../../lib/jobApplications'
 import type { JobApplication } from '../../types/supabase'
 
 interface Props {
@@ -52,16 +56,80 @@ export default function MyApplicationsTab({ userId }: Props) {
   const [loading, setLoading] = useState(true)
   // 현재 선택된 상태 필터
   const [filter, setFilter] = useState<FilterStatus>('all')
+  // 셀프 체크인 처리 중인 지원 ID (중복 클릭 방지)
+  const [checkingIn, setCheckingIn] = useState<string | null>(null)
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true)
-      const data = await listApplications(userId)
-      setApplications(data)
-      setLoading(false)
-    }
-    load()
+  // ── 데이터 로드 함수 (Realtime 이벤트 수신 시에도 재사용) ──
+  const fetchApplications = useCallback(async () => {
+    const data = await listApplications(userId)
+    setApplications(data)
+    setLoading(false)
   }, [userId])
+
+  // ── 최초 로드 ──
+  useEffect(() => {
+    setLoading(true)
+    fetchApplications()
+  }, [fetchApplications])
+
+  // ── Supabase Realtime 구독 ──
+  // 어드민이 출근확정/완료 처리하면 자동으로 화면이 갱신됩니다.
+  useEffect(() => {
+    if (!supabase) return
+
+    const channel = supabase
+      .channel('my_applications_realtime')  // 채널명 (고유해야 함)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',           // INSERT, UPDATE, DELETE 모두 감지
+          schema: 'public',
+          table: 'job_applications',
+          filter: `user_id=eq.${userId}`,  // 내 지원건만 구독
+        },
+        () => {
+          // 변경 감지 시 전체 목록 재조회 (JOIN 데이터가 필요하므로)
+          fetchApplications()
+        }
+      )
+      .subscribe()
+
+    const sb = supabase  // null 체크 통과 후 로컬 변수로 캡처
+    // 컴포넌트 언마운트 시 구독 해제 (메모리 누수 방지)
+    return () => {
+      sb.removeChannel(channel)
+    }
+  }, [userId, fetchApplications])
+
+  // ── 오늘 날짜 문자열 (KST 기준 YYYY-MM-DD) ──
+  const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })
+
+  // ── 셀프 체크인 처리 ──
+  // 출근확정 상태이고 오늘이 출근일인 경우에만 호출
+  const handleSelfCheckIn = async (app: JobApplication) => {
+    if (!supabase || checkingIn) return
+    setCheckingIn(app.id)
+    try {
+      // 1. status를 'completed'로 변경
+      const { error } = await supabase
+        .from('job_applications')
+        .update({ status: 'completed' })
+        .eq('id', app.id)
+        .eq('user_id', userId)  // 보안: 내 건만 변경 가능
+
+      if (error) throw error
+
+      // 2. 출근완료 포인트 +100P 자동 지급
+      await awardPoints(userId, 100, '출근 완료')
+
+      // 3. UI 즉시 갱신 (Realtime으로도 반영되지만 즉각성을 위해 직접 갱신)
+      await fetchApplications()
+    } catch (err) {
+      console.error('[셀프 체크인 오류]', err)
+    } finally {
+      setCheckingIn(null)
+    }
+  }
 
   // 필터 적용 (취소 제외, 선택한 상태만)
   const filtered = applications.filter(app => {
@@ -136,6 +204,12 @@ export default function MyApplicationsTab({ userId }: Props) {
         filtered.map(app => {
           const status = STATUS_CONFIG[app.status] ?? STATUS_CONFIG.applied
           const job = app.job_postings
+
+          // 출근확정 상태이고 오늘이 출근일인지 확인
+          // work_date가 오늘(KST)과 같아야 셀프 체크인 버튼 활성화
+          const isCheckInDay = app.status === 'confirmed'
+            && app.work_date
+            && app.work_date.slice(0, 10) === todayStr
 
           return (
             <div key={app.id}
@@ -226,6 +300,24 @@ export default function MyApplicationsTab({ userId }: Props) {
                   </span>
                 )}
               </div>
+
+              {/* ── 셀프 체크인 버튼 ──
+                  출근확정(confirmed) 상태이고 오늘이 출근일일 때만 표시
+                  클릭 시 status → completed + 포인트 +100P 자동 지급 */}
+              {isCheckInDay && (
+                <button
+                  onClick={() => handleSelfCheckIn(app)}
+                  disabled={checkingIn === app.id}
+                  className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-emerald-500 text-white text-[13px] font-bold transition-opacity disabled:opacity-60"
+                >
+                  {checkingIn === app.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <UserCheck className="w-4 h-4" />
+                  )}
+                  {checkingIn === app.id ? '처리 중...' : '출근완료 체크 (+100P)'}
+                </button>
+              )}
             </div>
           )
         })

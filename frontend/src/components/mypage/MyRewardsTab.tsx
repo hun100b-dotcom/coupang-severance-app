@@ -11,11 +11,11 @@ interface Props {
 }
 
 // ── 포인트 적립 규칙 안내 ──
+// 일용직 특성상 연속 7일 근무는 현실적으로 불가능하므로 해당 항목 제외
 const POINT_RULES = [
   { icon: '🎯', reason: '최초 지원', points: '+50P', color: 'text-blue-600' },
   { icon: '✅', reason: '출근 완료 1회', points: '+100P', color: 'text-emerald-600' },
   { icon: '🔥', reason: '연속 출근 3일', points: '+200P', color: 'text-orange-600' },
-  { icon: '⭐', reason: '연속 출근 7일', points: '+500P + ☕ 쿠폰', color: 'text-violet-600' },
   { icon: '📅', reason: '이번 달 5회 출근', points: '+300P', color: 'text-amber-600' },
 ]
 

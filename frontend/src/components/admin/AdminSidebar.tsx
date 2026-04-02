@@ -17,9 +17,11 @@ interface Props {
 }
 
 // 모든 메뉴 정의 (순서 = 표시 순서)
+// AdminPage.tsx와 동일한 순서로 유지 — jobs 메뉴가 사이드바에도 표시되어야 함
 const ALL_MENUS: { key: AdminMenu; icon: string; label: string }[] = [
   { key: 'dashboard',  icon: '🏠', label: 'Dashboard'   },
   { key: 'target',     icon: '🎯', label: 'Target'       },
+  { key: 'jobs',       icon: '💼', label: '채용공고'      },
   { key: 'inquiries',  icon: '💬', label: 'Inquiries'    },
   { key: 'notices',    icon: '📢', label: '공지사항'      },
   { key: 'members',    icon: '👥', label: '회원 관리'     },
