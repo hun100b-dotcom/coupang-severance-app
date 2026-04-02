@@ -1,9 +1,8 @@
-// 마이페이지 — 토스/당근마켓 스타일로 전면 개편
-// 프로필 카드 · 계산 기록 · 빠른 계산 · 고객지원 · 계정 관리
-
+// 마이페이지 — 탭 기반 구조로 개편
+// 탭: 홈(기본 정보) / 즐겨찾기 / 지원현황 / 스케줄 / 포인트
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, LogOut, Trash2 } from 'lucide-react'
+import { ChevronLeft, LogOut, Trash2, Home, Star, ClipboardList, CalendarDays, Gift } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { notifyNewInquiry } from '../lib/api'
@@ -15,6 +14,10 @@ import { QuickActions } from '../components/mypage/QuickActions'
 import SavedPdfList from '../components/mypage/SavedPdfList'
 import { SupportSection } from '../components/mypage/SupportSection'
 import { InquiryModal } from '../components/mypage/InquiryModal'
+import MyFavoritesTab from '../components/mypage/MyFavoritesTab'
+import MyApplicationsTab from '../components/mypage/MyApplicationsTab'
+import MyScheduleTab from '../components/mypage/MyScheduleTab'
+import MyRewardsTab from '../components/mypage/MyRewardsTab'
 import type { InquiryItem } from '../components/mypage/InquiryHistory'
 import type { ReportRow } from '../types/supabase'
 
@@ -30,9 +33,22 @@ function calcDaysFrom(iso: string | null | undefined): number | null {
   return Math.floor(ms / (24 * 60 * 60 * 1000))
 }
 
+// ── 탭 정의 ──
+type TabKey = 'home' | 'favorites' | 'applications' | 'schedule' | 'rewards'
+const TABS: { key: TabKey; icon: typeof Home; label: string }[] = [
+  { key: 'home',         icon: Home,          label: '홈' },
+  { key: 'favorites',    icon: Star,          label: '즐겨찾기' },
+  { key: 'applications', icon: ClipboardList, label: '지원현황' },
+  { key: 'schedule',     icon: CalendarDays,  label: '스케줄' },
+  { key: 'rewards',      icon: Gift,          label: '포인트' },
+]
+
 export default function MyPage() {
   const navigate = useNavigate()
   const { isLoggedIn, user, loading, logout, needsOnboarding } = useAuth()
+
+  // ── 현재 활성 탭
+  const [activeTab, setActiveTab] = useState<TabKey>('home')
 
   // ── 모달 상태
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false)
@@ -99,11 +115,9 @@ export default function MyPage() {
     fetch()
   }, [isLoggedIn, user])
 
-  // 프로필 조회 로그 기록 (페이지 진입 시) — 반드시 early return 전에 선언해야 React Hooks 규칙 준수
+  // 프로필 조회 로그 기록 (페이지 진입 시)
   useEffect(() => {
-    if (user) {
-      logAccess('view_profile')
-    }
+    if (user) { logAccess('view_profile') }
   }, [user])
 
   // 로딩 중
@@ -142,10 +156,7 @@ export default function MyPage() {
     }).select('id').single()
 
     if (!error && data?.id) {
-      // 접근 로그 기록
       logAccess('create_inquiry', data.id)
-
-      // 개인정보보호법 준수: Discord로 개인정보를 전송하지 않고 inquiry_id만 전송
       notifyNewInquiry({
         inquiryId: data.id,
         title: payload.title,
@@ -157,37 +168,23 @@ export default function MyPage() {
     await refreshInquiries()
   }
 
-  // ── 회원 탈퇴 핸들러 (개인정보보호법 제21조: 파기 의무)
+  // ── 회원 탈퇴 핸들러
   const handleDeleteAccount = async () => {
     if (!supabase || !user) return
 
     const confirmed = window.confirm(
       '⚠️ 회원 탈퇴 시 모든 데이터가 즉시 삭제되며 복구할 수 없습니다.\n\n' +
-      '- 저장된 계산 결과\n' +
-      '- 1:1 문의 내역\n' +
-      '- 개인정보 (이름, 생년월일, 핸드폰번호)\n\n' +
+      '- 저장된 계산 결과\n- 1:1 문의 내역\n- 개인정보 (이름, 생년월일, 핸드폰번호)\n\n' +
       '정말 탈퇴하시겠습니까?'
     )
-
     if (!confirmed) return
 
     try {
-      // 0. 접근 로그 기록 (탈퇴 전에 기록)
       await logAccess('delete_account')
-
-      // 1. 계산 결과 삭제
       await supabase.from('reports').delete().eq('user_id', user.raw.id)
-
-      // 2. 문의 내역 삭제
       await supabase.from('inquiries').delete().eq('user_id', user.raw.id)
-
-      // 3. 접근 로그 삭제
       await supabase.from('user_access_logs').delete().eq('user_id', user.raw.id)
-
-      // 4. 프로필 삭제
       await supabase.from('profiles').delete().eq('id', user.raw.id)
-
-      // 5. 로그아웃 및 리다이렉트
       alert('회원 탈퇴가 완료되었습니다.')
       await logout()
       navigate('/login')
@@ -197,9 +194,13 @@ export default function MyPage() {
     }
   }
 
+  // 현재 탭의 헤더 타이틀
+  const tabTitle = TABS.find(t => t.key === activeTab)?.label ?? '내 정보'
+
   return (
-    <div className="min-h-screen bg-[#F2F4F6] pb-16 relative z-10">
-      {/* 헤더 */}
+    <div className="min-h-screen bg-[#F2F4F6] pb-24 relative z-10">
+
+      {/* ── 헤더 ── */}
       <header className="sticky top-0 z-30 bg-[#F2F4F6]/90 backdrop-blur-xl border-b border-gray-200/50">
         <div className="max-w-[460px] mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -207,7 +208,7 @@ export default function MyPage() {
               className="p-1.5 rounded-xl hover:bg-black/5 transition-colors">
               <ChevronLeft className="w-5 h-5 text-[#191f28]" />
             </button>
-            <h1 className="text-[17px] font-extrabold text-[#191f28] tracking-tight">내 정보</h1>
+            <h1 className="text-[17px] font-extrabold text-[#191f28] tracking-tight">{tabTitle}</h1>
           </div>
           <button type="button" onClick={() => logout()}
             className="flex items-center gap-1.5 text-[12px] text-[#8B95A1] hover:text-[#4e5968] transition-colors px-2 py-1 rounded-lg hover:bg-black/5">
@@ -215,63 +216,108 @@ export default function MyPage() {
             로그아웃
           </button>
         </div>
+
+        {/* ── 탭 네비게이션 바 ── */}
+        <div className="max-w-[460px] mx-auto px-4 flex gap-0 overflow-x-auto">
+          {TABS.map(tab => {
+            const Icon = tab.icon
+            const isActive = activeTab === tab.key
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-1.5 px-3 py-2.5 text-[12px] font-bold whitespace-nowrap border-b-2 transition-all shrink-0 ${
+                  isActive
+                    ? 'border-[#3182f6] text-[#3182f6]'
+                    : 'border-transparent text-[#8b95a1] hover:text-[#4e5968]'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
       </header>
 
-      {/* 본문 */}
-      <main className="max-w-[460px] mx-auto px-4 pt-4 space-y-3 pb-6">
+      {/* ── 탭 콘텐츠 ── */}
+      <main className="max-w-[460px] mx-auto px-4 pt-4 pb-6">
 
-        {/* ① 프로필 카드 */}
-        <ProfileCard
-          name={displayName}
-          email={user.email}
-          avatarUrl={avatarUrl}
-          joinedAt={joinedAt}
-          daysWithCatch={daysWithCatch}
-        />
+        {/* ① 홈 탭 — 기존 마이페이지 내용 */}
+        {activeTab === 'home' && (
+          <div className="space-y-3">
+            {/* 프로필 카드 */}
+            <ProfileCard
+              name={displayName}
+              email={user.email}
+              avatarUrl={avatarUrl}
+              joinedAt={joinedAt}
+              daysWithCatch={daysWithCatch}
+            />
 
-        {/* ② 계산 기록 */}
-        <SavedResultsList
-          reports={reports}
-          loading={loadingReports}
-          onSelectReport={r => setSelectedReport(r)}
-          onGoCalculate={() => navigate('/severance')}
-        />
+            {/* 계산 기록 */}
+            <SavedResultsList
+              reports={reports}
+              loading={loadingReports}
+              onSelectReport={r => setSelectedReport(r)}
+              onGoCalculate={() => navigate('/severance')}
+            />
 
-        {/* ③ 내 PDF 관리 */}
-        <SavedPdfList />
+            {/* 내 PDF 관리 */}
+            <SavedPdfList />
 
-        {/* ④ 빠른 계산 바로가기 */}
-        <QuickActions onOpenInquiry={() => setInquiryModalOpen(true)} />
+            {/* 빠른 계산 바로가기 */}
+            <QuickActions onOpenInquiry={() => setInquiryModalOpen(true)} />
 
-        {/* ④ 고객지원 */}
-        <SupportSection
-          inquiries={inquiries}
-          loadingInquiries={loadingInquiries}
-          onOpenInquiry={() => setInquiryModalOpen(true)}
-        />
+            {/* 고객지원 */}
+            <SupportSection
+              inquiries={inquiries}
+              loadingInquiries={loadingInquiries}
+              onOpenInquiry={() => setInquiryModalOpen(true)}
+            />
 
-        {/* ⑤ 계정 관리 */}
-        <div className="bg-white rounded-[32px] shadow-[0_18px_60px_rgba(15,23,42,0.08)] border border-slate-100 px-5 py-5">
-          <p className="text-[15px] font-extrabold text-[#191f28] tracking-tight mb-3">계정 관리</p>
+            {/* 계정 관리 */}
+            <div className="bg-white rounded-[32px] shadow-[0_18px_60px_rgba(15,23,42,0.08)] border border-slate-100 px-5 py-5">
+              <p className="text-[15px] font-extrabold text-[#191f28] tracking-tight mb-3">계정 관리</p>
 
-          {/* 로그아웃 버튼 */}
-          <button type="button" onClick={() => logout()}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-slate-200 text-[13px] font-semibold text-[#4e5968] hover:bg-slate-50 active:scale-[0.98] transition-all mb-2">
-            <LogOut className="w-4 h-4" />
-            로그아웃
-          </button>
+              <button type="button" onClick={() => logout()}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-slate-200 text-[13px] font-semibold text-[#4e5968] hover:bg-slate-50 active:scale-[0.98] transition-all mb-2">
+                <LogOut className="w-4 h-4" />
+                로그아웃
+              </button>
 
-          {/* 회원 탈퇴 버튼 */}
-          <button type="button" onClick={handleDeleteAccount}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-red-200 text-[13px] font-semibold text-red-600 hover:bg-red-50 active:scale-[0.98] transition-all">
-            <Trash2 className="w-4 h-4" />
-            회원 탈퇴
-          </button>
+              <button type="button" onClick={handleDeleteAccount}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-red-200 text-[13px] font-semibold text-red-600 hover:bg-red-50 active:scale-[0.98] transition-all">
+                <Trash2 className="w-4 h-4" />
+                회원 탈퇴
+              </button>
 
-          <p className="text-[10px] text-[#8b95a1] text-center mt-4 leading-relaxed">
-            탈퇴 시 모든 데이터가 즉시 삭제되며 복구할 수 없습니다.
-          </p>
-        </div>
+              <p className="text-[10px] text-[#8b95a1] text-center mt-4 leading-relaxed">
+                탈퇴 시 모든 데이터가 즉시 삭제되며 복구할 수 없습니다.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ② 즐겨찾기 탭 */}
+        {activeTab === 'favorites' && (
+          <MyFavoritesTab userId={user.raw.id} />
+        )}
+
+        {/* ③ 지원현황 탭 */}
+        {activeTab === 'applications' && (
+          <MyApplicationsTab userId={user.raw.id} />
+        )}
+
+        {/* ④ 스케줄 탭 */}
+        {activeTab === 'schedule' && (
+          <MyScheduleTab userId={user.raw.id} />
+        )}
+
+        {/* ⑤ 포인트/쿠폰 탭 */}
+        {activeTab === 'rewards' && (
+          <MyRewardsTab userId={user.raw.id} />
+        )}
 
       </main>
 

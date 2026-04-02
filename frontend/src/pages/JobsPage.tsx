@@ -1,15 +1,19 @@
 // 채용정보 피드 — 물류센터 특화 UI v3
 // 히어로 로테이션 문구 + 섹션 분류 + 공식 로고 + 즐겨찾기 + 프레임카드 상세(지도 포함)
+// + 지원하기 버튼 (job_applications 테이블 연동)
 import { useEffect, useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   MapPin, Clock, Users, Phone, MessageSquare, ExternalLink,
   X, Loader2, Briefcase, ArrowUpDown, Search,
   Star, ChevronRight, ChevronDown, Send, Rocket, Map,
+  CheckCircle2, LogIn,
 } from 'lucide-react'
 // import { supabase } from '../lib/supabase'  // TODO: DB 공고 로드 시 활성화
 import { useAuth } from '../contexts/AuthContext'
 import { listFavorites, addFavorite, removeFavorite, isFavorited } from '../lib/jobFavorites'
+import { applyToJob, getAppliedJobIds } from '../lib/jobApplications'
 import type { JobPosting } from '../types/supabase'
 import type { JobFavorite } from '../types/supabase'
 
@@ -162,6 +166,7 @@ type SortKey = 'latest' | 'wage'
 const REGION_OPTIONS = ['전체', '경기 이천', '경기 김포', '경기 광주', '경기 군포', '서울 송파']
 
 export default function JobsPage() {
+  const navigate = useNavigate()
   const { user, isLoggedIn } = useAuth()
   const [loading, setLoading] = useState(true)
   const [selectedJob, setSelectedJob] = useState<JobCardData | null>(null)
@@ -173,16 +178,24 @@ export default function JobsPage() {
   const [favorites, setFavorites] = useState<JobFavorite[]>([])
   const [heroCopyIdx, setHeroCopyIdx] = useState(0)
 
+  // 지원한 공고 ID 맵 (job_posting_id → application_id)
+  const [appliedMap, setAppliedMap] = useState<Record<string, string>>({})
+  // 지원 진행 중인 공고 ID (버튼 로딩 표시용)
+  const [applyingId, setApplyingId] = useState<string | null>(null)
+  // 로그인 유도 모달 표시 여부
+  const [loginPromptOpen, setLoginPromptOpen] = useState(false)
+
   // 히어로 문구 로테이션
   useEffect(() => {
     const timer = setInterval(() => setHeroCopyIdx(i => (i + 1) % HERO_COPIES.length), 3000)
     return () => clearInterval(timer)
   }, [])
 
-  // 즐겨찾기 로드
+  // 즐겨찾기 + 지원 현황 동시 로드
   useEffect(() => {
     if (!isLoggedIn || !user) return
     listFavorites(user.id).then(setFavorites)
+    getAppliedJobIds(user.id).then(setAppliedMap)
   }, [isLoggedIn, user])
 
   useEffect(() => { setLoading(false) }, [])
@@ -219,6 +232,41 @@ export default function JobsPage() {
       await addFavorite(user.id, type, value)
     }
     setFavorites(await listFavorites(user.id))
+  }
+
+  // ── 지원하기 핸들러 ──
+  // 로그인 여부 확인 → 이미 지원한 공고인지 확인 → job_applications INSERT
+  const handleApply = async (e: React.MouseEvent, jobId: string) => {
+    e.stopPropagation()  // 카드 클릭 이벤트 버블링 방지
+
+    // 로그인 안 된 경우 → 로그인 유도 모달
+    if (!isLoggedIn || !user) {
+      setLoginPromptOpen(true)
+      return
+    }
+
+    // 이미 지원한 공고 → 중복 방지
+    if (appliedMap[jobId]) return
+
+    // 샘플 데이터(s1~s6)는 DB에 없으므로 안내 메시지 표시
+    if (jobId.startsWith('s')) {
+      alert('현재 샘플 공고입니다. 실제 공고가 올라오면 지원하실 수 있어요!')
+      return
+    }
+
+    setApplyingId(jobId)
+    try {
+      const appId = await applyToJob(user.id, jobId)
+      if (appId) {
+        // 성공 시 지원 목록 갱신
+        setAppliedMap(prev => ({ ...prev, [jobId]: appId }))
+        alert('지원이 완료됐어요! 마이페이지 → 지원현황에서 확인하세요.')
+      } else {
+        alert('지원 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
+      }
+    } finally {
+      setApplyingId(null)
+    }
   }
 
   const fmtWage = (w: number) => w.toLocaleString('ko-KR')
@@ -434,15 +482,48 @@ export default function JobsPage() {
                           {job.expires_at && <span className="font-medium">~{fmtDate(job.expires_at)} 마감</span>}
                         </div>
 
-                        {/* CATCH 하기 */}
-                        <button
-                          onClick={() => setSelectedJob(job)}
-                          className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#3182F6] to-[#2563eb]
-                            text-white font-bold text-[14px] flex items-center justify-center gap-1.5
-                            shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-transform"
-                        >
-                          CATCH 하기 <ChevronRight className="w-4 h-4" />
-                        </button>
+                        {/* 하단 버튼 영역: 상세보기 + 지원하기 */}
+                        <div className="flex gap-2">
+                          {/* 상세보기 버튼 — 기존 CATCH 하기와 동일한 동작 */}
+                          <button
+                            onClick={() => setSelectedJob(job)}
+                            className="flex-1 py-3 rounded-2xl border border-[#3182f6] text-[#3182f6]
+                              font-bold text-[13px] flex items-center justify-center gap-1
+                              active:scale-[0.98] transition-transform hover:bg-blue-50"
+                          >
+                            상세보기
+                          </button>
+
+                          {/* 지원하기 버튼 — 이미 지원했으면 비활성화 */}
+                          {appliedMap[job.id] ? (
+                            // 지원 완료 상태 (비활성)
+                            <button
+                              disabled
+                              className="flex-1 py-3 rounded-2xl bg-emerald-100 text-emerald-700
+                                font-bold text-[13px] flex items-center justify-center gap-1
+                                cursor-default opacity-90"
+                            >
+                              <CheckCircle2 className="w-4 h-4" />
+                              지원완료
+                            </button>
+                          ) : (
+                            // 지원하기 버튼 (활성)
+                            <button
+                              onClick={(e) => handleApply(e, job.id)}
+                              disabled={applyingId === job.id}
+                              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#3182F6] to-[#2563eb]
+                                text-white font-bold text-[13px] flex items-center justify-center gap-1
+                                shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-transform
+                                disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                              {applyingId === job.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <>지원하기 <ChevronRight className="w-3.5 h-3.5" /></>
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </motion.div>
                   )
@@ -599,6 +680,60 @@ export default function JobsPage() {
       </AnimatePresence>
 
       {regionOpen && <div className="fixed inset-0 z-20" onClick={() => setRegionOpen(false)} />}
+
+      {/* ── 로그인 유도 모달 — 비로그인 상태에서 지원하기 클릭 시 표시 ── */}
+      <AnimatePresence>
+        {loginPromptOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            onClick={() => setLoginPromptOpen(false)}
+          >
+            <motion.div
+              initial={{ y: 60, opacity: 0, scale: 0.97 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 40, opacity: 0, scale: 0.97 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-[380px] bg-white rounded-[28px] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.15)]"
+            >
+              {/* 아이콘 */}
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                  <LogIn className="w-7 h-7 text-white" />
+                </div>
+              </div>
+
+              {/* 텍스트 */}
+              <h3 className="text-[18px] font-black text-[#191f28] text-center mb-2">
+                로그인이 필요해요
+              </h3>
+              <p className="text-[13px] text-[#8b95a1] text-center leading-relaxed mb-5">
+                지원하기 기능은 로그인 후 사용할 수 있어요.<br />
+                카카오 또는 구글로 1초만에 가입하세요!
+              </p>
+
+              {/* 버튼 */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setLoginPromptOpen(false)}
+                  className="flex-1 py-3 rounded-2xl bg-gray-100 text-[#4e5968] text-[14px] font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={() => { setLoginPromptOpen(false); navigate('/login') }}
+                  className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#3182F6] to-[#2563eb] text-white text-[14px] font-bold shadow-md shadow-blue-500/25 hover:opacity-90 transition-opacity"
+                >
+                  로그인하기
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

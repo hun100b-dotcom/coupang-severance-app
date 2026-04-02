@@ -396,9 +396,21 @@ export default function Home() {
                       {job.work_hours && <span>{job.work_hours}</span>}
                     </div>
                   </div>
-                  <span className="text-[15px] font-black text-[#3182f6] shrink-0">
-                    {job.hourly_wage.toLocaleString('ko-KR')}원
-                  </span>
+                  {/* 일급이 있으면 일급 표시, 없으면 시급 표시 */}
+                  <div className="text-right shrink-0">
+                    {job.daily_wage > 0 ? (
+                      <>
+                        <p className="text-[10px] text-[#8b95a1] leading-tight">일급</p>
+                        <p className="text-[15px] font-black text-[#3182f6] leading-tight">
+                          {job.daily_wage.toLocaleString('ko-KR')}원
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-[15px] font-black text-[#3182f6]">
+                        {job.hourly_wage.toLocaleString('ko-KR')}원
+                      </p>
+                    )}
+                  </div>
                 </button>
               ))}
             </div>
