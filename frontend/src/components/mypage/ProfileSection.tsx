@@ -35,8 +35,10 @@ export function ProfileSection({ name, avatarUrl }: ProfileSectionProps) {
         <p className="text-[20px] font-extrabold tracking-tight text-[#191f28] truncate">
           {name}님
         </p>
+        {/* name prop을 그대로 사용해야 합니다. "종훈님" 같은 하드코딩은 절대 금지!
+            하드코딩하면 모든 사용자에게 동일한 이름이 표시되는 버그가 발생합니다. */}
         <p className="text-[11px] text-[#8b95a1] mt-1">
-          CATCH가 종훈님의 퇴직금과 혜택을 한 곳에서 정리해 드릴게요.
+          CATCH가 {name}님의 퇴직금과 혜택을 한 곳에서 정리해 드릴게요.
         </p>
       </div>
     </motion.section>

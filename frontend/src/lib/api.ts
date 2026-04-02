@@ -10,6 +10,20 @@ export const api = axios.create({
   timeout: 90000, // Render 무료 티어 콜드스타트 대기 (최대 50초+)
 })
 
+// ── Render 콜드스타트 사전 워밍업 ────────────────────────────────────────────
+// Render 무료 티어는 15분 이상 유휴 시 서버가 절전 모드로 진입합니다.
+// 앱이 처음 로드될 때 백그라운드에서 /health 엔드포인트에 ping을 날려
+// 서버를 미리 깨워 둡니다. 사용자가 실제 계산 버튼을 누를 때쯤엔
+// 서버가 이미 준비되어 있어 콜드스타트 대기 시간이 크게 줄어듭니다.
+// 실패해도 오류를 무시합니다 — 워밍업 실패가 앱 동작을 막으면 안 됩니다.
+;(async () => {
+  try {
+    await api.get('/health', { timeout: 10000 }) // 10초 안에 응답 없으면 그냥 포기
+  } catch {
+    // 워밍업 실패는 조용히 무시 (콘솔에도 출력하지 않습니다)
+  }
+})()
+
 // ── 카운터 ──────────────────────────────────────
 export const getClickCount = () =>
   api.get<{ total: number; severance: number; unemployment: number }>('/click-count').then(r => r.data)

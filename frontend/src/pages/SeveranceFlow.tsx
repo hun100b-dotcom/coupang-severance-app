@@ -118,7 +118,10 @@ export default function SeveranceFlow() {
         response?: { status?: number; data?: { detail?: string | Array<{ msg?: string }> } }
         message?: string
       }
-      console.error('[퇴직금 정밀계산 오류]', err?.response?.data ?? err?.message ?? err)
+      // ⚠️ 보안: err?.response?.data 등 서버 응답 원문을 그대로 로그에 남기면
+      // 토큰, 개인 근로 데이터 등 민감 정보가 브라우저 콘솔에 노출될 수 있습니다.
+      // HTTP 상태 코드와 식별용 접두사만 출력합니다.
+      console.error('[퇴직금 정밀계산 오류]', err?.response?.status ?? 'unknown')
       const detail = err?.response?.data?.detail
       let msg: string
       if (typeof detail === 'string') { msg = detail }

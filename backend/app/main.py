@@ -66,10 +66,18 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    # ── CORS 허용 도메인 명시 (보안 필수) ────────────────────────────────────
+    # allow_origins=["*"]와 allow_credentials=True를 동시에 사용하면
+    # 브라우저가 보안 정책(CORS)을 위반으로 판단해 요청을 거부할 수 있습니다.
+    # 따라서 실제 서비스 도메인과 개발 서버 주소를 명시적으로 지정해야 합니다.
+    allow_origins=[
+        "https://coupang-severance-app.vercel.app",  # Vercel 프로덕션 배포 도메인
+        "http://localhost:5173",                      # Vite 개발 서버 기본 포트
+        "http://localhost:3000",                      # 대안 개발 서버 포트
+    ],
+    allow_credentials=True,   # 쿠키/인증 헤더 전달 허용 (Supabase 세션 쿠키에 필요)
+    allow_methods=["*"],      # GET, POST, PATCH, DELETE 등 모든 HTTP 메서드 허용
+    allow_headers=["*"],      # Authorization, Content-Type 등 모든 헤더 허용
 )
 
 
@@ -90,6 +98,16 @@ app.include_router(weekly_allowance.router,  prefix="/api/weekly-allowance", tag
 app.include_router(annual_leave.router,      prefix="/api/annual-leave",     tags=["연차수당"])
 app.include_router(notify.router,            prefix="/api",                  tags=["알림"])
 app.include_router(admin.router,             prefix="/api",                  tags=["관리자"])
+
+
+# ── 헬스체크 엔드포인트 (Render 콜드스타트 대응) ──────────────────────────
+# Render 무료 티어는 15분 이상 트래픽이 없으면 서버가 잠들어 최초 요청에
+# 30~50초의 '콜드스타트' 지연이 발생합니다.
+# 프론트엔드 앱 시작 시 이 엔드포인트로 미리 ping을 날려 서버를 깨워 둡니다.
+# 또한 외부 모니터링 도구(UptimeRobot 등)에서도 이 경로로 헬스체크를 수행할 수 있습니다.
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "CATCH API"}
 
 
 # 루트: API 안내 + /docs 로 이동 링크 (404 대신)

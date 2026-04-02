@@ -1,30 +1,44 @@
 // 앱의 최상위 컴포넌트로, 라우터와 AuthProvider를 감싸 전체 화면 구성을 정의합니다.
 
+// ── React 핵심 임포트 ────────────────────────────────────────────────────────
+// lazy: 컴포넌트를 처음 렌더링할 때만 동적으로 불러옵니다 (지연 로딩).
+// Suspense: lazy 컴포넌트가 로딩 중일 때 대신 보여줄 fallback UI를 지정합니다.
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom' // 브라우저 라우팅을 위해 react-router-dom을 가져옵니다.
 import { AuthProvider } from './contexts/AuthContext' // 전역 로그인 상태를 제공하는 AuthProvider를 가져옵니다.
 import AnimatedBackground from './components/AnimatedBackground' // 배경 애니메이션 컴포넌트를 가져옵니다.
 import Layout from './components/Layout' // 상단/하단 네비바를 포함한 전역 레이아웃 컴포넌트입니다.
 import ProtectedRoute from './components/ProtectedRoute' // 로그인 필요 페이지를 보호하는 래퍼 컴포넌트를 가져옵니다.
 import OnboardingGuard from './components/OnboardingGuard' // 온보딩 미완료 사용자 리다이렉트 가드
-import Intro from './pages/Intro' // 인트로(홈) 페이지 컴포넌트를 가져옵니다.
-import Home from './pages/Home' // 기존 메인 화면 컴포넌트를 가져옵니다.
-import SeveranceFlow from './pages/SeveranceFlow' // 퇴직금 계산 플로우 페이지를 가져옵니다.
-import UnemploymentFlow from './pages/UnemploymentFlow' // 실업급여 계산 플로우 페이지를 가져옵니다.
-import MyPage from './pages/MyPage' // 마이페이지 컴포넌트를 가져옵니다.
-import ReportDetail from './pages/ReportDetail' // 리포트 상세 페이지 컴포넌트를 가져옵니다.
-import PaymentGuide from './pages/PaymentGuide' // 결제 안내 페이지 컴포넌트를 가져옵니다.
-import AuthCallbackPage from './pages/auth/callback' // 새로 만든 인증 콜백 페이지를 가져옵니다.
-import LoginPage from './pages/Login' // 새로 만들 로그인 페이지 컴포넌트를 가져옵니다.
-import OnboardingPage from './pages/Onboarding' // 최초 로그인 후 추가 정보 입력 페이지
-import AdminPage from './pages/AdminPage' // 관리자 전용 문의 관리 페이지를 가져옵니다.
-import WeeklyAllowancePage from './pages/WeeklyAllowancePage' // 주휴수당 계산 페이지
-import AnnualLeaveAllowancePage from './pages/AnnualLeaveAllowancePage' // 연차수당 계산 페이지
-import MyBenefitsPage from './pages/MyBenefitsPage' // 나의 혜택 페이지
-import NoticesPage from './pages/NoticesPage' // 공지사항 전체 목록 페이지
-import JobsPage from './pages/JobsPage' // 채용정보 피드
-import CalculatorPage from './pages/CalculatorPage' // 계산기 허브 (4개 서비스 선택)
-import PrivacyPolicyPage from './pages/PrivacyPolicy' // 개인정보 처리방침
-import TermsOfServicePage from './pages/TermsOfService' // 서비스 이용약관
+import LoadingOverlay from './components/LoadingOverlay' // lazy 로딩 중 보여줄 스피너 컴포넌트
+
+// ── 즉시 로딩 페이지 (앱 시작 시 항상 필요한 페이지) ────────────────────────
+// 아래 4개 페이지는 사용자가 앱을 열자마자 마주칠 수 있으므로 번들에 포함합니다.
+import Intro from './pages/Intro'           // 첫 진입 스플래시 (/ 경로)
+import LoginPage from './pages/Login'        // 로그인 페이지 (/login)
+import AuthCallbackPage from './pages/auth/callback' // OAuth 콜백 (/auth/callback)
+import OnboardingPage from './pages/Onboarding'      // 온보딩 (/onboarding)
+
+// ── 지연 로딩 페이지 (lazy import) ──────────────────────────────────────────
+// 사용자가 해당 페이지로 실제 이동할 때만 JS 파일을 내려받습니다.
+// 이를 통해 초기 번들 크기(1,662KB → 300~500KB)를 크게 줄여
+// 첫 화면이 빨리 뜨게 됩니다 (FCP 개선).
+// Vite는 자동으로 각 lazy 페이지를 별도 청크(chunk) 파일로 분리합니다.
+const Home                   = lazy(() => import('./pages/Home'))
+const SeveranceFlow          = lazy(() => import('./pages/SeveranceFlow'))
+const UnemploymentFlow       = lazy(() => import('./pages/UnemploymentFlow'))
+const MyPage                 = lazy(() => import('./pages/MyPage'))
+const ReportDetail           = lazy(() => import('./pages/ReportDetail'))
+const PaymentGuide           = lazy(() => import('./pages/PaymentGuide'))
+const AdminPage              = lazy(() => import('./pages/AdminPage'))          // 관리자 페이지 (매우 무거움)
+const WeeklyAllowancePage    = lazy(() => import('./pages/WeeklyAllowancePage'))
+const AnnualLeaveAllowancePage = lazy(() => import('./pages/AnnualLeaveAllowancePage'))
+const MyBenefitsPage         = lazy(() => import('./pages/MyBenefitsPage'))
+const NoticesPage            = lazy(() => import('./pages/NoticesPage'))
+const JobsPage               = lazy(() => import('./pages/JobsPage'))
+const CalculatorPage         = lazy(() => import('./pages/CalculatorPage'))
+const PrivacyPolicyPage      = lazy(() => import('./pages/PrivacyPolicy'))
+const TermsOfServicePage     = lazy(() => import('./pages/TermsOfService'))
 
 export default function App() {
   return (
@@ -34,6 +48,9 @@ export default function App() {
         {/* AuthProvider 안에서만 useAuth 훅을 사용할 수 있으므로, 라우트 전체를 감싸 줍니다. */}
         <AnimatedBackground /> {/* 모든 페이지 뒤에 공통으로 깔릴 배경 애니메이션입니다. */}
 
+        {/* Suspense: lazy 컴포넌트가 아직 로딩 중일 때 LoadingOverlay를 보여줍니다.
+            lazy 컴포넌트는 반드시 Suspense 안에 있어야 합니다. */}
+        <Suspense fallback={<LoadingOverlay />}>
         <Routes>
           {/* ── 네비바 없는 독립 페이지 ── */}
           {/* / 경로: 첫 진입용 인트로 스플래시 (6초 후 자동 이동) */}
@@ -88,6 +105,7 @@ export default function App() {
             <Route path="*" element={<Home />} />
           </Route>
         </Routes>
+        </Suspense> {/* Suspense 닫기 — Suspense 범위 밖의 컴포넌트는 항상 즉시 렌더링됩니다. */}
       </AuthProvider>
 
       {/* 배포 버전과 빌드 날짜를 화면 오른쪽 아래에 작게 표시합니다.
