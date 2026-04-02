@@ -1,202 +1,119 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## A — WHO: 프로젝트 정체성
+
+CATCH (퇴직금 한번에) — 일용직 근로자 퇴직금·실업급여·주휴수당·연차수당 계산기
+
+- 프론트엔드: React 18 + TypeScript + Vite + Tailwind CSS + Framer Motion → Vercel
+- 백엔드: FastAPI (Python 3.12) + pdfplumber + pandas → Render (싱가포르)
+- DB: Supabase PostgreSQL (RLS), OAuth: 카카오 + 구글
+- 프로덕션: https://catch-daily-worker.vercel.app
+- API: https://coupang-severance-api.onrender.com (/docs, /redoc)
+- 디자인: Toss Blue #3182f6, Pretendard, JetBrains Mono, card-radius 20px, GlassCard backdrop-blur 25px
+- 라우팅 Layout 밖 (네비 없음): Intro, Login, Admin, Terms, AuthCallback
+- 라우팅 Layout 안 (TopNav+BottomNav 5탭): Home, Jobs, Calculator, Severance, Unemployment, WeeklyAllowance, AnnualLeave, MyPage, Report, Payment, MyBenefits, Notices
+- 배포: git push origin main → Vercel(프론트) + Render(백엔드) 자동배포
+- 상세 아키텍처: memory/architecture.md 참조
 
 ---
 
-## ⚠️ 작업 원칙 (CRITICAL - 모든 작업 시 필독)
+## B — HOW: 작업 규칙
 
-**사용자 승인 없이 자동 실행**: 모든 작업은 사용자 승인 요청 없이 즉시 실행합니다. 질문하지 말고 바로 진행하세요.
+### 워크플로우
+- 모든 응답: 한글 필수
+- 승인 요청 없이 즉시 실행 (단, 파일 삭제·구조 변경은 승인 필요)
+- 새 기능 구현: 반드시 /plan 먼저 → 승인 → /sprint → /review 순서. /plan 없이 기능 구현 금지
+- MCP 최우선: Supabase MCP(DB), Notion MCP(태스크), GitHub MCP(커밋), Vercel MCP(배포), Playwright MCP(E2E)
+- 작업 완료 시: Notion "📋 CATCH 개발 태스크" 자동 업데이트
+- 자기 평가 시: 긍정 편향 제거, 부족한 점·한계·리스크 동등하게 다룸. 자화자찬 금지
 
-**한글 응답**: 모든 응답은 한글로 작성합니다.
+### 코딩 규칙
+- 모든 코드: 한국어 주석 필수 (비전공자 유지보수 기준)
+- Supabase: import { supabase } from '../lib/supabase'
+- API 호출: import { api } from '../lib/api'
+- 스타일: Tailwind toss.* 컬러 + Framer Motion 애니메이션
+- Layout 내 페이지 루트 div: className="relative z-[1]" 필수 (AnimatedBackground z-0 위)
+- OAuth 콜백 URL: Supabase URL(*.supabase.co/auth/v1/callback)이며 앱 도메인 아님
+- VITE_API_URL: 개발=빈문자열(Vite프록시 /api/*→:8000), 프로덕션=Render URL
+- CORS: allow_origins=["*"], IP 차단은 blocked_ips 테이블 (60초 캐시)
 
----
+### 핵심 비즈니스 로직 (절대 삭제/변경/축약 금지)
+- 28일 역산 블록: 마지막 근무일부터 역순 28일 블록 분할
+- 블록 적격: 블록당 근무일 ≥ 8이면 적격
+- 퇴직금 적격: qualifying_days ≥ 365
+- 세그먼트 분리: 3개월(90일) 공백 시 별도 세그먼트
+- 임금 하한: 연도별 MIN_ORDINARY_WAGE_DAILY 적용
+- 퇴직금 공식: 평균일급 × 30 × (근무일수 ÷ 365)
+- 4개 서비스 2단계 패턴: PDF 업로드 정밀계산 + 수동 입력 간편계산
 
-## 프로젝트 개요
+### 관리자
+- 슈퍼어드민: catchmasterdmin@gmail.com (Audit Logs, Settings 고급)
+- 인증: X-Admin-Token 헤더 → _VALID_ADMIN_TOKENS 집합 검증
+- 프론트 토큰: VITE_ADMIN_SECRET 또는 VITE_SUPABASE_ANON_KEY 뒤 32자 파생
 
-**CATCH (퇴직금 한번에)** — 일용직 근로자를 위한 퇴직금·실업급여·주휴수당·연차수당 계산기
-
-- **프론트엔드**: React 18 + TypeScript + Vite + Tailwind CSS → Vercel
-- **백엔드**: FastAPI (Python 3.12) → Render
-- **데이터베이스**: Supabase Postgres
-- **인증**: Supabase OAuth (카카오 + 구글)
-
-**배포 URL:**
-- 프로덕션: https://coupang-severance-app.vercel.app
-- 백엔드 API: FastAPI on Render (싱가포르)
-- API 문서: `/docs` (Swagger UI)
-
----
-
-## 개발 명령어
-
-### 백엔드 (FastAPI)
-```powershell
-# 최초 설정
-python -m venv backend\.venv
-.\backend\.venv\Scripts\Activate.ps1
-pip install -r backend\requirements.txt
-
-# 개발 서버 실행
-.\backend\.venv\Scripts\Activate.ps1
-uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-API 문서: http://localhost:8000/docs
-
-### 프론트엔드 (Vite)
-```powershell
-cd frontend
-npm install
-npm run dev      # http://localhost:5173 (/api/* → :8000 자동 프록시)
-npm run build    # tsc -b && vite build → frontend/dist
-```
-
-### 테스트
-```powershell
-# 백엔드 검증 테스트
-.\backend\.venv\Scripts\Activate.ps1
-python tests\validate_severance_logic.py
-
-# E2E 테스트 (Playwright)
-cd frontend
-npx playwright test              # 전체 실행 (headless)
-npx playwright test --ui         # 대화형 UI 모드
-npx playwright test e2e/foo.spec.ts  # 단일 파일
-npx playwright show-report       # 마지막 결과 리포트
-```
-
-### 슬래시 커맨드
-```bash
-/dev         # 개발 서버 시작
-/test-mcp    # MCP 전체 테스트
-/deploy      # 배포 체크리스트
-```
+### 절대 금지
+- TypeScript any 타입 남발 금지
+- /plan 없이 새 기능 바로 코딩 금지
+- 한 번에 5개 이상 파일 대규모 수정 금지
+- 28일 블록 알고리즘 로직 임의 변경 금지
 
 ---
 
-## 아키텍처
+## C — MEMORY: 세션 관리
 
-### 요청 흐름
-```
-브라우저 (React SPA)
-  │
-  ├─ /api/*  ──► FastAPI 백엔드 (Render)
-  │              ├─ /api/severance/*        PDF 파싱 + 퇴직금 계산
-  │              ├─ /api/unemployment/*     실업급여 적격성
-  │              ├─ /api/weekly-allowance/* 주휴수당 계산
-  │              ├─ /api/annual-leave/*     연차수당 계산
-  │              ├─ /api/click-count        방문 카운터
-  │              ├─ /api/inquiry/notify     Discord 웹훅
-  │              └─ /api/admin/*            관리자 OS (X-Admin-Token 필수)
-  │
-  └─ Supabase (프론트엔드 직접 접근)
-       ├─ 인증: signInWithOAuth, onAuthStateChange
-       ├─ profiles   사용자 프로필
-       ├─ reports    계산 결과 저장
-       └─ inquiries  1:1 고객 문의
-```
+### 세션 시작 루틴
+- memory/ 폴더 내 모든 .md 파일 읽기
+- tasks/todo.md 읽어서 현재 진행 상황 파악
+- 인사/요약 없이 바로 작업 가능 상태 보고
 
-### 라우팅 구조 (App.tsx)
+### 세션 종료 루틴 (/compact 또는 "끝" 입력 시)
+- memory/progress.md: 완료 작업 + 다음 할 일 업데이트
+- memory/lessons.md: 이번 세션 실수 있었으면 추가
+- memory/decisions.md: 아키텍처/기술 결정 있었으면 추가
+- tasks/todo.md: 체크리스트 상태 업데이트
+- 변경사항 1줄 요약 출력
 
-**네비 없는 페이지** (`<Layout>` 밖):
-- `/` → Intro (스플래시, 6초 후 자동 이동)
-- `/auth/callback` → AuthCallback (OAuth 콜백)
-- `/login` → LoginPage
-- `/admin` → AdminPage (자체 사이드바, VITE_ADMIN_EMAIL 필요)
+### memory 파일 역할
+- memory/progress.md: 현재 진행 작업, 마지막 완료, 다음 할 일
+- memory/decisions.md: 아키텍처·기술 결정 기록 (왜 이렇게 했는지)
+- memory/lessons.md: 실수 기록 (날짜 | 내용 | 해결법)
+- memory/architecture.md: DB 테이블, 미들웨어, 요청 흐름, 환경변수, 개발 명령어 등 상세 레퍼런스
 
-**네비 있는 페이지** (`<Layout>` 안 - TopNav + BottomNav):
-- `/home` → Home
-- `/severance` → SeveranceFlow
-- `/unemployment` → UnemploymentFlow
-- `/mypage` → MyPage
-- `/report/:id` → ReportDetail (ProtectedRoute 필수)
-- `/payment` → PaymentGuide
-- `/weekly-allowance` → WeeklyAllowancePage
-- `/annual-leave` → AnnualLeaveAllowancePage
-- `/my-benefits` → MyBenefitsPage
-- `/notices` → NoticesPage
-
-**중요 CSS z-index**: `AnimatedBackground`는 `position: fixed; z-index: 0`입니다. Layout 내 모든 페이지 루트 div는 반드시 `className="relative z-[1] ..."`가 있어야 배경 위에 콘텐츠가 표시됩니다.
-
-### 백엔드 핵심 모듈 (`backend/app/`)
-
-- **`services/pdf.py`** — 근로복지공단 PDF 파싱 (`pdfplumber` 사용). 다중 페이지, 반복 헤더, 4가지 날짜 형식 처리. `COMPANY_KEYWORDS`로 회사명 정규화 (쿠팡 변형 등).
-
-- **`services/severance.py`** — **28일 역산 블록 알고리즘**: 핵심 적격성 로직. 마지막 근무일부터 역순으로 28일 블록 분할. 블록당 근무일 ≥8이면 적격. `qualifying_days ≥ 365` → 퇴직금 적격. 3개월 공백 시 세그먼트 분리.
-
-- **`services/unemployment.py`** — 실업급여: 최근 18개월 내 피보험일 수 ≥ 180 확인.
-
-- **`services/counter.py`** — 클릭 카운터. Supabase `click_counter` 테이블 우선, 실패 시 `data/click_count.json` 폴백.
-
-- **`services/notify.py`** — 1:1 문의 시 Discord 웹훅 전송. 오류 조용히 억제.
-
-- **`api/admin.py`** — 관리자 OS API (9개 엔드포인트). `_VALID_ADMIN_TOKENS` 집합으로 토큰 검증 (환경변수 + 기본값). SUPABASE_URL 프로젝트 ID 포함 여부 자동 교정.
-
-### 계산 모드 (모든 서비스 동일 패턴)
-
-1. **정밀 계산** — PDF 업로드 → `extract-companies` → 회사 선택 → `precise` 엔드포인트 (전체 알고리즘)
-2. **간편 계산** — 근무일수 + 평균일급 수동 입력 → `simple` 엔드포인트 (공식 직접 적용)
-
-퇴직금 공식: `퇴직금 = 평균일급 × 30 × (근무일수 ÷ 365)`
+### 실수 및 동기화
+- 실수 발생 시: 즉시 memory/lessons.md에 기록 (세션 종료까지 미루지 마)
+- Notion 동기화: 작업 완료 시 "📋 CATCH 개발 태스크" Notion MCP로 업데이트
 
 ---
 
-## 코드 패턴
+## D — 개발 진행상황 (2026.04.02 기준)
 
-### Supabase 클라이언트
-```typescript
-import { supabase } from '../lib/supabase'  // 중앙 클라이언트
-```
+### Phase 0 — 앱 UI 완성 + 버그 수정 ✅ 완료
+- 4개 계산기(퇴직금/실업급여/주휴수당/연차수당) 전체 완성
+- PDF 저장/재사용 (Supabase Storage + saved_pdfs 테이블)
+- 마이페이지 (프로필, 계산이력, 문의, 탈퇴)
+- Toss 디자인 통일 + 반응형 + 28일 블록 알고리즘 보호
 
-### API 호출
-```typescript
-import { api } from '../lib/api'
-const response = await api.post('/severance/precise', { ... })
-```
+### Phase 1 — 채용정보 섹션 구축 🔄 진행 중
+- [x] job_postings DB 테이블 + RLS + 인덱스 + 트리거
+- [x] job_favorites DB 테이블 (즐겨찾기, 회사/센터 단위)
+- [x] 관리자 JobsMenu — 공고 CRUD + 긴급토글 + 상태필터
+- [x] BottomNav 7탭 → 5탭 개편 (홈|채용|계산기|공지|MY)
+- [x] 계산기 허브 — 4서비스 독립 그래디언트 카드 스택
+- [x] 채용피드 UI — 섹션분류(오늘긴급/내일긴급/상시), 검색, 즐겨찾기
+- [x] 공식 회사 로고 (쿠팡SVG/컬리PNG/CJ SVG)
+- [x] 시급/일급 2열 + 동 단위 주소 + 혜택뱃지
+- [x] 히어로 카드 — 로테이션 문구(4개, 3초) + 파랑→보라 그래디언트
+- [x] 프레임카드 상세 팝업 (6영역 + 카카오맵 + 배열기반 CTA)
+- [x] 홈에 "내 주변 단기알바 캐치하기" CTA 추가
+- [ ] 실제 채용팀 연락 → 공고 수집 시작
+- [ ] 홈페이지 채용 프리뷰 고도화
+- [ ] 관리자 페이지에서 채용공고 데이터 관리 검증
 
-### 클릭 카운터
-```typescript
-import { registerClick } from '../lib/api'
-registerClick('severance')  // fire-and-forget
-```
+### Phase 2 — B2C 랜딩 + SEO (다음)
+### Phase 3 — B2B 랜딩 + 유료화
+### Phase 4 — Next.js 전환 + 스케일업
 
----
-
-## MCP 서버 (최우선 사용)
-
-모든 작업 시 MCP를 최우선으로 사용합니다:
-
-- **Supabase MCP**: DB 쿼리, 마이그레이션, 테이블 조회
-- **Notion MCP**: "📋 CATCH 개발 태스크" DB 동기화
-- **GitHub MCP**: 커밋 조회, PR 생성
-- **Vercel MCP**: 배포 상태, 환경변수
-- **Playwright MCP**: E2E 테스트 자동 실행
-
-**예시**: "Supabase profiles 테이블 구조 보여줘" → Supabase MCP 자동 사용
-
-[MCP 상세 가이드](docs/mcp-guide.md)
-
----
-
-## 필수 구현 사항
-
-1. **Notion 동기화**: 작업 완료 시 "📋 CATCH 개발 태스크" 자동 업데이트 (Notion MCP 사용)
-2. **28일 블록 알고리즘**: 퇴직금 적격성 핵심 로직 (`backend/app/services/severance.py`)
-3. **회사 필터링**: 2단계 구조 - PDF 추출 → 회사 선택 → 정밀 계산
-4. **레이아웃 분리**: `Intro`, `Login`, `Admin`은 Layout 밖. 나머지는 `<Layout>` 안.
-5. **슈퍼 어드민**: `catchmasterdmin@gmail.com`만 Audit Logs, Settings 고급 기능 접근
-6. **어드민 토큰**: 백엔드는 `X-Admin-Token` 헤더로 검증 (env `VITE_ADMIN_SECRET` 또는 `VITE_SUPABASE_ANON_KEY` 뒤 32자 자동 파생)
-
----
-
-## 배포
-
-```bash
-git push origin main  # Vercel (프론트) + Render (백엔드) 자동 배포
-```
-
-Vercel MCP로 배포 모니터링.
-
----
-
-**상세 문서**: [docs/](docs/) — [개발 환경](docs/development.md) | [아키텍처](docs/architecture.md) | [환경변수](docs/environment.md) | [데이터베이스](docs/database.md) | [MCP 가이드](docs/mcp-guide.md)
+### 최신 커밋
+- `7f91677` feat: Phase 1 채용정보 섹션 구축 (15파일, +1,613줄)
+- `8eb9c1d` fix: PDF Storage 업로드 경로 한글 제거
+- `6665f61` feat: PDF 저장 및 재사용 기능

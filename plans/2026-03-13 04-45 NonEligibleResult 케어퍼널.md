@@ -228,7 +228,7 @@ UI에서는:
 - 로컬 개발:
   - `http://localhost:5173/auth/callback`
 - 프로덕션(예시):
-  - `https://coupang-severance-app.vercel.app/auth/callback`
+  - `https://catch-daily-worker.vercel.app/auth/callback`
 
 Supabase 설정(인증 → Redirect URLs)에는 위 도메인들을 추가해 두고, 실제 OAuth 연동 시 `redirectTo` 옵션에 사용한다.
 

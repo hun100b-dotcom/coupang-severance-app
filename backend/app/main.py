@@ -71,7 +71,7 @@ app.add_middleware(
     # 브라우저가 보안 정책(CORS)을 위반으로 판단해 요청을 거부할 수 있습니다.
     # 따라서 실제 서비스 도메인과 개발 서버 주소를 명시적으로 지정해야 합니다.
     allow_origins=[
-        "https://coupang-severance-app.vercel.app",  # Vercel 프로덕션 배포 도메인
+        "https://catch-daily-worker.vercel.app",  # Vercel 프로덕션 배포 도메인
         "http://localhost:5173",                      # Vite 개발 서버 기본 포트
         "http://localhost:3000",                      # 대안 개발 서버 포트
     ],

@@ -10,56 +10,56 @@
 
   <!-- 홈: 최고 우선순위, 주간 변경 (공지·채용 업데이트) -->
   <url>
-    <loc>https://coupang-severance-app.vercel.app/home</loc>
+    <loc>https://catch-daily-worker.vercel.app/home</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <!-- 퇴직금 계산기: 핵심 기능 페이지 -->
   <url>
-    <loc>https://coupang-severance-app.vercel.app/severance</loc>
+    <loc>https://catch-daily-worker.vercel.app/severance</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <!-- 실업급여 계산기: 핵심 기능 페이지 -->
   <url>
-    <loc>https://coupang-severance-app.vercel.app/unemployment</loc>
+    <loc>https://catch-daily-worker.vercel.app/unemployment</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <!-- 주휴수당 계산기 -->
   <url>
-    <loc>https://coupang-severance-app.vercel.app/weekly-allowance</loc>
+    <loc>https://catch-daily-worker.vercel.app/weekly-allowance</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- 연차수당 계산기 -->
   <url>
-    <loc>https://coupang-severance-app.vercel.app/annual-leave</loc>
+    <loc>https://catch-daily-worker.vercel.app/annual-leave</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- 채용정보: 매일 새 공고 올라오므로 daily -->
   <url>
-    <loc>https://coupang-severance-app.vercel.app/jobs</loc>
+    <loc>https://catch-daily-worker.vercel.app/jobs</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- 내 혜택 조회 페이지 -->
   <url>
-    <loc>https://coupang-severance-app.vercel.app/my-benefits</loc>
+    <loc>https://catch-daily-worker.vercel.app/my-benefits</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <!-- 공지사항 -->
   <url>
-    <loc>https://coupang-severance-app.vercel.app/notices</loc>
+    <loc>https://catch-daily-worker.vercel.app/notices</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>

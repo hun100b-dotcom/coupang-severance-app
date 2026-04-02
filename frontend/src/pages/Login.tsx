@@ -17,7 +17,7 @@ function getRedirectUrl(): string {
     }
   }
   // 프로덕션 환경
-  return 'https://coupang-severance-app.vercel.app/auth/callback'
+  return 'https://catch-daily-worker.vercel.app/auth/callback'
 }
 
 export default function LoginPage() {

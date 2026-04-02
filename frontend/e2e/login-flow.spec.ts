@@ -102,12 +102,12 @@ test.describe('로그인 프로세스 전체 검증', () => {
 
   test('9. 프로덕션 URL 접근 가능 확인', async ({ page }) => {
     // 프로덕션 사이트가 정상 응답하는지 확인
-    const response = await page.goto('https://coupang-severance-app.vercel.app/')
+    const response = await page.goto('https://catch-daily-worker.vercel.app/')
     expect(response?.status()).toBeLessThan(400)
   })
 
   test('10. 프로덕션 로그인 페이지 정상 확인', async ({ page }) => {
-    await page.goto('https://coupang-severance-app.vercel.app/login')
+    await page.goto('https://catch-daily-worker.vercel.app/login')
     await expect(page.locator('h1')).toContainText('간편 로그인')
     await expect(page.getByText('카카오로 로그인')).toBeVisible()
     await expect(page.getByText('Google로 로그인')).toBeVisible()
@@ -118,7 +118,7 @@ test.describe('온보딩 페이지 UI 검증', () => {
 
   test('11. 온보딩 페이지 폼 요소 확인 (프로덕션)', async ({ page }) => {
     // 프로덕션에서 온보딩 페이지를 직접 접근 (미로그인 → 로그인으로 리다이렉트됨)
-    await page.goto('https://coupang-severance-app.vercel.app/onboarding')
+    await page.goto('https://catch-daily-worker.vercel.app/onboarding')
     // 미로그인 상태에서는 로그인 페이지로 리다이렉트
     await page.waitForURL(/\/login/, { timeout: 8000 })
   })

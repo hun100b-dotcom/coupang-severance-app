@@ -151,7 +151,7 @@ OAuth login (Kakao/Google) flows through **Supabase as the OAuth middleware**:
 
 1. Frontend calls `supabase.auth.signInWithOAuth({ redirectTo: AUTH_CALLBACK_URL })`
 2. Provider redirects to Supabase: `https://<project>.supabase.co/auth/v1/callback`
-3. Supabase redirects to `https://coupang-severance-app.vercel.app/auth/callback`
+3. Supabase redirects to `https://catch-daily-worker.vercel.app/auth/callback`
 4. `pages/auth/callback.tsx` calls `exchangeCodeForSession`, then navigates to `/mypage`
 
 The provider OAuth apps (Google Cloud Console, Kakao Developers) must have the **Supabase callback URL** (`https://<project>.supabase.co/auth/v1/callback`) registered as an authorized redirect URI — **not** the app's own domain. Supabase's URL Configuration must have the app domain in its Redirect URLs list.

@@ -16,4 +16,4 @@ Disallow: /auth
 Disallow: /mypage
 
 # sitemap 위치 명시 → 크롤러가 자동으로 발견
-Sitemap: https://coupang-severance-app.vercel.app/sitemap.xml
+Sitemap: https://catch-daily-worker.vercel.app/sitemap.xml

@@ -21,19 +21,19 @@
 ## 7. 인증 구조 (리팩터 요약)
 
 > Vite + Supabase 기준으로 로그인/인증을 처음부터 재구성한 구조입니다.  
-> 배포 주소: **https://coupang-severance-app.vercel.app**
+> 배포 주소: **https://catch-daily-worker.vercel.app**
 
 | 구분 | 경로/역할 |
 |------|------------|
 | **Supabase 클라이언트** | `frontend/src/lib/supabase.ts` — `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`로 단일 클라이언트 생성, 다른 파일은 여기서만 import |
 | **인증 콜백** | `frontend/src/pages/auth/callback.tsx` — 소셜 로그인 후 돌아오는 URL. `exchangeCodeForSession` 후 성공 시 `/mypage`, 실패 시 `/login`으로 이동 |
-| **로그인 페이지** | `frontend/src/pages/Login.tsx` — 카카오/구글 `signInWithOAuth`, `redirectTo: https://coupang-severance-app.vercel.app/auth/callback` |
+| **로그인 페이지** | `frontend/src/pages/Login.tsx` — 카카오/구글 `signInWithOAuth`, `redirectTo: https://catch-daily-worker.vercel.app/auth/callback` |
 | **전역 로그인 상태** | `frontend/src/contexts/AuthContext.tsx` — 앱 시작 시 `onAuthStateChange` 1회 구독, `user` / `isLoggedIn` / `logout` 제공 |
 | **헤더 버튼** | `Intro.tsx` — 로그인 시 [마이페이지]·[로그아웃], 비로그인 시 [로그인] → `/login` 이동 |
 | **마이페이지** | `frontend/src/pages/MyPage.tsx` — 전역 `user`로 이름·프로필 이미지 표시, 가입일 기준 (오늘 − 가입일) 근무일 수만 표시 |
 
 - **라우트**: `/` 인트로, `/login` 로그인, `/auth/callback` OAuth 콜백, `/mypage` 마이페이지.
-- **Vercel 환경 변수**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 필수. Supabase 대시보드에서 Redirect URL에 `https://coupang-severance-app.vercel.app/auth/callback` 등록.
+- **Vercel 환경 변수**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 필수. Supabase 대시보드에서 Redirect URL에 `https://catch-daily-worker.vercel.app/auth/callback` 등록.
 
 ---
 
@@ -165,11 +165,11 @@ git push origin main
 로그인(카카오/구글)을 **배포된 사이트**에서 쓰려면 Supabase에 배포 URL을 등록해야 합니다.
 
 1. **Supabase 대시보드** → 프로젝트 선택 → **Authentication** → **URL Configuration**
-2. **Site URL** 에 배포 주소 입력 (예: `https://coupang-severance-app.vercel.app`)
+2. **Site URL** 에 배포 주소 입력 (예: `https://catch-daily-worker.vercel.app`)
 3. **Redirect URLs** 에 아래를 **추가** (기존 로컬 주소는 그대로 두고):
-   - `https://coupang-severance-app.vercel.app/**`
-   - `https://coupang-severance-app.vercel.app/auth/callback`  ← **소셜 로그인 후 세션 처리용 (필수)**
-   - `https://coupang-severance-app.vercel.app/mypage`
+   - `https://catch-daily-worker.vercel.app/**`
+   - `https://catch-daily-worker.vercel.app/auth/callback`  ← **소셜 로그인 후 세션 처리용 (필수)**
+   - `https://catch-daily-worker.vercel.app/mypage`
 4. **Save** 클릭
 
 > 앱은 **getURL()** 로 현재 주소(로컬/배포)를 자동 인식하고, 로그인 후 **/auth/callback** 에서 세션을 잡은 뒤 마이페이지로 보냅니다. Redirect URLs에 **/auth/callback** 이 없으면 로그인이 완료돼도 세션이 안 잡힐 수 있습니다.  
@@ -221,7 +221,7 @@ https://hmjxrqhcwjyfkvlcejfc.supabase.co/auth/v1/callback
 
 | 위치 | 등록할 URL |
 |------|------------|
-| **Supabase** (Authentication → URL Configuration) | Site URL·Redirect URLs에 **우리 앱 주소** (예: `https://coupang-severance-app.vercel.app`, `.../mypage`) |
+| **Supabase** (Authentication → URL Configuration) | Site URL·Redirect URLs에 **우리 앱 주소** (예: `https://catch-daily-worker.vercel.app`, `.../mypage`) |
 | **Google Cloud Console** (OAuth 클라이언트) | Authorized redirect URIs에 **Supabase 콜백** `https://hmjxrqhcwjyfkvlcejfc.supabase.co/auth/v1/callback` |
 | **Kakao Developers** (Web 플랫폼) | Redirect URI에 **Supabase 콜백** `https://hmjxrqhcwjyfkvlcejfc.supabase.co/auth/v1/callback` |
 
