@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { getAdminStats, getAdminAnalytics, getAdminInquiries } from '../../../lib/api'
 import type { AdminStats, AnalyticsResponse, AdminInquiry } from '../../../types/admin'
 import { logAdminAction } from '../../../lib/adminAuditLog'
+import { supabase } from '../../../lib/supabase'
 import KpiCard from '../dashboard/KpiCard'
 import DailyTrendChart from '../dashboard/DailyTrendChart'
 import ServiceBarChart from '../dashboard/ServiceBarChart'
@@ -27,6 +28,7 @@ export default function DashboardMenu() {
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null)
   const [recentInquiries, setRecentInquiries] = useState<AdminInquiry[]>([])
+  const [recentNotices, setRecentNotices] = useState<{ id: string; title: string; created_at: string; is_active: boolean }[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [range, setRange] = useState(30)
@@ -46,14 +48,18 @@ export default function DashboardMenu() {
     setError(null)
     try {
       const { start, end } = getDateRange(range)
-      const [s, a, inq] = await Promise.all([
+      // 통계/분석/문의/공지 병렬 로드
+      const [s, a, inq, noticesRes] = await Promise.all([
         getAdminStats(),
         getAdminAnalytics(start, end),
         getAdminInquiries({ limit: 8, page: 1 }),
+        supabase!.from('notices').select('id, title, created_at, is_active')
+          .order('created_at', { ascending: false }).limit(3),
       ])
       setStats(s)
       setAnalytics(a)
       setRecentInquiries(inq.inquiries ?? [])
+      setRecentNotices((noticesRes.data ?? []) as { id: string; title: string; created_at: string; is_active: boolean }[])
       setLastUpdated(new Date())
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
@@ -137,12 +143,14 @@ export default function DashboardMenu() {
         </div>
       </div>
 
-      {/* 핵심 KPI — 4열 */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+      {/* 핵심 KPI — 2열×2행 (모바일) / 5열 (데스크탑) */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
         <KpiCard label="전체 유저" value={stats.users.total.toLocaleString()}
           sub={`오늘 +${stats.users.new_today}`} color="#3182f6" icon="👥" />
         <KpiCard label="계산 건수" value={stats.reports.total.toLocaleString()}
           sub={`적격 ${stats.reports.eligible}건`} color="#00c48c" icon="&#128202;" />
+        <KpiCard label="채용공고" value={stats.jobs.total.toLocaleString()}
+          sub={`활성 ${stats.jobs.active}건`} color="#06b6d4" icon="&#128188;" />
         <KpiCard label="대기 문의" value={stats.inquiries.waiting}
           sub={`전체 ${stats.inquiries.total}건`} color="#f08c00" icon="&#128172;" />
         <KpiCard label="평균 퇴직금" value={fmtMoney(stats.reports.avg_severance)}
@@ -209,6 +217,42 @@ export default function DashboardMenu() {
 
       {/* 최근 문의 활동 */}
       <RecentActivity inquiries={recentInquiries} />
+
+      {/* 최근 공지사항 */}
+      {recentNotices.length > 0 && (
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 16, padding: '16px 20px', marginTop: 12,
+        }}>
+          <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff', marginBottom: 10 }}>
+            최근 공지사항
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {recentNotices.map(n => (
+              <div key={n.id} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '8px 12px', borderRadius: 10,
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.06)',
+              }}>
+                <span style={{
+                  fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: 6,
+                  background: n.is_active ? 'rgba(49,130,246,0.2)' : 'rgba(255,255,255,0.08)',
+                  color: n.is_active ? '#60a5fa' : 'rgba(255,255,255,0.3)',
+                }}>{n.is_active ? '활성' : '비활성'}</span>
+                <span style={{
+                  flex: 1, fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>{n.title || '(제목 없음)'}</span>
+                <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>
+                  {n.created_at?.slice(0, 10)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

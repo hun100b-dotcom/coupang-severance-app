@@ -27,6 +27,10 @@ export interface AdminStats {
     severance: number
     unemployment: number
   }
+  jobs: {
+    total: number   // 전체 채용공고 수
+    active: number  // 활성(active) 공고 수
+  }
 }
 
 export interface DailyAnalytics {
