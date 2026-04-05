@@ -145,11 +145,39 @@ export default function MySettingsTab() {
     setShowPermissionDenied(false)
   }
 
-  // 출근확정 알림 토글 — localStorage 즉시 반영
-  function toggleWorkNotification() {
+  // 출근확정 알림 토글 — ON 시 브라우저 알림 권한 요청 (채용공고 알림과 동일한 패턴)
+  async function toggleWorkNotification() {
     const next = !workNotification
+
+    // 알림을 켜려는 경우 → 브라우저 알림 권한 확인 및 요청
+    if (next && typeof Notification !== 'undefined') {
+      if (Notification.permission === 'default') {
+        // 아직 권한 요청 전: 브라우저 권한 팝업 표시
+        try {
+          const permission = await Notification.requestPermission()
+          setNotifPermission(permission)
+          if (permission === 'denied') {
+            // 권한 거부 시: ON으로 전환하지 않고 안내 메시지 표시
+            setShowPermissionDenied(true)
+            setTimeout(() => setShowPermissionDenied(false), 4000)
+            return
+          }
+        } catch {
+          // requestPermission 미지원 환경 (일부 구형 브라우저)
+          setNotifPermission('unsupported')
+        }
+      } else if (Notification.permission === 'denied') {
+        // 이미 권한 거부 상태: 안내 메시지 표시 후 return
+        setShowPermissionDenied(true)
+        setTimeout(() => setShowPermissionDenied(false), 4000)
+        return
+      }
+    }
+
+    // localStorage 저장 + 상태 즉시 반영
     setWorkNotification(next)
     localStorage.setItem('notif_work', String(next))
+    setShowPermissionDenied(false)
   }
 
   // 닉네임 저장 → profiles.full_name 업데이트
@@ -189,10 +217,20 @@ export default function MySettingsTab() {
     if (!confirmed) return
 
     try {
-      // 유저 관련 데이터 삭제 (순서 중요: 외래키 참조 순)
+      // 유저 관련 데이터 삭제 (순서 중요: 자식 테이블 먼저 → 부모 테이블 나중)
+      // 채용 관련 (job_postings를 참조하는 자식 테이블)
+      await supabase.from('job_favorites').delete().eq('user_id', user.raw.id)
+      await supabase.from('job_applications').delete().eq('user_id', user.raw.id)
+      // 포인트/쿠폰 (독립 테이블)
+      await supabase.from('user_points').delete().eq('user_id', user.raw.id)
+      await supabase.from('user_coupons').delete().eq('user_id', user.raw.id)
+      // PDF 저장 이력
+      await supabase.from('saved_pdfs').delete().eq('user_id', user.raw.id)
+      // 활동 이력
       await supabase.from('reports').delete().eq('user_id', user.raw.id)
       await supabase.from('inquiries').delete().eq('user_id', user.raw.id)
       await supabase.from('user_access_logs').delete().eq('user_id', user.raw.id)
+      // 프로필 (auth.users를 참조하는 마지막 테이블, id 컬럼으로 조회)
       await supabase.from('profiles').delete().eq('id', user.raw.id)
       // 로그아웃 처리
       await logout()
