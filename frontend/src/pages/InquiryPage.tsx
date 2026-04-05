@@ -127,7 +127,7 @@ export default function InquiryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4 py-8">
+    <div className="relative z-[1] min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4 py-8">
       <div className="max-w-lg mx-auto">
 
         {/* ── 헤더 */}
