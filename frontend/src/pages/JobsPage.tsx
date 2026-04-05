@@ -437,11 +437,6 @@ export default function JobsPage() {
           </button>
         </div>
 
-        {/* ── 면책 문구 — 직업안정법 법적 리스크 대응 (허위·과장광고 책임 완화) ── */}
-        <p className="text-xs text-gray-400 text-center px-2">
-          본 정보는 원본 채용공고를 요약한 것입니다. 상세 내용 및 지원은 원본 공고를 확인하세요.
-        </p>
-
         {/* ── 섹션별 공고 ── */}
         {loading ? (
           <div className="flex items-center justify-center py-20 gap-2 text-[#8b95a1]">
