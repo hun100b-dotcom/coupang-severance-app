@@ -199,11 +199,11 @@ export default function LandingPage() {
               className="font-black leading-[1.1] tracking-tight mb-8"
               style={{ fontSize: 'clamp(40px, 8vw, 80px)' }}
             >
-              긱워커의 시대가 온다.
+              당신의 일당,
               <br />
-              <span style={{ color: '#3182f6' }}>당신의 권리도</span>
+              <span style={{ color: '#3182f6' }}>제대로 받고</span>
               <br />
-              함께.
+              있나요?
             </h1>
           </Reveal>
 
