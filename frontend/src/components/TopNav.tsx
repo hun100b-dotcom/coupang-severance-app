@@ -5,7 +5,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, ChevronDown, LogOut, LayoutDashboard } from 'lucide-react'
+import { User, ChevronDown, LogOut, LayoutDashboard, Settings } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function TopNav() {
@@ -145,6 +145,15 @@ export default function TopNav() {
                     >
                       <LayoutDashboard size={15} className="text-gray-400" />
                       마이페이지
+                    </button>
+
+                    {/* 설정 이동 */}
+                    <button
+                      onClick={() => { setDropdownOpen(false); navigate('/settings') }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-50"
+                    >
+                      <Settings size={15} className="text-gray-400" />
+                      설정
                     </button>
 
                     {/* 로그아웃 */}
