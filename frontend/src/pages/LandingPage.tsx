@@ -1,7 +1,7 @@
 // CATCH 랜딩페이지 — /landing 라우트로 접근하는 독립 풀페이지 컴포넌트
 // Layout(TopNav/BottomNav) 없이 독립 렌더링. 다크 테마, 7개 섹션 구성.
 
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, useCallback, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
@@ -106,6 +106,23 @@ export default function LandingPage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // ── HERO 스포트라이트 커서 효과 ─────────────────────────────────────────
+  const heroRef = useRef<HTMLElement>(null)
+  const [spotlight, setSpotlight] = useState({ x: -999, y: -999, active: false })
+
+  // 마우스 이동 시 HERO 섹션 기준 좌표 업데이트
+  const handleHeroMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    const rect = heroRef.current?.getBoundingClientRect()
+    if (rect) {
+      setSpotlight({ x: e.clientX - rect.left, y: e.clientY - rect.top, active: true })
+    }
+  }, [])
+
+  // 마우스가 섹션 밖으로 나가면 오버레이가 다시 덮음
+  const handleHeroMouseLeave = useCallback(() => {
+    setSpotlight(prev => ({ ...prev, active: false }))
+  }, [])
+
   // ── 로그인 페이지로 이동 (CTA 버튼 공통 핸들러) ─────────────────────────
   const goLogin = () => navigate('/login')
 
@@ -170,6 +187,9 @@ export default function LandingPage() {
       {/* ① HERO ─────────────────────────────────────────────────────────── */}
       <section
         id="hero"
+        ref={heroRef}
+        onMouseMove={handleHeroMouseMove}
+        onMouseLeave={handleHeroMouseLeave}
         className="relative flex items-center overflow-hidden"
         style={{ minHeight: '100vh', padding: '120px 0 80px' }}
       >
@@ -185,7 +205,37 @@ export default function LandingPage() {
           }}
         />
 
-        <div className="relative z-[1] w-full max-w-[1100px] mx-auto px-6">
+        {/* 스포트라이트 오버레이 — 커서 위치에 원형 구멍이 생겨 텍스트가 빛나 보임 */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 30,
+            transition: 'opacity 0.4s ease',
+            opacity: spotlight.active ? 1 : 0,
+            background: `radial-gradient(circle 220px at ${spotlight.x}px ${spotlight.y}px,
+              rgba(0,0,0,0) 0%,
+              rgba(0,0,0,0.5) 55%,
+              rgba(13,13,13,0.96) 100%
+            )`,
+          }}
+        />
+        {/* 초기 상태 — 커서 없을 때 전체 어둡게 덮음 */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 29,
+            background: 'rgba(13,13,13,0.82)',
+            transition: 'opacity 0.4s ease',
+            opacity: spotlight.active ? 0 : 1,
+          }}
+        />
+
+        {/* 콘텐츠 — 오버레이(z-29~30) 위에 렌더링되어야 스포트라이트로 reveal 됨 */}
+        <div className="relative w-full max-w-[1100px] mx-auto px-6" style={{ zIndex: 31 }}>
           <Reveal>
             <p
               className="text-sm font-bold tracking-[2px] uppercase mb-6"
@@ -199,7 +249,7 @@ export default function LandingPage() {
             {/* 메인 대제목 — 임팩트 강조 */}
             <h1
               className="font-black leading-[1.1] tracking-tight mb-4"
-              style={{ fontSize: 'clamp(40px, 8vw, 80px)', color: 'rgb(15, 15, 15)' }}
+              style={{ fontSize: 'clamp(40px, 8vw, 80px)', color: '#ffffff' }}
             >
               당신이 받아야 할 돈,
               <br />
@@ -217,7 +267,7 @@ export default function LandingPage() {
           <Reveal delay={0.2}>
             <p
               className="leading-[1.7] mb-12 max-w-[540px]"
-              style={{ fontSize: 'clamp(16px, 2.5vw, 20px)', color: 'rgb(80, 80, 80)' }}
+              style={{ fontSize: 'clamp(16px, 2.5vw, 20px)', color: '#aaa' }}
             >
               퇴직금·실업급여·주휴수당·연차수당—
               <br />
@@ -247,8 +297,8 @@ export default function LandingPage() {
                 style={{
                   padding: '18px 36px',
                   fontSize: 17,
-                  color: 'rgb(80, 80, 80)',
-                  border: '1.5px solid rgba(255,255,255,0.08)',
+                  color: 'rgba(255,255,255,0.65)',
+                  border: '1.5px solid rgba(255,255,255,0.18)',
                   textDecoration: 'none',
                 }}
               >
@@ -261,7 +311,7 @@ export default function LandingPage() {
           <Reveal delay={0.4}>
             <div className="flex gap-5 flex-wrap mt-[60px]">
               {['퇴직금 계산기', '실업급여 계산기', '단기알바 채용정보', '100% 무료'].map((label) => (
-                <div key={label} className="flex items-center gap-2 text-sm" style={{ color: 'rgb(80, 80, 80)' }}>
+                <div key={label} className="flex items-center gap-2 text-sm" style={{ color: '#aaa' }}>
                   <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#3182f6' }} />
                   {label}
                 </div>
