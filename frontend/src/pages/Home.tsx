@@ -8,7 +8,6 @@ import { INTRO_COPIES } from '../lib/constants'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import WhyCatchModal from '../components/WhyCatchModal'
-import CustomerService from '../components/CustomerService'
 import NoticesBanner from '../components/NoticesBanner'
 import { useNotices } from '../hooks/useNotices'
 
@@ -77,7 +76,6 @@ export default function Home() {
   const [count, setCount] = useState(0)
   const [countLoaded, setCountLoaded] = useState(false)
   const [whyOpen, setWhyOpen] = useState(false)
-  const [csOpen, setCsOpen] = useState(false)
   const [copyIdx, setCopyIdx] = useState(0)
   const [scrolled, setScrolled] = useState(false)
   const animatedCount = useCountUp(count)
@@ -239,7 +237,7 @@ export default function Home() {
         <div className="col-span-1 flex justify-start min-w-0">
           <button
             type="button"
-            onClick={() => setCsOpen(true)}
+            onClick={() => navigate('/inquiry')}
             className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans active:scale-95 transition-transform"
             aria-label="고객센터"
           >
@@ -585,7 +583,6 @@ export default function Home() {
       <AnimatePresence>
         {whyOpen && <WhyCatchModal onClose={() => setWhyOpen(false)} />}
       </AnimatePresence>
-      <CustomerService isOpen={csOpen} onClose={() => setCsOpen(false)} />
 
       {/* ── CMS 팝업 배너 ── */}
       <AnimatePresence>

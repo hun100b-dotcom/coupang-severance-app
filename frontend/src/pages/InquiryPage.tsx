@@ -6,7 +6,7 @@
 
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Send, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Send, CheckCircle, Search, ChevronDown, ChevronUp } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -15,9 +15,48 @@ import { useAuth } from '../contexts/AuthContext'
 const CATEGORIES = ['일반 문의', '채용 관련', '기술 문제', '기타'] as const
 type Category = typeof CATEGORIES[number]
 
+// FAQ 항목 (하드코딩)
+const FAQ_ITEMS = [
+  {
+    id: 1,
+    title: '퇴직금 계산 기준이 뭔가요?',
+    answer: '퇴직금은 퇴직 전 3개월 평균 임금 기준으로 계산합니다. 계속 근무 기간이 1년(365일) 이상이어야 하며, 1년마다 평균 임금 30일분이 지급됩니다. 일용직은 28일 역산 블록 방식으로 적격 근무일을 산정합니다.',
+  },
+  {
+    id: 2,
+    title: '일용직도 실업급여를 받을 수 있나요?',
+    answer: '네, 받을 수 있습니다. 이직일 이전 18개월 중 피보험 단위기간이 180일 이상이고, 비자발적 이직(계약 종료, 권고사직 등)이어야 합니다. 일용직은 월 10일 미만 근무 시 수급 요건이 별도로 적용됩니다.',
+  },
+  {
+    id: 3,
+    title: 'CATCH 앱은 무료인가요?',
+    answer: '네, 기본 계산 기능(퇴직금·실업급여·주휴수당·연차수당)은 완전 무료입니다. 로그인 시 계산 이력 저장, PDF 정밀 분석 등 추가 기능도 이용하실 수 있습니다.',
+  },
+  {
+    id: 4,
+    title: '개인정보는 어떻게 처리되나요?',
+    answer: '입력하신 개인정보는 서비스 제공 목적으로만 사용되며, 제3자에게 제공되지 않습니다. 업로드하신 PDF 파일은 계산 후 즉시 삭제되며, 저장을 원하지 않으시면 로그인 없이도 이용 가능합니다.',
+  },
+  {
+    id: 5,
+    title: '계산 결과가 실제와 다를 수 있나요?',
+    answer: 'CATCH는 참고용 계산기입니다. 실제 지급 금액은 근로계약 조건, 공제 항목, 회사 규정 등에 따라 달라질 수 있습니다. 정확한 금액 확인이나 분쟁 해결을 위해서는 고용노동부 또는 노무사 상담을 권장합니다.',
+  },
+] as const
+
 export default function InquiryPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
+
+  // ── FAQ 검색 + 펼치기 상태
+  const [searchQuery, setSearchQuery] = useState('')
+  const [openFaqId, setOpenFaqId] = useState<number | null>(null)
+
+  // 검색어로 FAQ 필터링
+  const filteredFaqs = FAQ_ITEMS.filter(
+    (faq) =>
+      faq.title.includes(searchQuery) || faq.answer.includes(searchQuery)
+  )
 
   // ── 폼 상태
   const [category, setCategory] = useState<Category>('일반 문의')
@@ -100,8 +139,74 @@ export default function InquiryPage() {
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm font-medium">뒤로 가기</span>
           </button>
-          <h1 className="text-2xl font-bold text-[#191F28] mb-1">문의하기</h1>
+          <h1 className="text-2xl font-bold text-[#191F28] mb-1">고객센터</h1>
           <p className="text-sm text-gray-500">궁금한 점이나 불편한 점을 알려주세요. 빠르게 답변드릴게요.</p>
+        </div>
+
+        {/* ── FAQ 섹션 */}
+        <div className="bg-white rounded-[28px] shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-gray-100/50 p-6 mb-4">
+          <h2 className="text-[15px] font-extrabold text-[#191f28] mb-4">자주 묻는 질문</h2>
+
+          {/* 검색창 */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="궁금한 내용을 검색해보세요"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {/* FAQ 목록 */}
+          {filteredFaqs.length === 0 ? (
+            <p className="text-[13px] text-gray-400 text-center py-4">검색 결과가 없습니다.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {filteredFaqs.map((faq) => (
+                <div key={faq.id} className="border border-gray-100 rounded-2xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaqId(openFaqId === faq.id ? null : faq.id)}
+                    className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="text-[13px] font-semibold text-[#191f28] leading-snug flex-1">
+                      Q. {faq.title}
+                    </span>
+                    {openFaqId === faq.id ? (
+                      <ChevronUp className="w-4 h-4 text-[#3182f6] flex-shrink-0" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    )}
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {openFaqId === faq.id && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-4 pb-3 pt-0 bg-blue-50/50 border-t border-blue-100/50">
+                          <p className="text-[12px] text-[#4e5968] leading-relaxed pt-2">
+                            A. {faq.answer}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── 구분선 */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-1 h-px bg-gray-200" />
+          <span className="text-[12px] font-medium text-gray-400">직접 문의하기</span>
+          <div className="flex-1 h-px bg-gray-200" />
         </div>
 
         {/* ── 폼 카드 */}
