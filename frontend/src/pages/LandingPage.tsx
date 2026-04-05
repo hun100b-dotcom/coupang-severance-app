@@ -111,9 +111,10 @@ export default function LandingPage() {
 
   return (
     // 랜딩페이지 전체 래퍼 — 다크 테마, 커스텀 커서, 가로 스크롤 방지
+    // position: relative + zIndex: 1 로 스태킹 컨텍스트 생성 → AnimatedBackground(fixed z-0)를 덮어야 배경이 올바르게 표시됨
     <div
       className="min-h-screen overflow-x-hidden text-white"
-      style={{ fontFamily: "'Noto Sans KR', sans-serif", background: '#0d0d0d', cursor: 'none' }}
+      style={{ fontFamily: "'Noto Sans KR', sans-serif", background: '#0d0d0d', cursor: 'none', position: 'relative', zIndex: 1 }}
     >
       {/* ── 마우스 글로우 오브 ── */}
       <div
@@ -198,7 +199,7 @@ export default function LandingPage() {
             {/* 메인 대제목 — 임팩트 강조 */}
             <h1
               className="font-black leading-[1.1] tracking-tight mb-4"
-              style={{ fontSize: 'clamp(40px, 8vw, 80px)' }}
+              style={{ fontSize: 'clamp(40px, 8vw, 80px)', color: 'rgb(15, 15, 15)' }}
             >
               당신이 받아야 할 돈,
               <br />
