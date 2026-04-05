@@ -1,14 +1,22 @@
+// NoticesMenu.tsx — 관리자 공지사항 관리 메뉴
+// - 공지 목록: 제목 + 본문 미리보기 분리 표시
+// - 공지 추가/수정 모달: 제목(title) + 본문(content) 각각 입력
+// - 활성/비활성 토글, 우선순위 설정, 삭제 기능 포함
+
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import type { Notice } from '../../../types/supabase'
 
+// 공지 작성/수정 폼 필드 타입
 interface NoticeForm {
-  content: string
+  title: string    // 배너에 표시될 짧은 제목
+  content: string  // 상세 페이지에서 보이는 본문
   priority: number
   is_active: boolean
 }
 
-const defaultForm: NoticeForm = { content: '', priority: 0, is_active: true }
+// 새 공지 작성 시 기본값
+const defaultForm: NoticeForm = { title: '', content: '', priority: 0, is_active: true }
 
 export default function NoticesMenu() {
   const [notices, setNotices] = useState<Notice[]>([])
@@ -18,6 +26,7 @@ export default function NoticesMenu() {
   const [form, setForm] = useState<NoticeForm>(defaultForm)
   const [saving, setSaving] = useState(false)
 
+  // Supabase에서 공지사항 전체 목록 조회 (우선순위 내림차순)
   const fetchNotices = async () => {
     if (!supabase) return
     setLoading(true)
@@ -31,31 +40,44 @@ export default function NoticesMenu() {
 
   useEffect(() => { fetchNotices() }, [])
 
+  // 새 공지 추가 모달 열기
   const openCreate = () => {
     setEditTarget(null)
     setForm(defaultForm)
     setModalOpen(true)
   }
 
+  // 기존 공지 수정 모달 열기 — 기존 값을 폼에 채워줌
   const openEdit = (n: Notice) => {
     setEditTarget(n)
-    setForm({ content: n.content, priority: n.priority, is_active: n.is_active })
+    setForm({
+      title: n.title ?? '',        // title 컬럼이 비어있을 경우 빈 문자열 처리
+      content: n.content,
+      priority: n.priority,
+      is_active: n.is_active,
+    })
     setModalOpen(true)
   }
 
+  // 공지 저장 (추가 or 수정)
   const handleSave = async () => {
-    if (!supabase || !form.content.trim()) return
+    // 제목 또는 본문 중 하나라도 비어있으면 저장 차단
+    if (!supabase || !form.title.trim() || !form.content.trim()) return
     setSaving(true)
     if (editTarget) {
+      // 기존 공지 수정
       await supabase.from('notices').update({
-        content: form.content,
+        title: form.title.trim(),
+        content: form.content.trim(),
         priority: form.priority,
         is_active: form.is_active,
         updated_at: new Date().toISOString(),
       }).eq('id', editTarget.id)
     } else {
+      // 새 공지 추가
       await supabase.from('notices').insert({
-        content: form.content,
+        title: form.title.trim(),
+        content: form.content.trim(),
         priority: form.priority,
         is_active: form.is_active,
       })
@@ -65,6 +87,7 @@ export default function NoticesMenu() {
     fetchNotices()
   }
 
+  // 활성/비활성 토글
   const handleToggleActive = async (n: Notice) => {
     if (!supabase) return
     await supabase.from('notices')
@@ -73,13 +96,16 @@ export default function NoticesMenu() {
     fetchNotices()
   }
 
+  // 공지 삭제 (제목 앞 20자로 확인 팝업)
   const handleDelete = async (n: Notice) => {
-    if (!window.confirm(`"${n.content.slice(0, 30)}..." 공지를 삭제할까요?`)) return
+    const preview = (n.title || n.content).slice(0, 20)
+    if (!window.confirm(`"${preview}..." 공지를 삭제할까요?`)) return
     if (!supabase) return
     await supabase.from('notices').delete().eq('id', n.id)
     fetchNotices()
   }
 
+  // ── 공통 셀 스타일 (어두운 테마) ──────────────────────────────────────────
   const cellStyle: React.CSSProperties = {
     padding: '10px 12px',
     borderBottom: '1px solid rgba(255,255,255,0.06)',
@@ -97,13 +123,27 @@ export default function NoticesMenu() {
     letterSpacing: '0.05em',
   }
 
+  // ── 공통 인풋 스타일 ───────────────────────────────────────────────────────
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '10px 12px',
+    borderRadius: 10,
+    border: '1px solid rgba(255,255,255,0.12)',
+    background: 'rgba(255,255,255,0.05)',
+    color: '#fff',
+    fontSize: '0.88rem',
+    boxSizing: 'border-box',
+    outline: 'none',
+  }
+
   return (
     <div style={{ padding: 'clamp(16px, 4vw, 32px)' }}>
+      {/* ── 헤더 영역 ────────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
         <div>
           <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0 }}>📢 공지사항 관리</h2>
           <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: '4px 0 0' }}>
-            홈 화면 상단에 표시되는 공지를 관리합니다.
+            홈 화면 배너에 표시되는 공지를 관리합니다. 제목은 배너에, 본문은 상세 페이지에 표시됩니다.
           </p>
         </div>
         <button
@@ -123,16 +163,19 @@ export default function NoticesMenu() {
         </button>
       </div>
 
+      {/* ── 공지 목록 테이블 ─────────────────────────────────────────────────── */}
       {loading ? (
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>불러오는 중...</p>
       ) : (
         <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 400 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 500 }}>
             <thead>
               <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
                 <th style={{ ...thStyle, width: 60 }}>우선순위</th>
-                <th style={thStyle}>내용</th>
+                {/* 제목 + 본문 미리보기 분리 표시 */}
+                <th style={thStyle}>제목</th>
+                <th style={thStyle}>본문 미리보기</th>
                 <th style={{ ...thStyle, width: 80 }}>활성</th>
                 <th style={{ ...thStyle, width: 120 }}>관리</th>
               </tr>
@@ -140,19 +183,29 @@ export default function NoticesMenu() {
             <tbody>
               {notices.length === 0 && (
                 <tr>
-                  <td colSpan={4} style={{ ...cellStyle, textAlign: 'center', color: 'rgba(255,255,255,0.3)' }}>
+                  <td colSpan={5} style={{ ...cellStyle, textAlign: 'center', color: 'rgba(255,255,255,0.3)' }}>
                     공지사항이 없습니다.
                   </td>
                 </tr>
               )}
               {notices.map(n => (
                 <tr key={n.id} style={{ transition: 'background 0.15s' }}>
+                  {/* 우선순위 */}
                   <td style={{ ...cellStyle, textAlign: 'center', fontWeight: 700, color: '#3182f6' }}>
                     {n.priority}
                   </td>
+                  {/* 제목 — 비어있으면 "(제목 없음)" 표시 */}
+                  <td style={{ ...cellStyle, fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>
+                    {n.title
+                      ? (n.title.length > 24 ? n.title.slice(0, 24) + '…' : n.title)
+                      : <span style={{ color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>(제목 없음)</span>
+                    }
+                  </td>
+                  {/* 본문 미리보기 */}
                   <td style={cellStyle}>
                     {n.content.length > 40 ? n.content.slice(0, 40) + '…' : n.content}
                   </td>
+                  {/* 활성/비활성 토글 버튼 */}
                   <td style={{ ...cellStyle, textAlign: 'center' }}>
                     <button
                       onClick={() => handleToggleActive(n)}
@@ -170,6 +223,7 @@ export default function NoticesMenu() {
                       {n.is_active ? '활성' : '비활성'}
                     </button>
                   </td>
+                  {/* 수정/삭제 버튼 */}
                   <td style={{ ...cellStyle, textAlign: 'center' }}>
                     <button
                       onClick={() => openEdit(n)}
@@ -211,7 +265,7 @@ export default function NoticesMenu() {
         </div>
       )}
 
-      {/* 모달 */}
+      {/* ── 공지 추가/수정 모달 ──────────────────────────────────────────────── */}
       {modalOpen && (
         <div
           onClick={() => setModalOpen(false)}
@@ -236,30 +290,42 @@ export default function NoticesMenu() {
               {editTarget ? '공지 수정' : '새 공지 추가'}
             </h3>
 
+            {/* ── 제목 입력 (배너에 표시되는 짧은 텍스트) ── */}
             <label style={{ display: 'block', marginBottom: 14 }}>
               <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 6 }}>
-                내용
+                제목 <span style={{ color: 'rgba(255,100,100,0.7)' }}>*</span>
+                <span style={{ color: 'rgba(255,255,255,0.25)', marginLeft: 6 }}>홈 화면 배너에 표시됩니다</span>
+              </span>
+              <input
+                type="text"
+                value={form.title}
+                onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                placeholder="예: 🎉 퇴직금 계산기 업데이트"
+                maxLength={60}
+                style={inputStyle}
+              />
+              {/* 글자 수 카운터 */}
+              <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block', textAlign: 'right' }}>
+                {form.title.length}/60
+              </span>
+            </label>
+
+            {/* ── 본문 입력 (상세 페이지에서 표시) ── */}
+            <label style={{ display: 'block', marginBottom: 14 }}>
+              <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 6 }}>
+                본문 <span style={{ color: 'rgba(255,100,100,0.7)' }}>*</span>
+                <span style={{ color: 'rgba(255,255,255,0.25)', marginLeft: 6 }}>공지사항 상세 페이지에 표시됩니다</span>
               </span>
               <textarea
                 value={form.content}
                 onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
                 rows={4}
-                placeholder="예: 🎉 새로운 기능이 추가되었어요! 퇴직금 계산기를 이용해보세요."
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  borderRadius: 10,
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  background: 'rgba(255,255,255,0.05)',
-                  color: '#fff',
-                  fontSize: '0.88rem',
-                  resize: 'vertical',
-                  boxSizing: 'border-box',
-                  outline: 'none',
-                }}
+                placeholder="예: 새로운 기능이 추가되었어요! 이제 PDF 없이도 간편하게 퇴직금을 계산할 수 있습니다."
+                style={{ ...inputStyle, resize: 'vertical' }}
               />
             </label>
 
+            {/* ── 우선순위 + 활성 토글 ── */}
             <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
               <label style={{ flex: 1 }}>
                 <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 6 }}>
@@ -269,20 +335,11 @@ export default function NoticesMenu() {
                   type="number"
                   value={form.priority}
                   onChange={e => setForm(f => ({ ...f, priority: parseInt(e.target.value) || 0 }))}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: 10,
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    background: 'rgba(255,255,255,0.05)',
-                    color: '#fff',
-                    fontSize: '0.88rem',
-                    boxSizing: 'border-box',
-                    outline: 'none',
-                  }}
+                  style={inputStyle}
                 />
               </label>
 
+              {/* 활성 토글 스위치 */}
               <label style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                 <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 6 }}>
                   활성
@@ -313,6 +370,7 @@ export default function NoticesMenu() {
               </label>
             </div>
 
+            {/* ── 취소/저장 버튼 ── */}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button
                 onClick={() => setModalOpen(false)}
@@ -328,11 +386,14 @@ export default function NoticesMenu() {
               </button>
               <button
                 onClick={handleSave}
-                disabled={saving || !form.content.trim()}
+                // 제목 또는 본문이 비어있으면 저장 불가
+                disabled={saving || !form.title.trim() || !form.content.trim()}
                 style={{
                   padding: '9px 20px', borderRadius: 10,
                   border: 'none',
-                  background: saving || !form.content.trim() ? 'rgba(49,130,246,0.3)' : '#3182f6',
+                  background: (saving || !form.title.trim() || !form.content.trim())
+                    ? 'rgba(49,130,246,0.3)'
+                    : '#3182f6',
                   color: '#fff',
                   fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
                 }}

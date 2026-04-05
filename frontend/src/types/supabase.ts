@@ -71,7 +71,8 @@ export type AnyPayload =
 /** notices 테이블 한 행 */
 export interface Notice {
   id: string
-  content: string
+  title: string    // 공지 제목 (배너에 표시, 짧게 작성)
+  content: string  // 공지 본문 (상세 페이지에서 전체 표시)
   is_active: boolean
   priority: number
   created_at: string
