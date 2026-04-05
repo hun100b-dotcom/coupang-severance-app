@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { supabase } from './supabase'
 
 const baseURL = typeof import.meta.env.VITE_API_URL === 'string' && import.meta.env.VITE_API_URL
   ? import.meta.env.VITE_API_URL.replace(/\/$/, '') // 끝 슬래시 제거
@@ -300,23 +301,84 @@ export const getTargetSegments = () =>
 export const getTargetInsights = () =>
   api.get('/admin/target/insights', { headers: H() }).then(r => r.data)
 
-// Inquiries
-export const getAdminInquiries = (params: object) =>
-  api.get('/admin/inquiries', { params, headers: H() }).then(r => r.data)
-export const patchInquiryStatus = (id: string, status: string) =>
-  api.patch(`/admin/inquiries/${id}/status`, { status }, { headers: H() }).then(r => r.data)
-export const patchInquiryAnswer = (id: string, answer: string) =>
-  api.patch(`/admin/inquiries/${id}/answer`, { answer }, { headers: H() }).then(r => r.data)
-export const bulkInquiryStatus = (ids: string[], status: string) =>
-  api.post('/admin/inquiries/bulk-status', { ids, status }, { headers: H() }).then(r => r.data)
+// Inquiries — FastAPI 대신 Supabase 직접 쿼리 (백엔드 의존 제거)
+export const getAdminInquiries = async (params: {
+  page?: number; limit?: number; status?: string; category?: string; search?: string
+}) => {
+  const { page = 1, limit = 20, status = '', category = '', search = '' } = params
 
-// Templates
-export const getTemplates = () =>
-  api.get('/admin/templates', { headers: H() }).then(r => r.data)
-export const createTemplate = (body: object) =>
-  api.post('/admin/templates', body, { headers: H() }).then(r => r.data)
-export const deleteTemplate = (id: string) =>
-  api.delete(`/admin/templates/${id}`, { headers: H() }).then(r => r.data)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query: any = supabase
+    .from('inquiries')
+    .select('*', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range((page - 1) * limit, page * limit - 1)
+
+  if (status)   query = query.eq('status', status)
+  if (category) query = query.eq('category', category)
+  // 내용·제목·카테고리 중 하나라도 검색어를 포함하면 반환
+  if (search)   query = query.or(
+    `content.ilike.%${search}%,title.ilike.%${search}%,category.ilike.%${search}%`
+  )
+
+  const { data, count, error } = await query
+  if (error) throw new Error(error.message)
+  return { inquiries: data ?? [], total: count ?? 0 }
+}
+
+export const patchInquiryStatus = async (id: string, status: string) => {
+  const { error } = await supabase
+    .from('inquiries')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id)
+  if (error) throw new Error(error.message)
+  return { ok: true }
+}
+
+export const patchInquiryAnswer = async (id: string, answer: string) => {
+  const { error } = await supabase
+    .from('inquiries')
+    .update({ answer, status: 'answered', updated_at: new Date().toISOString() })
+    .eq('id', id)
+  if (error) throw new Error(error.message)
+  return { ok: true }
+}
+
+export const bulkInquiryStatus = async (ids: string[], status: string) => {
+  const { error } = await supabase
+    .from('inquiries')
+    .update({ status, updated_at: new Date().toISOString() })
+    .in('id', ids)
+  if (error) throw new Error(error.message)
+  return { ok: true }
+}
+
+// Templates — Supabase inquiry_templates 테이블 직접 조회
+export const getTemplates = async () => {
+  const { data, error } = await supabase
+    .from('inquiry_templates')
+    .select('*')
+    .order('use_count', { ascending: false })
+  if (error) throw new Error(error.message)
+  return { templates: data ?? [] }
+}
+
+export const createTemplate = async (body: { title: string; content: string; category?: string }) => {
+  const { error } = await supabase
+    .from('inquiry_templates')
+    .insert({ ...body, category: body.category ?? '기타' })
+  if (error) throw new Error(error.message)
+  return { ok: true }
+}
+
+export const deleteTemplate = async (id: string) => {
+  const { error } = await supabase
+    .from('inquiry_templates')
+    .delete()
+    .eq('id', id)
+  if (error) throw new Error(error.message)
+  return { ok: true }
+}
 
 // Settings
 export const getSettings = () =>
