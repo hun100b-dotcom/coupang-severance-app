@@ -41,12 +41,9 @@ export default function NoticesBanner({ notices }: Props) {
   // 타이머 ref: 마키 완료 후 또는 짧은 텍스트 표시 후 전환 타이머를 관리
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // 공지 0개면 배너 렌더링 자체를 생략
-  if (notices.length === 0) return null
-
   const current = notices[currentIdx]
-  // title 있으면 title, 없으면 content 폴백
-  const displayText = current.title?.trim() || current.content
+  // title 있으면 title, 없으면 content 폴백 (notices가 없으면 빈 문자열)
+  const displayText = current ? (current.title?.trim() || current.content) : ''
   const isLong = displayText.length > MARQUEE_THRESHOLD
 
   // 마키 애니메이션 시간: 글자 수에 비례, 최소 4초
@@ -68,7 +65,7 @@ export default function NoticesBanner({ notices }: Props) {
   // ── 짧은 텍스트 타이머 ───────────────────────────
   // 마키가 없는 짧은 텍스트: 3초 표시 후 다음 공지로 전환
   // isLong이면 onAnimationEnd가 처리하므로 여기서는 skip
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // hooks는 조건부 early return 이전에 반드시 선언해야 함 (React rules of hooks)
   useEffect(() => {
     if (isLong) return // 긴 텍스트는 onAnimationEnd가 처리
     if (notices.length <= 1) return // 공지 1개: 전환 불필요
@@ -80,6 +77,9 @@ export default function NoticesBanner({ notices }: Props) {
     // currentIdx 바뀔 때마다 새로 3초 카운트
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIdx, isLong])
+
+  // 공지 0개면 배너 렌더링 자체를 생략 (모든 hooks 선언 이후에 early return)
+  if (notices.length === 0) return null
 
   return (
     <button
