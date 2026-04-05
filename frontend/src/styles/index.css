@@ -911,3 +911,14 @@ input:focus {
   font-variant-numeric: tabular-nums;
   font-weight: 800;
 }
+
+/* ─────────────────────────────────────────────
+   공지사항 배너 마키(뉴스티커) 애니메이션
+   - 오른쪽 → 왼쪽으로 seamless 무한 루프
+   - 텍스트를 2번 이어붙인 뒤 -50% 이동 → 끊김 없이 반복
+   - 속도는 NoticesBanner.tsx 에서 글자 수에 따라 동적으로 결정
+───────────────────────────────────────────── */
+@keyframes marquee-ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift, X, Bell, MapPin, Briefcase } from 'lucide-react'
-import { getClickCount, registerClick } from '../lib/api'
+import { api, registerClick } from '../lib/api'
 import type { JobPosting } from '../types/supabase'
 import { INTRO_COPIES } from '../lib/constants'
 import { useAuth } from '../contexts/AuthContext'
@@ -160,13 +160,44 @@ export default function Home() {
   }, [])
 
   // 누적 카운트 조회
+  // 1순위: FastAPI 백엔드 /click-count (6초 타임아웃 — Render 콜드스타트 방지)
+  // 2순위: Supabase click_counter 테이블 직접 조회 (백엔드 미응답 시 폴백)
+  // 3순위: 완전 실패 시 count=0으로라도 로딩 상태 해제
   useEffect(() => {
-    getClickCount()
-      .then(d => {
-        const total = d?.total
-        if (typeof total === 'number') { setCount(total); setCountLoaded(true) }
-      })
-      .catch(() => {})
+    const fetchCount = async () => {
+      // ── 1단계: 백엔드 API (짧은 타임아웃) ──────────────────────────────
+      try {
+        const { data } = await api.get<{ total: number }>('/click-count', {
+          timeout: 6000, // 6초 안에 응답 없으면 Supabase 폴백으로 전환
+        })
+        if (typeof data?.total === 'number') {
+          setCount(data.total)
+          setCountLoaded(true)
+          return
+        }
+      } catch {
+        // 백엔드 콜드스타트 중이거나 CORS/네트워크 오류 → Supabase 직접 조회
+      }
+
+      // ── 2단계: Supabase click_counter 테이블 직접 조회 (항상 빠름) ──────
+      if (supabase) {
+        try {
+          const { data } = await supabase
+            .from('click_counter')
+            .select('total')
+            .eq('id', 1)
+            .single()
+          // total 컬럼이 숫자면 표시, 아니면 0으로 표시
+          setCount(typeof data?.total === 'number' ? data.total : 0)
+        } catch {
+          // Supabase도 실패하면 0 유지
+        }
+      }
+
+      // ── 3단계: 어떤 경우에도 로딩 상태 해제 (스켈레톤이 영원히 보이지 않도록) ──
+      setCountLoaded(true)
+    }
+    fetchCount()
   }, [])
 
   // 7초 간격 카피 슬라이드

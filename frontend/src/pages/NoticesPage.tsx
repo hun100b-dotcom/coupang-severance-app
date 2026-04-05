@@ -1,8 +1,8 @@
 // NoticesPage.tsx — 공지사항 전체 목록 페이지
 // - 홈 화면의 공지사항 배너 클릭 시 이동하는 페이지
-// - 공지사항을 카드 형식으로 나열
-// - 각 카드 클릭 시 모달에서 전체 내용 표시
-// - TopNav 뒤로가기 버튼으로 홈으로 복귀 (서비스 플로우 방해하지 않음)
+// - 카드 상단: 제목(title) 굵게 표시
+// - 카드 하단: 본문(content) 3줄 미리보기 (말줄임)
+// - 카드 클릭 시 모달에서 제목 + 전체 본문 표시
 
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -13,13 +13,13 @@ import type { Notice } from '../types/supabase'
 
 export default function NoticesPage() {
   const navigate = useNavigate()
-  // 공지사항 목록을 Supabase에서 가져오는 훅 (is_active=true, priority desc 정렬)
+  // Supabase에서 is_active=true 공지만 가져옴 (priority 내림차순 정렬)
   const { notices, loading } = useNotices()
 
-  // 모달에서 표시할 공지사항 (null이면 모달 닫힘)
+  // 모달에 표시할 공지 (null이면 닫힘)
   const [selected, setSelected] = useState<Notice | null>(null)
 
-  // 날짜를 "YYYY.MM.DD" 형식으로 변환
+  // ISO 날짜 문자열 → "YYYY.MM.DD" 형식 변환
   function formatDate(isoString: string) {
     const d = new Date(isoString)
     const y = d.getFullYear()
@@ -29,15 +29,13 @@ export default function NoticesPage() {
   }
 
   return (
-    // 전체 페이지: 흰 배경, 최소 높이 전체 화면
+    // 전체 페이지 래퍼
     <div className="relative z-[1] min-h-screen bg-gray-50">
 
-      {/* ── 커스텀 상단 헤더 (TopNav 대신 사용) ──
-          TopNav는 이미 Layout에 포함되어 있으므로,
-          이 페이지는 Layout 안에 들어가 pt-14 패딩이 적용됨.
-          하지만 뒤로가기 UI를 명확히 제공하기 위해 별도 헤더 추가. */}
+      {/* ── 커스텀 상단 헤더 ──
+          TopNav는 Layout에 포함되므로 sticky top-14 로 그 아래에 배치 */}
       <div className="sticky top-14 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-4 py-3 flex items-center gap-3">
-        {/* 뒤로가기 버튼: 홈으로 이동 */}
+        {/* 뒤로가기 버튼 */}
         <button
           type="button"
           onClick={() => navigate('/home')}
@@ -57,7 +55,7 @@ export default function NoticesPage() {
       {/* ── 공지사항 카드 목록 ── */}
       <div className="max-w-[500px] mx-auto px-4 py-4 space-y-3">
 
-        {/* 로딩 중: 스켈레톤 카드 표시 */}
+        {/* 로딩 중: 스켈레톤 카드 */}
         {loading && (
           <>
             {[1, 2, 3].map(i => (
@@ -65,15 +63,17 @@ export default function NoticesPage() {
                 key={i}
                 className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 animate-pulse"
               >
-                <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
-                <div className="h-3 bg-gray-100 rounded w-full mb-1" />
-                <div className="h-3 bg-gray-100 rounded w-2/3" />
+                {/* 제목 스켈레톤 */}
+                <div className="h-4 bg-gray-100 rounded w-2/3 mb-3" />
+                {/* 본문 스켈레톤 */}
+                <div className="h-3 bg-gray-100 rounded w-full mb-1.5" />
+                <div className="h-3 bg-gray-100 rounded w-3/4" />
               </div>
             ))}
           </>
         )}
 
-        {/* 공지사항 없음 */}
+        {/* 공지사항 없음 안내 */}
         {!loading && notices.length === 0 && (
           <div className="text-center py-16 text-gray-400">
             <Megaphone size={36} className="mx-auto mb-3 opacity-30" />
@@ -90,68 +90,67 @@ export default function NoticesPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.06, duration: 0.25 }}
             onClick={() => setSelected(notice)}
-            // 카드 스타일: 흰 배경, 둥근 모서리, 그림자, 클릭 시 강조
             className="w-full text-left bg-white rounded-2xl p-4 shadow-sm border border-gray-100
                        hover:border-blue-200 hover:shadow-md active:scale-[0.98]
                        transition-all duration-150"
           >
             {/* 카드 상단: 공지 번호 배지 + 날짜 */}
             <div className="flex items-center justify-between mb-2">
-              {/* 공지 번호 배지 */}
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600
                                bg-blue-50 px-2 py-0.5 rounded-full">
                 <Megaphone size={10} />
                 공지 {idx + 1}
               </span>
-              {/* 등록 날짜 */}
               <span className="flex items-center gap-1 text-xs text-gray-400">
                 <Clock size={10} />
                 {formatDate(notice.created_at)}
               </span>
             </div>
 
-            {/* 공지 내용: 3줄까지 미리보기, 넘치면 말줄임 */}
-            <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
+            {/* 제목: 굵게 표시. title이 없으면 content 앞부분으로 대체 */}
+            <p className="text-sm font-bold text-gray-800 mb-1.5 leading-snug line-clamp-1">
+              {notice.title?.trim() || notice.content.slice(0, 30)}
+            </p>
+
+            {/* 본문 미리보기: 최대 2줄, 넘치면 말줄임 */}
+            <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
               {notice.content}
             </p>
 
-            {/* 전체보기 힌트 (내용이 길 때) */}
-            {notice.content.length > 80 && (
+            {/* 본문이 길 때 "전체보기" 힌트 */}
+            {notice.content.length > 60 && (
               <p className="text-xs text-blue-400 mt-1.5 font-medium">전체보기 →</p>
             )}
           </motion.button>
         ))}
       </div>
 
-      {/* ── 공지사항 상세 모달 ──
-          선택된 공지사항이 있을 때만 표시 */}
+      {/* ── 공지사항 상세 모달 ── */}
       <AnimatePresence>
         {selected && (
           <>
-            {/* 모달 배경 오버레이 */}
+            {/* 배경 오버레이 */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="fixed inset-0 bg-black/40 z-50 backdrop-blur-[2px]"
-              onClick={() => setSelected(null)} // 배경 클릭 시 닫기
+              onClick={() => setSelected(null)}
             />
 
-            {/* 모달 카드 */}
+            {/* 모달 카드 (모바일: 하단 시트, PC: 중앙 모달) */}
             <motion.div
               initial={{ opacity: 0, y: 40, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 40, scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-              // 모바일: 하단에서 올라오는 시트 스타일
-              // PC: 화면 중앙 모달 스타일
               className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl
                          md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2
                          md:max-w-lg md:w-full md:rounded-3xl"
               style={{ maxHeight: '80vh' }}
             >
-              {/* 모달 상단 핸들 (모바일 바텀시트 스타일) */}
+              {/* 모바일 핸들 바 */}
               <div className="flex justify-center pt-3 pb-1 md:hidden">
                 <div className="w-10 h-1 rounded-full bg-gray-200" />
               </div>
@@ -162,7 +161,6 @@ export default function NoticesPage() {
                   <Megaphone size={16} className="text-blue-500" />
                   <span className="font-bold text-gray-800 text-base">공지사항</span>
                 </div>
-                {/* 닫기 버튼 */}
                 <button
                   type="button"
                   onClick={() => setSelected(null)}
@@ -173,21 +171,33 @@ export default function NoticesPage() {
                 </button>
               </div>
 
-              {/* 모달 본문: 전체 공지 내용 스크롤 가능 */}
-              <div className="px-5 py-4 overflow-y-auto" style={{ maxHeight: 'calc(80vh - 120px)' }}>
-                {/* 날짜 표시 */}
+              {/* 모달 본문 (스크롤 가능) */}
+              <div className="px-5 py-4 overflow-y-auto" style={{ maxHeight: 'calc(80vh - 140px)' }}>
+                {/* 날짜 */}
                 <p className="text-xs text-gray-400 mb-3 flex items-center gap-1">
                   <Clock size={10} />
                   {formatDate(selected.created_at)}
                 </p>
 
-                {/* 전체 내용: whitespace-pre-wrap으로 줄바꿈 보존 */}
+                {/* 제목: 굵게 크게 표시 */}
+                {selected.title?.trim() && (
+                  <h2 className="text-base font-bold text-gray-800 mb-3 leading-snug">
+                    {selected.title}
+                  </h2>
+                )}
+
+                {/* 본문 구분선 (제목이 있을 때만 표시) */}
+                {selected.title?.trim() && (
+                  <hr className="border-gray-100 mb-3" />
+                )}
+
+                {/* 전체 본문: 줄바꿈 보존 */}
                 <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {selected.content}
                 </p>
               </div>
 
-              {/* 모달 하단 닫기 버튼 (모바일에서 터치하기 쉽도록) */}
+              {/* 모달 하단 닫기 버튼 */}
               <div className="px-5 py-4 border-t border-gray-100">
                 <button
                   type="button"
