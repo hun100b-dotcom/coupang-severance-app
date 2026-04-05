@@ -73,7 +73,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
             {inquiry.category}
           </span>
           <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>
-            UID: {inquiry.user_id.slice(0, 12)}…
+            {inquiry.user_email ?? `UID: ${String(inquiry.user_id).slice(0, 12)}…`}
           </span>
         </div>
 

@@ -85,11 +85,13 @@ export default function InquiriesMenu() {
   const handleExport = () => {
     exportCsv(inquiries.map(i => ({
       ID: i.id,
+      이메일: i.user_email ?? '',
       카테고리: i.category,
       상태: i.status,
       내용: i.content,
       답변: i.answer ?? '',
       접수일시: i.created_at,
+      답변일시: i.answered_at ?? '',
     })), `inquiries_${new Date().toISOString().slice(0, 10)}.csv`)
   }
 

@@ -65,8 +65,9 @@ export interface TagItem {
 
 // ── 문의 CRM ─────────────────────────────────────────────
 export interface AdminInquiry {
-  id: string
+  id: string | number     // DB: bigint
   user_id: string
+  user_email?: string     // DB 컬럼 — 작성자 이메일
   category: string
   content: string
   title?: string
@@ -74,6 +75,7 @@ export interface AdminInquiry {
   status_detail?: string  // 확장 상태
   answer: string | null
   created_at: string
+  answered_at?: string | null  // DB 컬럼 — 답변 등록 시각
   updated_at?: string
 }
 
