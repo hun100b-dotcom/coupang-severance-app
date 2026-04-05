@@ -151,7 +151,14 @@ export default function InquiriesMenu() {
           {/* 에러 표시 */}
           {apiError && (
             <div style={{ background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)', borderRadius: 10, padding: '14px 18px', marginBottom: 12, color: '#ff6b6b', fontSize: '0.82rem' }}>
-              ⚠️ {apiError} — ADMIN_SECRET 및 환경변수를 확인하세요.
+              ⚠️ {apiError}
+              {' '}
+              {/* 에러 유형에 따라 다른 안내 메시지 표시 */}
+              {(apiError.toLowerCase().includes('401') || apiError.toLowerCase().includes('403') || apiError.toLowerCase().includes('unauthorized') || apiError.toLowerCase().includes('token'))
+                ? '— 관리자 토큰(VITE_ADMIN_SECRET)을 확인하세요.'
+                : (apiError.toLowerCase().includes('network') || apiError.toLowerCase().includes('err_') || apiError.toLowerCase().includes('failed to fetch'))
+                ? '— 백엔드 서버 연결 상태를 확인하세요.'
+                : '— 잠시 후 다시 시도하거나 관리자에게 문의하세요.'}
             </div>
           )}
 
