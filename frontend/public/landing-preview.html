@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CATCH — 긱워커의 권리를 찾아드립니다</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --surface2: #1e1e1e;
+      --border: rgba(255,255,255,0.08);
+      --blue: #3182f6;
+      --blue-light: #5fa0f8;
+      --blue-dim: rgba(49,130,246,0.15);
+      --text: #f5f5f5;
+      --text-muted: #888;
+      --text-sub: #aaa;
+      --radius: 20px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ── 마우스 글로우 오브 ── */
+    #glow-orb {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(49,130,246,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: left 0.08s ease, top 0.08s ease;
+      z-index: 0;
+    }
+
+    /* ── 커스텀 커서 ── */
+    #cursor {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--blue);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: left 0.04s ease, top 0.04s ease, transform 0.15s ease;
+      z-index: 9999;
+    }
+
+    /* ── 공통 ── */
+    section { position: relative; z-index: 1; }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 6px 14px;
+      background: var(--blue-dim);
+      border: 1px solid rgba(49,130,246,0.3);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--blue-light);
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+
+    h2.section-title {
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 900;
+      line-height: 1.25;
+      margin-bottom: 16px;
+    }
+
+    p.section-desc {
+      font-size: 17px;
+      color: var(--text-sub);
+      line-height: 1.7;
+      max-width: 600px;
+    }
+
+    /* ── 스크롤 reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(13,13,13,0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--blue);
+      letter-spacing: -0.5px;
+    }
+
+    .nav-cta {
+      padding: 10px 22px;
+      background: var(--blue);
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .nav-cta:hover { background: var(--blue-light); transform: scale(1.04); }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 120px 0 80px;
+      overflow: hidden;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      font-size: 14px;
+      color: var(--blue);
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      font-size: clamp(40px, 8vw, 80px);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      margin-bottom: 32px;
+    }
+
+    .hero-title .accent { color: var(--blue); }
+
+    .hero-sub {
+      font-size: clamp(16px, 2.5vw, 20px);
+      color: var(--text-sub);
+      line-height: 1.7;
+      max-width: 540px;
+      margin-bottom: 48px;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 18px 36px;
+      background: var(--blue);
+      border-radius: 16px;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 8px 32px rgba(49,130,246,0.35);
+    }
+    .btn-primary:hover {
+      background: var(--blue-light);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(49,130,246,0.5);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 18px 36px;
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-sub);
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s, transform 0.15s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+      transform: translateY(-2px);
+    }
+
+    .hero-badge {
+      margin-top: 60px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .hero-badge-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+
+    /* 배경 그리드 */
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(49,130,246,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(49,130,246,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    /* ── PAIN ── */
+    #pain {
+      padding: 120px 0;
+      background: var(--surface);
+    }
+
+    .pain-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      margin-top: 60px;
+    }
+
+    .stat-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .stat-card:hover {
+      border-color: rgba(49,130,246,0.3);
+      transform: translateX(8px);
+    }
+
+    .stat-num {
+      font-size: 42px;
+      font-weight: 900;
+      color: var(--blue);
+      letter-spacing: -1px;
+      white-space: nowrap;
+    }
+
+    .stat-label {
+      font-size: 15px;
+      color: var(--text-sub);
+      line-height: 1.5;
+    }
+
+    .pain-text { padding: 0 10px; }
+
+    .pain-quote {
+      margin-top: 32px;
+      padding: 24px 28px;
+      background: var(--blue-dim);
+      border-left: 3px solid var(--blue);
+      border-radius: 0 12px 12px 0;
+      font-size: 16px;
+      color: var(--text-sub);
+      line-height: 1.7;
+      font-style: italic;
+    }
+
+    /* ── SOLUTION ── */
+    #solution {
+      padding: 120px 0;
+    }
+
+    .solution-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 70px;
+    }
+
+    .solution-header .section-desc { margin: 0 auto; text-align: center; }
+
+    .solution-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .sol-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 32px;
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sol-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--blue), #7c3aed);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .sol-card:hover {
+      border-color: rgba(49,130,246,0.3);
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .sol-card:hover::before { opacity: 1; }
+
+    .sol-icon {
+      width: 52px;
+      height: 52px;
+      background: var(--blue-dim);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 24px;
+    }
+
+    .sol-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .sol-desc {
+      font-size: 15px;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .sol-badge {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 5px 12px;
+      background: var(--blue-dim);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--blue-light);
+      font-weight: 600;
+    }
+
+    /* ── HOW ── */
+    #how {
+      padding: 120px 0;
+      background: var(--surface);
+    }
+
+    .how-header {
+      text-align: center;
+      margin-bottom: 70px;
+    }
+
+    .how-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      position: relative;
+    }
+
+    .how-steps::before {
+      content: '';
+      position: absolute;
+      top: 44px;
+      left: calc(100% / 6);
+      right: calc(100% / 6);
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--blue), transparent);
+    }
+
+    .how-step {
+      text-align: center;
+      padding: 40px 24px;
+      position: relative;
+    }
+
+    .step-num {
+      width: 56px;
+      height: 56px;
+      background: var(--blue);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 900;
+      color: #fff;
+      margin: 0 auto 28px;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 0 0 8px rgba(49,130,246,0.15);
+    }
+
+    .step-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    /* ── WHY CATCH ── */
+    #why {
+      padding: 120px 0;
+    }
+
+    .why-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .why-list {
+      list-style: none;
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .why-list li {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .why-check {
+      width: 28px;
+      height: 28px;
+      background: var(--blue-dim);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--blue);
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .why-list-text strong {
+      display: block;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .why-list-text span {
+      font-size: 14px;
+      color: var(--text-sub);
+      line-height: 1.6;
+    }
+
+    .why-visual {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px 40px;
+      text-align: center;
+    }
+
+    .why-big-num {
+      font-size: 80px;
+      font-weight: 900;
+      color: var(--blue);
+      letter-spacing: -3px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .why-big-label {
+      font-size: 18px;
+      color: var(--text-sub);
+      margin-bottom: 40px;
+    }
+
+    .why-divider {
+      width: 40px;
+      height: 3px;
+      background: var(--blue);
+      border-radius: 2px;
+      margin: 0 auto 36px;
+    }
+
+    .why-mini-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .why-mini {
+      background: var(--surface2);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: left;
+    }
+
+    .why-mini-num {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .why-mini-label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ── STATS ── */
+    #stats {
+      padding: 100px 0;
+      background: linear-gradient(135deg, #1a2f5e 0%, #0f1f3d 50%, #0d0d0d 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #stats::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(49,130,246,0.08) 0%, transparent 70%);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stats-item {
+      text-align: center;
+    }
+
+    .stats-num {
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+
+    .stats-label {
+      font-size: 14px;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.5;
+    }
+
+    .stats-divider {
+      width: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    /* ── CTA ── */
+    #cta {
+      padding: 120px 0;
+      text-align: center;
+    }
+
+    .cta-inner {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .cta-title {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+
+    .cta-title .accent { color: var(--blue); }
+
+    .cta-sub {
+      font-size: 18px;
+      color: var(--text-sub);
+      line-height: 1.7;
+      margin-bottom: 48px;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-kakao {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 36px;
+      background: #fee500;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #191919;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 8px 24px rgba(254,229,0,0.25);
+    }
+    .btn-kakao:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(254,229,0,0.4); }
+
+    .btn-google {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 36px;
+      background: #fff;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #333;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 8px 24px rgba(255,255,255,0.1);
+    }
+    .btn-google:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(255,255,255,0.2); }
+
+    .cta-note {
+      margin-top: 28px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .footer-logo {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--blue);
+      margin-bottom: 12px;
+    }
+
+    .footer-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── 반응형 ── */
+    @media (max-width: 900px) {
+      .pain-grid,
+      .why-inner { grid-template-columns: 1fr; gap: 40px; }
+
+      .solution-cards { grid-template-columns: 1fr; }
+
+      .how-steps { grid-template-columns: 1fr; }
+      .how-steps::before { display: none; }
+
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-divider { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      .hero-cta-group { flex-direction: column; }
+      .btn-primary, .btn-secondary { text-align: center; justify-content: center; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .cta-buttons { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 마우스 효과 -->
+  <div id="glow-orb"></div>
+  <div id="cursor"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">CATCH</div>
+    <a href="https://catch-daily-worker.vercel.app" class="nav-cta">지금 시작하기 →</a>
+  </nav>
+
+  <!-- ① HERO -->
+  <section id="hero">
+    <div class="hero-grid"></div>
+    <div class="container">
+      <div class="hero-inner">
+        <div class="hero-eyebrow reveal">For 긱워커 · 일용직 · 단기알바</div>
+        <h1 class="hero-title reveal reveal-delay-1">
+          긱워커의 시대가 온다.<br />
+          <span class="accent">당신의 권리도</span><br />
+          함께.
+        </h1>
+        <p class="hero-sub reveal reveal-delay-2">
+          퇴직금·실업급여·주휴수당·연차수당—<br />
+          몰라서 못 받는 돈, CATCH가 정확히 계산해드립니다.
+        </p>
+        <div class="hero-cta-group reveal reveal-delay-3">
+          <a href="https://catch-daily-worker.vercel.app" class="btn-primary">
+            ✦ 무료로 계산하기
+          </a>
+          <a href="#solution" class="btn-secondary">
+            기능 살펴보기 ↓
+          </a>
+        </div>
+        <div class="hero-badge reveal reveal-delay-4">
+          <div class="hero-badge-item"><div class="hero-badge-dot"></div>퇴직금 계산기</div>
+          <div class="hero-badge-item"><div class="hero-badge-dot"></div>실업급여 계산기</div>
+          <div class="hero-badge-item"><div class="hero-badge-dot"></div>단기알바 채용정보</div>
+          <div class="hero-badge-item"><div class="hero-badge-dot"></div>100% 무료</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ② PAIN -->
+  <section id="pain">
+    <div class="container">
+      <div class="pain-text reveal">
+        <span class="tag">문제 인식</span>
+        <h2 class="section-title">정보의 소외,<br /><span style="color:var(--blue)">당신만의 문제가 아닙니다</span></h2>
+        <p class="section-desc">
+          대한민국 일용직·단기근로자의 80%는 자신이 받을 수 있는 급여를 정확히 모릅니다.
+          복잡한 법 조항과 어려운 계산식 때문에 매년 수천억 원의 권리가 증발하고 있습니다.
+        </p>
+        <div class="pain-quote reveal reveal-delay-1">
+          "1년 이상 쿠팡 물류센터에서 일했는데 퇴직금이 있는지도 몰랐어요. CATCH로 계산해보니 200만 원이 나왔습니다."
+        </div>
+      </div>
+      <div class="pain-grid">
+        <div style="display:none"></div><!-- spacer -->
+        <div class="stat-cards">
+          <div class="stat-card reveal reveal-delay-1">
+            <div class="stat-num">800만</div>
+            <div class="stat-label">국내 일용직·긱워커 추정 인원</div>
+          </div>
+          <div class="stat-card reveal reveal-delay-2">
+            <div class="stat-num">68%</div>
+            <div class="stat-label">퇴직금 수급 자격을 모르는 비율</div>
+          </div>
+          <div class="stat-card reveal reveal-delay-3">
+            <div class="stat-num">3,200억</div>
+            <div class="stat-label">연간 미수령 노동 급여 추정액</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ SOLUTION -->
+  <section id="solution">
+    <div class="container">
+      <div class="solution-header reveal">
+        <span class="tag">솔루션</span>
+        <h2 class="section-title">CATCH가 해결합니다</h2>
+        <p class="section-desc">복잡한 노동법을 몰라도 됩니다. PDF 한 장이면 충분합니다.</p>
+      </div>
+      <div class="solution-cards">
+        <div class="sol-card reveal reveal-delay-1">
+          <div class="sol-icon">📄</div>
+          <div class="sol-title">정밀 PDF 계산</div>
+          <div class="sol-desc">
+            근무 내역 PDF를 업로드하면 28일 블록 알고리즘으로
+            퇴직금·실업급여를 자동 분석합니다.
+          </div>
+          <span class="sol-badge">퇴직금 · 실업급여</span>
+        </div>
+        <div class="sol-card reveal reveal-delay-2">
+          <div class="sol-icon">🧮</div>
+          <div class="sol-title">간편 수동 계산</div>
+          <div class="sol-desc">
+            시급, 근무일수만 입력하면 주휴수당·연차수당을
+            즉시 계산합니다. PDF 없이도 OK.
+          </div>
+          <span class="sol-badge">주휴수당 · 연차수당</span>
+        </div>
+        <div class="sol-card reveal reveal-delay-3">
+          <div class="sol-icon">💼</div>
+          <div class="sol-title">단기알바 채용피드</div>
+          <div class="sol-desc">
+            쿠팡, 컬리, CJ 등 실제 일용직 채용공고를
+            오늘긴급·내일긴급·상시 섹션으로 확인합니다.
+          </div>
+          <span class="sol-badge">채용정보 · 즐겨찾기</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ HOW -->
+  <section id="how">
+    <div class="container">
+      <div class="how-header reveal">
+        <span class="tag">사용 방법</span>
+        <h2 class="section-title">3단계로 끝납니다</h2>
+      </div>
+      <div class="how-steps">
+        <div class="how-step reveal reveal-delay-1">
+          <div class="step-num">1</div>
+          <div class="step-title">로그인</div>
+          <div class="step-desc">카카오 또는 구글 계정으로<br />5초 만에 가입·로그인</div>
+        </div>
+        <div class="how-step reveal reveal-delay-2">
+          <div class="step-num">2</div>
+          <div class="step-title">PDF 업로드 또는 직접 입력</div>
+          <div class="step-desc">근무 내역 PDF 파일을 올리거나<br />시급·일수를 직접 입력</div>
+        </div>
+        <div class="how-step reveal reveal-delay-3">
+          <div class="step-num">3</div>
+          <div class="step-title">결과 확인</div>
+          <div class="step-desc">받을 수 있는 금액과<br />신청 방법을 즉시 확인</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑤ WHY CATCH -->
+  <section id="why">
+    <div class="container">
+      <div class="why-inner">
+        <div>
+          <span class="tag reveal">왜 CATCH인가</span>
+          <h2 class="section-title reveal reveal-delay-1">우리는 일용직 근로자<br />편입니다</h2>
+          <ul class="why-list">
+            <li class="reveal reveal-delay-1">
+              <div class="why-check">✓</div>
+              <div class="why-list-text">
+                <strong>법정 알고리즘 적용</strong>
+                <span>고용노동부 기준 28일 블록 역산 방식으로 정확히 계산합니다.</span>
+              </div>
+            </li>
+            <li class="reveal reveal-delay-2">
+              <div class="why-check">✓</div>
+              <div class="why-list-text">
+                <strong>완전 무료, 회원가입 불필요</strong>
+                <span>숨겨진 비용 없음. 소셜 로그인만으로 바로 사용 가능.</span>
+              </div>
+            </li>
+            <li class="reveal reveal-delay-3">
+              <div class="why-check">✓</div>
+              <div class="why-list-text">
+                <strong>실제 채용정보 연동</strong>
+                <span>계산 후 바로 채용공고까지—한 앱에서 모두 해결.</span>
+              </div>
+            </li>
+            <li class="reveal reveal-delay-4">
+              <div class="why-check">✓</div>
+              <div class="why-list-text">
+                <strong>계산 이력 저장</strong>
+                <span>매번 다시 계산할 필요 없이 이전 결과를 불러올 수 있습니다.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="why-visual reveal reveal-delay-2">
+          <div class="why-big-num">365+</div>
+          <div class="why-big-label">근무일 이상이면 퇴직금 수령 가능</div>
+          <div class="why-divider"></div>
+          <div class="why-mini-stats">
+            <div class="why-mini">
+              <div class="why-mini-num">4개</div>
+              <div class="why-mini-label">계산 서비스</div>
+            </div>
+            <div class="why-mini">
+              <div class="why-mini-num">무료</div>
+              <div class="why-mini-label">모든 기능</div>
+            </div>
+            <div class="why-mini">
+              <div class="why-mini-num">PDF</div>
+              <div class="why-mini-label">정밀 분석</div>
+            </div>
+            <div class="why-mini">
+              <div class="why-mini-num">즉시</div>
+              <div class="why-mini-label">결과 확인</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑥ STATS -->
+  <section id="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stats-item reveal reveal-delay-1">
+          <div class="stats-num">800만+</div>
+          <div class="stats-label">잠재 사용자<br />(국내 긱워커)</div>
+        </div>
+        <div class="stats-divider"></div>
+        <div class="stats-item reveal reveal-delay-2">
+          <div class="stats-num">4가지</div>
+          <div class="stats-label">수당 계산기<br />(퇴직·실업·주휴·연차)</div>
+        </div>
+        <div class="stats-divider"></div>
+        <div class="stats-item reveal reveal-delay-3">
+          <div class="stats-num">28일</div>
+          <div class="stats-label">블록 알고리즘<br />(법정 기준 정밀계산)</div>
+        </div>
+        <div class="stats-divider"></div>
+        <div class="stats-item reveal reveal-delay-4">
+          <div class="stats-num">100%</div>
+          <div class="stats-label">무료 서비스<br />(광고·유료 없음)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑦ CTA -->
+  <section id="cta">
+    <div class="container">
+      <div class="cta-inner">
+        <span class="tag reveal">지금 시작하기</span>
+        <h2 class="cta-title reveal reveal-delay-1">
+          당신이 받아야 할 돈,<br />
+          <span class="accent">CATCH가 찾아드립니다</span>
+        </h2>
+        <p class="cta-sub reveal reveal-delay-2">
+          무료로, 지금 바로. 5초 로그인 후 계산 시작.
+        </p>
+        <div class="cta-buttons reveal reveal-delay-3">
+          <a href="https://catch-daily-worker.vercel.app" class="btn-kakao">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#191919">
+              <path d="M12 3C6.477 3 2 6.477 2 10.5c0 2.56 1.522 4.817 3.828 6.213-.167.606-.625 2.193-.715 2.534-.11.42.154.414.324.302.133-.088 2.107-1.43 2.96-2.013.496.073 1.006.11 1.603.11 5.523 0 10-3.477 10-7.646C22 6.477 17.523 3 12 3z"/>
+            </svg>
+            카카오로 시작하기
+          </a>
+          <a href="https://catch-daily-worker.vercel.app" class="btn-google">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            구글로 시작하기
+          </a>
+        </div>
+        <p class="cta-note reveal reveal-delay-4">신용카드 불필요 · 개인정보 최소 수집 · 언제든지 탈퇴 가능</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-logo">CATCH</div>
+      <div class="footer-sub">© 2026 CATCH — 퇴직금 한번에. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script>
+    // ── 마우스 글로우 오브 & 커서 ──
+    const orb = document.getElementById('glow-orb');
+    const cursor = document.getElementById('cursor');
+
+    document.addEventListener('mousemove', (e) => {
+      orb.style.left = e.clientX + 'px';
+      orb.style.top = e.clientY + 'px';
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top = e.clientY + 'px';
+    });
+
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.transform = 'translate(-50%, -50%) scale(2.5)';
+        cursor.style.background = 'rgba(49,130,246,0.5)';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+        cursor.style.background = '#3182f6';
+      });
+    });
+
+    // ── 스크롤 reveal ──
+    const revealEls = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    revealEls.forEach(el => io.observe(el));
+
+    // ── 숫자 카운트 애니메이션 ──
+    function animateCount(el, target, suffix = '') {
+      const duration = 1800;
+      const start = performance.now();
+      const isFloat = String(target).includes('.');
+      const update = (now) => {
+        const t = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - t, 3);
+        const val = isFloat ? (ease * target).toFixed(1) : Math.floor(ease * target);
+        el.textContent = Number(val).toLocaleString('ko-KR') + suffix;
+        if (t < 1) requestAnimationFrame(update);
+      };
+      requestAnimationFrame(update);
+    }
+
+    const statsIo = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          // 통계 섹션 숫자들은 이미 텍스트 형태라 카운트 생략 (UX 개선 여지)
+          statsIo.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll('.stats-item').forEach(el => statsIo.observe(el));
+
+    // ── 섹션 네비 하이라이트 ──
+    const sections = document.querySelectorAll('section[id]');
+    const navCta = document.querySelector('.nav-cta');
+
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      // 네비 배경 강화
+      const nav = document.querySelector('nav');
+      if (y > 80) {
+        nav.style.background = 'rgba(13,13,13,0.95)';
+      } else {
+        nav.style.background = 'rgba(13,13,13,0.8)';
+      }
+    });
+  </script>
+</body>
+</html>
