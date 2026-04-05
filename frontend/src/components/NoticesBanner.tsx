@@ -3,16 +3,24 @@
 // - 10초마다 공지 로테이션 (공지가 2개 이상일 때)
 // - 제목이 20자 초과 → 오른쪽에서 왼쪽으로 흐르는 seamless 마키(marquee) 애니메이션
 // - 제목이 20자 이하 → 정적 표시 (truncate)
+// - 공지 전환 시 → 현재 공지가 왼쪽으로 사라지면서 새 공지가 오른쪽에서 슬라이드 진입
 // - 배너 클릭 시 /notices(공지사항 전체 목록) 페이지로 이동
 //
 // 마키 애니메이션 스펙:
 //   방향: 오른쪽 → 왼쪽 (translateX 0 → -50%)
 //   속도: 제목 글자 수에 따라 조절 (8~20초), 약 30~40px/s
 //   반복: 텍스트를 2번 이어붙여 seamless 무한 루프
+//
+// 슬라이드 전환 스펙:
+//   framer-motion AnimatePresence mode="popLayout" 사용
+//   진입: x 100% → 0 (오른쪽에서 왼쪽으로 슬라이드 인)
+//   퇴장: x 0 → -100% (왼쪽으로 슬라이드 아웃)
+//   duration: 0.4s, ease: easeInOut
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Megaphone, ChevronRight } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { Notice } from '../types/supabase'
 
 interface Props {
@@ -63,44 +71,57 @@ export default function NoticesBanner({ notices }: Props) {
         {/* 메가폰 아이콘 */}
         <Megaphone className="w-4 h-4 text-blue-500 flex-shrink-0" />
 
-        {/* 텍스트 컨테이너 — 텍스트가 넘치면 마키 애니메이션 적용 */}
+        {/*
+         * 텍스트 컨테이너 — overflow-hidden으로 슬라이드 전환 시 잘림 처리
+         * AnimatePresence + motion.div로 공지 전환 시 슬라이드 애니메이션 적용
+         * - 공지 1개: currentIdx가 변하지 않으므로 슬라이드 없이 마키만 동작
+         * - 공지 2개 이상: 10초마다 currentIdx 변경 → 슬라이드 전환
+         */}
         <div className="flex-1 overflow-hidden min-w-0">
-          {isLong ? (
-            /*
-             * seamless 마키(뉴스티커) 구현 방법:
-             * - 같은 텍스트를 2번 이어붙임: [텍스트A][텍스트B]
-             * - translateX(0) → translateX(-50%) 로 이동하면
-             *   텍스트B가 텍스트A 자리로 오면서 seamless 반복됨
-             * - key={currentIdx} 로 공지 전환 시 애니메이션 리셋
-             * - CSS 키프레임은 index.css의 @keyframes marquee-ticker 에 정의
-             */
-            <span
-              key={`ticker-${currentIdx}`}
-              style={{
-                display: 'inline-flex',
-                whiteSpace: 'nowrap',
-                animation: `marquee-ticker ${duration}s linear infinite`,
-                willChange: 'transform',
-              }}
+          {/* initial={false}: 첫 렌더 시 슬라이드 인 애니메이션 생략 */}
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.div
+              key={currentIdx}
+              initial={{ x: '100%' }}       /* 오른쪽 밖에서 시작 */
+              animate={{ x: 0 }}            /* 제자리로 슬라이드 인 */
+              exit={{ x: '-100%' }}         /* 왼쪽 밖으로 슬라이드 아웃 */
+              transition={{ duration: 0.4, ease: 'easeInOut' }}
             >
-              {/* 텍스트 첫 번째 복사 */}
-              <span className="text-sm font-medium text-gray-700" style={{ paddingRight: '3rem' }}>
-                {displayText}
-              </span>
-              {/* 텍스트 두 번째 복사 (seamless 루프를 위해 동일 텍스트 반복) */}
-              <span className="text-sm font-medium text-gray-700" style={{ paddingRight: '3rem' }}>
-                {displayText}
-              </span>
-            </span>
-          ) : (
-            /* 짧은 제목: 정적 표시, 넘치면 말줄임 처리 */
-            <span
-              key={`static-${currentIdx}`}
-              className="text-sm font-medium text-gray-700 block truncate"
-            >
-              {displayText}
-            </span>
-          )}
+              {isLong ? (
+                /*
+                 * seamless 마키(뉴스티커) 구현 방법:
+                 * - 같은 텍스트를 2번 이어붙임: [텍스트A][텍스트B]
+                 * - translateX(0) → translateX(-50%) 로 이동하면
+                 *   텍스트B가 텍스트A 자리로 오면서 seamless 반복됨
+                 * - motion.div key={currentIdx} 변경 시 컴포넌트가 재마운트되어
+                 *   CSS 애니메이션도 자동 리셋됨
+                 * - CSS 키프레임은 index.css의 @keyframes marquee-ticker 에 정의
+                 */
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    whiteSpace: 'nowrap',
+                    animation: `marquee-ticker ${duration}s linear infinite`,
+                    willChange: 'transform',
+                  }}
+                >
+                  {/* 텍스트 첫 번째 복사 */}
+                  <span className="text-sm font-medium text-gray-700" style={{ paddingRight: '3rem' }}>
+                    {displayText}
+                  </span>
+                  {/* 텍스트 두 번째 복사 (seamless 루프를 위해 동일 텍스트 반복) */}
+                  <span className="text-sm font-medium text-gray-700" style={{ paddingRight: '3rem' }}>
+                    {displayText}
+                  </span>
+                </span>
+              ) : (
+                /* 짧은 제목: 정적 표시, 넘치면 말줄임 처리 */
+                <span className="text-sm font-medium text-gray-700 block truncate">
+                  {displayText}
+                </span>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {/* 복수 공지 인디케이터 (공지 2개 이상일 때만 표시) */}

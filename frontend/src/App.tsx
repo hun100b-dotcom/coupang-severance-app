@@ -40,6 +40,7 @@ const CalculatorPage         = lazy(() => import('./pages/CalculatorPage'))
 const PrivacyPolicyPage      = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsOfServicePage     = lazy(() => import('./pages/TermsOfService'))
 const SettingsPage           = lazy(() => import('./pages/SettingsPage'))   // 설정 페이지
+const InquiryPage            = lazy(() => import('./pages/InquiryPage'))    // 문의하기 페이지
 
 export default function App() {
   return (
@@ -64,9 +65,13 @@ export default function App() {
           <Route path="/onboarding" element={<OnboardingPage />} />
           {/* 관리자 페이지: 자체 사이드바 네비 보유 */}
           <Route path="/admin" element={<AdminPage />} />
-          {/* 약관 페이지 */}
+          {/* 약관 페이지 — /terms/* 경로와 /privacy-policy, /terms-of-service 경로 모두 지원 */}
           <Route path="/terms/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/terms/service" element={<TermsOfServicePage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />   {/* MySettingsTab 연결 경로 */}
+          <Route path="/terms-of-service" element={<TermsOfServicePage />} /> {/* MySettingsTab 연결 경로 */}
+          {/* 문의하기 페이지 — MySettingsTab "고객센터/문의하기" 연결 */}
+          <Route path="/inquiry" element={<InquiryPage />} />
           {/* 설정 페이지 — 헤더 드롭다운 "설정" 클릭 시 이동 */}
           <Route path="/settings" element={<SettingsPage />} />
 

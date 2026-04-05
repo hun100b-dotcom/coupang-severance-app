@@ -67,6 +67,15 @@ export default function MySettingsTab() {
     localStorage.getItem('notif_work') !== 'false'
   )
 
+  // ── 브라우저 알림 권한 상태 ('granted' | 'denied' | 'default' | 'unsupported')
+  // Notification API를 지원하지 않는 환경(구형 브라우저 등)은 'unsupported' 처리
+  const [notifPermission, setNotifPermission] = useState<string>(() => {
+    if (typeof Notification === 'undefined') return 'unsupported'
+    return Notification.permission
+  })
+  // 권한 거부 안내 메시지 표시 여부
+  const [showPermissionDenied, setShowPermissionDenied] = useState(false)
+
   // 초기 닉네임: profiles 테이블 full_name 우선, 없으면 user_metadata에서
   useEffect(() => {
     if (!user) return
@@ -101,13 +110,42 @@ export default function MySettingsTab() {
     loadNickname()
   }, [user])
 
-  // 알림 토글 — localStorage 즉시 반영
-  function toggleJobNotification() {
+  // 채용공고 알림 토글 — ON 시 브라우저 알림 권한 요청
+  async function toggleJobNotification() {
     const next = !jobNotification
+
+    // 알림을 켜려는 경우 → 브라우저 알림 권한 확인 및 요청
+    if (next && typeof Notification !== 'undefined') {
+      if (Notification.permission === 'default') {
+        // 아직 권한 요청 전: 브라우저 권한 팝업 표시
+        try {
+          const permission = await Notification.requestPermission()
+          setNotifPermission(permission)
+          if (permission === 'denied') {
+            // 권한 거부 시: ON으로 전환하지 않고 안내 메시지 표시
+            setShowPermissionDenied(true)
+            setTimeout(() => setShowPermissionDenied(false), 4000)
+            return
+          }
+        } catch {
+          // requestPermission 미지원 환경 (일부 구형 브라우저)
+          setNotifPermission('unsupported')
+        }
+      } else if (Notification.permission === 'denied') {
+        // 이미 권한 거부 상태: 안내 메시지 표시 후 return
+        setShowPermissionDenied(true)
+        setTimeout(() => setShowPermissionDenied(false), 4000)
+        return
+      }
+    }
+
+    // localStorage 저장 + 상태 즉시 반영
     setJobNotification(next)
     localStorage.setItem('notif_job', String(next))
+    setShowPermissionDenied(false)
   }
 
+  // 출근확정 알림 토글 — localStorage 즉시 반영
   function toggleWorkNotification() {
     const next = !workNotification
     setWorkNotification(next)
@@ -266,9 +304,21 @@ export default function MySettingsTab() {
 
         {/* 새 채용공고 알림 토글 */}
         <div className="px-5 py-3.5 flex items-center justify-between border-t border-slate-50">
-          <div>
+          <div className="flex-1 min-w-0 pr-3">
             <p className="text-[13px] font-semibold text-[#191f28]">새 채용공고 알림</p>
             <p className="text-[11px] text-[#8b95a1] mt-0.5">맞춤 채용공고가 등록되면 알려드려요</p>
+            {/* 브라우저 알림 권한 거부 시 안내 문구 표시 */}
+            {showPermissionDenied && (
+              <p className="text-[11px] text-red-400 mt-1 leading-tight">
+                브라우저 알림 권한이 필요합니다. 기기 설정에서 이 사이트의 알림을 허용해주세요.
+              </p>
+            )}
+            {/* Notification API 미지원 환경 안내 */}
+            {notifPermission === 'unsupported' && jobNotification && (
+              <p className="text-[11px] text-slate-400 mt-1">
+                현재 브라우저는 알림을 지원하지 않아요
+              </p>
+            )}
           </div>
           <Toggle
             value={jobNotification}
@@ -306,32 +356,32 @@ export default function MySettingsTab() {
           <span className="text-[12px] text-[#8b95a1] font-mono font-medium">v{appVersion}</span>
         </div>
 
-        {/* 이용약관 → /terms/service */}
+        {/* 이용약관 → /terms-of-service 페이지로 이동 */}
         <button
-          onClick={() => navigate('/terms/service')}
+          onClick={() => navigate('/terms-of-service')}
           className="w-full px-5 py-3.5 flex items-center justify-between border-t border-slate-50 hover:bg-slate-50 active:bg-slate-100 transition-colors"
         >
           <p className="text-[13px] font-semibold text-[#191f28]">이용약관</p>
           <ChevronRight className="w-4 h-4 text-[#c0c8d2]" />
         </button>
 
-        {/* 개인정보처리방침 → /terms/privacy */}
+        {/* 개인정보처리방침 → /privacy-policy 페이지로 이동 */}
         <button
-          onClick={() => navigate('/terms/privacy')}
+          onClick={() => navigate('/privacy-policy')}
           className="w-full px-5 py-3.5 flex items-center justify-between border-t border-slate-50 hover:bg-slate-50 active:bg-slate-100 transition-colors"
         >
           <p className="text-[13px] font-semibold text-[#191f28]">개인정보처리방침</p>
           <ChevronRight className="w-4 h-4 text-[#c0c8d2]" />
         </button>
 
-        {/* 고객센터 / 문의하기 → 이메일 링크 */}
-        <a
-          href="mailto:catchmasterdmin@gmail.com?subject=CATCH 앱 문의"
+        {/* 고객센터 / 문의하기 → /inquiry 인앱 문의 페이지로 이동 */}
+        <button
+          onClick={() => navigate('/inquiry')}
           className="w-full px-5 py-3.5 flex items-center justify-between border-t border-slate-50 hover:bg-slate-50 active:bg-slate-100 transition-colors"
         >
           <p className="text-[13px] font-semibold text-[#191f28]">고객센터 / 문의하기</p>
           <ChevronRight className="w-4 h-4 text-[#c0c8d2]" />
-        </a>
+        </button>
       </section>
 
       {/* ════ [계정] 섹션 ════ */}
