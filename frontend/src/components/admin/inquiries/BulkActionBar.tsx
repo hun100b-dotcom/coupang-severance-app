@@ -1,7 +1,7 @@
 import { bulkInquiryStatus } from '../../../lib/api'
 
 interface Props {
-  selectedIds: string[]
+  selectedIds: (string | number)[]
   onDone: () => void
 }
 

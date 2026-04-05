@@ -26,7 +26,7 @@ export default function InquiriesMenu() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
-  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [selected, setSelected] = useState<Set<string | number>>(new Set())
   const [activeInquiry, setActiveInquiry] = useState<AdminInquiry | null>(null)
   const [showTemplates, setShowTemplates] = useState(false)
 
@@ -56,7 +56,7 @@ export default function InquiriesMenu() {
   useEffect(() => { loadInquiries() }, [loadInquiries])
   useEffect(() => { loadTemplates() }, [])
 
-  const handleToggle = (id: string) => {
+  const handleToggle = (id: string | number) => {
     setSelected(prev => {
       const next = new Set(prev)
       next.has(id) ? next.delete(id) : next.add(id)

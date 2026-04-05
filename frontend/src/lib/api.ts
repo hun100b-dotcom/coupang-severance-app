@@ -308,7 +308,7 @@ export const getAdminInquiries = async (params: {
   const { page = 1, limit = 20, status = '', category = '', search = '' } = params
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = supabase
+  let query: any = supabase!
     .from('inquiries')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
@@ -327,7 +327,7 @@ export const getAdminInquiries = async (params: {
 }
 
 export const patchInquiryStatus = async (id: string | number, status: string) => {
-  const { error } = await supabase
+  const { error } = await supabase!
     .from('inquiries')
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -338,7 +338,7 @@ export const patchInquiryStatus = async (id: string | number, status: string) =>
 export const patchInquiryAnswer = async (id: string | number, answer: string) => {
   const now = new Date().toISOString()
   // answered_at: 최초 답변 시각, updated_at: 수정 시각
-  const { error } = await supabase
+  const { error } = await supabase!
     .from('inquiries')
     .update({ answer, status: 'answered', answered_at: now, updated_at: now })
     .eq('id', id)
@@ -347,7 +347,7 @@ export const patchInquiryAnswer = async (id: string | number, answer: string) =>
 }
 
 export const bulkInquiryStatus = async (ids: Array<string | number>, status: string) => {
-  const { error } = await supabase
+  const { error } = await supabase!
     .from('inquiries')
     .update({ status, updated_at: new Date().toISOString() })
     .in('id', ids)
@@ -357,7 +357,7 @@ export const bulkInquiryStatus = async (ids: Array<string | number>, status: str
 
 // Templates — Supabase inquiry_templates 테이블 직접 조회
 export const getTemplates = async () => {
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('inquiry_templates')
     .select('*')
     .order('use_count', { ascending: false })
@@ -366,7 +366,7 @@ export const getTemplates = async () => {
 }
 
 export const createTemplate = async (body: { title: string; content: string; category?: string }) => {
-  const { error } = await supabase
+  const { error } = await supabase!
     .from('inquiry_templates')
     .insert({ ...body, category: body.category ?? '기타' })
   if (error) throw new Error(error.message)
@@ -374,7 +374,7 @@ export const createTemplate = async (body: { title: string; content: string; cat
 }
 
 export const deleteTemplate = async (id: string) => {
-  const { error } = await supabase
+  const { error } = await supabase!
     .from('inquiry_templates')
     .delete()
     .eq('id', id)
