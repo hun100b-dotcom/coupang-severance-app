@@ -39,6 +39,7 @@ const JobsPage               = lazy(() => import('./pages/JobsPage'))
 const CalculatorPage         = lazy(() => import('./pages/CalculatorPage'))
 const PrivacyPolicyPage      = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsOfServicePage     = lazy(() => import('./pages/TermsOfService'))
+const SettingsPage           = lazy(() => import('./pages/SettingsPage'))   // 설정 페이지
 
 export default function App() {
   return (
@@ -66,6 +67,8 @@ export default function App() {
           {/* 약관 페이지 */}
           <Route path="/terms/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/terms/service" element={<TermsOfServicePage />} />
+          {/* 설정 페이지 — 헤더 드롭다운 "설정" 클릭 시 이동 */}
+          <Route path="/settings" element={<SettingsPage />} />
 
           {/* ── 네비바(TopNav + BottomNav)가 있는 일반 페이지 ──
               Layout 컴포넌트가 Outlet을 통해 중첩 라우트를 렌더링합니다. */}

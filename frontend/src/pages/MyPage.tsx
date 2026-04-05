@@ -2,7 +2,8 @@
 // 탭: 홈(기본 정보) / 즐겨찾기 / 지원현황 / 스케줄 / 포인트
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, LogOut, Trash2, Home, Star, ClipboardList, CalendarDays, Gift } from 'lucide-react'
+import { ChevronLeft, LogOut, Home, Star, ClipboardList, CalendarDays, Gift, Settings } from 'lucide-react'
+// Trash2는 계정관리 섹션 제거로 사용하지 않음 (설정 탭으로 이동)
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { notifyNewInquiry } from '../lib/api'
@@ -18,6 +19,7 @@ import MyFavoritesTab from '../components/mypage/MyFavoritesTab'
 import MyApplicationsTab from '../components/mypage/MyApplicationsTab'
 import MyScheduleTab from '../components/mypage/MyScheduleTab'
 import MyRewardsTab from '../components/mypage/MyRewardsTab'
+import MySettingsTab from '../components/mypage/MySettingsTab'
 import type { InquiryItem } from '../components/mypage/InquiryHistory'
 import type { ReportRow } from '../types/supabase'
 
@@ -33,14 +35,15 @@ function calcDaysFrom(iso: string | null | undefined): number | null {
   return Math.floor(ms / (24 * 60 * 60 * 1000))
 }
 
-// ── 탭 정의 ──
-type TabKey = 'home' | 'favorites' | 'applications' | 'schedule' | 'rewards'
+// ── 탭 정의 ── (설정 탭을 맨 우측에 추가)
+type TabKey = 'home' | 'favorites' | 'applications' | 'schedule' | 'rewards' | 'settings'
 const TABS: { key: TabKey; icon: typeof Home; label: string }[] = [
   { key: 'home',         icon: Home,          label: '홈' },
   { key: 'favorites',    icon: Star,          label: '즐겨찾기' },
   { key: 'applications', icon: ClipboardList, label: '지원현황' },
   { key: 'schedule',     icon: CalendarDays,  label: '스케줄' },
   { key: 'rewards',      icon: Gift,          label: '포인트' },
+  { key: 'settings',     icon: Settings,      label: '설정' },  // ⚙️ 설정 탭
 ]
 
 export default function MyPage() {
@@ -168,31 +171,7 @@ export default function MyPage() {
     await refreshInquiries()
   }
 
-  // ── 회원 탈퇴 핸들러
-  const handleDeleteAccount = async () => {
-    if (!supabase || !user) return
-
-    const confirmed = window.confirm(
-      '⚠️ 회원 탈퇴 시 모든 데이터가 즉시 삭제되며 복구할 수 없습니다.\n\n' +
-      '- 저장된 계산 결과\n- 1:1 문의 내역\n- 개인정보 (이름, 생년월일, 핸드폰번호)\n\n' +
-      '정말 탈퇴하시겠습니까?'
-    )
-    if (!confirmed) return
-
-    try {
-      await logAccess('delete_account')
-      await supabase.from('reports').delete().eq('user_id', user.raw.id)
-      await supabase.from('inquiries').delete().eq('user_id', user.raw.id)
-      await supabase.from('user_access_logs').delete().eq('user_id', user.raw.id)
-      await supabase.from('profiles').delete().eq('id', user.raw.id)
-      alert('회원 탈퇴가 완료되었습니다.')
-      await logout()
-      navigate('/login')
-    } catch (error) {
-      console.error('회원 탈퇴 실패:', error)
-      alert('회원 탈퇴 중 오류가 발생했습니다. 1:1 문의로 요청해 주세요.')
-    }
-  }
+  // 회원 탈퇴 핸들러는 ⚙️ 설정 탭(MySettingsTab)으로 이동됨
 
   // 현재 탭의 헤더 타이틀
   const tabTitle = TABS.find(t => t.key === activeTab)?.label ?? '내 정보'
@@ -276,26 +255,7 @@ export default function MyPage() {
               onOpenInquiry={() => setInquiryModalOpen(true)}
             />
 
-            {/* 계정 관리 */}
-            <div className="bg-white rounded-[32px] shadow-[0_18px_60px_rgba(15,23,42,0.08)] border border-slate-100 px-5 py-5">
-              <p className="text-[15px] font-extrabold text-[#191f28] tracking-tight mb-3">계정 관리</p>
-
-              <button type="button" onClick={() => logout()}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-slate-200 text-[13px] font-semibold text-[#4e5968] hover:bg-slate-50 active:scale-[0.98] transition-all mb-2">
-                <LogOut className="w-4 h-4" />
-                로그아웃
-              </button>
-
-              <button type="button" onClick={handleDeleteAccount}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-red-200 text-[13px] font-semibold text-red-600 hover:bg-red-50 active:scale-[0.98] transition-all">
-                <Trash2 className="w-4 h-4" />
-                회원 탈퇴
-              </button>
-
-              <p className="text-[10px] text-[#8b95a1] text-center mt-4 leading-relaxed">
-                탈퇴 시 모든 데이터가 즉시 삭제되며 복구할 수 없습니다.
-              </p>
-            </div>
+            {/* 계정 관리 섹션은 ⚙️ 설정 탭으로 이동됨 */}
           </div>
         )}
 
@@ -317,6 +277,11 @@ export default function MyPage() {
         {/* ⑤ 포인트/쿠폰 탭 */}
         {activeTab === 'rewards' && (
           <MyRewardsTab userId={user.raw.id} />
+        )}
+
+        {/* ⑥ 설정 탭 */}
+        {activeTab === 'settings' && (
+          <MySettingsTab />
         )}
 
       </main>
