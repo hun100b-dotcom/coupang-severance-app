@@ -99,7 +99,15 @@ export default function TargetMenu() {
   )
 
   /* ── Destructure ──────────────────────────────────────── */
-  const { overview: ov, funnel, companies, segments, revenue, demographics: demo, inquiry_analysis: inq, tags, growth } = data
+  const { overview: ov, funnel, companies, segments, revenue } = data
+  // API 응답 null safety: 백엔드 버그로 일부 필드가 null로 올 경우 대비
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const raw = data as any
+  const demo: TargetInsights['demographics'] | null = raw.demographics ?? data.demographics ?? null
+  const inq: TargetInsights['inquiry_analysis'] | null = raw.inquiry_analysis ?? data.inquiry_analysis ?? null
+  const tags: TargetInsights['tags'] = raw.tags ?? data.tags ?? []
+  const growth: TargetInsights['growth'] = raw.growth ?? data.growth ?? []
+  const serviceUsage: TargetInsights['service_usage'] | null = raw.service_usage ?? data.service_usage ?? null
 
   const funnelSteps = [
     { label: '방문자 (클릭)', value: funnel.visitors, color: 'rgba(255,255,255,0.3)' },
@@ -358,82 +366,86 @@ export default function TargetMenu() {
       {/* ═══ DEMOGRAPHICS + SMART TAGS (2-col) ═══════════ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
 
-        {/* Demographics */}
+        {/* Demographics — demo가 null이면 빈 카드 표시 */}
         <div style={CARD}>
           <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 16 }}>User Demographics</div>
-          <div className="grid grid-cols-2 gap-4">
-            {/* Auth Provider */}
-            <div>
-              <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>인증 수단</div>
-              {demo.by_provider.length > 0 ? (<>
-                <ResponsiveContainer width="100%" height={110}>
-                  <PieChart>
-                    <Pie data={demo.by_provider.map(p => ({ name: p.label, value: p.count }))}
-                      dataKey="value" nameKey="name" cx="50%" cy="50%"
-                      outerRadius="80%" innerRadius="50%" paddingAngle={3} strokeWidth={0}>
-                      {demo.by_provider.map((_, i) => <Cell key={i} fill={[C.gold, C.red, C.blue, C.purple][i % 4]} />)}
-                    </Pie>
-                    <Tooltip contentStyle={TT} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  {demo.by_provider.map((p, i) => (
-                    <div key={p.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: [C.gold, C.red, C.blue, C.purple][i % 4] }} />
-                      <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.45)', flex: 1 }}>{p.label}</span>
-                      <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'rgba(255,255,255,0.65)' }}>{p.count}</span>
+          {demo ? (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                {/* Auth Provider */}
+                <div>
+                  <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>인증 수단</div>
+                  {demo.by_provider.length > 0 ? (<>
+                    <ResponsiveContainer width="100%" height={110}>
+                      <PieChart>
+                        <Pie data={demo.by_provider.map(p => ({ name: p.label, value: p.count }))}
+                          dataKey="value" nameKey="name" cx="50%" cy="50%"
+                          outerRadius="80%" innerRadius="50%" paddingAngle={3} strokeWidth={0}>
+                          {demo.by_provider.map((_, i) => <Cell key={i} fill={[C.gold, C.red, C.blue, C.purple][i % 4]} />)}
+                        </Pie>
+                        <Tooltip contentStyle={TT} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      {demo.by_provider.map((p, i) => (
+                        <div key={p.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <div style={{ width: 6, height: 6, borderRadius: '50%', background: [C.gold, C.red, C.blue, C.purple][i % 4] }} />
+                          <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.45)', flex: 1 }}>{p.label}</span>
+                          <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'rgba(255,255,255,0.65)' }}>{p.count}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </>) : <Empty />}
                 </div>
-              </>) : <Empty />}
-            </div>
-            {/* Marketing Consent */}
-            <div>
-              <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>마케팅 동의</div>
-              {(() => {
-                const mk = demo.marketing
-                const mdata = [
-                  { name: 'SMS', value: mk.sms },
-                  { name: '이메일', value: mk.email },
-                  { name: '전화', value: mk.phone },
-                  { name: '미동의', value: mk.none },
-                ]
-                return (<>
-                  <ResponsiveContainer width="100%" height={110}>
-                    <PieChart>
-                      <Pie data={mdata} dataKey="value" nameKey="name" cx="50%" cy="50%"
-                        outerRadius="80%" innerRadius="50%" paddingAngle={3} strokeWidth={0}>
-                        {mdata.map((_, i) => <Cell key={i} fill={[C.blue, C.green, C.purple, 'rgba(255,255,255,0.12)'][i]} />)}
-                      </Pie>
-                      <Tooltip contentStyle={TT} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {mdata.map((d, i) => (
-                      <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: [C.blue, C.green, C.purple, 'rgba(255,255,255,0.12)'][i] }} />
-                        <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.45)', flex: 1 }}>{d.name}</span>
-                        <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'rgba(255,255,255,0.65)' }}>{d.value}</span>
+                {/* Marketing Consent */}
+                <div>
+                  <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>마케팅 동의</div>
+                  {(() => {
+                    const mk = demo.marketing
+                    const mdata = [
+                      { name: 'SMS', value: mk.sms },
+                      { name: '이메일', value: mk.email },
+                      { name: '전화', value: mk.phone },
+                      { name: '미동의', value: mk.none },
+                    ]
+                    return (<>
+                      <ResponsiveContainer width="100%" height={110}>
+                        <PieChart>
+                          <Pie data={mdata} dataKey="value" nameKey="name" cx="50%" cy="50%"
+                            outerRadius="80%" innerRadius="50%" paddingAngle={3} strokeWidth={0}>
+                            {mdata.map((_, i) => <Cell key={i} fill={[C.blue, C.green, C.purple, 'rgba(255,255,255,0.12)'][i]} />)}
+                          </Pie>
+                          <Tooltip contentStyle={TT} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {mdata.map((d, i) => (
+                          <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <div style={{ width: 6, height: 6, borderRadius: '50%', background: [C.blue, C.green, C.purple, 'rgba(255,255,255,0.12)'][i] }} />
+                            <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.45)', flex: 1 }}>{d.name}</span>
+                            <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'rgba(255,255,255,0.65)' }}>{d.value}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </>)
-              })()}
-            </div>
-          </div>
+                    </>)
+                  })()}
+                </div>
+              </div>
 
-          {/* Onboarding Bar */}
-          <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 6 }}>온보딩 현황</div>
-            <div style={{ display: 'flex', gap: 2, height: 8, borderRadius: 99, overflow: 'hidden', marginBottom: 5 }}>
-              <div style={{ flex: Math.max(demo.onboarding_completed, 0.01), background: C.green, transition: 'flex .3s' }} />
-              <div style={{ flex: Math.max(demo.onboarding_pending, 0.01), background: 'rgba(255,255,255,0.08)', transition: 'flex .3s' }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.62rem', color: C.green, fontWeight: 700 }}>완료 {demo.onboarding_completed}</span>
-              <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)', fontWeight: 700 }}>미완료 {demo.onboarding_pending}</span>
-            </div>
-          </div>
+              {/* Onboarding Bar */}
+              <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 6 }}>온보딩 현황</div>
+                <div style={{ display: 'flex', gap: 2, height: 8, borderRadius: 99, overflow: 'hidden', marginBottom: 5 }}>
+                  <div style={{ flex: Math.max(demo.onboarding_completed, 0.01), background: C.green, transition: 'flex .3s' }} />
+                  <div style={{ flex: Math.max(demo.onboarding_pending, 0.01), background: 'rgba(255,255,255,0.08)', transition: 'flex .3s' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.62rem', color: C.green, fontWeight: 700 }}>완료 {demo.onboarding_completed}</span>
+                  <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)', fontWeight: 700 }}>미완료 {demo.onboarding_pending}</span>
+                </div>
+              </div>
+            </>
+          ) : <Empty />}
         </div>
 
         {/* Smart Tags */}
@@ -465,29 +477,30 @@ export default function TargetMenu() {
             </div>
           ) : <Empty />}
 
-          {/* Service Usage */}
-          <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 10 }}>서비스 이용 비율</div>
-            {(() => {
-              const su = data.service_usage
-              const other = Math.max(su.total - su.severance - su.unemployment, 0)
-              const items = [
-                { l: '퇴직금', v: su.severance, c: C.blue },
-                { l: '실업급여', v: su.unemployment, c: C.green },
-                { l: '기타', v: other, c: 'rgba(255,255,255,0.2)' },
-              ]
-              const mx = Math.max(1, ...items.map(i => i.v))
-              return items.map(item => (
-                <div key={item.l} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', width: 50, flexShrink: 0 }}>{item.l}</span>
-                  <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
-                    <div style={{ width: `${item.v / mx * 100}%`, height: '100%', background: item.c, borderRadius: 3, minWidth: item.v > 0 ? 3 : 0 }} />
+          {/* Service Usage — serviceUsage null 방어 */}
+          {serviceUsage && (
+            <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 10 }}>서비스 이용 비율</div>
+              {(() => {
+                const other = Math.max(serviceUsage.total - serviceUsage.severance - serviceUsage.unemployment, 0)
+                const items = [
+                  { l: '퇴직금', v: serviceUsage.severance, c: C.blue },
+                  { l: '실업급여', v: serviceUsage.unemployment, c: C.green },
+                  { l: '기타', v: other, c: 'rgba(255,255,255,0.2)' },
+                ]
+                const mx = Math.max(1, ...items.map(i => i.v))
+                return items.map(item => (
+                  <div key={item.l} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', width: 50, flexShrink: 0 }}>{item.l}</span>
+                    <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ width: `${item.v / mx * 100}%`, height: '100%', background: item.c, borderRadius: 3, minWidth: item.v > 0 ? 3 : 0 }} />
+                    </div>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: item.c, width: 40, textAlign: 'right' }}>{item.v.toLocaleString()}</span>
                   </div>
-                  <span style={{ fontSize: '0.68rem', fontWeight: 700, color: item.c, width: 40, textAlign: 'right' }}>{item.v.toLocaleString()}</span>
-                </div>
-              ))
-            })()}
-          </div>
+                ))
+              })()}
+            </div>
+          )}
         </div>
       </div>
 
@@ -513,8 +526,8 @@ export default function TargetMenu() {
         </div>
       )}
 
-      {/* ═══ INQUIRY INTELLIGENCE ════════════════════════ */}
-      {inq.total > 0 && (
+      {/* ═══ INQUIRY INTELLIGENCE — inq null 방어 ════════ */}
+      {inq && inq.total > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Category breakdown */}
           <div style={CARD}>

@@ -73,6 +73,7 @@ export default function JobsMenu() {
   const [editTarget, setEditTarget] = useState<JobPosting | null>(null)
   const [form, setForm] = useState<JobForm>(defaultForm)
   const [saving, setSaving] = useState(false)
+  const [jobError, setJobError] = useState<string | null>(null) // CRUD 오류 메시지
   // 공고 상태 필터: 전체/active/expired/deleted
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
@@ -94,11 +95,17 @@ export default function JobsMenu() {
   const fetchJobs = async () => {
     if (!supabase) return
     setLoading(true)
-    let query = supabase.from('job_postings').select('*').order('created_at', { ascending: false })
-    if (statusFilter !== 'all') query = query.eq('status', statusFilter)
-    const { data } = await query
-    setJobs((data ?? []) as JobPosting[])
-    setLoading(false)
+    try {
+      let query = supabase.from('job_postings').select('*').order('created_at', { ascending: false })
+      if (statusFilter !== 'all') query = query.eq('status', statusFilter)
+      const { data, error } = await query
+      if (error) throw error
+      setJobs((data ?? []) as JobPosting[])
+    } catch (err: unknown) {
+      setJobError(err instanceof Error ? err.message : '공고 목록을 불러오지 못했습니다.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { fetchJobs() }, [statusFilter])
@@ -180,47 +187,57 @@ export default function JobsMenu() {
   const handleSave = async () => {
     if (!supabase || !form.company_name.trim() || !form.region.trim()) return
     setSaving(true)
-    const payload = {
-      company_name: form.company_name.trim(),
-      center_name: form.center_name.trim(),
-      region: form.region.trim(),
-      headcount: form.headcount,
-      hourly_wage: form.hourly_wage,
-      daily_wage: form.daily_wage,          // 일급 저장
-      work_hours: form.work_hours.trim(),
-      description: form.description.trim(),
-      contact_phone: form.contact_phone.trim(),
-      external_link: form.external_link.trim(),
-      is_urgent: form.is_urgent,
-      expires_at: form.expires_at || null,
+    setJobError(null)
+    try {
+      const payload = {
+        company_name: form.company_name.trim(),
+        center_name: form.center_name.trim(),
+        region: form.region.trim(),
+        headcount: form.headcount,
+        hourly_wage: form.hourly_wage,
+        daily_wage: form.daily_wage,          // 일급 저장
+        work_hours: form.work_hours.trim(),
+        description: form.description.trim(),
+        contact_phone: form.contact_phone.trim(),
+        external_link: form.external_link.trim(),
+        is_urgent: form.is_urgent,
+        expires_at: form.expires_at || null,
+      }
+      if (editTarget) {
+        const { error } = await supabase.from('job_postings').update(payload).eq('id', editTarget.id)
+        if (error) throw error
+      } else {
+        const { error } = await supabase.from('job_postings').insert({ ...payload, created_by: user?.id ?? null })
+        if (error) throw error
+      }
+      setModalOpen(false)
+      fetchJobs()
+    } catch (err: unknown) {
+      setJobError(err instanceof Error ? err.message : '저장에 실패했습니다. RLS 정책 또는 컬럼명을 확인하세요.')
+    } finally {
+      setSaving(false)
     }
-    if (editTarget) {
-      await supabase.from('job_postings').update(payload).eq('id', editTarget.id)
-    } else {
-      await supabase.from('job_postings').insert({ ...payload, created_by: user?.id ?? null })
-    }
-    setSaving(false)
-    setModalOpen(false)
-    fetchJobs()
   }
 
   // 긴급 토글
   const handleToggleUrgent = async (job: JobPosting) => {
     if (!supabase) return
-    await supabase.from('job_postings')
+    const { error } = await supabase.from('job_postings')
       .update({ is_urgent: !job.is_urgent })
       .eq('id', job.id)
-    fetchJobs()
+    if (error) setJobError(error.message)
+    else fetchJobs()
   }
 
   // 삭제 (soft delete → status = 'deleted')
   const handleDelete = async (job: JobPosting) => {
     if (!window.confirm(`"${job.company_name} ${job.center_name}" 공고를 삭제할까요?`)) return
     if (!supabase) return
-    await supabase.from('job_postings')
+    const { error } = await supabase.from('job_postings')
       .update({ status: 'deleted' })
       .eq('id', job.id)
-    fetchJobs()
+    if (error) setJobError(error.message)
+    else fetchJobs()
   }
 
   // ───────────────────────────────────────
@@ -364,6 +381,22 @@ export default function JobsMenu() {
               + 새 공고 추가
             </button>
           </div>
+
+          {/* CRUD 오류 표시 */}
+          {jobError && (
+            <div style={{
+              background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
+              borderRadius: 10, padding: '12px 16px', marginBottom: 12,
+              color: '#ff6b6b', fontSize: '0.82rem',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <span>⚠️ {jobError}</span>
+              <button
+                onClick={() => setJobError(null)}
+                style={{ background: 'none', border: 'none', color: '#ff6b6b', cursor: 'pointer', padding: '0 4px', fontSize: '1.1rem' }}
+              >×</button>
+            </div>
+          )}
 
           {/* 공고 상태 필터 */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
@@ -669,29 +702,49 @@ export default function JobsMenu() {
               maxHeight: '85vh', overflowY: 'auto',
             }}
           >
-            <h3 style={{ margin: '0 0 20px', fontSize: '1.05rem', fontWeight: 800 }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem', fontWeight: 800 }}>
               {editTarget ? '공고 수정' : '새 공고 추가'}
             </h3>
 
-            {/* 회사명 + 센터명 */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
+            {/* 공고 등록 안내 박스 */}
+            <div style={{
+              background: 'rgba(251,191,36,0.08)',
+              border: '1px solid rgba(251,191,36,0.2)',
+              borderRadius: 10, padding: '12px 16px', marginBottom: 18,
+            }}>
+              <div style={{ fontWeight: 700, marginBottom: 5, color: '#fbbf24', fontSize: '0.82rem' }}>
+                📋 공고 등록 안내
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7 }}>
+                <div>• 회사명에 [플랫폼명] + 지역 + 직종을 포함하면 검색 노출이 잘 됩니다</div>
+                <div>• 외부 링크는 지원자가 바로 지원할 수 있는 URL을 넣어주세요</div>
+                <div>• 공고는 등록 즉시 앱에 반영됩니다</div>
+              </div>
+            </div>
+
+            {/* 회사/플랫폼 + 센터명 */}
+            <div style={{ display: 'flex', gap: 12, marginBottom: 4 }}>
               <label style={{ flex: 1 }}>
-                <span style={labelSpan}>회사명 *</span>
+                <span style={labelSpan}>회사/플랫폼 *</span>
                 <input value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))}
-                  placeholder="쿠팡" style={inputStyle} />
+                  placeholder="예: 쿠팡풀필먼트서비스, CJ대한통운, 컬리" style={inputStyle} />
               </label>
               <label style={{ flex: 1 }}>
-                <span style={labelSpan}>센터명</span>
+                <span style={labelSpan}>센터명 / 직종</span>
                 <input value={form.center_name} onChange={e => setForm(f => ({ ...f, center_name: e.target.value }))}
-                  placeholder="이천1물류센터" style={inputStyle} />
+                  placeholder="예: 부천 물류센터 야간" style={inputStyle} />
               </label>
             </div>
+            {/* 회사 입력 도움말 */}
+            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: '4px 0 14px' }}>
+              쿠팡FLC / 쿠팡이츠 등 플랫폼명을 정확히 입력해주세요
+            </p>
 
             {/* 지역 */}
             <label style={{ display: 'block', marginBottom: 14 }}>
               <span style={labelSpan}>지역 *</span>
               <input value={form.region} onChange={e => setForm(f => ({ ...f, region: e.target.value }))}
-                placeholder="경기 이천" style={inputStyle} />
+                placeholder="예: 경기 부천시, 서울 송파구" style={inputStyle} />
             </label>
 
             {/* 시급 + 일급 + 인원 + 근무시간 */}
@@ -699,51 +752,55 @@ export default function JobsMenu() {
               <label style={{ flex: 1 }}>
                 <span style={labelSpan}>시급 (원)</span>
                 <input type="number" value={form.hourly_wage || ''} onChange={e => setForm(f => ({ ...f, hourly_wage: parseInt(e.target.value) || 0 }))}
-                  placeholder="12000" style={inputStyle} />
+                  placeholder="예: 12000" style={inputStyle} />
               </label>
               {/* 일급: 시급 × 근무시간 계산 없이 직접 입력 (예: 일당 계약직인 경우) */}
               <label style={{ flex: 1 }}>
                 <span style={labelSpan}>일급 (원)</span>
                 <input type="number" value={form.daily_wage || ''} onChange={e => setForm(f => ({ ...f, daily_wage: parseInt(e.target.value) || 0 }))}
-                  placeholder="120000" style={inputStyle} />
+                  placeholder="예: 130000" style={inputStyle} />
               </label>
               <label style={{ flex: 1 }}>
                 <span style={labelSpan}>모집인원</span>
                 <input type="number" value={form.headcount || ''} onChange={e => setForm(f => ({ ...f, headcount: parseInt(e.target.value) || 0 }))}
-                  placeholder="20" style={inputStyle} />
+                  placeholder="예: 00명" style={inputStyle} />
               </label>
               <label style={{ flex: 1 }}>
                 <span style={labelSpan}>근무시간</span>
                 <input value={form.work_hours} onChange={e => setForm(f => ({ ...f, work_hours: e.target.value }))}
-                  placeholder="09:00~18:00" style={inputStyle} />
+                  placeholder="야간 22:00~06:00" style={inputStyle} />
               </label>
             </div>
 
-            {/* 상세 내용 */}
+            {/* 공고 내용/상세 */}
             <label style={{ display: 'block', marginBottom: 14 }}>
-              <span style={labelSpan}>상세 내용</span>
+              <span style={labelSpan}>공고 내용 / 상세</span>
               <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                rows={3} placeholder="근무 조건, 복리후생 등" style={{ ...inputStyle, resize: 'vertical' as const }} />
+                rows={4} placeholder="근무 조건, 우대사항, 복리후생 등 상세 내용 입력" style={{ ...inputStyle, resize: 'vertical' as const }} />
             </label>
 
             {/* 연락처 + 외부링크 */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 4 }}>
               <label style={{ flex: 1 }}>
                 <span style={labelSpan}>연락처</span>
                 <input value={form.contact_phone} onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))}
                   placeholder="010-1234-5678" style={inputStyle} />
               </label>
               <label style={{ flex: 1 }}>
-                <span style={labelSpan}>외부 링크</span>
+                <span style={labelSpan}>원본 공고 URL</span>
                 <input value={form.external_link} onChange={e => setForm(f => ({ ...f, external_link: e.target.value }))}
-                  placeholder="https://..." style={inputStyle} />
+                  placeholder="쿠팡알바, 잡코리아, 사람인 등 원본 공고 URL 붙여넣기" style={inputStyle} />
               </label>
             </div>
+            {/* 외부 링크 도움말 */}
+            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: '4px 0 14px' }}>
+              선택 입력 — 지원 링크가 없으면 비워두세요
+            </p>
 
             {/* 마감일 + 긴급 */}
             <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'flex-end' }}>
               <label style={{ flex: 1 }}>
-                <span style={labelSpan}>마감일</span>
+                <span style={labelSpan}>공고 마감일</span>
                 <input type="date" value={form.expires_at} onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
                   style={inputStyle} />
               </label>
@@ -762,6 +819,17 @@ export default function JobsMenu() {
                 </div>
               </label>
             </div>
+
+            {/* 저장 오류 표시 */}
+            {jobError && (
+              <div style={{
+                background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
+                borderRadius: 8, padding: '10px 14px', marginBottom: 14,
+                color: '#ff6b6b', fontSize: '0.8rem',
+              }}>
+                ⚠️ {jobError}
+              </div>
+            )}
 
             {/* 버튼 */}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
