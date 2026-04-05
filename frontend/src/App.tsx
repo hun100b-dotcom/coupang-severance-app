@@ -41,6 +41,7 @@ const PrivacyPolicyPage      = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsOfServicePage     = lazy(() => import('./pages/TermsOfService'))
 const SettingsPage           = lazy(() => import('./pages/SettingsPage'))   // 설정 페이지
 const InquiryPage            = lazy(() => import('./pages/InquiryPage'))    // 문의하기 페이지
+const LandingPage            = lazy(() => import('./pages/LandingPage'))    // 랜딩페이지 (/landing)
 
 export default function App() {
   return (
@@ -74,6 +75,8 @@ export default function App() {
           <Route path="/inquiry" element={<InquiryPage />} />
           {/* 설정 페이지 — 헤더 드롭다운 "설정" 클릭 시 이동 */}
           <Route path="/settings" element={<SettingsPage />} />
+          {/* 랜딩페이지 — Layout 없이 독립 풀페이지, SEO/공유용 */}
+          <Route path="/landing" element={<LandingPage />} />
 
           {/* ── 네비바(TopNav + BottomNav)가 있는 일반 페이지 ──
               Layout 컴포넌트가 Outlet을 통해 중첩 라우트를 렌더링합니다. */}
