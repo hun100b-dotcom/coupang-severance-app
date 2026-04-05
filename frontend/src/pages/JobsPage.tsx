@@ -86,7 +86,7 @@ function toCardData(job: JobPosting): JobCardData {
     apply_methods.push({ type: 'sms', label: '문자 지원', value: job.contact_phone })
   }
   if (job.external_link) {
-    apply_methods.push({ type: 'landing', label: '채용페이지 바로가기', value: job.external_link })
+    apply_methods.push({ type: 'landing', label: '원본 공고 바로가기 →', value: job.external_link })
   }
 
   return {
@@ -165,10 +165,13 @@ export default function JobsPage() {
     if (!supabase) { setLoading(false); return }
     setFetchError(null)
     try {
+      // 오늘 날짜 (KST 기준, YYYY-MM-DD) — 만료 공고 자동 제외에 사용
+      const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })
       const { data, error } = await supabase
         .from('job_postings')
         .select('*')
         .eq('status', 'active')        // 활성 공고만
+        .or(`expires_at.gte.${todayStr},expires_at.is.null`)  // 마감일 지난 공고 자동 제외 (직업안정법 허위·과장광고 대응)
         .order('is_urgent', { ascending: false })  // 급구 먼저
         .order('created_at', { ascending: false })  // 최신순
       if (error) throw error
@@ -433,6 +436,11 @@ export default function JobsPage() {
             {sortKey === 'latest' ? '최신순' : '시급순'}
           </button>
         </div>
+
+        {/* ── 면책 문구 — 직업안정법 법적 리스크 대응 (허위·과장광고 책임 완화) ── */}
+        <p className="text-xs text-gray-400 text-center px-2">
+          본 정보는 원본 채용공고를 요약한 것입니다. 상세 내용 및 지원은 원본 공고를 확인하세요.
+        </p>
 
         {/* ── 섹션별 공고 ── */}
         {loading ? (
@@ -727,6 +735,10 @@ export default function JobsPage() {
                         </a>
                       )
                     })}
+                    {/* 원본 공고 링크 없는 경우 명시 — 직업안정법 면책 대응 */}
+                    {!selectedJob.external_link && (
+                      <p className="text-center text-[13px] text-gray-400 py-1">원본 공고 링크 없음</p>
+                    )}
                   </div>
                 </div>
               </div>
