@@ -79,7 +79,9 @@ export default function NoticesBanner({ notices }: Props) {
          */}
         <div className="flex-1 overflow-hidden min-w-0">
           {/* initial={false}: 첫 렌더 시 슬라이드 인 애니메이션 생략 */}
-          <AnimatePresence mode="popLayout" initial={false}>
+          {/* mode="wait": 퇴장 완료 후 진입 → overflow-hidden 클리핑이 올바르게 동작 */}
+          {/* popLayout은 퇴장 요소를 absolute로 띄워 overflow 경계를 벗어남 */}
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={currentIdx}
               initial={{ x: '100%' }}       /* 오른쪽 밖에서 시작 */
