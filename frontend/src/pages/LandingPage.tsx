@@ -220,8 +220,8 @@ export default function LandingPage() {
             opacity: spotlight.active ? 1 : 0,
             background: `radial-gradient(circle 220px at ${spotlight.x}px ${spotlight.y}px,
               rgba(0,0,0,0) 0%,
-              rgba(20,20,40,0.55) 55%,
-              rgba(20,20,40,0.88) 100%
+              rgba(0,0,0,0.55) 55%,
+              rgba(0,0,0,0.88) 100%
             )`,
           }}
         />
@@ -232,7 +232,7 @@ export default function LandingPage() {
             inset: 0,
             pointerEvents: 'none',
             zIndex: 29,
-            background: 'rgba(20, 20, 40, 0.88)',
+            background: 'rgba(0, 0, 0, 0.90)',
             transition: 'opacity 0.4s ease',
             opacity: spotlight.active ? 0 : 1,
           }}
