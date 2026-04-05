@@ -2,11 +2,11 @@ import type { AdminInquiry } from '../../../types/admin'
 
 interface Props {
   inquiries: AdminInquiry[]
-  selected: Set<string>
-  onToggle: (id: string) => void
+  selected: Set<string | number>
+  onToggle: (id: string | number) => void
   onToggleAll: () => void
   onSelect: (inq: AdminInquiry) => void
-  activeId?: string
+  activeId?: string | number
 }
 
 const STATUS_COLOR: Record<string, string> = {
