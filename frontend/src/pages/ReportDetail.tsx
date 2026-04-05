@@ -64,7 +64,7 @@ export default function ReportDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4">
+      <div className="relative z-[1] min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4">
         <div className="w-8 h-8 border-2 border-[#3182F6] border-t-transparent rounded-full animate-spin" />
         <p className="mt-3 text-sm text-[#8B95A1]">리포트 불러오는 중...</p>
       </div>
@@ -73,7 +73,7 @@ export default function ReportDetail() {
 
   if (error || !report) {
     return (
-      <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4">
+      <div className="relative z-[1] min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4">
         <p className="text-[#191F28] font-medium">{error ?? '존재하지 않는 리포트입니다.'}</p>
         <button
           type="button"
@@ -87,7 +87,7 @@ export default function ReportDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F4F6] pb-8 relative z-10">
+    <div className="relative z-[1] min-h-screen bg-[#F2F4F6] pb-8">
       <header className="sticky top-0 z-30 bg-[#F2F4F6]/90 backdrop-blur-xl border-b border-gray-200/50">
         <div className="max-w-[460px] mx-auto px-4 h-14 flex items-center gap-2">
           <button
