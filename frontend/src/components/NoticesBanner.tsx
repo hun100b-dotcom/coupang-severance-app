@@ -1,9 +1,9 @@
-// NoticesBanner.tsx — 홈 화면 공지사항 배너 (완전 재작성 2026-04-05)
+// NoticesBanner.tsx — 홈 화면 공지사항 배너
 //
 // 동작 스펙:
 //   1. 한 번에 하나의 공지만 노출
 //   2. 텍스트가 길면 (> 12자) → 우에서 좌로 마키(marquee) 애니메이션
-//   3. 마키 완료 후 3초 대기 → 다음 공지로 전환
+//   3. 마키 onAnimationEnd 발화(= 정확히 한 바퀴 완주) 후 3초 대기 → 다음 공지로 전환
 //   4. 짧으면 바로 3초 대기 → 다음 공지로 전환
 //   5. 공지 전환: 현재 공지가 위로 사라지고, 다음 공지가 아래에서 올라옴
 //   6. 공지 1개: 마키만 반복 (또는 정적 표시) — 전환 없음
@@ -12,9 +12,9 @@
 // 마키 애니메이션 스펙:
 //   keyframe: marquee-banner (index.css에 정의)
 //   direction: 오른쪽 → 왼쪽 (translateX 0 → -50%)
-//   텍스트 2번 이어붙여 seamless: [텍스트A][텍스트B] → A 위치까지 이동하면 B가 A 자리에 있음
-//   duration: Math.max(4, 글자수 * 0.25) 초  (1회 실행, forwards)
-//   마키가 끝나면 3초 후 다음 공지로 전환
+//   텍스트 구조: [원본][복사본] → translateX(-50%) = 정확히 한 바퀴
+//   onAnimationEnd = 한 바퀴 완주 시점 → 이때부터 3초 후 전환 (텍스트 잘림 없음)
+//   duration: Math.max(4, 글자수 * 0.3) 초  (1회 실행, forwards)
 //
 // 공지 전환 애니메이션 스펙:
 //   framer-motion AnimatePresence mode="wait"
@@ -38,46 +38,48 @@ const MARQUEE_THRESHOLD = 12
 export default function NoticesBanner({ notices }: Props) {
   const navigate = useNavigate()
   const [currentIdx, setCurrentIdx] = useState(0)
-
-  // 타이머 ref: currentIdx 변경 시 이전 타이머 정리
+  // 타이머 ref: 마키 완료 후 또는 짧은 텍스트 표시 후 전환 타이머를 관리
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    // 공지 1개 이하: 타이머 불필요 (전환 없음)
-    if (notices.length <= 1) return
-
-    const current = notices[currentIdx]
-    // title 있으면 title, 없으면 content 폴백
-    const displayText = current.title?.trim() || current.content
-    const isLong = displayText.length > MARQUEE_THRESHOLD
-
-    // 마키 duration: Math.max(4, 글자수 * 0.25) 초
-    const marqueeDuration = Math.max(4, displayText.length * 0.25)
-
-    // 마키가 있으면: 마키 완료(marqueeDuration) + 3초 후 전환
-    // 마키가 없으면: 바로 3초 후 전환
-    const totalDelay = isLong ? (marqueeDuration + 3) * 1000 : 3000
-
-    timerRef.current = setTimeout(() => {
-      // 다음 공지 인덱스로 순환
-      setCurrentIdx(i => (i + 1) % notices.length)
-    }, totalDelay)
-
-    // 클린업: 다음 effect 실행 전 이전 타이머 제거
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current)
-    }
-  }, [currentIdx, notices])
 
   // 공지 0개면 배너 렌더링 자체를 생략
   if (notices.length === 0) return null
 
   const current = notices[currentIdx]
+  // title 있으면 title, 없으면 content 폴백
   const displayText = current.title?.trim() || current.content
   const isLong = displayText.length > MARQUEE_THRESHOLD
 
-  // 마키 애니메이션 시간 (CSS animation-duration에 직접 주입)
-  const marqueeDuration = Math.max(4, displayText.length * 0.25)
+  // 마키 애니메이션 시간: 글자 수에 비례, 최소 4초
+  const marqueeDuration = Math.max(4, displayText.length * 0.3)
+
+  // ── 다음 공지로 전환 ─────────────────────────────
+  const goNext = () => {
+    setCurrentIdx((prev: number) => (prev + 1) % notices.length)
+  }
+
+  // ── 마키 애니메이션 완료 핸들러 ──────────────────
+  // CSS onAnimationEnd = translateX(-50%) 도달 = 정확히 한 바퀴 완주
+  // 이 시점이 첫 글자가 좌측 맨앞으로 돌아온 순간 → 3초 후 전환하면 텍스트 잘림 없음
+  const handleMarqueeEnd = () => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(goNext, 3000)
+  }
+
+  // ── 짧은 텍스트 타이머 ───────────────────────────
+  // 마키가 없는 짧은 텍스트: 3초 표시 후 다음 공지로 전환
+  // isLong이면 onAnimationEnd가 처리하므로 여기서는 skip
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    if (isLong) return // 긴 텍스트는 onAnimationEnd가 처리
+    if (notices.length <= 1) return // 공지 1개: 전환 불필요
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(goNext, 3000)
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+    // currentIdx 바뀔 때마다 새로 3초 카운트
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIdx, isLong])
 
   return (
     <button
@@ -118,18 +120,21 @@ export default function NoticesBanner({ notices }: Props) {
               {isLong ? (
                 /*
                  * 마키(뉴스티커) 구현:
-                 * - 텍스트를 2번 이어붙임: [텍스트][텍스트]
-                 * - translateX(-50%) 이동하면 두 번째 텍스트가 첫 번째 자리로 이동 → seamless
-                 * - animation: 1회(forwards) 실행 → 마키 끝나면 3초 후 다음 공지로 전환
+                 * - 원본 + 복사본 2개 이어붙임: [텍스트][텍스트]
+                 * - translateX(-50%) = 정확히 한 바퀴 이동
+                 * - animation: 1회(forwards) → onAnimationEnd 발화
+                 * - onAnimationEnd 시점 = 한 바퀴 완주 → 3초 후 다음 공지로 전환
+                 * - key={`marquee-${currentIdx}`}: 공지 바뀌면 애니메이션 리셋
                  * - willChange: 'transform' → GPU 레이어 활성화로 부드러운 애니메이션
-                 * - keyframe marquee-banner → index.css에 정의
                  */
                 <div
+                  key={`marquee-${currentIdx}`}
                   className="flex whitespace-nowrap"
                   style={{
                     animation: `marquee-banner ${marqueeDuration}s linear 1 forwards`,
                     willChange: 'transform',
                   }}
+                  onAnimationEnd={handleMarqueeEnd}
                 >
                   {/* 텍스트 원본 */}
                   <span className="text-sm font-medium text-gray-700 pr-8">
