@@ -229,9 +229,7 @@ export default function TermsOfServicePage() {
           <ol className="list-decimal pl-5 space-y-2">
             <li>
               서비스 이용과 관련하여 서비스와 이용자 사이에 분쟁이 발생한 경우, 양측은 원만한
-              해결을 위해 성실히 협의합니다. 문의는 서비스 내 1:1 문의 또는
-              <a href="mailto:hun100b@gmail.com" className="text-blue-600 underline ml-1">hun100b@gmail.com</a>으로
-              연락 바랍니다.
+              해결을 위해 성실히 협의합니다. 문의는 서비스 내 1:1 문의를 이용 바랍니다.
             </li>
             <li>
               협의가 이루어지지 않을 경우, 대한민국 법률을 준거법으로 하며, 소송의 관할은
@@ -290,7 +288,7 @@ export default function TermsOfServicePage() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">서비스 이용약관</h1>
           {/* 시행일 표시 */}
-          <p className="text-sm text-gray-500">시행일: 2025년 1월 1일</p>
+          <p className="text-sm text-gray-500">시행일: 2026년 4월 5일</p>
         </div>
 
         {/* 약관 서문 */}
@@ -323,9 +321,8 @@ export default function TermsOfServicePage() {
         {/* 하단 시행일 안내 */}
         <div className="mt-8 pt-6 border-t border-gray-100">
           <p className="text-sm text-gray-500 leading-relaxed">
-            본 약관은 <strong>2025년 1월 1일</strong>부터 시행됩니다.<br />
-            이전 버전의 약관은 서비스 내 공지사항에서 확인할 수 있습니다.<br />
-            문의: <a href="mailto:hun100b@gmail.com" className="text-blue-600 underline">hun100b@gmail.com</a>
+            본 약관은 <strong>2026년 4월 5일</strong>부터 시행됩니다.<br />
+            이전 버전의 약관은 서비스 내 공지사항에서 확인할 수 있습니다.
           </p>
         </div>
 

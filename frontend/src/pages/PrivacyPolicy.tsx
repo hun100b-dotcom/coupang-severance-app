@@ -308,8 +308,8 @@ export default function PrivacyPolicyPage() {
                   <span className="block"><strong>직책:</strong> 서비스 운영 책임자</span>
                   <span className="block">
                     <strong>이메일:</strong>{' '}
-                    <a href="mailto:hun100b@gmail.com" className="text-blue-600 underline">
-                      hun100b@gmail.com
+                    <a href="mailto:catchmasterdmin@gmail.com" className="text-blue-600 underline">
+                      catchmasterdmin@gmail.com
                     </a>
                   </span>
                 </p>
@@ -367,8 +367,8 @@ export default function PrivacyPolicyPage() {
         <div className="mt-4 pt-6 border-t border-gray-100">
           <p className="text-sm text-gray-500 leading-relaxed">
             개인정보 처리방침 관련 문의:{' '}
-            <a href="mailto:hun100b@gmail.com" className="text-blue-600 underline">
-              hun100b@gmail.com
+            <a href="mailto:catchmasterdmin@gmail.com" className="text-blue-600 underline">
+              catchmasterdmin@gmail.com
             </a>
           </p>
         </div>
