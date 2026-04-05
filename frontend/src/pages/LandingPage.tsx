@@ -191,21 +191,25 @@ export default function LandingPage() {
         onMouseMove={handleHeroMouseMove}
         onMouseLeave={handleHeroMouseLeave}
         className="relative flex items-center overflow-hidden"
-        style={{ minHeight: '100vh', padding: '120px 0 80px' }}
+        style={{
+          minHeight: '100vh',
+          padding: '120px 0 80px',
+          background: 'linear-gradient(135deg, #e8f4fd 0%, #f0e8ff 50%, #e8f0ff 100%)',
+        }}
       >
-        {/* 배경 그리드 */}
+        {/* 배경 그리드 — 밝은 배경 위 연한 블루 선 */}
         <div
           className="absolute inset-0"
           style={{
             backgroundImage:
-              'linear-gradient(rgba(49,130,246,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(49,130,246,0.04) 1px, transparent 1px)',
+              'linear-gradient(rgba(49,130,246,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(49,130,246,0.08) 1px, transparent 1px)',
             backgroundSize: '60px 60px',
             maskImage:
               'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
           }}
         />
 
-        {/* 스포트라이트 오버레이 — 커서 위치에 원형 구멍이 생겨 텍스트가 빛나 보임 */}
+        {/* 스포트라이트 오버레이 — 커서 위치에서 구멍이 뚫려 밝은 배경+검은 텍스트가 드러남 */}
         <div
           style={{
             position: 'absolute',
@@ -216,19 +220,19 @@ export default function LandingPage() {
             opacity: spotlight.active ? 1 : 0,
             background: `radial-gradient(circle 220px at ${spotlight.x}px ${spotlight.y}px,
               rgba(0,0,0,0) 0%,
-              rgba(0,0,0,0.5) 55%,
-              rgba(13,13,13,0.96) 100%
+              rgba(20,20,40,0.55) 55%,
+              rgba(20,20,40,0.88) 100%
             )`,
           }}
         />
-        {/* 초기 상태 — 커서 없을 때 전체 어둡게 덮음 */}
+        {/* 초기 상태 — 커서 없을 때 어두운 네이비 오버레이로 전체 덮음 */}
         <div
           style={{
             position: 'absolute',
             inset: 0,
             pointerEvents: 'none',
             zIndex: 29,
-            background: 'rgba(13,13,13,0.82)',
+            background: 'rgba(20, 20, 40, 0.88)',
             transition: 'opacity 0.4s ease',
             opacity: spotlight.active ? 0 : 1,
           }}
@@ -249,7 +253,7 @@ export default function LandingPage() {
             {/* 메인 대제목 — 임팩트 강조 */}
             <h1
               className="font-black leading-[1.1] tracking-tight mb-4"
-              style={{ fontSize: 'clamp(40px, 8vw, 80px)', color: '#ffffff' }}
+              style={{ fontSize: 'clamp(40px, 8vw, 80px)', color: '#111111' }}
             >
               당신이 받아야 할 돈,
               <br />
@@ -267,7 +271,7 @@ export default function LandingPage() {
           <Reveal delay={0.2}>
             <p
               className="leading-[1.7] mb-12 max-w-[540px]"
-              style={{ fontSize: 'clamp(16px, 2.5vw, 20px)', color: '#aaa' }}
+              style={{ fontSize: 'clamp(16px, 2.5vw, 20px)', color: '#444444' }}
             >
               퇴직금·실업급여·주휴수당·연차수당—
               <br />
@@ -297,8 +301,8 @@ export default function LandingPage() {
                 style={{
                   padding: '18px 36px',
                   fontSize: 17,
-                  color: 'rgba(255,255,255,0.65)',
-                  border: '1.5px solid rgba(255,255,255,0.18)',
+                  color: '#555555',
+                  border: '1.5px solid rgba(0,0,0,0.25)',
                   textDecoration: 'none',
                 }}
               >
@@ -311,7 +315,7 @@ export default function LandingPage() {
           <Reveal delay={0.4}>
             <div className="flex gap-5 flex-wrap mt-[60px]">
               {['퇴직금 계산기', '실업급여 계산기', '단기알바 채용정보', '100% 무료'].map((label) => (
-                <div key={label} className="flex items-center gap-2 text-sm" style={{ color: '#aaa' }}>
+                <div key={label} className="flex items-center gap-2 text-sm" style={{ color: '#555555' }}>
                   <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#3182f6' }} />
                   {label}
                 </div>
