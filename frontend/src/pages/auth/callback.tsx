@@ -1,5 +1,5 @@
 // OAuth 콜백 전용 페이지
-// 세션 확인 → 온보딩 여부 체크 → 적절한 페이지로 이동
+// 세션 확인 → 마케팅 동의 저장 → 온보딩 여부 체크 → 적절한 페이지로 이동
 
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabase'
@@ -30,6 +30,26 @@ export default function AuthCallbackPage() {
     }, path === '/login' ? 1500 : 300)
   }
 
+  // 로그인 페이지에서 localStorage에 임시 저장된 마케팅 동의 여부를 profiles 테이블에 저장
+  // 컬럼이 없으면 upsert가 해당 필드를 무시하므로 안전 (migration 전까지 오류 없음)
+  const saveMarketingAgreed = async (userId: string) => {
+    const pending = localStorage.getItem('pending_marketing_agreed')
+    if (pending === null || !supabase) return // 값이 없으면 신규 동의 플로우 없음
+
+    const marketingAgreed = pending === 'true'
+    localStorage.removeItem('pending_marketing_agreed') // 저장 후 즉시 정리
+
+    try {
+      await supabase
+        .from('profiles')
+        .update({ marketing_agreed: marketingAgreed })
+        .eq('id', userId)
+      // 컬럼이 없으면 오류 발생 가능하지만 리다이렉트 흐름에 영향 없도록 catch에서 무시
+    } catch (err) {
+      console.warn('[콜백] marketing_agreed 저장 실패 (컬럼 미존재 가능):', err)
+    }
+  }
+
   useEffect(() => {
     // StrictMode에서 useEffect가 두 번 실행될 때 cleanup에서 true로 된 doneRef 리셋
     doneRef.current = false
@@ -40,9 +60,13 @@ export default function AuthCallbackPage() {
       return
     }
 
-    // 온보딩 필요 여부 확인 함수
+    // 온보딩 필요 여부 확인 + 마케팅 동의 저장 함수
     const checkOnboardingAndRedirect = async (userId: string) => {
       if (doneRef.current) return
+
+      // 마케팅 동의 저장 (실패해도 리다이렉트 흐름 계속)
+      await saveMarketingAgreed(userId)
+
       try {
         const { data: profile, error } = await client
           .from('profiles')
@@ -101,6 +125,8 @@ export default function AuthCallbackPage() {
     const timeoutId = window.setTimeout(() => {
       if (doneRef.current) return
       console.warn('[콜백] 세션 타임아웃 - 로그인 페이지로 이동')
+      // 타임아웃 시 pending_marketing_agreed 정리
+      localStorage.removeItem('pending_marketing_agreed')
       goTo('/login')
     }, GIVE_UP_MS)
 
