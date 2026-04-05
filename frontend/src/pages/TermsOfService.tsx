@@ -274,7 +274,7 @@ export default function TermsOfServicePage() {
 
   return (
     // 배경: 흰색 (법적 문서 가독성 최우선)
-    <div className="min-h-screen bg-white px-4 py-8 pb-20">
+    <div className="relative z-[1] min-h-screen bg-white px-4 py-8 pb-20">
       <div className="max-w-3xl mx-auto">
 
         {/* 뒤로가기 버튼 */}
