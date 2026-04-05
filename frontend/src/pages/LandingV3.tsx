@@ -1,6 +1,6 @@
-// LandingV3 — V2 배경 동일 + 스포트라이트 커서 효과 (/v3 라우트)
-// 기본 상태: 어두운 오버레이가 전체를 덮어 텍스트 비노출
-// 커서 올리면: 커서 위치에 원형 구멍 → 검정 배경+흰 글씨가 창문처럼 드러남
+// LandingV3 — V2 전체 테마 동일 + HERO 섹션에만 스포트라이트 커서 효과 (/v3 라우트)
+// 스포트라이트: HERO에 마우스 올리면 커서 위치에 원형 구멍 → 배경+텍스트가 창문처럼 드러남
+// 나머지 섹션(PAIN~FOOTER)은 V2와 완전히 동일
 
 import { useEffect, useRef, useState, useCallback, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -40,53 +40,25 @@ function Reveal({
   )
 }
 
+// ── 줄무늬 패턴 공통 스타일 (V3 전체 섹션에 적용) ─────────────────────────
+const stripePattern =
+  'repeating-linear-gradient(45deg, rgba(49,130,246,0.12) 0px, rgba(49,130,246,0.12) 1px, transparent 1px, transparent 50px)'
+
 export default function LandingV3() {
   const navigate = useNavigate()
 
-  // ── 커스텀 마우스 커서 & 글로우 오브 ────────────────────────────────────────
-  const orbRef = useRef<HTMLDivElement>(null)
-  const cursorRef = useRef<HTMLDivElement>(null)
+  // ── HERO 스포트라이트 커서 효과 ─────────────────────────────────────────
+  const [spotlight, setSpotlight] = useState({ x: 0, y: 0, active: false })
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (orbRef.current) {
-        orbRef.current.style.left = `${e.clientX}px`
-        orbRef.current.style.top = `${e.clientY}px`
-      }
-      if (cursorRef.current) {
-        cursorRef.current.style.left = `${e.clientX}px`
-        cursorRef.current.style.top = `${e.clientY}px`
-      }
-    }
+  // HERO 섹션 마우스 이동 → 섹션 기준 상대 좌표 업데이트
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setSpotlight({ x: e.clientX - rect.left, y: e.clientY - rect.top, active: true })
+  }, [])
 
-    const handleEnter = () => {
-      if (cursorRef.current) {
-        cursorRef.current.style.transform = 'translate(-50%, -50%) scale(2.5)'
-        cursorRef.current.style.background = 'rgba(49,130,246,0.5)'
-      }
-    }
-    const handleLeave = () => {
-      if (cursorRef.current) {
-        cursorRef.current.style.transform = 'translate(-50%, -50%) scale(1)'
-        cursorRef.current.style.background = '#3182f6'
-      }
-    }
-
-    document.addEventListener('mousemove', handleMouseMove)
-
-    const interactiveEls = document.querySelectorAll('a, button')
-    interactiveEls.forEach((el) => {
-      el.addEventListener('mouseenter', handleEnter)
-      el.addEventListener('mouseleave', handleLeave)
-    })
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      interactiveEls.forEach((el) => {
-        el.removeEventListener('mouseenter', handleEnter)
-        el.removeEventListener('mouseleave', handleLeave)
-      })
-    }
+  // HERO 섹션 밖으로 나가면 오버레이가 다시 전체를 덮음
+  const handleMouseLeave = useCallback(() => {
+    setSpotlight(s => ({ ...s, active: false }))
   }, [])
 
   // ── 스크롤 시 NAV 배경 강화 ──────────────────────────────────────────────
@@ -96,80 +68,44 @@ export default function LandingV3() {
       if (navRef.current) {
         navRef.current.style.background =
           window.scrollY > 80
-            ? 'rgba(13,13,13,0.95)'
-            : 'rgba(13,13,13,0.80)'
+            ? 'rgba(0,0,0,0.95)'
+            : 'rgba(0,0,0,0.85)'
       }
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // ── HERO 스포트라이트 커서 효과 ─────────────────────────────────────────
-  // active: 커서가 HERO 섹션 위에 있는지 여부
-  // x, y: HERO 섹션 기준 커서 좌표
-  const heroRef = useRef<HTMLElement>(null)
-  const [spotlight, setSpotlight] = useState({ x: -999, y: -999, active: false })
-
-  // 마우스 이동 시 HERO 섹션 기준 좌표 업데이트
-  const handleHeroMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
-    const rect = heroRef.current?.getBoundingClientRect()
-    if (rect) {
-      setSpotlight({ x: e.clientX - rect.left, y: e.clientY - rect.top, active: true })
-    }
-  }, [])
-
-  // 마우스가 섹션 밖으로 나가면 오버레이가 다시 덮음
-  const handleHeroMouseLeave = useCallback(() => {
-    setSpotlight(prev => ({ ...prev, active: false }))
-  }, [])
-
   // ── 로그인 페이지로 이동 ─────────────────────────────────────────────────
   const goLogin = () => navigate('/login')
 
   return (
+    // V3 전체 래퍼 — 다크 테마, 가로 스크롤 방지
     <div
       className="min-h-screen overflow-x-hidden text-white"
-      style={{ fontFamily: "'Noto Sans KR', sans-serif", background: '#0d0d0d', cursor: 'none', position: 'relative', zIndex: 1 }}
+      style={{
+        fontFamily: "'Noto Sans KR', sans-serif",
+        background: '#000000',
+        position: 'relative',
+        zIndex: 1,
+      }}
     >
-      {/* ── 마우스 글로우 오브 ── */}
-      <div
-        ref={orbRef}
-        className="fixed pointer-events-none z-0 rounded-full"
-        style={{
-          width: 500,
-          height: 500,
-          background: 'radial-gradient(circle, rgba(49,130,246,0.12) 0%, transparent 70%)',
-          transform: 'translate(-50%, -50%)',
-          transition: 'left 0.08s ease, top 0.08s ease',
-        }}
-      />
-      {/* ── 커스텀 커서 도트 ── */}
-      <div
-        ref={cursorRef}
-        className="fixed pointer-events-none z-[9999] rounded-full"
-        style={{
-          width: 10,
-          height: 10,
-          background: '#3182f6',
-          transform: 'translate(-50%, -50%)',
-          transition: 'left 0.04s ease, top 0.04s ease, transform 0.15s ease',
-        }}
-      />
-
-      {/* ── NAV ──────────────────────────────────────────────────────────── */}
+      {/* ── NAV — 검정 배경, 흰 텍스트 ─────────────────────────────────────── */}
       <nav
         ref={navRef}
         className="fixed top-0 left-0 right-0 z-[100] flex justify-between items-center px-6 py-[18px]"
         style={{
-          background: 'rgba(13,13,13,0.80)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(10px)',
+          borderBottom: '1px solid rgba(49,130,246,0.2)',
           transition: 'background 0.3s',
         }}
       >
+        {/* 로고 */}
         <span className="text-[22px] font-black tracking-tight" style={{ color: '#3182f6' }}>
           CATCH
         </span>
+        {/* CTA 버튼 */}
         <button
           onClick={goLogin}
           className="px-[22px] py-[10px] rounded-[12px] text-sm font-bold text-white transition-all hover:scale-[1.04]"
@@ -179,46 +115,34 @@ export default function LandingV3() {
         </button>
       </nav>
 
-      {/* ① HERO — V2 배경 + 스포트라이트 커서 효과 ──────────────────────────── */}
+      {/* ① HERO — V2와 동일한 배경 + 스포트라이트 오버레이 ─────────────────── */}
+      {/*
+        구조:
+        - 배경: #000000 + 줄무늬 (z-index 없음, 자연스럽게 맨 뒤)
+        - 스포트라이트 오버레이: z-index 1 (배경 위, 콘텐츠 아래)
+        - 콘텐츠: z-index 2 (오버레이 위 → 항상 보임)
+
+        스포트라이트 동작:
+        - active=false: 오버레이가 rgba(0,0,0,0.85)로 전체를 덮음 → 어두운 상태
+        - active=true: radial-gradient로 커서 위치에 투명 구멍 → 배경+텍스트 노출
+      */}
       <section
         id="hero"
-        ref={heroRef}
-        onMouseMove={handleHeroMouseMove}
-        onMouseLeave={handleHeroMouseLeave}
-        className="relative flex items-center overflow-hidden"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         style={{
+          position: 'relative',
           minHeight: '100vh',
           padding: '120px 0 80px',
-          // V3: V2와 동일한 배경 (검정 + 파란 대각선 줄무늬)
+          display: 'flex',
+          alignItems: 'center',
+          overflow: 'hidden',
           background: '#000000',
-          backgroundImage:
-            'repeating-linear-gradient(45deg, rgba(49,130,246,0.06) 0px, rgba(49,130,246,0.06) 1px, transparent 1px, transparent 60px)',
+          backgroundImage: stripePattern,
         }}
       >
-        {/* ── 스포트라이트 오버레이 ──────────────────────────────────────────
-            동작 원리:
-            - 기본(active=false): rgba(0,0,0,0.92) 단색으로 전체를 덮음 → 텍스트 안 보임
-            - 커서 진입(active=true): radial-gradient로 커서 위치에 투명 구멍 생성
-              → 구멍 안으로 검정 배경+흰 텍스트가 "창문"처럼 드러남
-            중요: 오버레이는 pointerEvents: none → 클릭 이벤트는 콘텐츠(z-31)가 받음 */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            zIndex: 30,
-            pointerEvents: 'none',
-            background: spotlight.active
-              ? `radial-gradient(circle 200px at ${spotlight.x}px ${spotlight.y}px,
-                  rgba(0,0,0,0) 0%,
-                  rgba(0,0,0,0.4) 60%,
-                  rgba(0,0,0,0.92) 100%)`
-              : 'rgba(0,0,0,0.92)',
-            transition: 'background 0.05s',
-          }}
-        />
-
-        {/* 콘텐츠 — 오버레이(z-30) 위에 렌더링, 스포트라이트 구멍 안에서 드러남 */}
-        <div className="relative w-full max-w-[1100px] mx-auto px-6" style={{ zIndex: 31 }}>
+        {/* 콘텐츠 — z-index 2로 오버레이 위에 항상 보임 */}
+        <div className="relative w-full max-w-[1100px] mx-auto px-6" style={{ zIndex: 2 }}>
           <Reveal>
             <p
               className="text-sm font-bold tracking-[2px] uppercase mb-6"
@@ -238,7 +162,7 @@ export default function LandingV3() {
               <br />
               아직 거기 있습니다.
             </h1>
-            {/* 서브 카피 — 파란색 유지 */}
+            {/* 서브 카피 — 파란색 */}
             <p
               className="font-bold mb-8"
               style={{ fontSize: 'clamp(18px, 3vw, 28px)', color: '#3182f6' }}
@@ -248,7 +172,6 @@ export default function LandingV3() {
           </Reveal>
 
           <Reveal delay={0.2}>
-            {/* 설명 텍스트 — 반투명 흰색 */}
             <p
               className="leading-[1.7] mb-12 max-w-[540px]"
               style={{ fontSize: 'clamp(16px, 2.5vw, 20px)', color: 'rgba(255,255,255,0.75)' }}
@@ -261,6 +184,7 @@ export default function LandingV3() {
 
           <Reveal delay={0.3}>
             <div className="flex gap-4 flex-wrap">
+              {/* 기본 CTA 버튼 */}
               <button
                 onClick={goLogin}
                 className="inline-flex items-center gap-2 font-bold text-white rounded-[16px] transition-all hover:-translate-y-0.5"
@@ -273,15 +197,15 @@ export default function LandingV3() {
               >
                 ✦ 무료로 계산하기
               </button>
-              {/* 보조 버튼 — 반투명 흰색 테두리 */}
+              {/* 보조 버튼 */}
               <a
                 href="#solution"
                 className="inline-flex items-center gap-2 font-semibold rounded-[16px] transition-all hover:-translate-y-0.5"
                 style={{
                   padding: '18px 36px',
                   fontSize: 17,
-                  color: 'rgba(255,255,255,0.65)',
-                  border: '1.5px solid rgba(255,255,255,0.2)',
+                  color: 'rgba(255,255,255,0.75)',
+                  border: '1.5px solid rgba(49,130,246,0.4)',
                   textDecoration: 'none',
                 }}
               >
@@ -290,7 +214,7 @@ export default function LandingV3() {
             </div>
           </Reveal>
 
-          {/* bullet 목록 — 반투명 흰색 */}
+          {/* bullet 목록 */}
           <Reveal delay={0.4}>
             <div className="flex gap-5 flex-wrap mt-[60px]">
               {['퇴직금 계산기', '실업급여 계산기', '단기알바 채용정보', '100% 무료'].map((label) => (
@@ -302,10 +226,34 @@ export default function LandingV3() {
             </div>
           </Reveal>
         </div>
+
+        {/* 스포트라이트 오버레이 — z-index 1 (콘텐츠 z-index 2보다 낮음) */}
+        {/* active=true: 커서 위치에 투명 구멍, 나머지는 검정 85% */}
+        {/* active=false: 전체를 검정 85%로 덮어 어두운 미스터리 효과 */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            pointerEvents: 'none',
+            background: spotlight.active
+              ? `radial-gradient(circle 250px at ${spotlight.x}px ${spotlight.y}px, transparent 0%, rgba(0,0,0,0.85) 100%)`
+              : 'rgba(0,0,0,0.85)',
+            transition: 'background 0.05s linear',
+          }}
+        />
       </section>
 
-      {/* ② PAIN ─────────────────────────────────────────────────────────── */}
-      <section id="pain" className="relative z-[1]" style={{ padding: '120px 0', background: '#161616' }}>
+      {/* ② PAIN — #0a0a0a + 줄무늬 (V2와 동일) ─────────────────────────────── */}
+      <section
+        id="pain"
+        className="relative z-[1]"
+        style={{
+          padding: '120px 0',
+          background: '#0a0a0a',
+          backgroundImage: stripePattern,
+        }}
+      >
         <div className="max-w-[1100px] mx-auto px-6">
           <Reveal>
             <span
@@ -323,7 +271,7 @@ export default function LandingV3() {
           <Reveal delay={0.05}>
             <h2
               className="font-black leading-[1.25] mb-4"
-              style={{ fontSize: 'clamp(28px, 5vw, 44px)' }}
+              style={{ fontSize: 'clamp(28px, 5vw, 44px)', color: '#ffffff' }}
             >
               정보의 소외,
               <br />
@@ -332,7 +280,7 @@ export default function LandingV3() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <p className="text-[17px] leading-[1.7] max-w-[600px] mb-8" style={{ color: '#aaa' }}>
+            <p className="text-[17px] leading-[1.7] max-w-[600px] mb-8" style={{ color: 'rgba(255,255,255,0.75)' }}>
               대한민국 일용직·단기근로자의 80%는 자신이 받을 수 있는 급여를 정확히 모릅니다.
               복잡한 법 조항과 어려운 계산식 때문에 매년 수천억 원의 권리가 증발하고 있습니다.
             </p>
@@ -342,7 +290,7 @@ export default function LandingV3() {
             <blockquote
               className="text-[16px] leading-[1.7] italic mb-12 rounded-r-[12px]"
               style={{
-                color: '#aaa',
+                color: 'rgba(255,255,255,0.75)',
                 background: 'rgba(49,130,246,0.15)',
                 borderLeft: '3px solid #3182f6',
                 padding: '24px 28px',
@@ -353,6 +301,7 @@ export default function LandingV3() {
             </blockquote>
           </Reveal>
 
+          {/* 통계 카드 3개 */}
           <div className="flex flex-col gap-4 max-w-[480px]">
             {[
               { num: '800만', label: '국내 일용직·긱워커 추정 인원' },
@@ -363,8 +312,8 @@ export default function LandingV3() {
                 <div
                   className="flex items-center gap-6 rounded-[20px] transition-all hover:translate-x-2"
                   style={{
-                    background: '#1e1e1e',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(49,130,246,0.3)',
                     padding: '28px 32px',
                   }}
                 >
@@ -374,7 +323,7 @@ export default function LandingV3() {
                   >
                     {item.num}
                   </div>
-                  <div className="text-[15px] leading-[1.5]" style={{ color: '#aaa' }}>
+                  <div className="text-[15px] leading-[1.5]" style={{ color: 'rgba(255,255,255,0.75)' }}>
                     {item.label}
                   </div>
                 </div>
@@ -384,9 +333,18 @@ export default function LandingV3() {
         </div>
       </section>
 
-      {/* ③ SOLUTION ──────────────────────────────────────────────────────── */}
-      <section id="solution" className="relative z-[1]" style={{ padding: '120px 0' }}>
+      {/* ③ SOLUTION — #000000 + 줄무늬 (V2와 동일) ────────────────────────── */}
+      <section
+        id="solution"
+        className="relative z-[1]"
+        style={{
+          padding: '120px 0',
+          background: '#000000',
+          backgroundImage: stripePattern,
+        }}
+      >
         <div className="max-w-[1100px] mx-auto px-6">
+          {/* 섹션 헤더 */}
           <Reveal>
             <div className="text-center max-w-[600px] mx-auto mb-[70px]">
               <span
@@ -401,16 +359,17 @@ export default function LandingV3() {
               </span>
               <h2
                 className="font-black leading-[1.25] mb-4"
-                style={{ fontSize: 'clamp(28px, 5vw, 44px)' }}
+                style={{ fontSize: 'clamp(28px, 5vw, 44px)', color: '#ffffff' }}
               >
                 CATCH가 해결합니다
               </h2>
-              <p className="text-[17px] leading-[1.7]" style={{ color: '#aaa' }}>
+              <p className="text-[17px] leading-[1.7]" style={{ color: 'rgba(255,255,255,0.75)' }}>
                 복잡한 노동법을 몰라도 됩니다. PDF 한 장이면 충분합니다.
               </p>
             </div>
           </Reveal>
 
+          {/* 솔루션 카드 3개 */}
           <div className="grid gap-5 md:grid-cols-3">
             {[
               {
@@ -436,25 +395,32 @@ export default function LandingV3() {
                 <div
                   className="relative overflow-hidden rounded-[20px] transition-all group hover:-translate-y-2"
                   style={{
-                    background: '#161616',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(49,130,246,0.3)',
                     padding: '36px 32px',
                   }}
                 >
+                  {/* 호버 시 상단 그라데이션 바 */}
                   <div
                     className="absolute top-0 left-0 right-0 h-[3px] opacity-0 group-hover:opacity-100 transition-opacity"
                     style={{ background: 'linear-gradient(90deg, #3182f6, #7c3aed)' }}
                   />
+                  {/* 아이콘 */}
                   <div
                     className="flex items-center justify-center rounded-[14px] text-2xl mb-6"
-                    style={{ width: 52, height: 52, background: 'rgba(49,130,246,0.15)' }}
+                    style={{
+                      width: 52,
+                      height: 52,
+                      background: 'rgba(49,130,246,0.15)',
+                    }}
                   >
                     {card.icon}
                   </div>
-                  <h3 className="text-[20px] font-bold mb-3">{card.title}</h3>
-                  <p className="text-[15px] leading-[1.65]" style={{ color: '#aaa' }}>
+                  <h3 className="text-[20px] font-bold mb-3" style={{ color: '#ffffff' }}>{card.title}</h3>
+                  <p className="text-[15px] leading-[1.65]" style={{ color: 'rgba(255,255,255,0.75)' }}>
                     {card.desc}
                   </p>
+                  {/* 뱃지 */}
                   <span
                     className="inline-block mt-5 px-3 py-1 rounded-[8px] text-xs font-semibold"
                     style={{ background: 'rgba(49,130,246,0.15)', color: '#5fa0f8' }}
@@ -468,9 +434,18 @@ export default function LandingV3() {
         </div>
       </section>
 
-      {/* ④ HOW ──────────────────────────────────────────────────────────── */}
-      <section id="how" className="relative z-[1]" style={{ padding: '120px 0', background: '#161616' }}>
+      {/* ④ HOW — #0a0a0a + 줄무늬 (V2와 동일) ─────────────────────────────── */}
+      <section
+        id="how"
+        className="relative z-[1]"
+        style={{
+          padding: '120px 0',
+          background: '#0a0a0a',
+          backgroundImage: stripePattern,
+        }}
+      >
         <div className="max-w-[1100px] mx-auto px-6">
+          {/* 섹션 헤더 */}
           <Reveal>
             <div className="text-center mb-[70px]">
               <span
@@ -485,14 +460,16 @@ export default function LandingV3() {
               </span>
               <h2
                 className="font-black leading-[1.25]"
-                style={{ fontSize: 'clamp(28px, 5vw, 44px)' }}
+                style={{ fontSize: 'clamp(28px, 5vw, 44px)', color: '#ffffff' }}
               >
                 3단계로 끝납니다
               </h2>
             </div>
           </Reveal>
 
+          {/* 3단계 */}
           <div className="grid md:grid-cols-3 gap-0 relative">
+            {/* 단계 연결선 */}
             <div
               className="hidden md:block absolute h-[2px]"
               style={{
@@ -509,14 +486,18 @@ export default function LandingV3() {
             ].map((step, i) => (
               <Reveal key={step.num} delay={0.1 + i * 0.1}>
                 <div className="text-center px-6 py-10 relative">
+                  {/* 단계 번호 원 */}
                   <div
                     className="w-14 h-14 rounded-full flex items-center justify-center text-[20px] font-black text-white mx-auto mb-7 relative z-[1]"
-                    style={{ background: '#3182f6', boxShadow: '0 0 0 8px rgba(49,130,246,0.15)' }}
+                    style={{
+                      background: '#3182f6',
+                      boxShadow: '0 0 0 8px rgba(49,130,246,0.15)',
+                    }}
                   >
                     {step.num}
                   </div>
-                  <h3 className="text-[18px] font-bold mb-3">{step.title}</h3>
-                  <p className="text-[14px] leading-[1.65] whitespace-pre-line" style={{ color: '#aaa' }}>
+                  <h3 className="text-[18px] font-bold mb-3" style={{ color: '#ffffff' }}>{step.title}</h3>
+                  <p className="text-[14px] leading-[1.65] whitespace-pre-line" style={{ color: 'rgba(255,255,255,0.75)' }}>
                     {step.desc}
                   </p>
                 </div>
@@ -526,10 +507,19 @@ export default function LandingV3() {
         </div>
       </section>
 
-      {/* ⑤ WHY CATCH ─────────────────────────────────────────────────────── */}
-      <section id="why" className="relative z-[1]" style={{ padding: '120px 0' }}>
+      {/* ⑤ WHY CATCH — #000000 + 줄무늬 (V2와 동일) ──────────────────────── */}
+      <section
+        id="why"
+        className="relative z-[1]"
+        style={{
+          padding: '120px 0',
+          background: '#000000',
+          backgroundImage: stripePattern,
+        }}
+      >
         <div className="max-w-[1100px] mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-[80px] items-center">
+            {/* 왼쪽 텍스트 영역 */}
             <div>
               <Reveal>
                 <span
@@ -545,8 +535,8 @@ export default function LandingV3() {
               </Reveal>
               <Reveal delay={0.1}>
                 <h2
-                  className="font-black leading-[1.25] mb-10 text-gray-900"
-                  style={{ fontSize: 'clamp(28px, 5vw, 44px)' }}
+                  className="font-black leading-[1.25] mb-10"
+                  style={{ fontSize: 'clamp(28px, 5vw, 44px)', color: '#ffffff' }}
                 >
                   우리는 일용직 근로자
                   <br />
@@ -554,15 +544,33 @@ export default function LandingV3() {
                 </h2>
               </Reveal>
 
+              {/* 체크리스트 */}
               <ul className="flex flex-col gap-5">
                 {[
-                  { title: '법정 알고리즘 적용', desc: '고용노동부 기준 28일 블록 역산 방식으로 정확히 계산합니다.', delay: 0.1 },
-                  { title: '완전 무료, 회원가입 불필요', desc: '숨겨진 비용 없음. 소셜 로그인만으로 바로 사용 가능.', delay: 0.2 },
-                  { title: '실제 채용정보 연동', desc: '계산 후 바로 채용공고까지—한 앱에서 모두 해결.', delay: 0.3 },
-                  { title: '계산 이력 저장', desc: '매번 다시 계산할 필요 없이 이전 결과를 불러올 수 있습니다.', delay: 0.4 },
+                  {
+                    title: '법정 알고리즘 적용',
+                    desc: '고용노동부 기준 28일 블록 역산 방식으로 정확히 계산합니다.',
+                    delay: 0.1,
+                  },
+                  {
+                    title: '완전 무료, 회원가입 불필요',
+                    desc: '숨겨진 비용 없음. 소셜 로그인만으로 바로 사용 가능.',
+                    delay: 0.2,
+                  },
+                  {
+                    title: '실제 채용정보 연동',
+                    desc: '계산 후 바로 채용공고까지—한 앱에서 모두 해결.',
+                    delay: 0.3,
+                  },
+                  {
+                    title: '계산 이력 저장',
+                    desc: '매번 다시 계산할 필요 없이 이전 결과를 불러올 수 있습니다.',
+                    delay: 0.4,
+                  },
                 ].map((item) => (
                   <Reveal key={item.title} delay={item.delay}>
                     <li className="flex gap-4 items-start">
+                      {/* 체크 아이콘 */}
                       <div
                         className="w-7 h-7 rounded-[8px] flex items-center justify-center text-[14px] flex-shrink-0 mt-0.5"
                         style={{ background: 'rgba(49,130,246,0.15)', color: '#3182f6' }}
@@ -570,8 +578,8 @@ export default function LandingV3() {
                         ✓
                       </div>
                       <div>
-                        <strong className="block text-[16px] font-bold mb-1">{item.title}</strong>
-                        <span className="text-[14px] leading-[1.6]" style={{ color: '#aaa' }}>
+                        <strong className="block text-[16px] font-bold mb-1" style={{ color: '#ffffff' }}>{item.title}</strong>
+                        <span className="text-[14px] leading-[1.6]" style={{ color: 'rgba(255,255,255,0.75)' }}>
                           {item.desc}
                         </span>
                       </div>
@@ -581,25 +589,32 @@ export default function LandingV3() {
               </ul>
             </div>
 
+            {/* 오른쪽 시각 카드 — 다크 */}
             <Reveal delay={0.2}>
               <div
                 className="rounded-[20px] text-center"
                 style={{
-                  background: '#161616',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(49,130,246,0.3)',
                   padding: '48px 40px',
                 }}
               >
+                {/* 큰 숫자 */}
                 <div
                   className="font-black leading-none mb-3"
                   style={{ fontSize: 80, color: '#3182f6', letterSpacing: '-3px' }}
                 >
                   365+
                 </div>
-                <p className="text-[18px] mb-10" style={{ color: '#aaa' }}>
+                <p className="text-[18px] mb-10" style={{ color: 'rgba(255,255,255,0.75)' }}>
                   근무일 이상이면 퇴직금 수령 가능
                 </p>
-                <div className="mx-auto mb-9 rounded-full" style={{ width: 40, height: 3, background: '#3182f6' }} />
+                {/* 구분선 */}
+                <div
+                  className="mx-auto mb-9 rounded-full"
+                  style={{ width: 40, height: 3, background: '#3182f6' }}
+                />
+                {/* 미니 통계 4개 */}
                 <div className="grid grid-cols-2 gap-5">
                   {[
                     { num: '4개', label: '계산 서비스' },
@@ -607,9 +622,19 @@ export default function LandingV3() {
                     { num: 'PDF', label: '정밀 분석' },
                     { num: '즉시', label: '결과 확인' },
                   ].map((stat) => (
-                    <div key={stat.label} className="rounded-[14px] text-left" style={{ background: '#1e1e1e', padding: '20px' }}>
-                      <div className="text-[28px] font-black mb-1">{stat.num}</div>
-                      <div className="text-[12px]" style={{ color: '#888' }}>{stat.label}</div>
+                    <div
+                      key={stat.label}
+                      className="rounded-[14px] text-left"
+                      style={{
+                        background: 'rgba(255,255,255,0.08)',
+                        border: '1px solid rgba(49,130,246,0.2)',
+                        padding: '20px',
+                      }}
+                    >
+                      <div className="text-[28px] font-black mb-1" style={{ color: '#ffffff' }}>{stat.num}</div>
+                      <div className="text-[12px]" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                        {stat.label}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -619,19 +644,24 @@ export default function LandingV3() {
         </div>
       </section>
 
-      {/* ⑥ STATS ─────────────────────────────────────────────────────────── */}
+      {/* ⑥ STATS — 파란 배경, 줄무늬 없음 (포인트 섹션, V2와 동일) ──────────── */}
       <section
         id="stats"
         className="relative z-[1] overflow-hidden"
         style={{
           padding: '100px 0',
-          background: 'linear-gradient(135deg, #1a2f5e 0%, #0f1f3d 50%, #0d0d0d 100%)',
+          background: '#3182f6',
         }}
       >
+        {/* 배경 글로우 */}
         <div
           className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 60% 80% at 50% 50%, rgba(49,130,246,0.08) 0%, transparent 70%)' }}
+          style={{
+            background:
+              'radial-gradient(ellipse 60% 80% at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%)',
+          }}
         />
+
         <div className="relative z-[1] max-w-[1100px] mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
@@ -641,14 +671,20 @@ export default function LandingV3() {
               { num: '100%', label: '무료 서비스\n(광고·유료 없음)', delay: 0.4 },
             ].map((item) => (
               <Reveal key={item.num} delay={item.delay}>
-                <div className="text-center">
+                <div
+                  className="text-center rounded-[16px] p-6"
+                  style={{ background: 'rgba(255,255,255,0.15)' }}
+                >
                   <div
                     className="font-black text-white mb-2"
                     style={{ fontSize: 'clamp(36px, 5vw, 56px)', letterSpacing: '-1px' }}
                   >
                     {item.num}
                   </div>
-                  <div className="text-[14px] leading-[1.5] whitespace-pre-line" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                  <div
+                    className="text-[14px] leading-[1.5] whitespace-pre-line"
+                    style={{ color: 'rgba(255,255,255,0.85)' }}
+                  >
                     {item.label}
                   </div>
                 </div>
@@ -658,8 +694,16 @@ export default function LandingV3() {
         </div>
       </section>
 
-      {/* ⑦ CTA ──────────────────────────────────────────────────────────── */}
-      <section id="cta" className="relative z-[1] text-center" style={{ padding: '120px 0' }}>
+      {/* ⑦ CTA — #000000 + 줄무늬 (V2와 동일) ─────────────────────────────── */}
+      <section
+        id="cta"
+        className="relative z-[1] text-center"
+        style={{
+          padding: '120px 0',
+          background: '#000000',
+          backgroundImage: stripePattern,
+        }}
+      >
         <div className="max-w-[700px] mx-auto px-6">
           <Reveal>
             <span
@@ -676,8 +720,8 @@ export default function LandingV3() {
 
           <Reveal delay={0.1}>
             <h2
-              className="font-black leading-[1.2] mb-5 text-gray-900"
-              style={{ fontSize: 'clamp(32px, 5vw, 52px)' }}
+              className="font-black leading-[1.2] mb-5"
+              style={{ fontSize: 'clamp(32px, 5vw, 52px)', color: '#ffffff' }}
             >
               당신이 받아야 할 돈,
               <br />
@@ -686,17 +730,24 @@ export default function LandingV3() {
           </Reveal>
 
           <Reveal delay={0.2}>
-            <p className="text-[18px] leading-[1.7] mb-12" style={{ color: 'rgb(80, 80, 80)' }}>
+            <p className="text-[18px] leading-[1.7] mb-12" style={{ color: 'rgba(255,255,255,0.75)' }}>
               무료로, 지금 바로. 5초 로그인 후 계산 시작.
             </p>
           </Reveal>
 
+          {/* 카카오 / 구글 로그인 버튼 */}
           <Reveal delay={0.3}>
             <div className="flex gap-4 justify-center flex-wrap">
+              {/* 카카오 버튼 */}
               <button
                 onClick={goLogin}
                 className="inline-flex items-center gap-[10px] rounded-[16px] text-[16px] font-bold transition-all hover:-translate-y-0.5"
-                style={{ padding: '18px 36px', background: '#fee500', color: '#191919', boxShadow: '0 8px 24px rgba(254,229,0,0.25)' }}
+                style={{
+                  padding: '18px 36px',
+                  background: '#fee500',
+                  color: '#191919',
+                  boxShadow: '0 8px 24px rgba(254,229,0,0.25)',
+                }}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="#191919">
                   <path d="M12 3C6.477 3 2 6.477 2 10.5c0 2.56 1.522 4.817 3.828 6.213-.167.606-.625 2.193-.715 2.534-.11.42.154.414.324.302.133-.088 2.107-1.43 2.96-2.013.496.073 1.006.11 1.603.11 5.523 0 10-3.477 10-7.646C22 6.477 17.523 3 12 3z" />
@@ -704,10 +755,16 @@ export default function LandingV3() {
                 카카오로 시작하기
               </button>
 
+              {/* 구글 버튼 */}
               <button
                 onClick={goLogin}
                 className="inline-flex items-center gap-[10px] rounded-[16px] text-[16px] font-bold transition-all hover:-translate-y-0.5"
-                style={{ padding: '18px 36px', background: '#fff', color: '#333', boxShadow: '0 8px 24px rgba(255,255,255,0.1)' }}
+                style={{
+                  padding: '18px 36px',
+                  background: 'rgba(255,255,255,0.1)',
+                  color: '#ffffff',
+                  border: '1px solid rgba(49,130,246,0.4)',
+                }}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -721,21 +778,29 @@ export default function LandingV3() {
           </Reveal>
 
           <Reveal delay={0.4}>
-            <p className="mt-7 text-[13px]" style={{ color: '#888' }}>
+            <p className="mt-7 text-[13px]" style={{ color: 'rgba(255,255,255,0.5)' }}>
               신용카드 불필요 · 개인정보 최소 수집 · 언제든지 탈퇴 가능
             </p>
           </Reveal>
         </div>
       </section>
 
-      {/* ── FOOTER ────────────────────────────────────────────────────────── */}
+      {/* ── FOOTER — 다크 테마 (V2와 동일) ─────────────────────────────────── */}
       <footer
         className="relative z-[1] text-center"
-        style={{ padding: '40px 0', borderTop: '1px solid rgba(255,255,255,0.08)' }}
+        style={{
+          padding: '40px 0',
+          background: '#000000',
+          borderTop: '1px solid rgba(49,130,246,0.2)',
+        }}
       >
         <div className="max-w-[1100px] mx-auto px-6">
-          <div className="text-[20px] font-black mb-3" style={{ color: '#3182f6' }}>CATCH</div>
-          <div className="text-[13px]" style={{ color: '#888' }}>© 2026 CATCH — 퇴직금 한번에. All rights reserved.</div>
+          <div className="text-[20px] font-black mb-3" style={{ color: '#3182f6' }}>
+            CATCH
+          </div>
+          <div className="text-[13px]" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            © 2026 CATCH — 퇴직금 한번에. All rights reserved.
+          </div>
         </div>
       </footer>
     </div>
