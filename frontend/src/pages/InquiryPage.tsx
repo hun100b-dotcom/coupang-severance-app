@@ -31,9 +31,8 @@ export default function InquiryPage() {
   // ── 완료 토스트 상태
   const [showSuccess, setShowSuccess] = useState(false)
 
-  // 폼 제출 핸들러
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  // 폼 제출 핸들러 — type="button" 버튼에서 직접 호출하므로 이벤트 매개변수 불필요
+  async function handleSubmit() {
     setError('')
 
     // 유효성 검사
@@ -81,7 +80,7 @@ export default function InquiryPage() {
         navigate(-1)
       }, 2500)
     } catch (err) {
-      console.error('문의 제출 실패:', err)
+      if (import.meta.env.DEV) console.error('문의 제출 실패:', err)
       setError('문의 제출에 실패했습니다. 잠시 후 다시 시도해주세요.')
     } finally {
       setSubmitting(false)
