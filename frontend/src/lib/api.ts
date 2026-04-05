@@ -326,7 +326,7 @@ export const getAdminInquiries = async (params: {
   return { inquiries: data ?? [], total: count ?? 0 }
 }
 
-export const patchInquiryStatus = async (id: string, status: string) => {
+export const patchInquiryStatus = async (id: string | number, status: string) => {
   const { error } = await supabase
     .from('inquiries')
     .update({ status, updated_at: new Date().toISOString() })
@@ -335,16 +335,18 @@ export const patchInquiryStatus = async (id: string, status: string) => {
   return { ok: true }
 }
 
-export const patchInquiryAnswer = async (id: string, answer: string) => {
+export const patchInquiryAnswer = async (id: string | number, answer: string) => {
+  const now = new Date().toISOString()
+  // answered_at: 최초 답변 시각, updated_at: 수정 시각
   const { error } = await supabase
     .from('inquiries')
-    .update({ answer, status: 'answered', updated_at: new Date().toISOString() })
+    .update({ answer, status: 'answered', answered_at: now, updated_at: now })
     .eq('id', id)
   if (error) throw new Error(error.message)
   return { ok: true }
 }
 
-export const bulkInquiryStatus = async (ids: string[], status: string) => {
+export const bulkInquiryStatus = async (ids: Array<string | number>, status: string) => {
   const { error } = await supabase
     .from('inquiries')
     .update({ status, updated_at: new Date().toISOString() })
