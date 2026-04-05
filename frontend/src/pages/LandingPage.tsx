@@ -195,16 +195,22 @@ export default function LandingPage() {
           </Reveal>
 
           <Reveal delay={0.1}>
+            {/* 메인 대제목 — 임팩트 강조 */}
             <h1
-              className="font-black leading-[1.1] tracking-tight mb-8"
+              className="font-black leading-[1.1] tracking-tight mb-4"
               style={{ fontSize: 'clamp(40px, 8vw, 80px)' }}
             >
-              긱워커의 시대가 온다.
+              당신이 받아야 할 돈,
               <br />
-              <span style={{ color: '#3182f6' }}>당신의 권리도</span>
-              <br />
-              함께.
+              아직 거기 있습니다.
             </h1>
+            {/* 서브 카피 — 파란색 강조 */}
+            <p
+              className="font-bold mb-8"
+              style={{ fontSize: 'clamp(18px, 3vw, 28px)', color: '#3182f6' }}
+            >
+              CATCH와 함께 찾아보세요
+            </p>
           </Reveal>
 
           <Reveal delay={0.2}>
