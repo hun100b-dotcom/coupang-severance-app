@@ -186,6 +186,11 @@ export default function JobsMenu() {
   // 저장 (생성 또는 수정)
   const handleSave = async () => {
     if (!supabase || !form.company_name.trim() || !form.region.trim()) return
+    // 마감일 필수 검증 — 직업안정법상 마감일 없는 공고는 이용자 혼란 유발 가능
+    if (!form.expires_at) {
+      alert('마감일은 필수 입력입니다.')
+      return
+    }
     setSaving(true)
     setJobError(null)
     try {
@@ -800,9 +805,9 @@ export default function JobsMenu() {
             {/* 마감일 + 긴급 */}
             <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'flex-end' }}>
               <label style={{ flex: 1 }}>
-                <span style={labelSpan}>공고 마감일</span>
+                <span style={labelSpan}>공고 마감일 <span style={{ color: '#f04452' }}>*</span></span>
                 <input type="date" value={form.expires_at} onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
-                  style={inputStyle} />
+                  required style={inputStyle} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={labelSpan}>긴급</span>
@@ -840,10 +845,10 @@ export default function JobsMenu() {
                 fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
               }}>취소</button>
               <button onClick={handleSave}
-                disabled={saving || !form.company_name.trim() || !form.region.trim()}
+                disabled={saving || !form.company_name.trim() || !form.region.trim() || !form.expires_at}
                 style={{
                   padding: '9px 20px', borderRadius: 10, border: 'none',
-                  background: saving || !form.company_name.trim() || !form.region.trim()
+                  background: saving || !form.company_name.trim() || !form.region.trim() || !form.expires_at
                     ? 'rgba(49,130,246,0.3)' : '#3182f6',
                   color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
                 }}>
