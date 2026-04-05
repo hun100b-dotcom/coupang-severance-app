@@ -922,3 +922,10 @@ input:focus {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+
+/* marquee-banner: NoticesBanner 전용 (1회 실행 forwards)
+   마키 완료 후 3초 뒤 다음 공지로 전환하는 방식에 사용 */
+@keyframes marquee-banner {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
