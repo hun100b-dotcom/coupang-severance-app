@@ -217,7 +217,7 @@ export default function LandingPage() {
           <Reveal delay={0.2}>
             <p
               className="leading-[1.7] mb-12 max-w-[540px]"
-              style={{ fontSize: 'clamp(16px, 2.5vw, 20px)', color: '#aaa' }}
+              style={{ fontSize: 'clamp(16px, 2.5vw, 20px)', color: 'rgb(80, 80, 80)' }}
             >
               퇴직금·실업급여·주휴수당·연차수당—
               <br />
@@ -247,7 +247,7 @@ export default function LandingPage() {
                 style={{
                   padding: '18px 36px',
                   fontSize: 17,
-                  color: '#aaa',
+                  color: 'rgb(80, 80, 80)',
                   border: '1.5px solid rgba(255,255,255,0.08)',
                   textDecoration: 'none',
                 }}
@@ -261,7 +261,7 @@ export default function LandingPage() {
           <Reveal delay={0.4}>
             <div className="flex gap-5 flex-wrap mt-[60px]">
               {['퇴직금 계산기', '실업급여 계산기', '단기알바 채용정보', '100% 무료'].map((label) => (
-                <div key={label} className="flex items-center gap-2 text-sm" style={{ color: '#888' }}>
+                <div key={label} className="flex items-center gap-2 text-sm" style={{ color: 'rgb(80, 80, 80)' }}>
                   <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#3182f6' }} />
                   {label}
                 </div>
@@ -530,7 +530,7 @@ export default function LandingPage() {
               </Reveal>
               <Reveal delay={0.1}>
                 <h2
-                  className="font-black leading-[1.25] mb-10"
+                  className="font-black leading-[1.25] mb-10 text-gray-900"
                   style={{ fontSize: 'clamp(28px, 5vw, 44px)' }}
                 >
                   우리는 일용직 근로자
@@ -700,7 +700,7 @@ export default function LandingPage() {
 
           <Reveal delay={0.1}>
             <h2
-              className="font-black leading-[1.2] mb-5"
+              className="font-black leading-[1.2] mb-5 text-gray-900"
               style={{ fontSize: 'clamp(32px, 5vw, 52px)' }}
             >
               당신이 받아야 할 돈,
@@ -710,7 +710,7 @@ export default function LandingPage() {
           </Reveal>
 
           <Reveal delay={0.2}>
-            <p className="text-[18px] leading-[1.7] mb-12" style={{ color: '#aaa' }}>
+            <p className="text-[18px] leading-[1.7] mb-12" style={{ color: 'rgb(80, 80, 80)' }}>
               무료로, 지금 바로. 5초 로그인 후 계산 시작.
             </p>
           </Reveal>
