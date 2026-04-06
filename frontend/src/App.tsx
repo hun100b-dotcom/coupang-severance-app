@@ -80,8 +80,8 @@ export default function App() {
           <Route path="/inquiry" element={<InquiryPage />} />
           {/* 설정 페이지 — 헤더 드롭다운 "설정" 클릭 시 이동 */}
           <Route path="/settings" element={<SettingsPage />} />
-          {/* 랜딩페이지 — Layout 없이 독립 풀페이지, SEO/공유용 */}
-          <Route path="/landing" element={<LandingPage />} />
+          {/* 랜딩페이지 — Layout 없이 독립 풀페이지, SEO/공유용 (LandingV1 디자인 반영) */}
+          <Route path="/landing" element={<LandingV1 />} />
           {/* HERO 비교 버전 — /v1, /v2, /v3, /v4, /v5 로 각각 접근 */}
           <Route path="/v1" element={<LandingV1 />} />
           <Route path="/v2" element={<LandingV2 />} />
