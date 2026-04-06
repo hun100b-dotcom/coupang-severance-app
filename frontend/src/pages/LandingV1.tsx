@@ -343,9 +343,10 @@ export default function LandingV1() {
           <Reveal delay={0.4}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-[60px] max-w-[680px]">
               {[
-                { icon: '💰', stat: '200만원', desc: '평균 미수령 퇴직금' },
-                { icon: '📋', stat: '72%', desc: '실업급여 미신청률' },
-                { icon: '⏱', stat: '58초', desc: '평균 계산 시간' },
+                // 실제 고용노동부 2023 통계 기반
+                { icon: '💰', stat: '연 28만 명', desc: '임금체불 피해 근로자', source: '(고용노동부 2023)' },
+                { icon: '📋', stat: '40%', desc: '체불액 중 퇴직금 비중', source: '(고용노동부 2023)' },
+                { icon: '⏱', stat: '1분', desc: '내 권리 확인까지', source: '' },
               ].map((card) => (
                 <div
                   key={card.stat}
@@ -362,6 +363,10 @@ export default function LandingV1() {
                     {card.stat}
                   </div>
                   <div className="text-[12px] mt-1" style={{ color: '#64748b' }}>{card.desc}</div>
+                  {/* 출처 표기 (공식 통계에만 표시) */}
+                  {card.source && (
+                    <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: 2 }}>{card.source}</div>
+                  )}
                 </div>
               ))}
             </div>
@@ -439,11 +444,13 @@ export default function LandingV1() {
           {/* 통계 카드 — 레드 왼쪽 라인 + 숫자 강조 */}
           <div className="flex flex-col gap-4 max-w-[560px]">
             {[
-              { num: '연 3만 건+', label: '퇴직급여 체불 신고 — 고용노동부 실적 기준', delay: 0.1 },
-              { num: '약 28만 명', label: '자격 있어도 실업급여 미신청 — 연간 추정', delay: 0.2 },
-              { num: '평균 93만원', label: '잘못된 계산으로 인한 평균 손실 (추정)', delay: 0.3 },
+              // 카드 1: 실제 고용노동부 2023 수치
+              { num: '1조 7,845억', numSize: 20, label: '2023년 임금체불 총액', sub: '이 중 40%가 퇴직급여 미지급', delay: 0.1 },
+              // 카드 2·3: 출처 없는 허수 제거 → 정성적 표현
+              { num: '—', numSize: 38, label: '복잡한 수급 요건을 몰라 포기하는 일용직 근로자', sub: '', delay: 0.2 },
+              { num: '—', numSize: 38, label: '직접 계산하면 실수가 잦은 퇴직금·실업급여 산정', sub: '', delay: 0.3 },
             ].map((item) => (
-              <Reveal key={item.num} delay={item.delay}>
+              <Reveal key={item.label} delay={item.delay}>
                 <div
                   className="flex items-center gap-6 rounded-[20px] transition-all hover:-translate-y-1"
                   style={{
@@ -456,12 +463,20 @@ export default function LandingV1() {
                 >
                   <div
                     className="font-black tracking-tight whitespace-nowrap"
-                    style={{ fontSize: 38, color: '#ef4444', letterSpacing: '-1px', minWidth: 90 }}
+                    style={{ fontSize: item.numSize, color: '#ef4444', letterSpacing: '-1px', minWidth: 70 }}
                   >
                     {item.num}
                   </div>
-                  <div className="text-[15px] leading-[1.5]" style={{ color: '#475569' }}>
-                    {item.label}
+                  <div>
+                    <div className="text-[15px] leading-[1.5]" style={{ color: '#475569' }}>
+                      {item.label}
+                    </div>
+                    {/* 서브텍스트 (카드 1에만 출처 보완 설명) */}
+                    {item.sub && (
+                      <div className="text-[13px] mt-1" style={{ color: '#94a3b8' }}>
+                        {item.sub}
+                      </div>
+                    )}
                   </div>
                 </div>
               </Reveal>
@@ -754,18 +769,6 @@ export default function LandingV1() {
               >
                 왜 CATCH인가
               </span>
-              <div className="mt-2">
-                <span
-                  className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-semibold"
-                  style={{
-                    background: 'rgba(124,58,237,0.08)',
-                    border: '1px solid rgba(124,58,237,0.15)',
-                    color: '#7c3aed',
-                  }}
-                >
-                  🔥 현재 2,847명이 사용 중
-                </span>
-              </div>
             </div>
           </Reveal>
 
@@ -875,7 +878,8 @@ export default function LandingV1() {
         <div className="relative z-[1] max-w-[1100px] mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
             {[
-              { num: '800만+', label: '잠재 사용자\n(국내 긱워커)', barWidth: '82%', delay: 0.1 },
+              // 실제 고용노동부 2023 통계로 교체 (허수 '800만+' 제거)
+              { num: '28만 3천', label: '임금체불 피해자\n(고용노동부 2023)', barWidth: '82%', delay: 0.1 },
               { num: '4가지', label: '수당 계산기\n(퇴직·실업·주휴·연차)', barWidth: '100%', delay: 0.2 },
               { num: '28일', label: '블록 알고리즘\n(법정 기준 정밀계산)', barWidth: '75%', delay: 0.3 },
               { num: '100%', label: '무료 서비스\n(광고·유료 없음)', barWidth: '100%', delay: 0.4 },
