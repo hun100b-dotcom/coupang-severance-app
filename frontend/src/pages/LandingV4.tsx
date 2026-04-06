@@ -2,7 +2,7 @@
 // 컨셉: 전면을 꽉 채우는 BIG 타이포그래피, 오렌지 포인트, 직각 버튼
 // 배경: #0a0a0a (거의 블랙), 포인트: #f97316 (오렌지)
 
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 

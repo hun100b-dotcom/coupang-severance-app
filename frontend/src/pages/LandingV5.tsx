@@ -2,7 +2,7 @@
 // 컨셉: 신문/잡지 레이아웃, 정보 밀도 높음, 신뢰감·전문성
 // 배경: #fafaf8 (크림), 포인트: #dc2626 (레드), 세리프 제목 폰트
 
-import { useState, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
@@ -43,7 +43,6 @@ function Reveal({
 // ── 공통 스타일 상수 ───────────────────────────────────────────────────────
 const serifFont = "Georgia, 'Times New Roman', serif"
 const sansFont = 'system-ui, -apple-system, sans-serif'
-const dividerStyle = { borderTop: '3px solid #1a1a1a', margin: '0 0 48px 0' }
 const sectionLabelStyle: React.CSSProperties = {
   fontFamily: sansFont,
   fontSize: '0.7rem',
@@ -56,8 +55,6 @@ const sectionLabelStyle: React.CSSProperties = {
 
 export default function LandingV5() {
   const navigate = useNavigate()
-  // ── 모바일 메뉴 상태 ─────────────────────────────────────────────────────
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // ── CTA 핸들러 ────────────────────────────────────────────────────────────
   const handleCTA = () => navigate('/login')
