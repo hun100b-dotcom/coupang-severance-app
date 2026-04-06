@@ -3,7 +3,7 @@
 // ── React 핵심 임포트 ────────────────────────────────────────────────────────
 // lazy: 컴포넌트를 처음 렌더링할 때만 동적으로 불러옵니다 (지연 로딩).
 // Suspense: lazy 컴포넌트가 로딩 중일 때 대신 보여줄 fallback UI를 지정합니다.
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom' // 브라우저 라우팅을 위해 react-router-dom을 가져옵니다.
 import { AuthProvider } from './contexts/AuthContext' // 전역 로그인 상태를 제공하는 AuthProvider를 가져옵니다.
 import AnimatedBackground from './components/AnimatedBackground' // 배경 애니메이션 컴포넌트를 가져옵니다.
@@ -11,6 +11,7 @@ import Layout from './components/Layout' // 상단/하단 네비바를 포함한
 import ProtectedRoute from './components/ProtectedRoute' // 로그인 필요 페이지를 보호하는 래퍼 컴포넌트를 가져옵니다.
 import OnboardingGuard from './components/OnboardingGuard' // 온보딩 미완료 사용자 리다이렉트 가드
 import LoadingOverlay from './components/LoadingOverlay' // lazy 로딩 중 보여줄 스피너 컴포넌트
+import SplashScreen from './components/SplashScreen'   // 앱 최초 접속 시 스플래시 화면
 
 // ── 즉시 로딩 페이지 (앱 시작 시 항상 필요한 페이지) ────────────────────────
 // 아래 4개 페이지는 사용자가 앱을 열자마자 마주칠 수 있으므로 번들에 포함합니다.
@@ -49,11 +50,19 @@ const LandingV4              = lazy(() => import('./pages/LandingV4'))       // 
 const LandingV5              = lazy(() => import('./pages/LandingV5'))       // 비교 버전 5: 매거진/뉴스레터 (크림+레드)
 
 export default function App() {
+  // 스플래시 화면 표시 여부 (최초 접속 시 true, 2.3초 후 false로 전환)
+  const [showSplash, setShowSplash] = useState(true)
+
   return (
     <BrowserRouter>
       {/* 전체 앱을 BrowserRouter로 감싸 라우팅 기능을 활성화합니다. */}
       <AuthProvider>
         {/* AuthProvider 안에서만 useAuth 훅을 사용할 수 있으므로, 라우트 전체를 감싸 줍니다. */}
+
+        {/* 스플래시 화면: 앱 최초 접속 시 z-index 9999로 모든 UI 위에 표시됩니다.
+            2.3초 후 페이드 아웃되며 사라집니다. 뒤의 앱은 정상 렌더링 유지. */}
+        {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+
         <AnimatedBackground /> {/* 모든 페이지 뒤에 공통으로 깔릴 배경 애니메이션입니다. */}
 
         {/* Suspense: lazy 컴포넌트가 아직 로딩 중일 때 LoadingOverlay를 보여줍니다.
