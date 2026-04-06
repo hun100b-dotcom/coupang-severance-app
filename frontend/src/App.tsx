@@ -45,6 +45,8 @@ const LandingPage            = lazy(() => import('./pages/LandingPage'))    // �
 const LandingV1              = lazy(() => import('./pages/LandingV1'))       // 비교 버전 1: 밝은 배경
 const LandingV2              = lazy(() => import('./pages/LandingV2'))       // 비교 버전 2: 검정+줄무늬
 const LandingV3              = lazy(() => import('./pages/LandingV3'))       // 비교 버전 3: 검정+스포트라이트
+const LandingV4              = lazy(() => import('./pages/LandingV4'))       // 비교 버전 4: 볼드/임팩트 (오렌지)
+const LandingV5              = lazy(() => import('./pages/LandingV5'))       // 비교 버전 5: 매거진/뉴스레터 (크림+레드)
 
 export default function App() {
   return (
@@ -80,10 +82,12 @@ export default function App() {
           <Route path="/settings" element={<SettingsPage />} />
           {/* 랜딩페이지 — Layout 없이 독립 풀페이지, SEO/공유용 */}
           <Route path="/landing" element={<LandingPage />} />
-          {/* HERO 비교 버전 — /v1, /v2, /v3 로 각각 접근 */}
+          {/* HERO 비교 버전 — /v1, /v2, /v3, /v4, /v5 로 각각 접근 */}
           <Route path="/v1" element={<LandingV1 />} />
           <Route path="/v2" element={<LandingV2 />} />
           <Route path="/v3" element={<LandingV3 />} />
+          <Route path="/v4" element={<LandingV4 />} />
+          <Route path="/v5" element={<LandingV5 />} />
 
           {/* ── 네비바(TopNav + BottomNav)가 있는 일반 페이지 ──
               Layout 컴포넌트가 Outlet을 통해 중첩 라우트를 렌더링합니다. */}
