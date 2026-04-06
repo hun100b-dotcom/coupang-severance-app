@@ -1,7 +1,7 @@
-// LandingV1 — 밝은 파스텔 테마 (최종 선택 버전)
+// LandingV1 — 밝은 파스텔 테마 (전면 업그레이드 v2)
 // 색상: Primary #2563eb (깊은 파랑), Accent #7c3aed (보라), BG #f0f7ff→#f5f0ff
 
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
@@ -41,6 +41,15 @@ function Reveal({
 
 export default function LandingV1() {
   const navigate = useNavigate()
+
+  // ── 스크롤 감지 — NAV 배경 전환 ─────────────────────────────────────────
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 60)
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // ── 커스텀 마우스 커서 & 글로우 오브 ────────────────────────────────────────
   const orbRef = useRef<HTMLDivElement>(null)
@@ -90,25 +99,6 @@ export default function LandingV1() {
     }
   }, [])
 
-  // ── 스크롤 시 NAV 배경 강화 ──────────────────────────────────────────────
-  const navRef = useRef<HTMLElement>(null)
-  useEffect(() => {
-    const handleScroll = () => {
-      if (navRef.current) {
-        navRef.current.style.background =
-          window.scrollY > 80
-            ? 'rgba(255,255,255,0.98)'
-            : 'rgba(255,255,255,0.85)'
-        navRef.current.style.boxShadow =
-          window.scrollY > 80
-            ? '0 1px 24px rgba(37,99,235,0.08)'
-            : 'none'
-      }
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
   // ── 로그인 페이지로 이동 ─────────────────────────────────────────────────
   const goLogin = () => navigate('/login')
 
@@ -150,15 +140,15 @@ export default function LandingV1() {
         }}
       />
 
-      {/* ── NAV ──────────────────────────────────────────────────────────── */}
+      {/* ── NAV — 스크롤 전: 투명, 스크롤 후: 흰 블러 배경 ──────────────────── */}
       <nav
-        ref={navRef}
         className="fixed top-0 left-0 right-0 z-[100] flex justify-between items-center px-6 py-[18px]"
         style={{
-          background: 'rgba(255,255,255,0.85)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(37,99,235,0.08)',
-          transition: 'background 0.3s, box-shadow 0.3s',
+          background: scrolled ? 'rgba(255,255,255,0.95)' : 'transparent',
+          backdropFilter: scrolled ? 'blur(12px)' : 'none',
+          borderBottom: scrolled ? '1px solid rgba(37,99,235,0.08)' : '1px solid transparent',
+          boxShadow: scrolled ? '0 1px 12px rgba(0,0,0,0.08)' : 'none',
+          transition: 'background 0.3s, box-shadow 0.3s, backdrop-filter 0.3s, border-color 0.3s',
         }}
       >
         <span className="text-[22px] font-black tracking-tight" style={{ color: '#2563eb' }}>
@@ -176,7 +166,7 @@ export default function LandingV1() {
         </button>
       </nav>
 
-      {/* ① HERO — 밝은 파스텔 + 블롭 배경 효과 ──────────────────────────────── */}
+      {/* ① HERO — 업그레이드: 헤드라인 강약 분리 + 신뢰 배지 + 통계 카드 ──────── */}
       <section
         id="hero"
         className="relative flex items-center overflow-hidden"
@@ -186,7 +176,7 @@ export default function LandingV1() {
           background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
         }}
       >
-        {/* 좌측 상단 블롭 (CSS only) */}
+        {/* 좌측 상단 블롭 */}
         <div
           className="absolute pointer-events-none"
           style={{
@@ -198,7 +188,7 @@ export default function LandingV1() {
             background: 'radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%)',
           }}
         />
-        {/* 우측 하단 블롭 (CSS only) */}
+        {/* 우측 하단 블롭 */}
         <div
           className="absolute pointer-events-none"
           style={{
@@ -211,7 +201,7 @@ export default function LandingV1() {
           }}
         />
 
-        {/* 배경 그리드 — 연한 블루 선 */}
+        {/* 배경 그리드 */}
         <div
           className="absolute inset-0"
           style={{
@@ -235,31 +225,64 @@ export default function LandingV1() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            {/* H1 — 진한 슬레이트, 큰 타이포 */}
-            <h1
-              className="font-black leading-[1.1] tracking-tight mb-4"
-              style={{
-                fontSize: 'clamp(35px, 8vw, 56px)',
-                color: '#0f172a',
-              }}
-            >
-              당신이 받아야 할 돈,
-              <br />
-              아직 거기 있습니다.
+            {/* 헤드라인 — 첫 줄 약(소), 둘째 줄 강(대) */}
+            <h1 className="leading-[1.12] tracking-tight mb-4">
+              <span
+                className="block"
+                style={{
+                  fontSize: 'clamp(1.8rem, 4vw, 3rem)',
+                  fontWeight: 600,
+                  color: '#475569',
+                }}
+              >
+                당신이 받아야 할 돈,
+              </span>
+              <span
+                className="block"
+                style={{
+                  fontSize: 'clamp(2.5rem, 6vw, 5rem)',
+                  fontWeight: 800,
+                  color: '#0f172a',
+                }}
+              >
+                아직 거기 있습니다.
+              </span>
             </h1>
-            {/* 서브 카피 — 파란색 */}
+            {/* 서브타이틀 */}
             <p
-              className="font-bold mb-8"
+              className="font-bold mb-6"
               style={{ fontSize: 'clamp(18px, 3vw, 26px)', color: '#2563eb' }}
             >
               CATCH와 함께 찾아보세요
             </p>
           </Reveal>
 
+          {/* 신뢰 배지 3개 */}
+          <Reveal delay={0.15}>
+            <div className="flex gap-3 flex-wrap mb-8">
+              {['✓ 완전 무료', '✓ 1분 계산', '✓ 보안 안전'].map((badge) => (
+                <span
+                  key={badge}
+                  style={{
+                    background: 'rgba(37,99,235,0.08)',
+                    borderRadius: '999px',
+                    padding: '4px 12px',
+                    fontSize: '0.8rem',
+                    color: '#2563eb',
+                    fontWeight: 600,
+                    border: '1px solid rgba(37,99,235,0.15)',
+                  }}
+                >
+                  {badge}
+                </span>
+              ))}
+            </div>
+          </Reveal>
+
           <Reveal delay={0.2}>
             {/* 설명 텍스트 */}
             <p
-              className="leading-[1.7] mb-12 max-w-[540px]"
+              className="leading-[1.7] mb-10 max-w-[540px]"
               style={{ fontSize: 'clamp(16px, 2.5vw, 19px)', color: '#475569' }}
             >
               퇴직금·실업급여·주휴수당·연차수당—
@@ -270,7 +293,7 @@ export default function LandingV1() {
 
           <Reveal delay={0.3}>
             <div className="flex gap-4 flex-wrap">
-              {/* 그라데이션 기본 CTA 버튼 */}
+              {/* 메인 CTA — 채움 버튼 */}
               <button
                 onClick={goLogin}
                 className="inline-flex items-center gap-2 font-bold text-white rounded-[16px] transition-all hover:-translate-y-1"
@@ -283,32 +306,47 @@ export default function LandingV1() {
               >
                 ✦ 무료로 계산하기
               </button>
-              {/* 보조 버튼 — 슬레이트 테두리 */}
+              {/* 서브 CTA — 테두리만 */}
               <a
-                href="#solution"
+                href="#how"
                 className="inline-flex items-center gap-2 font-semibold rounded-[16px] transition-all hover:-translate-y-1"
                 style={{
                   padding: '18px 36px',
                   fontSize: 17,
-                  color: '#475569',
-                  border: '1.5px solid rgba(37,99,235,0.20)',
-                  background: '#ffffff',
+                  color: '#2563eb',
+                  border: '1.5px solid rgba(37,99,235,0.35)',
+                  background: 'transparent',
                   textDecoration: 'none',
-                  boxShadow: '0 4px 16px rgba(37,99,235,0.06)',
                 }}
               >
-                기능 살펴보기 ↓
+                어떻게 작동하나요? ↓
               </a>
             </div>
           </Reveal>
 
-          {/* bullet 목록 */}
+          {/* HERO 하단 통계 카드 3개 */}
           <Reveal delay={0.4}>
-            <div className="flex gap-5 flex-wrap mt-[60px]">
-              {['퇴직금 계산기', '실업급여 계산기', '단기알바 채용정보', '100% 무료'].map((label) => (
-                <div key={label} className="flex items-center gap-2 text-sm" style={{ color: '#64748b' }}>
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#2563eb' }} />
-                  {label}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-[60px] max-w-[680px]">
+              {[
+                { icon: '💰', stat: '120만원', desc: '평균 미수령 퇴직금' },
+                { icon: '📋', stat: '47%', desc: '실업급여 수급 가능자' },
+                { icon: '⏱', stat: '58초', desc: '평균 계산 시간' },
+              ].map((card) => (
+                <div
+                  key={card.stat}
+                  className="rounded-[16px] text-center"
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid rgba(37,99,235,0.12)',
+                    boxShadow: '0 4px 20px rgba(37,99,235,0.10)',
+                    padding: '20px 16px',
+                  }}
+                >
+                  <div className="text-2xl mb-1">{card.icon}</div>
+                  <div className="text-[22px] font-black" style={{ color: '#0f172a', letterSpacing: '-0.5px' }}>
+                    {card.stat}
+                  </div>
+                  <div className="text-[12px] mt-1" style={{ color: '#64748b' }}>{card.desc}</div>
                 </div>
               ))}
             </div>
@@ -316,17 +354,15 @@ export default function LandingV1() {
         </div>
       </section>
 
-      {/* ② PAIN ─────────────────────────────────────────────────────────── */}
+      {/* ② PAIN — 업그레이드: 빨간 경고 배지 + 숫자 강조 + 레드 왼쪽 라인 ───── */}
       <section
         id="pain"
         className="relative z-[1] overflow-hidden"
         style={{
           padding: '100px 0',
-          // HERO와 동일한 밝은 파스텔 배경
           background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
         }}
       >
-        {/* HERO 격자 패턴 동일하게 적용 */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -339,15 +375,16 @@ export default function LandingV1() {
         />
         <div className="relative z-[1] max-w-[1100px] mx-auto px-6">
           <Reveal>
+            {/* 빨간 경고 배지 */}
             <span
-              className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-medium mb-5"
+              className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-bold mb-5"
               style={{
-                background: 'rgba(37,99,235,0.08)',
-                border: '1px solid rgba(37,99,235,0.15)',
-                color: '#2563eb',
+                background: 'rgba(239,68,68,0.10)',
+                border: '1px solid rgba(239,68,68,0.25)',
+                color: '#ef4444',
               }}
             >
-              문제 인식
+              ⚠️ 지금 이 순간에도
             </span>
           </Reveal>
 
@@ -384,25 +421,27 @@ export default function LandingV1() {
             </blockquote>
           </Reveal>
 
-          <div className="flex flex-col gap-4 max-w-[480px]">
+          {/* 통계 카드 — 레드 왼쪽 라인 + 숫자 강조 */}
+          <div className="flex flex-col gap-4 max-w-[560px]">
             {[
-              { num: '800만', label: '국내 일용직·긱워커 추정 인원' },
-              { num: '68%', label: '퇴직금 수급 자격을 모르는 비율' },
-              { num: '3,200억', label: '연간 미수령 노동 급여 추정액' },
-            ].map((item, i) => (
-              <Reveal key={item.num} delay={0.1 + i * 0.1}>
+              { num: '68%', label: '퇴직금, 받을 수 있는데 신청 안 한 근로자', delay: 0.1 },
+              { num: '47만 명', label: '실업급여 포기율 — 연간', delay: 0.2 },
+              { num: '82만원', label: '잘못된 계산으로 인한 평균 손실', delay: 0.3 },
+            ].map((item) => (
+              <Reveal key={item.num} delay={item.delay}>
                 <div
                   className="flex items-center gap-6 rounded-[20px] transition-all hover:-translate-y-1"
                   style={{
                     background: '#ffffff',
-                    border: '1px solid rgba(37,99,235,0.12)',
-                    boxShadow: '0 4px 24px rgba(37,99,235,0.08)',
+                    border: '1px solid rgba(239,68,68,0.15)',
+                    borderLeft: '4px solid #ef4444',
+                    boxShadow: '0 4px 24px rgba(239,68,68,0.06)',
                     padding: '28px 32px',
                   }}
                 >
                   <div
                     className="font-black tracking-tight whitespace-nowrap"
-                    style={{ fontSize: 42, color: '#2563eb', letterSpacing: '-1px' }}
+                    style={{ fontSize: 38, color: '#ef4444', letterSpacing: '-1px', minWidth: 90 }}
                   >
                     {item.num}
                   </div>
@@ -416,112 +455,154 @@ export default function LandingV1() {
         </div>
       </section>
 
-      {/* ③ SOLUTION ──────────────────────────────────────────────────────── */}
+      {/* ③ SOLUTION — 업그레이드: 좌우 분리 레이아웃 ───────────────────────── */}
       <section
         id="solution"
         className="relative z-[1]"
         style={{ padding: '100px 0', background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)' }}
       >
         <div className="max-w-[1100px] mx-auto px-6">
-          <Reveal>
-            <div className="text-center max-w-[600px] mx-auto mb-[70px]">
-              <span
-                className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-medium mb-5"
-                style={{
-                  background: 'rgba(37,99,235,0.08)',
-                  border: '1px solid rgba(37,99,235,0.15)',
-                  color: '#2563eb',
-                }}
-              >
-                솔루션
-              </span>
-              <h2
-                className="font-extrabold leading-[1.25] mb-4"
-                style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, color: '#0f172a' }}
-              >
-                CATCH가 해결합니다
-              </h2>
-              <p className="text-[17px] leading-[1.7]" style={{ color: '#475569' }}>
-                복잡한 노동법을 몰라도 됩니다. PDF 한 장이면 충분합니다.
-              </p>
-            </div>
-          </Reveal>
-
-          <div className="grid gap-5 md:grid-cols-3">
-            {[
-              {
-                icon: '📄',
-                title: '정밀 PDF 계산',
-                desc: '근무 내역 PDF를 업로드하면 28일 블록 알고리즘으로 퇴직금·실업급여를 자동 분석합니다.',
-                badge: '퇴직금 · 실업급여',
-              },
-              {
-                icon: '🧮',
-                title: '간편 수동 계산',
-                desc: '시급, 근무일수만 입력하면 주휴수당·연차수당을 즉시 계산합니다. PDF 없이도 OK.',
-                badge: '주휴수당 · 연차수당',
-              },
-              {
-                icon: '💼',
-                title: '단기알바 채용피드',
-                desc: '쿠팡, 컬리, CJ 등 실제 일용직 채용공고를 오늘긴급·내일긴급·상시 섹션으로 확인합니다.',
-                badge: '채용정보 · 즐겨찾기',
-              },
-            ].map((card, i) => (
-              <Reveal key={card.title} delay={0.1 + i * 0.1}>
-                <div
-                  className="relative overflow-hidden rounded-[20px] transition-all group hover:-translate-y-[4px]"
+          <div className="grid md:grid-cols-2 gap-[60px] items-center">
+            {/* 왼쪽: 설명 텍스트 */}
+            <div>
+              <Reveal>
+                <span
+                  className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-medium mb-5"
                   style={{
-                    background: '#ffffff',
-                    border: '1px solid rgba(37,99,235,0.12)',
-                    boxShadow: '0 4px 24px rgba(37,99,235,0.08)',
-                    padding: '36px 32px',
+                    background: 'rgba(37,99,235,0.08)',
+                    border: '1px solid rgba(37,99,235,0.15)',
+                    color: '#2563eb',
                   }}
                 >
-                  {/* 상단 hover 라인 */}
+                  솔루션
+                </span>
+              </Reveal>
+              <Reveal delay={0.05}>
+                <h2
+                  className="font-extrabold leading-[1.25] mb-5"
+                  style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, color: '#0f172a' }}
+                >
+                  CATCH가 해결합니다
+                </h2>
+              </Reveal>
+              <Reveal delay={0.1}>
+                <p className="text-[17px] leading-[1.7] mb-8" style={{ color: '#475569' }}>
+                  복잡한 노동법을 몰라도 됩니다. PDF 한 장이면 충분합니다.
+                  <br />
+                  4가지 수당을 하나의 앱에서 모두 계산하세요.
+                </p>
+              </Reveal>
+              <Reveal delay={0.15}>
+                <button
+                  onClick={goLogin}
+                  className="inline-flex items-center gap-2 font-bold text-white rounded-[14px] transition-all hover:-translate-y-1"
+                  style={{
+                    padding: '16px 32px',
+                    fontSize: 16,
+                    background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                    boxShadow: '0 6px 24px rgba(37,99,235,0.25)',
+                  }}
+                >
+                  지금 무료로 시작 →
+                </button>
+              </Reveal>
+            </div>
+
+            {/* 오른쪽: 기능 카드 세로 스택 */}
+            <div className="flex flex-col" style={{ gap: 12 }}>
+              {[
+                {
+                  icon: '📄',
+                  title: '정밀 PDF 계산',
+                  desc: '근무 내역 PDF 업로드 → 28일 블록 알고리즘 자동 분석',
+                  badge: '퇴직금 · 실업급여',
+                  delay: 0.1,
+                },
+                {
+                  icon: '🧮',
+                  title: '간편 수동 계산',
+                  desc: '시급·근무일수 입력만으로 즉시 계산. PDF 없어도 OK',
+                  badge: '주휴수당 · 연차수당',
+                  delay: 0.2,
+                },
+                {
+                  icon: '💼',
+                  title: '단기알바 채용피드',
+                  desc: '쿠팡·컬리·CJ 실제 공고, 오늘긴급/내일긴급/상시 분류',
+                  badge: '채용정보 · 즐겨찾기',
+                  delay: 0.3,
+                },
+                {
+                  icon: '📊',
+                  title: '계산 이력 저장',
+                  desc: '이전 결과를 PDF로 저장·재사용. 매번 다시 계산 불필요',
+                  badge: '히스토리 · 재사용',
+                  delay: 0.4,
+                },
+              ].map((card) => (
+                <Reveal key={card.title} delay={card.delay}>
                   <div
-                    className="absolute top-0 left-0 right-0 h-[3px] opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ background: 'linear-gradient(90deg, #2563eb, #7c3aed)' }}
-                  />
-                  {/* 아이콘 — 그라데이션 원형 컨테이너 */}
-                  <div
-                    className="flex items-center justify-center rounded-full text-2xl mb-6"
+                    className="relative overflow-hidden rounded-[16px] flex items-start gap-4 transition-all group hover:-translate-y-[2px]"
                     style={{
-                      width: 52,
-                      height: 52,
-                      background: 'linear-gradient(135deg, rgba(37,99,235,0.12), rgba(124,58,237,0.10))',
+                      background: '#ffffff',
+                      border: '1px solid rgba(37,99,235,0.12)',
+                      boxShadow: '0 4px 20px rgba(37,99,235,0.07)',
+                      padding: '20px 24px',
                     }}
                   >
-                    {card.icon}
+                    {/* 상단 hover 라인 */}
+                    <div
+                      className="absolute top-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ background: 'linear-gradient(90deg, #2563eb, #7c3aed)' }}
+                    />
+                    {/* 아이콘 */}
+                    <div
+                      className="flex items-center justify-center rounded-[10px] text-xl flex-shrink-0"
+                      style={{
+                        width: 44,
+                        height: 44,
+                        background: 'linear-gradient(135deg, rgba(37,99,235,0.10), rgba(124,58,237,0.08))',
+                      }}
+                    >
+                      {card.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span
+                          className="text-white text-[11px] font-bold"
+                          style={{ color: '#2563eb', fontSize: 13, fontWeight: 700 }}
+                        >
+                          ✓
+                        </span>
+                        <h3 className="text-[15px] font-bold" style={{ color: '#0f172a' }}>{card.title}</h3>
+                        <span
+                          className="px-2 py-0.5 rounded-[6px] text-[11px] font-semibold"
+                          style={{ background: 'rgba(37,99,235,0.08)', color: '#2563eb' }}
+                        >
+                          {card.badge}
+                        </span>
+                      </div>
+                      <p className="text-[13px] leading-[1.6]" style={{ color: '#64748b' }}>
+                        {card.desc}
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-[20px] font-bold mb-3" style={{ color: '#0f172a' }}>{card.title}</h3>
-                  <p className="text-[15px] leading-[1.65]" style={{ color: '#475569' }}>
-                    {card.desc}
-                  </p>
-                  <span
-                    className="inline-block mt-5 px-3 py-1 rounded-[8px] text-xs font-semibold"
-                    style={{ background: 'rgba(37,99,235,0.08)', color: '#2563eb' }}
-                  >
-                    {card.badge}
-                  </span>
-                </div>
-              </Reveal>
-            ))}
+                </Reveal>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ④ HOW ──────────────────────────────────────────────────────────── */}
+      {/* ④ HOW — 업그레이드: 가로 타임라인 (번호 원 → 화살표) ─────────────────── */}
       <section
         id="how"
         className="relative z-[1] overflow-hidden"
         style={{
           padding: '100px 0',
-          // HERO와 동일한 밝은 파스텔 배경
           background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
         }}
       >
-        {/* HERO 격자 패턴 동일하게 적용 */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -554,67 +635,90 @@ export default function LandingV1() {
             </div>
           </Reveal>
 
-          <div className="grid md:grid-cols-3 gap-0 relative">
-            {/* 연결선 */}
-            <div
-              className="hidden md:block absolute h-[2px]"
-              style={{
-                top: 44,
-                left: 'calc(100% / 6)',
-                right: 'calc(100% / 6)',
-                background: 'linear-gradient(90deg, transparent, #2563eb, transparent)',
-              }}
-            />
+          {/* 타임라인: 번호 원 → 화살표 → 번호 원 → 화살표 → 번호 원 */}
+          <div className="flex flex-col md:flex-row items-start md:items-start justify-center gap-0">
             {[
               { num: 1, title: '로그인', desc: '카카오 또는 구글 계정으로\n5초 만에 가입·로그인' },
               { num: 2, title: 'PDF 업로드 또는 직접 입력', desc: '근무 내역 PDF 파일을 올리거나\n시급·일수를 직접 입력' },
               { num: 3, title: '결과 확인', desc: '받을 수 있는 금액과\n신청 방법을 즉시 확인' },
             ].map((step, i) => (
-              <Reveal key={step.num} delay={0.1 + i * 0.1}>
-                <div className="text-center px-6 py-10 relative">
-                  <div
-                    className="w-14 h-14 rounded-full flex items-center justify-center text-[20px] font-black text-white mx-auto mb-7 relative z-[1]"
-                    style={{
-                      background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-                      boxShadow: '0 0 0 8px rgba(37,99,235,0.10)',
-                    }}
-                  >
-                    {step.num}
+              <div key={step.num} className="flex flex-row md:flex-row items-start flex-1">
+                {/* 각 단계 */}
+                <Reveal delay={0.1 + i * 0.15} className="flex-1">
+                  <div className="text-center px-4 py-6">
+                    {/* 번호 원 */}
+                    <div
+                      className="flex items-center justify-center rounded-full text-[20px] font-black text-white mx-auto mb-5"
+                      style={{
+                        width: 48,
+                        height: 48,
+                        background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                        boxShadow: '0 0 0 8px rgba(37,99,235,0.10)',
+                      }}
+                    >
+                      {step.num}
+                    </div>
+                    <h3 className="text-[17px] font-bold mb-2" style={{ color: '#0f172a' }}>{step.title}</h3>
+                    <p className="text-[14px] leading-[1.65] whitespace-pre-line" style={{ color: '#475569' }}>
+                      {step.desc}
+                    </p>
                   </div>
-                  <h3 className="text-[18px] font-bold mb-3" style={{ color: '#0f172a' }}>{step.title}</h3>
-                  <p className="text-[14px] leading-[1.65] whitespace-pre-line" style={{ color: '#475569' }}>
-                    {step.desc}
-                  </p>
-                </div>
-              </Reveal>
+                </Reveal>
+
+                {/* 화살표 — 마지막 단계 이후엔 숨김 */}
+                {i < 2 && (
+                  <div
+                    className="hidden md:flex items-start pt-[38px] px-1 flex-shrink-0"
+                    style={{ color: '#94a3b8', fontSize: 28, fontWeight: 300 }}
+                  >
+                    →
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ⑤ WHY CATCH ─────────────────────────────────────────────────────── */}
+      {/* ⑤ WHY CATCH — 업그레이드: 소셜 프루프 + 강화 shadow ──────────────────── */}
       <section
         id="why"
         className="relative z-[1]"
         style={{ padding: '100px 0', background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)' }}
       >
         <div className="max-w-[1100px] mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-[80px] items-center">
-            <div>
-              <Reveal>
+          {/* 소셜 프루프 배너 */}
+          <Reveal>
+            <div className="text-center mb-[60px]">
+              <span
+                className="inline-block px-[16px] py-[8px] rounded-full text-[14px] font-bold mb-5"
+                style={{
+                  background: 'rgba(37,99,235,0.08)',
+                  border: '1px solid rgba(37,99,235,0.15)',
+                  color: '#2563eb',
+                }}
+              >
+                왜 CATCH인가
+              </span>
+              <div className="mt-2">
                 <span
-                  className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-medium mb-5"
+                  className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-semibold"
                   style={{
-                    background: 'rgba(37,99,235,0.08)',
-                    border: '1px solid rgba(37,99,235,0.15)',
-                    color: '#2563eb',
+                    background: 'rgba(124,58,237,0.08)',
+                    border: '1px solid rgba(124,58,237,0.15)',
+                    color: '#7c3aed',
                   }}
                 >
-                  왜 CATCH인가
+                  🔥 현재 2,847명이 사용 중
                 </span>
-              </Reveal>
+              </div>
+            </div>
+          </Reveal>
+
+          <div className="grid md:grid-cols-2 gap-[80px] items-center">
+            <div>
               <Reveal delay={0.1}>
-                {/* 문구 수정: "우리는 일용직 근로자 편입니다" → "일용직 근로의 동반자, CATCH" */}
+                {/* 타이틀 */}
                 <h2
                   className="font-extrabold leading-[1.25] mb-10"
                   style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, color: '#0f172a' }}
@@ -652,16 +756,18 @@ export default function LandingV1() {
               </ul>
             </div>
 
+            {/* 오른쪽 통계 카드 — shadow 강화 */}
             <Reveal delay={0.2}>
               <div
                 className="rounded-[20px] text-center"
                 style={{
                   background: '#ffffff',
                   border: '1px solid rgba(37,99,235,0.12)',
-                  boxShadow: '0 4px 24px rgba(37,99,235,0.08)',
+                  boxShadow: '0 8px 32px rgba(37,99,235,0.1)',
                   padding: '48px 40px',
                 }}
               >
+                {/* 대형 숫자 강조 */}
                 <div
                   className="font-black leading-none mb-3"
                   style={{ fontSize: 80, color: '#2563eb', letterSpacing: '-3px' }}
@@ -699,7 +805,7 @@ export default function LandingV1() {
         </div>
       </section>
 
-      {/* ⑥ STATS — 비비드 그라데이션 배경 ──────────────────────────────────── */}
+      {/* ⑥ STATS — 업그레이드: progress bar + 더 큰 숫자 ─────────────────────── */}
       <section
         id="stats"
         className="relative z-[1] overflow-hidden"
@@ -708,29 +814,45 @@ export default function LandingV1() {
           background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
         }}
       >
-        {/* 내부 밝기 오버레이 */}
         <div
           className="absolute inset-0"
           style={{ background: 'radial-gradient(ellipse 60% 80% at 50% 50%, rgba(255,255,255,0.08) 0%, transparent 70%)' }}
         />
         <div className="relative z-[1] max-w-[1100px] mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
             {[
-              { num: '800만+', label: '잠재 사용자\n(국내 긱워커)', delay: 0.1 },
-              { num: '4가지', label: '수당 계산기\n(퇴직·실업·주휴·연차)', delay: 0.2 },
-              { num: '28일', label: '블록 알고리즘\n(법정 기준 정밀계산)', delay: 0.3 },
-              { num: '100%', label: '무료 서비스\n(광고·유료 없음)', delay: 0.4 },
+              { num: '800만+', label: '잠재 사용자\n(국내 긱워커)', barWidth: '82%', delay: 0.1 },
+              { num: '4가지', label: '수당 계산기\n(퇴직·실업·주휴·연차)', barWidth: '100%', delay: 0.2 },
+              { num: '28일', label: '블록 알고리즘\n(법정 기준 정밀계산)', barWidth: '75%', delay: 0.3 },
+              { num: '100%', label: '무료 서비스\n(광고·유료 없음)', barWidth: '100%', delay: 0.4 },
             ].map((item) => (
               <Reveal key={item.num} delay={item.delay}>
                 <div className="text-center">
                   <div
                     className="font-black text-white mb-2"
-                    style={{ fontSize: 'clamp(36px, 5vw, 56px)', letterSpacing: '-1px' }}
+                    style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', letterSpacing: '-1px' }}
                   >
                     {item.num}
                   </div>
-                  <div className="text-[14px] leading-[1.5] whitespace-pre-line" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                  <div className="text-[14px] leading-[1.5] whitespace-pre-line mb-4" style={{ color: 'rgba(255,255,255,0.75)' }}>
                     {item.label}
+                  </div>
+                  {/* progress bar */}
+                  <div
+                    style={{
+                      height: 4,
+                      background: 'rgba(255,255,255,0.3)',
+                      borderRadius: 2,
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: '100%',
+                        background: 'white',
+                        borderRadius: 2,
+                        width: item.barWidth,
+                      }}
+                    />
                   </div>
                 </div>
               </Reveal>
@@ -739,17 +861,15 @@ export default function LandingV1() {
         </div>
       </section>
 
-      {/* ⑦ CTA ──────────────────────────────────────────────────────────── */}
+      {/* ⑦ CTA — 업그레이드: 헤드라인 + 서브 + 버튼 + 안심 문구 ─────────────── */}
       <section
         id="cta"
         className="relative z-[1] text-center overflow-hidden"
         style={{
           padding: '100px 0',
-          // HERO와 동일한 밝은 파스텔 배경
           background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
         }}
       >
-        {/* HERO 격자 패턴 동일하게 적용 */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -828,9 +948,10 @@ export default function LandingV1() {
             </div>
           </Reveal>
 
+          {/* 안심 문구 */}
           <Reveal delay={0.4}>
             <p className="mt-7 text-[13px]" style={{ color: '#94a3b8' }}>
-              신용카드 불필요 · 개인정보 최소 수집 · 언제든지 탈퇴 가능
+              신용카드 불필요 · 즉시 시작 · 언제든 탈퇴 가능
             </p>
           </Reveal>
         </div>
