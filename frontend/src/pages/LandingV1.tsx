@@ -216,7 +216,7 @@ export default function LandingV1() {
           className="absolute inset-0"
           style={{
             backgroundImage:
-              'linear-gradient(rgba(37,99,235,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.05) 1px, transparent 1px)',
+              'linear-gradient(rgba(37,99,235,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.15) 1px, transparent 1px)',
             backgroundSize: '60px 60px',
             maskImage:
               'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
@@ -319,10 +319,25 @@ export default function LandingV1() {
       {/* ② PAIN ─────────────────────────────────────────────────────────── */}
       <section
         id="pain"
-        className="relative z-[1]"
-        style={{ padding: '100px 0', background: '#ffffff' }}
+        className="relative z-[1] overflow-hidden"
+        style={{
+          padding: '100px 0',
+          // HERO와 동일한 밝은 파스텔 배경
+          background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
+        }}
       >
-        <div className="max-w-[1100px] mx-auto px-6">
+        {/* HERO 격자 패턴 동일하게 적용 */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(37,99,235,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.15) 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+            maskImage:
+              'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
+          }}
+        />
+        <div className="relative z-[1] max-w-[1100px] mx-auto px-6">
           <Reveal>
             <span
               className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-medium mb-5"
@@ -499,10 +514,25 @@ export default function LandingV1() {
       {/* ④ HOW ──────────────────────────────────────────────────────────── */}
       <section
         id="how"
-        className="relative z-[1]"
-        style={{ padding: '100px 0', background: '#ffffff' }}
+        className="relative z-[1] overflow-hidden"
+        style={{
+          padding: '100px 0',
+          // HERO와 동일한 밝은 파스텔 배경
+          background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
+        }}
       >
-        <div className="max-w-[1100px] mx-auto px-6">
+        {/* HERO 격자 패턴 동일하게 적용 */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(37,99,235,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.15) 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+            maskImage:
+              'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
+          }}
+        />
+        <div className="relative z-[1] max-w-[1100px] mx-auto px-6">
           <Reveal>
             <div className="text-center mb-[70px]">
               <span
@@ -712,10 +742,25 @@ export default function LandingV1() {
       {/* ⑦ CTA ──────────────────────────────────────────────────────────── */}
       <section
         id="cta"
-        className="relative z-[1] text-center"
-        style={{ padding: '100px 0', background: '#ffffff' }}
+        className="relative z-[1] text-center overflow-hidden"
+        style={{
+          padding: '100px 0',
+          // HERO와 동일한 밝은 파스텔 배경
+          background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
+        }}
       >
-        <div className="max-w-[700px] mx-auto px-6">
+        {/* HERO 격자 패턴 동일하게 적용 */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(37,99,235,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.15) 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+            maskImage:
+              'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
+          }}
+        />
+        <div className="relative z-[1] max-w-[700px] mx-auto px-6">
           <Reveal>
             <span
               className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-medium mb-8"
