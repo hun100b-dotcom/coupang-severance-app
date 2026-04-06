@@ -443,44 +443,106 @@ export default function LandingV1() {
 
           {/* 통계 카드 — 레드 왼쪽 라인 + 숫자 강조 */}
           <div className="flex flex-col gap-4 max-w-[560px]">
-            {[
-              // 카드 1: 실제 고용노동부 2023 수치
-              { num: '1조 7,845억', numSize: 20, label: '2023년 임금체불 총액', sub: '이 중 40%가 퇴직급여 미지급', delay: 0.1 },
-              // 카드 2·3: 출처 없는 허수 제거 → 정성적 표현
-              { num: '—', numSize: 38, label: '복잡한 수급 요건을 몰라 포기하는 일용직 근로자', sub: '', delay: 0.2 },
-              { num: '—', numSize: 38, label: '직접 계산하면 실수가 잦은 퇴직금·실업급여 산정', sub: '', delay: 0.3 },
-            ].map((item) => (
-              <Reveal key={item.label} delay={item.delay}>
+            {/* 카드 1: 실제 고용노동부 2023 수치 */}
+            <Reveal delay={0.1}>
+              <div
+                className="flex items-center gap-6 rounded-[20px] transition-all hover:-translate-y-1"
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid rgba(239,68,68,0.15)',
+                  borderLeft: '4px solid #ef4444',
+                  boxShadow: '0 4px 24px rgba(239,68,68,0.06)',
+                  padding: '28px 32px',
+                }}
+              >
                 <div
-                  className="flex items-center gap-6 rounded-[20px] transition-all hover:-translate-y-1"
-                  style={{
-                    background: '#ffffff',
-                    border: '1px solid rgba(239,68,68,0.15)',
-                    borderLeft: '4px solid #ef4444',
-                    boxShadow: '0 4px 24px rgba(239,68,68,0.06)',
-                    padding: '28px 32px',
-                  }}
+                  className="font-black tracking-tight whitespace-nowrap"
+                  style={{ fontSize: 20, color: '#ef4444', letterSpacing: '-1px', minWidth: 70 }}
                 >
-                  <div
-                    className="font-black tracking-tight whitespace-nowrap"
-                    style={{ fontSize: item.numSize, color: '#ef4444', letterSpacing: '-1px', minWidth: 70 }}
-                  >
-                    {item.num}
+                  1조 7,845억
+                </div>
+                <div>
+                  <div className="text-[15px] leading-[1.5]" style={{ color: '#475569' }}>
+                    2023년 임금체불 총액
                   </div>
-                  <div>
-                    <div className="text-[15px] leading-[1.5]" style={{ color: '#475569' }}>
-                      {item.label}
-                    </div>
-                    {/* 서브텍스트 (카드 1에만 출처 보완 설명) */}
-                    {item.sub && (
-                      <div className="text-[13px] mt-1" style={{ color: '#94a3b8' }}>
-                        {item.sub}
-                      </div>
-                    )}
+                  <div className="text-[13px] mt-1" style={{ color: '#94a3b8' }}>
+                    이 중 40%가 퇴직급여 미지급
                   </div>
                 </div>
-              </Reveal>
-            ))}
+              </div>
+            </Reveal>
+
+            {/* 카드 2: 실업급여 관련 — 통계청 2023 */}
+            <Reveal delay={0.2}>
+              <div
+                className="rounded-[20px] transition-all hover:-translate-y-1"
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid rgba(239,68,68,0.15)',
+                  borderLeft: '4px solid #ef4444',
+                  boxShadow: '0 4px 24px rgba(239,68,68,0.06)',
+                  padding: '28px 32px',
+                }}
+              >
+                {/* 카드 제목 */}
+                <div className="text-[14px] font-bold mb-3" style={{ color: '#ef4444' }}>
+                  ⚠️ 실업급여, 아는 사람만 받는다
+                </div>
+                {/* 수치 + 서브텍스트 */}
+                <div className="flex items-baseline gap-3 mb-2">
+                  <div
+                    className="font-black tracking-tight"
+                    style={{ fontSize: 26, color: '#ef4444', letterSpacing: '-1px' }}
+                  >
+                    525만 명+
+                  </div>
+                  <div className="text-[12px]" style={{ color: '#94a3b8' }}>
+                    임시·일용직 근로자 규모 (통계청 2023)
+                  </div>
+                </div>
+                {/* 설명 */}
+                <div className="text-[13px] leading-[1.65]" style={{ color: '#64748b' }}>
+                  복잡한 수급 조건과 신청 방법을 몰라 포기하는 일용직 근로자가 많습니다.
+                  CATCH가 내 자격 여부를 1분 안에 알려드립니다.
+                </div>
+              </div>
+            </Reveal>
+
+            {/* 카드 3: 퇴직금 소멸시효 */}
+            <Reveal delay={0.3}>
+              <div
+                className="rounded-[20px] transition-all hover:-translate-y-1"
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid rgba(239,68,68,0.15)',
+                  borderLeft: '4px solid #ef4444',
+                  boxShadow: '0 4px 24px rgba(239,68,68,0.06)',
+                  padding: '28px 32px',
+                }}
+              >
+                {/* 카드 제목 */}
+                <div className="text-[14px] font-bold mb-3" style={{ color: '#ef4444' }}>
+                  ⚠️ 잘못 계산하면 내 돈이 줄어든다
+                </div>
+                {/* 수치 + 서브텍스트 */}
+                <div className="flex items-baseline gap-3 mb-2">
+                  <div
+                    className="font-black tracking-tight"
+                    style={{ fontSize: 26, color: '#ef4444', letterSpacing: '-1px' }}
+                  >
+                    1년 이상
+                  </div>
+                  <div className="text-[12px]" style={{ color: '#94a3b8' }}>
+                    퇴직금 청구권 소멸시효
+                  </div>
+                </div>
+                {/* 설명 */}
+                <div className="text-[13px] leading-[1.65]" style={{ color: '#64748b' }}>
+                  퇴직금은 퇴직 후 3년 이내 청구하지 않으면 소멸합니다.
+                  몰라서 못 받은 퇴직금, CATCH로 지금 바로 확인하세요.
+                </div>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -862,7 +924,159 @@ export default function LandingV1() {
         </div>
       </section>
 
-      {/* ⑥ STATS — 업그레이드: progress bar + 더 큰 숫자 ─────────────────────── */}
+      {/* ⑥ SCHEDULE — 스케줄 관리 & 포인트 적립 (WHY CATCH와 STATS 사이) ──────── */}
+      <section
+        id="schedule"
+        className="relative z-[1] overflow-hidden"
+        style={{
+          padding: '100px 0',
+          background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
+        }}
+      >
+        {/* 배경 그리드 — HERO와 동일 */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(37,99,235,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.15) 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+            maskImage:
+              'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
+          }}
+        />
+
+        <div className="relative z-[1] max-w-[1100px] mx-auto px-6">
+          {/* 상단 뱃지 */}
+          <Reveal>
+            <div className="text-center mb-3">
+              <span
+                className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-bold"
+                style={{
+                  background: 'rgba(37,99,235,0.08)',
+                  border: '1px solid rgba(37,99,235,0.20)',
+                  color: '#2563eb',
+                }}
+              >
+                📅 NEW
+              </span>
+            </div>
+          </Reveal>
+
+          {/* 섹션 제목 */}
+          <Reveal delay={0.05}>
+            <div className="text-center mb-4">
+              <p
+                className="text-[12px] font-bold tracking-[2px] uppercase mb-3"
+                style={{ color: '#2563eb', letterSpacing: '3px' }}
+              >
+                스케줄 관리 서비스
+              </p>
+              <h2 className="font-extrabold leading-[1.2]" style={{ fontSize: 'clamp(28px, 5vw, 44px)', color: '#0f172a' }}>
+                근무 일정 관리하고
+                <br />
+                <span style={{ color: '#0f172a' }}>
+                  <span style={{ color: '#2563eb' }}>포인트</span>까지 받으세요
+                </span>
+              </h2>
+            </div>
+          </Reveal>
+
+          {/* 서브타이틀 */}
+          <Reveal delay={0.1}>
+            <p className="text-center text-[17px] leading-[1.7] mb-[60px]" style={{ color: '#475569' }}>
+              출근 스케줄 확정, 근무지원, 일정 관리를 CATCH 하나로
+            </p>
+          </Reveal>
+
+          {/* 3개 기능 카드 — 모바일 1열, 데스크탑 3열 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            {[
+              {
+                iconBg: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+                emoji: '📋',
+                title: '근무 스케줄 확정',
+                desc: '예정된 근무 일정을 한눈에 확인하고 출근 여부를 빠르게 확정하세요',
+                delay: 0.1,
+              },
+              {
+                iconBg: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+                emoji: '✅',
+                title: '근무지원 관리',
+                desc: '새로운 근무지 지원 현황과 결과를 실시간으로 확인하세요',
+                delay: 0.2,
+              },
+              {
+                iconBg: 'linear-gradient(135deg, #059669, #10b981)',
+                emoji: '🎁',
+                title: '포인트 적립',
+                desc: '스케줄 확정, 출근 인증 등 활동마다 포인트가 쌓입니다. 모은 포인트로 혜택을 누리세요',
+                delay: 0.3,
+              },
+            ].map((card) => (
+              <Reveal key={card.title} delay={card.delay}>
+                <div
+                  className="rounded-[20px] text-center transition-all hover:-translate-y-1"
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid rgba(37,99,235,0.12)',
+                    boxShadow: '0 4px 24px rgba(37,99,235,0.08)',
+                    padding: '36px 28px',
+                  }}
+                >
+                  {/* 아이콘 원형 배경 */}
+                  <div
+                    className="flex items-center justify-center rounded-full text-3xl mx-auto mb-5"
+                    style={{
+                      width: 64,
+                      height: 64,
+                      background: card.iconBg,
+                    }}
+                  >
+                    {card.emoji}
+                  </div>
+                  <h3 className="text-[17px] font-bold mb-3" style={{ color: '#0f172a' }}>
+                    {card.title}
+                  </h3>
+                  <p className="text-[14px] leading-[1.65]" style={{ color: '#64748b' }}>
+                    {card.desc}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          {/* 하단 안내 배너 */}
+          <Reveal delay={0.35}>
+            <div
+              className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-[16px]"
+              style={{
+                background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                padding: '24px 32px',
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🚀</span>
+                <p className="text-[15px] font-medium text-white leading-[1.6]">
+                  지금 가입하면 스케줄 관리 + 퇴직금·실업급여 계산까지 무료로 이용하세요
+                </p>
+              </div>
+              <button
+                onClick={goLogin}
+                className="flex-shrink-0 px-5 py-2.5 rounded-[10px] text-[14px] font-bold transition-all hover:scale-[1.04]"
+                style={{
+                  background: '#ffffff',
+                  color: '#2563eb',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                무료 시작하기
+              </button>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ⑦ STATS — 업그레이드: progress bar + 더 큰 숫자 ─────────────────────── */}
       <section
         id="stats"
         className="relative z-[1] overflow-hidden"
