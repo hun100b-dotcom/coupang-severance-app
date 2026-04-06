@@ -1,7 +1,7 @@
 // LandingV1 — 밝은 파스텔 테마 (전면 업그레이드 v2)
 // 색상: Primary #2563eb (깊은 파랑), Accent #7c3aed (보라), BG #f0f7ff→#f5f0ff
 
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
@@ -51,13 +51,25 @@ export default function LandingV1() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // ── 모바일 감지 — HOW 섹션 세로/가로 타임라인 전환 ──────────────────────────
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   // ── 커스텀 마우스 커서 & 글로우 오브 ────────────────────────────────────────
   const orbRef = useRef<HTMLDivElement>(null)
   const cursorRef = useRef<HTMLDivElement>(null)
+  // RAF 핸들러 — 마우스 이동 렉 방지
+  const rafRef = useRef<number | null>(null)
 
-  useEffect(() => {
-    // 마우스 이동 시 커서와 글로우 오브 위치 업데이트
-    const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMoveCursor = useCallback((e: MouseEvent) => {
+    // 이전 RAF 취소 후 다음 프레임에 위치 업데이트 (렉 방지)
+    if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    rafRef.current = requestAnimationFrame(() => {
       if (orbRef.current) {
         orbRef.current.style.left = `${e.clientX}px`
         orbRef.current.style.top = `${e.clientY}px`
@@ -66,8 +78,10 @@ export default function LandingV1() {
         cursorRef.current.style.left = `${e.clientX}px`
         cursorRef.current.style.top = `${e.clientY}px`
       }
-    }
+    })
+  }, [])
 
+  useEffect(() => {
     // 링크·버튼 호버 시 커서 확대
     const handleEnter = () => {
       if (cursorRef.current) {
@@ -82,7 +96,7 @@ export default function LandingV1() {
       }
     }
 
-    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mousemove', handleMouseMoveCursor)
 
     const interactiveEls = document.querySelectorAll('a, button')
     interactiveEls.forEach((el) => {
@@ -91,13 +105,14 @@ export default function LandingV1() {
     })
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mousemove', handleMouseMoveCursor)
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
       interactiveEls.forEach((el) => {
         el.removeEventListener('mouseenter', handleEnter)
         el.removeEventListener('mouseleave', handleLeave)
       })
     }
-  }, [])
+  }, [handleMouseMoveCursor])
 
   // ── 로그인 페이지로 이동 ─────────────────────────────────────────────────
   const goLogin = () => navigate('/login')
@@ -124,7 +139,7 @@ export default function LandingV1() {
           height: 500,
           background: 'radial-gradient(circle, rgba(37,99,235,0.07) 0%, transparent 70%)',
           transform: 'translate(-50%, -50%)',
-          transition: 'left 0.08s ease, top 0.08s ease',
+          transition: 'none', // RAF로 직접 제어하므로 CSS transition 불필요
         }}
       />
       {/* ── 커스텀 커서 도트 ── */}
@@ -136,7 +151,7 @@ export default function LandingV1() {
           height: 10,
           background: '#2563eb',
           transform: 'translate(-50%, -50%)',
-          transition: 'left 0.04s ease, top 0.04s ease, transform 0.15s ease',
+          transition: 'transform 0.15s ease', // 위치는 RAF 직접 제어, transform만 transition 유지
         }}
       />
 
@@ -328,8 +343,8 @@ export default function LandingV1() {
           <Reveal delay={0.4}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-[60px] max-w-[680px]">
               {[
-                { icon: '💰', stat: '120만원', desc: '평균 미수령 퇴직금' },
-                { icon: '📋', stat: '47%', desc: '실업급여 수급 가능자' },
+                { icon: '💰', stat: '200만원', desc: '평균 미수령 퇴직금' },
+                { icon: '📋', stat: '72%', desc: '실업급여 미신청률' },
                 { icon: '⏱', stat: '58초', desc: '평균 계산 시간' },
               ].map((card) => (
                 <div
@@ -424,9 +439,9 @@ export default function LandingV1() {
           {/* 통계 카드 — 레드 왼쪽 라인 + 숫자 강조 */}
           <div className="flex flex-col gap-4 max-w-[560px]">
             {[
-              { num: '68%', label: '퇴직금, 받을 수 있는데 신청 안 한 근로자', delay: 0.1 },
-              { num: '47만 명', label: '실업급여 포기율 — 연간', delay: 0.2 },
-              { num: '82만원', label: '잘못된 계산으로 인한 평균 손실', delay: 0.3 },
+              { num: '연 3만 건+', label: '퇴직급여 체불 신고 — 고용노동부 실적 기준', delay: 0.1 },
+              { num: '약 28만 명', label: '자격 있어도 실업급여 미신청 — 연간 추정', delay: 0.2 },
+              { num: '평균 93만원', label: '잘못된 계산으로 인한 평균 손실 (추정)', delay: 0.3 },
             ].map((item) => (
               <Reveal key={item.num} delay={item.delay}>
                 <div
@@ -635,48 +650,87 @@ export default function LandingV1() {
             </div>
           </Reveal>
 
-          {/* 타임라인: 번호 원 → 화살표 → 번호 원 → 화살표 → 번호 원 */}
-          <div className="flex flex-col md:flex-row items-start md:items-start justify-center gap-0">
-            {[
-              { num: 1, title: '로그인', desc: '카카오 또는 구글 계정으로\n5초 만에 가입·로그인' },
-              { num: 2, title: 'PDF 업로드 또는 직접 입력', desc: '근무 내역 PDF 파일을 올리거나\n시급·일수를 직접 입력' },
-              { num: 3, title: '결과 확인', desc: '받을 수 있는 금액과\n신청 방법을 즉시 확인' },
-            ].map((step, i) => (
-              <div key={step.num} className="flex flex-row md:flex-row items-start flex-1">
-                {/* 각 단계 */}
-                <Reveal delay={0.1 + i * 0.15} className="flex-1">
-                  <div className="text-center px-4 py-6">
-                    {/* 번호 원 */}
-                    <div
-                      className="flex items-center justify-center rounded-full text-[20px] font-black text-white mx-auto mb-5"
-                      style={{
-                        width: 48,
-                        height: 48,
-                        background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-                        boxShadow: '0 0 0 8px rgba(37,99,235,0.10)',
-                      }}
-                    >
-                      {step.num}
+          {/* 타임라인: 모바일=세로, 데스크탑=가로 */}
+          {isMobile ? (
+            /* 모바일: 세로 스택 + ↓ 화살표 */
+            <div className="flex flex-col items-center gap-0 text-center">
+              {[
+                { num: 1, title: '로그인', desc: '카카오 또는 구글 계정으로\n5초 만에 가입·로그인' },
+                { num: 2, title: 'PDF 업로드 또는 직접 입력', desc: '근무 내역 PDF 파일을 올리거나\n시급·일수를 직접 입력' },
+                { num: 3, title: '결과 확인', desc: '받을 수 있는 금액과\n신청 방법을 즉시 확인' },
+              ].map((step, i) => (
+                <div key={step.num} className="flex flex-col items-center w-full max-w-[280px]">
+                  <Reveal delay={0.1 + i * 0.15}>
+                    <div className="flex flex-col items-center text-center px-4 py-6">
+                      {/* 번호 원 */}
+                      <div
+                        className="flex items-center justify-center rounded-full text-[20px] font-black text-white mb-4"
+                        style={{
+                          width: 48,
+                          height: 48,
+                          background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                          boxShadow: '0 0 0 8px rgba(37,99,235,0.10)',
+                        }}
+                      >
+                        {step.num}
+                      </div>
+                      <h3 className="text-[17px] font-bold mb-2" style={{ color: '#0f172a' }}>{step.title}</h3>
+                      <p className="text-[14px] leading-[1.65] whitespace-pre-line" style={{ color: '#475569' }}>
+                        {step.desc}
+                      </p>
                     </div>
-                    <h3 className="text-[17px] font-bold mb-2" style={{ color: '#0f172a' }}>{step.title}</h3>
-                    <p className="text-[14px] leading-[1.65] whitespace-pre-line" style={{ color: '#475569' }}>
-                      {step.desc}
-                    </p>
-                  </div>
-                </Reveal>
+                  </Reveal>
+                  {/* 세로 연결 화살표 — 마지막 단계 이후엔 숨김 */}
+                  {i < 2 && (
+                    <div style={{ color: '#94a3b8', fontSize: 24, lineHeight: 1, marginBottom: 4 }}>↓</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* 데스크탑: 기존 가로 타임라인 유지 */
+            <div className="flex flex-row items-start justify-center gap-0">
+              {[
+                { num: 1, title: '로그인', desc: '카카오 또는 구글 계정으로\n5초 만에 가입·로그인' },
+                { num: 2, title: 'PDF 업로드 또는 직접 입력', desc: '근무 내역 PDF 파일을 올리거나\n시급·일수를 직접 입력' },
+                { num: 3, title: '결과 확인', desc: '받을 수 있는 금액과\n신청 방법을 즉시 확인' },
+              ].map((step, i) => (
+                <div key={step.num} className="flex flex-row items-start flex-1">
+                  {/* 각 단계 */}
+                  <Reveal delay={0.1 + i * 0.15} className="flex-1">
+                    <div className="text-center px-4 py-6">
+                      {/* 번호 원 */}
+                      <div
+                        className="flex items-center justify-center rounded-full text-[20px] font-black text-white mx-auto mb-5"
+                        style={{
+                          width: 48,
+                          height: 48,
+                          background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                          boxShadow: '0 0 0 8px rgba(37,99,235,0.10)',
+                        }}
+                      >
+                        {step.num}
+                      </div>
+                      <h3 className="text-[17px] font-bold mb-2" style={{ color: '#0f172a' }}>{step.title}</h3>
+                      <p className="text-[14px] leading-[1.65] whitespace-pre-line" style={{ color: '#475569' }}>
+                        {step.desc}
+                      </p>
+                    </div>
+                  </Reveal>
 
-                {/* 화살표 — 마지막 단계 이후엔 숨김 */}
-                {i < 2 && (
-                  <div
-                    className="hidden md:flex items-start pt-[38px] px-1 flex-shrink-0"
-                    style={{ color: '#94a3b8', fontSize: 28, fontWeight: 300 }}
-                  >
-                    →
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  {/* 화살표 — 마지막 단계 이후엔 숨김 */}
+                  {i < 2 && (
+                    <div
+                      className="flex items-start pt-[38px] px-1 flex-shrink-0"
+                      style={{ color: '#94a3b8', fontSize: 28, fontWeight: 300 }}
+                    >
+                      →
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
