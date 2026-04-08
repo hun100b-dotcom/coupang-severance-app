@@ -42,7 +42,6 @@ const PrivacyPolicyPage      = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsOfServicePage     = lazy(() => import('./pages/TermsOfService'))
 const SettingsPage           = lazy(() => import('./pages/SettingsPage'))   // 설정 페이지
 const InquiryPage            = lazy(() => import('./pages/InquiryPage'))    // 문의하기 페이지
-const LandingPage            = lazy(() => import('./pages/LandingPage'))    // 랜딩페이지 (/landing)
 const LandingV1              = lazy(() => import('./pages/LandingV1'))       // 비교 버전 1: 밝은 배경
 const LandingV2              = lazy(() => import('./pages/LandingV2'))       // 비교 버전 2: 검정+줄무늬
 const LandingV3              = lazy(() => import('./pages/LandingV3'))       // 비교 버전 3: 검정+스포트라이트
