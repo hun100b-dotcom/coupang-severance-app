@@ -5,6 +5,7 @@
 // Suspense: lazy 컴포넌트가 로딩 중일 때 대신 보여줄 fallback UI를 지정합니다.
 import { lazy, Suspense, useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom' // 브라우저 라우팅을 위해 react-router-dom을 가져옵니다.
+import { GoogleOAuthProvider } from '@react-oauth/google' // Google Identity Services 제공자
 import { AuthProvider } from './contexts/AuthContext' // 전역 로그인 상태를 제공하는 AuthProvider를 가져옵니다.
 import AnimatedBackground from './components/AnimatedBackground' // 배경 애니메이션 컴포넌트를 가져옵니다.
 import Layout from './components/Layout' // 상단/하단 네비바를 포함한 전역 레이아웃 컴포넌트입니다.
@@ -48,6 +49,13 @@ const LandingV3              = lazy(() => import('./pages/LandingV3'))       // 
 const LandingV4              = lazy(() => import('./pages/LandingV4'))       // 비교 버전 4: 볼드/임팩트 (오렌지)
 const LandingV5              = lazy(() => import('./pages/LandingV5'))       // 비교 버전 5: 매거진/뉴스레터 (크림+레드)
 
+// ── SEO 콘텐츠 가이드 페이지 (검색엔진 유입용) ──────────────────────────────
+const GuideHub               = lazy(() => import('./pages/guide/GuideHub'))               // 가이드 허브 (/guide)
+const SeveranceGuide         = lazy(() => import('./pages/guide/SeveranceGuide'))         // 퇴직금 가이드
+const UnemploymentGuide      = lazy(() => import('./pages/guide/UnemploymentGuide'))      // 실업급여 가이드
+const WeeklyAllowanceGuide   = lazy(() => import('./pages/guide/WeeklyAllowanceGuide'))   // 주휴수당 가이드
+const AnnualLeaveGuide       = lazy(() => import('./pages/guide/AnnualLeaveGuide'))       // 연차수당 가이드
+
 export default function App() {
   // 스플래시 화면 표시 여부 (최초 접속 시 true, 2.3초 후 false로 전환)
   const [showSplash, setShowSplash] = useState(true)
@@ -55,8 +63,10 @@ export default function App() {
   return (
     <BrowserRouter>
       {/* 전체 앱을 BrowserRouter로 감싸 라우팅 기능을 활성화합니다. */}
-      <AuthProvider>
-        {/* AuthProvider 안에서만 useAuth 훅을 사용할 수 있으므로, 라우트 전체를 감싸 줍니다. */}
+      <GoogleOAuthProvider clientId="500583164090-bonkp1jjnnlnc79psaut6egelreea23l.apps.googleusercontent.com">
+        {/* Google Identity Services 제공자로 AuthProvider를 감싸 Google OAuth 기능을 활성화합니다. */}
+        <AuthProvider>
+          {/* AuthProvider 안에서만 useAuth 훅을 사용할 수 있으므로, 라우트 전체를 감싸 줍니다. */}
 
         {/* 스플래시 화면: 앱 최초 접속 시 z-index 9999로 모든 UI 위에 표시됩니다.
             2.3초 후 페이드 아웃되며 사라집니다. 뒤의 앱은 정상 렌더링 유지. */}
@@ -97,6 +107,13 @@ export default function App() {
           <Route path="/v4" element={<LandingV4 />} />
           <Route path="/v5" element={<LandingV5 />} />
 
+          {/* ── SEO 콘텐츠 가이드 페이지 — 검색엔진 유입용 독립 페이지 ── */}
+          <Route path="/guide" element={<GuideHub />} />
+          <Route path="/guide/severance" element={<SeveranceGuide />} />
+          <Route path="/guide/unemployment" element={<UnemploymentGuide />} />
+          <Route path="/guide/weekly-allowance" element={<WeeklyAllowanceGuide />} />
+          <Route path="/guide/annual-leave" element={<AnnualLeaveGuide />} />
+
           {/* ── 네비바(TopNav + BottomNav)가 있는 일반 페이지 ──
               Layout 컴포넌트가 Outlet을 통해 중첩 라우트를 렌더링합니다. */}
           <Route element={<OnboardingGuard><Layout /></OnboardingGuard>}>
@@ -136,17 +153,18 @@ export default function App() {
           </Route>
         </Routes>
         </Suspense> {/* Suspense 닫기 — Suspense 범위 밖의 컴포넌트는 항상 즉시 렌더링됩니다. */}
-      </AuthProvider>
+        </AuthProvider>
 
-      {/* 배포 버전과 빌드 날짜를 화면 오른쪽 아래에 작게 표시합니다.
-          BottomNav(60px) 위에 표시되도록 bottom-[68px]로 조정합니다. */}
-      <div
-        className="fixed bottom-[76px] right-2 text-[10px] text-slate-400/80 select-none pointer-events-none z-[1]"
-        aria-hidden
-      >
-        v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '?'}
-        {typeof __BUILD_DATE__ !== 'undefined' && ` · ${__BUILD_DATE__}`}
-      </div>
+        {/* 배포 버전과 빌드 날짜를 화면 오른쪽 아래에 작게 표시합니다.
+            BottomNav(60px) 위에 표시되도록 bottom-[68px]로 조정합니다. */}
+        <div
+          className="fixed bottom-[76px] right-2 text-[10px] text-slate-400/80 select-none pointer-events-none z-[1]"
+          aria-hidden
+        >
+          v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '?'}
+          {typeof __BUILD_DATE__ !== 'undefined' && ` · ${__BUILD_DATE__}`}
+        </div>
+      </GoogleOAuthProvider>
     </BrowserRouter>
   ) // 라우터, 인증, 공통 배경을 모두 포함한 앱 전체를 반환합니다.
 }

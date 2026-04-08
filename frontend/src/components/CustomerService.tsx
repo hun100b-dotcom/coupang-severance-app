@@ -148,15 +148,31 @@ export default function CustomerService({ isOpen, onClose }: CustomerServiceProp
     else setCurrentView('history')
   }
 
+  // OAuth 로그인: Kakao는 여전히 OAuth 리다이렉트 사용
+  // (Google은 Login.tsx에서 @react-oauth/google + signInWithIdToken으로 마이그레이션됨)
   const handleOAuthLogin = async (provider: 'kakao' | 'google') => {
     if (!supabase) {
       alert('로그인 설정이 되어 있지 않습니다.')
       setIsAuthLoading(false)
       return
     }
+
+    // Google 로그인의 경우 로그인 페이지로 리다이렉트 안내
+    if (provider === 'google') {
+      // 마케팅 동의를 저장할 필요가 없는 모달이므로 직접 리다이렉트
+      window.location.href = '/login'
+      return
+    }
+
     setIsAuthLoading(true)
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: AUTH_CALLBACK_URL, queryParams: provider === 'google' ? { prompt: 'select_account' } : { prompt: 'login' } } })
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: AUTH_CALLBACK_URL,
+          queryParams: { prompt: 'login' },
+        },
+      })
       if (error) {
         alert(`로그인 오류: ${error.message}`)
         return

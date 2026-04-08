@@ -64,4 +64,39 @@
     <priority>0.6</priority>
   </url>
 
+  <!-- 가이드 허브: 노동법 정보 모음 -->
+  <url>
+    <loc>https://catch-daily-worker.vercel.app/guide</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- 퇴직금 가이드: 핵심 정보 페이지 -->
+  <url>
+    <loc>https://catch-daily-worker.vercel.app/guide/severance</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- 실업급여 가이드: 핵심 정보 페이지 -->
+  <url>
+    <loc>https://catch-daily-worker.vercel.app/guide/unemployment</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- 주휴수당 가이드 -->
+  <url>
+    <loc>https://catch-daily-worker.vercel.app/guide/weekly-allowance</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- 연차수당 가이드 -->
+  <url>
+    <loc>https://catch-daily-worker.vercel.app/guide/annual-leave</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
 </urlset>

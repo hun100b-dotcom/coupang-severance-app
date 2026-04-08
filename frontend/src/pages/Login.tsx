@@ -1,8 +1,10 @@
 // 카카오 / 구글 소셜 로그인 페이지
 // Supabase OAuth를 통해 해당 제공자 로그인 화면으로 이동
+// Google: @react-oauth/google + supabase.auth.signInWithIdToken 사용 (Supabase URL 노출 없음)
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 
@@ -102,6 +104,56 @@ export default function LoginPage() {
       localStorage.removeItem('pending_marketing_agreed')
       setErrorMsg(`로그인 중 알 수 없는 오류가 발생했습니다.\n${message}`)
     } finally {
+      setLoadingProvider(null)
+    }
+  }
+
+  // Google Identity Services 콜백: ID 토큰을 Supabase signInWithIdToken으로 처리
+  const handleGoogleCredential = async (credentialResponse: CredentialResponse) => {
+    if (!supabase) {
+      setErrorMsg('로그인 설정(Supabase URL/Key)이 올바르지 않습니다.')
+      return
+    }
+
+    // 필수 약관 미동의 시 방어적으로 한번 더 확인
+    if (!terms || !privacy) {
+      setErrorMsg('필수 약관에 동의해 주세요.')
+      return
+    }
+
+    // 마케팅 동의 여부를 localStorage에 임시 보관 (콜백 페이지에서 저장)
+    localStorage.setItem('pending_marketing_agreed', marketing ? 'true' : 'false')
+
+    setLoadingProvider('google')
+    setErrorMsg(null)
+
+    try {
+      if (!credentialResponse.credential) {
+        setErrorMsg('Google 인증이 실패했습니다. 다시 시도해 주세요.')
+        setLoadingProvider(null)
+        localStorage.removeItem('pending_marketing_agreed')
+        return
+      }
+
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: credentialResponse.credential,
+      })
+
+      if (error) {
+        console.error('[Google IdToken 로그인 오류]', error)
+        localStorage.removeItem('pending_marketing_agreed')
+        setErrorMsg(`Google 로그인 중 오류가 발생했습니다.\n${error.message}`)
+        setLoadingProvider(null)
+        return
+      }
+
+      // 성공 시 콜백 페이지로 이동 (onboarding 체크는 콜백 페이지에서 수행)
+      window.location.href = '/auth/callback'
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e)
+      localStorage.removeItem('pending_marketing_agreed')
+      setErrorMsg(`Google 로그인 중 알 수 없는 오류가 발생했습니다.\n${message}`)
       setLoadingProvider(null)
     }
   }
@@ -209,20 +261,24 @@ export default function LoginPage() {
               {loadingProvider === 'kakao' ? '카카오로 로그인 중...' : '카카오로 시작하기'}
             </button>
 
-            {/* 구글 로그인 — 필수 약관 미동의 시 비활성화 */}
-            <button
-              type="button"
-              onClick={() => handleLogin('google')}
-              disabled={!!loadingProvider || !terms || !privacy}
-              className={`w-full h-12 rounded-full bg-white text-[#191F28] border border-gray-200 flex items-center justify-center gap-2 text-sm font-semibold transition-opacity ${
-                !terms || !privacy ? 'opacity-50 cursor-not-allowed' : 'disabled:opacity-60'
-              }`}
-            >
-              <span className="w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px] font-bold">
-                G
-              </span>
-              {loadingProvider === 'google' ? 'Google로 로그인 중...' : 'Google로 시작하기'}
-            </button>
+            {/* Google 로그인 — Google Identity Services 사용 (Supabase URL 노출 없음) */}
+            <div className={`w-full flex justify-center ${!terms || !privacy ? 'opacity-50 pointer-events-none' : ''}`}>
+              {loadingProvider === 'google' ? (
+                <div className="w-full h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center text-sm text-gray-500">
+                  Google로 로그인 중...
+                </div>
+              ) : (
+                <GoogleLogin
+                  onSuccess={handleGoogleCredential}
+                  onError={() => setErrorMsg('Google 로그인에 실패했습니다. 다시 시도해 주세요.')}
+                  size="large"
+                  width={360}
+                  shape="pill"
+                  text="continue_with"
+                  theme="outline"
+                />
+              )}
+            </div>
           </div>
 
           {/* 구글 액세스 차단 안내 */}
