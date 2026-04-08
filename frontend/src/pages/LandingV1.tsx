@@ -91,7 +91,6 @@ function SectionBridge({
 
   const textColor = isDark ? '#ffffff' : '#475569'
   const subTextColor = isDark ? 'rgba(255, 255, 255, 0.6)' : '#94a3b8'
-  const hoverTextColor = isDark ? '#ffffff' : '#2563eb'
   const arrowColor = isDark ? '#ffffff' : '#2563eb'
 
   return (
