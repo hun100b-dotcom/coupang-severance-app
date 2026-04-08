@@ -1102,7 +1102,7 @@ export default function LandingV1() {
                 <div className="text-center">
                   <div
                     className="font-black text-white mb-2"
-                    style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', letterSpacing: '-1px' }}
+                    style={{ fontSize: 'clamp(2rem, 4.5vw, 4rem)', letterSpacing: '-1px', whiteSpace: 'nowrap' }}
                   >
                     {item.num}
                   </div>
