@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift, MapPin, Briefcase } from 'lucide-react'
+import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift, MapPin, Briefcase, BookOpen } from 'lucide-react'
 import { api, registerClick } from '../lib/api'
 import type { JobPosting } from '../types/supabase'
 import { INTRO_COPIES } from '../lib/constants'
@@ -480,6 +480,30 @@ export default function Home() {
             </motion.button>
           ))}
         </motion.div>
+
+        {/* ── 노동법 가이드 배너 — 검색엔진 유입용 가이드 페이지 진입점 ── */}
+        <motion.button
+          custom={3}
+          variants={cardVariants}
+          initial="hidden"
+          animate="visible"
+          type="button"
+          onClick={() => navigate('/guide')}
+          className="group w-full rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-indigo-200/50 bg-gradient-to-br from-indigo-500 to-purple-600 p-4 flex items-center gap-3 text-left relative overflow-hidden"
+          whileHover={{ scale: 1.01, y: -2 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          {/* 시머 효과 */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer bg-[length:200%_100%] pointer-events-none" />
+          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+            <BookOpen className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-bold text-base">노동법 가이드</p>
+            <p className="text-white/90 text-sm">퇴직금 · 실업급여 · 주휴수당 · 연차수당</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+        </motion.button>
 
         {/* ── 하단 트러스트 바 ── */}
         <motion.div
