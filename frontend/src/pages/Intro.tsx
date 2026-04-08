@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -8,21 +8,27 @@ export default function Intro() {
   const [phase, setPhase] = useState<'logo' | 'text' | 'ready'>('logo')
   const [exiting, setExiting] = useState(false)
 
+  // /landing 으로 이동 — navigate 실패 시 window.location.replace 폴백 (모바일 호환)
+  const handleSkip = useCallback(() => {
+    setExiting(true)
+    setTimeout(() => {
+      navigate('/landing', { replace: true })
+      // 300ms 후에도 경로가 바뀌지 않았으면 강제 이동 (모바일 브라우저 대응)
+      setTimeout(() => {
+        if (window.location.pathname !== '/landing') {
+          window.location.replace('/landing')
+        }
+      }, 300)
+    }, 400)
+  }, [navigate])
+
   // 시퀀스: logo(0s) → text(0.6s) → ready(1.4s) → auto-advance(6s)
   useEffect(() => {
     const t1 = setTimeout(() => setPhase('text'), 600)
     const t2 = setTimeout(() => setPhase('ready'), 1400)
-    const t3 = setTimeout(() => {
-      setExiting(true)
-      setTimeout(() => navigate('/landing', { replace: true }), 500)
-    }, 6000)
+    const t3 = setTimeout(handleSkip, 6000)
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
-  }, [navigate])
-
-  const handleSkip = () => {
-    setExiting(true)
-    setTimeout(() => navigate('/landing', { replace: true }), 400)
-  }
+  }, [handleSkip])
 
   // 스파클 파티클 포지션
   const sparkles = [
@@ -88,7 +94,7 @@ export default function Intro() {
 
             {/* 브랜드명: 글자별 스태거 */}
             <motion.div
-              className="mt-5 flex items-center gap-[2px]"
+              className="mt-4 flex items-center gap-[2px]"
               initial="hidden"
               animate={phase !== 'logo' ? 'visible' : 'hidden'}
             >
@@ -132,7 +138,7 @@ export default function Intro() {
           <motion.button
             type="button"
             onClick={handleSkip}
-            className="mt-10 px-8 py-3.5 rounded-2xl bg-[#3182F6] text-white font-bold text-[15px] tracking-tight shadow-[0_12px_40px_rgba(49,130,246,0.3)]"
+            className="mt-8 px-8 py-3.5 rounded-[20px] bg-[#3182F6] text-white font-bold text-[15px] tracking-tight shadow-[0_12px_40px_rgba(49,130,246,0.3)]"
             initial={{ opacity: 0, y: 16 }}
             animate={phase === 'ready' ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
