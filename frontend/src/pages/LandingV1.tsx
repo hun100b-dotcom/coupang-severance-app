@@ -39,6 +39,90 @@ function Reveal({
   )
 }
 
+// ── Stagger 컨테이너 & 아이템 variants ────────────────────────────────────
+// stagger container variants — 자식 요소들을 순차적으로 나타냄
+const staggerContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15, delayChildren: 0.1 },
+  },
+}
+
+// stagger item variants — 기본 (위로 슬라이드 + fade)
+const staggerItemUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+}
+
+// stagger item — 왼쪽에서 슬라이드
+const staggerItemLeft = {
+  hidden: { opacity: 0, x: -40 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+}
+
+// stagger item — 스케일 애니메이션
+const staggerItemScale = {
+  hidden: { opacity: 0, scale: 0.85 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: 'easeOut' } },
+}
+
+// ── 섹션 간 유도 컴포넌트 (SectionBridge) ────────────────────────────────────
+function SectionBridge({
+  text,
+  subText,
+  targetId,
+  isDark = false,
+  scrollTo: scrollToFn,
+}: {
+  text: string
+  subText: string
+  targetId: string
+  isDark?: boolean
+  scrollTo?: (id: string) => void
+}) {
+  const handleClick = () => {
+    if (scrollToFn) {
+      scrollToFn(targetId)
+    } else {
+      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const textColor = isDark ? '#ffffff' : '#475569'
+  const subTextColor = isDark ? 'rgba(255, 255, 255, 0.6)' : '#94a3b8'
+  const hoverTextColor = isDark ? '#ffffff' : '#2563eb'
+  const arrowColor = isDark ? '#ffffff' : '#2563eb'
+
+  return (
+    <motion.div
+      className="flex flex-col items-center py-12 mt-16 cursor-pointer group"
+      onClick={handleClick}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+    >
+      <p className="text-[13px] font-semibold mb-1" style={{ color: subTextColor }}>
+        {subText}
+      </p>
+      <p
+        className="text-[16px] font-bold mb-3 group-hover:opacity-80 transition-opacity"
+        style={{ color: textColor }}
+      >
+        {text}
+      </p>
+      <motion.div
+        animate={{ y: [0, 8, 0] }}
+        transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+        style={{ color: arrowColor, fontSize: 24 }}
+      >
+        ↓
+      </motion.div>
+    </motion.div>
+  )
+}
+
 export default function LandingV1() {
   const navigate = useNavigate()
 
@@ -116,6 +200,11 @@ export default function LandingV1() {
 
   // ── 로그인 페이지로 이동 ─────────────────────────────────────────────────
   const goLogin = () => navigate('/login')
+
+  // ── Smooth scroll 헬퍼 함수 ───────────────────────────────────────────────
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   return (
     // 전체 래퍼 — 밝은 파스텔 배경, 커스텀 커서, 가로 스크롤 방지
@@ -307,10 +396,10 @@ export default function LandingV1() {
           </Reveal>
 
           <Reveal delay={0.3}>
-            <div className="flex gap-4 flex-wrap">
-              {/* 메인 CTA — 채움 버튼 */}
+            <div className="flex gap-4 flex-wrap items-center">
+              {/* 메인 CTA — scrollTo 함수 사용 (pain 섹션으로 이동) */}
               <button
-                onClick={goLogin}
+                onClick={() => scrollTo('pain')}
                 className="inline-flex items-center gap-2 font-bold text-white rounded-[16px] transition-all hover:-translate-y-1"
                 style={{
                   padding: '18px 36px',
@@ -319,11 +408,11 @@ export default function LandingV1() {
                   boxShadow: '0 8px 32px rgba(37,99,235,0.30)',
                 }}
               >
-                ✦ 무료로 계산하기
+                ✦ 내 권리 확인하기
               </button>
-              {/* 서브 CTA — 테두리만 */}
+              {/* 서브 CTA — href를 pain으로 변경 */}
               <a
-                href="#how"
+                href="#pain"
                 className="inline-flex items-center gap-2 font-semibold rounded-[16px] transition-all hover:-translate-y-1"
                 style={{
                   padding: '18px 36px',
@@ -334,8 +423,23 @@ export default function LandingV1() {
                   textDecoration: 'none',
                 }}
               >
-                어떻게 작동하나요? ↓
+                어떤 문제가 있나요? ↓
               </a>
+              {/* 서브 텍스트 링크 — 기존 goLogin 역할 유지 */}
+              <button
+                onClick={goLogin}
+                className="text-[15px] font-semibold"
+                style={{
+                  color: '#2563eb',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  textDecoration: 'underline',
+                }}
+              >
+                빠르게 시작하기 →
+              </button>
             </div>
           </Reveal>
 
@@ -371,6 +475,14 @@ export default function LandingV1() {
               ))}
             </div>
           </Reveal>
+
+          {/* SectionBridge: HERO → PAIN */}
+          <SectionBridge
+            text="지금 당신의 상황을 확인하세요"
+            subText="알고 계셨나요?"
+            targetId="pain"
+            scrollTo={scrollTo}
+          />
         </div>
       </section>
 
@@ -428,23 +540,58 @@ export default function LandingV1() {
 
           <Reveal delay={0.1}>
             <blockquote
-              className="text-[16px] leading-[1.7] italic mb-12 rounded-r-[12px]"
+              className="relative mb-12 rounded-[16px] overflow-hidden"
               style={{
-                color: '#475569',
-                background: 'rgba(37,99,235,0.05)',
-                borderLeft: '3px solid #2563eb',
-                padding: '24px 28px',
+                background: 'linear-gradient(135deg, #eff6ff 0%, #ede9fe 100%)',
+                borderLeft: '5px solid #2563eb',
+                boxShadow: '0 4px 24px rgba(37,99,235,0.12)',
+                padding: '32px 36px 32px 40px',
               }}
             >
-              "1년 이상 쿠팡 물류센터에서 일했는데 퇴직금이 있는지도 몰랐어요.
-              CATCH로 계산해보니 200만 원이 나왔습니다."
+              {/* 큰 따옴표 장식 — 배경에 크게 깔리는 인용부호 */}
+              <span
+                className="absolute select-none pointer-events-none font-black"
+                style={{
+                  top: -8,
+                  left: 16,
+                  fontSize: 80,
+                  color: 'rgba(37,99,235,0.12)',
+                  lineHeight: 1,
+                  fontFamily: 'Georgia, serif',
+                }}
+              >
+                &ldquo;
+              </span>
+              {/* 인용 본문 — 200만 원 강조 */}
+              <p
+                className="relative z-[1] text-[18px] leading-[1.8] font-medium"
+                style={{ color: '#1e293b' }}
+              >
+                1년 이상 쿠팡 물류센터에서 일했는데 퇴직금이 있는지도 몰랐어요.
+                <br />
+                CATCH로 계산해보니{' '}
+                <span className="font-black text-[22px]" style={{ color: '#2563eb' }}>
+                  200만 원
+                </span>
+                이 나왔습니다.
+              </p>
+              {/* 출처 표기 */}
+              <p className="mt-3 text-[13px] font-semibold" style={{ color: '#64748b' }}>
+                — 쿠팡 물류센터 근무 경험자
+              </p>
             </blockquote>
           </Reveal>
 
-          {/* 통계 카드 — 레드 왼쪽 라인 + 숫자 강조 */}
-          <div className="flex flex-col gap-4 max-w-[560px]">
+          {/* 통계 카드 — 레드 왼쪽 라인 + 숫자 강조 + Stagger 애니메이션 */}
+          <motion.div
+            className="flex flex-col gap-4 max-w-[560px]"
+            variants={staggerContainerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.12 }}
+          >
             {/* 카드 1: 실제 고용노동부 2023 수치 */}
-            <Reveal delay={0.1}>
+            <motion.div variants={staggerItemLeft}>
               <div
                 className="flex items-center gap-6 rounded-[20px] transition-all hover:-translate-y-1"
                 style={{
@@ -470,10 +617,10 @@ export default function LandingV1() {
                   </div>
                 </div>
               </div>
-            </Reveal>
+            </motion.div>
 
             {/* 카드 2: 실업급여 관련 — 통계청 2023 */}
-            <Reveal delay={0.2}>
+            <motion.div variants={staggerItemLeft}>
               <div
                 className="rounded-[20px] transition-all hover:-translate-y-1"
                 style={{
@@ -506,10 +653,10 @@ export default function LandingV1() {
                   CATCH가 내 자격 여부를 1분 안에 알려드립니다.
                 </div>
               </div>
-            </Reveal>
+            </motion.div>
 
             {/* 카드 3: 퇴직금 소멸시효 */}
-            <Reveal delay={0.3}>
+            <motion.div variants={staggerItemLeft}>
               <div
                 className="rounded-[20px] transition-all hover:-translate-y-1"
                 style={{
@@ -530,7 +677,7 @@ export default function LandingV1() {
                     className="font-black tracking-tight"
                     style={{ fontSize: 26, color: '#ef4444', letterSpacing: '-1px' }}
                   >
-                    1년 이상
+                    3년
                   </div>
                   <div className="text-[12px]" style={{ color: '#94a3b8' }}>
                     퇴직금 청구권 소멸시효
@@ -542,8 +689,16 @@ export default function LandingV1() {
                   몰라서 못 받은 퇴직금, CATCH로 지금 바로 확인하세요.
                 </div>
               </div>
-            </Reveal>
-          </div>
+            </motion.div>
+          </motion.div>
+
+          {/* SectionBridge: PAIN → SOLUTION */}
+          <SectionBridge
+            text="CATCH가 해결합니다"
+            subText="해결책이 있습니다"
+            targetId="solution"
+            scrollTo={scrollTo}
+          />
         </div>
       </section>
 
@@ -600,39 +755,42 @@ export default function LandingV1() {
               </Reveal>
             </div>
 
-            {/* 오른쪽: 기능 카드 세로 스택 */}
-            <div className="flex flex-col" style={{ gap: 12 }}>
+            {/* 오른쪽: 기능 카드 세로 스택 + Stagger 애니메이션 */}
+            <motion.div
+              className="flex flex-col"
+              style={{ gap: 12 }}
+              variants={staggerContainerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.12 }}
+            >
               {[
                 {
                   icon: '📄',
                   title: '정밀 PDF 계산',
                   desc: '근무 내역 PDF 업로드 → 28일 블록 알고리즘 자동 분석',
                   badge: '퇴직금 · 실업급여',
-                  delay: 0.1,
                 },
                 {
                   icon: '🧮',
                   title: '간편 수동 계산',
                   desc: '시급·근무일수 입력만으로 즉시 계산. PDF 없어도 OK',
                   badge: '주휴수당 · 연차수당',
-                  delay: 0.2,
                 },
                 {
                   icon: '💼',
                   title: '단기알바 채용피드',
                   desc: '쿠팡·컬리·CJ 실제 공고, 오늘긴급/내일긴급/상시 분류',
                   badge: '채용정보 · 즐겨찾기',
-                  delay: 0.3,
                 },
                 {
                   icon: '📊',
                   title: '계산 이력 저장',
                   desc: '이전 결과를 PDF로 저장·재사용. 매번 다시 계산 불필요',
                   badge: '히스토리 · 재사용',
-                  delay: 0.4,
                 },
               ].map((card) => (
-                <Reveal key={card.title} delay={card.delay}>
+                <motion.div key={card.title} variants={staggerItemUp}>
                   <div
                     className="relative overflow-hidden rounded-[16px] flex items-start gap-4 transition-all group hover:-translate-y-[2px]"
                     style={{
@@ -679,10 +837,18 @@ export default function LandingV1() {
                       </p>
                     </div>
                   </div>
-                </Reveal>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
+
+          {/* SectionBridge: SOLUTION → HOW */}
+          <SectionBridge
+            text="3단계로 시작하세요"
+            subText="사용 방법"
+            targetId="how"
+            scrollTo={scrollTo}
+          />
         </div>
       </section>
 
@@ -739,18 +905,20 @@ export default function LandingV1() {
                 <div key={step.num} className="flex flex-col items-center w-full max-w-[280px]">
                   <Reveal delay={0.1 + i * 0.15}>
                     <div className="flex flex-col items-center text-center px-4 py-6">
-                      {/* 번호 원 */}
-                      <div
-                        className="flex items-center justify-center rounded-full text-[20px] font-black text-white mb-4"
-                        style={{
-                          width: 48,
-                          height: 48,
-                          background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-                          boxShadow: '0 0 0 8px rgba(37,99,235,0.10)',
-                        }}
-                      >
-                        {step.num}
-                      </div>
+                      {/* 번호 원 + Scale 애니메이션 */}
+                      <motion.div variants={staggerItemScale}>
+                        <div
+                          className="flex items-center justify-center rounded-full text-[20px] font-black text-white mb-4"
+                          style={{
+                            width: 48,
+                            height: 48,
+                            background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                            boxShadow: '0 0 0 8px rgba(37,99,235,0.10)',
+                          }}
+                        >
+                          {step.num}
+                        </div>
+                      </motion.div>
                       <h3 className="text-[17px] font-bold mb-2" style={{ color: '#0f172a' }}>{step.title}</h3>
                       <p className="text-[14px] leading-[1.65] whitespace-pre-line" style={{ color: '#475569' }}>
                         {step.desc}
@@ -776,18 +944,20 @@ export default function LandingV1() {
                   {/* 각 단계 */}
                   <Reveal delay={0.1 + i * 0.15} className="flex-1">
                     <div className="text-center px-4 py-6">
-                      {/* 번호 원 */}
-                      <div
-                        className="flex items-center justify-center rounded-full text-[20px] font-black text-white mx-auto mb-5"
-                        style={{
-                          width: 48,
-                          height: 48,
-                          background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-                          boxShadow: '0 0 0 8px rgba(37,99,235,0.10)',
-                        }}
-                      >
-                        {step.num}
-                      </div>
+                      {/* 번호 원 + Scale 애니메이션 */}
+                      <motion.div variants={staggerItemScale}>
+                        <div
+                          className="flex items-center justify-center rounded-full text-[20px] font-black text-white mx-auto mb-5"
+                          style={{
+                            width: 48,
+                            height: 48,
+                            background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                            boxShadow: '0 0 0 8px rgba(37,99,235,0.10)',
+                          }}
+                        >
+                          {step.num}
+                        </div>
+                      </motion.div>
                       <h3 className="text-[17px] font-bold mb-2" style={{ color: '#0f172a' }}>{step.title}</h3>
                       <p className="text-[14px] leading-[1.65] whitespace-pre-line" style={{ color: '#475569' }}>
                         {step.desc}
@@ -808,6 +978,14 @@ export default function LandingV1() {
               ))}
             </div>
           )}
+
+          {/* SectionBridge: HOW → WHY */}
+          <SectionBridge
+            text="왜 CATCH를 선택할까요?"
+            subText="더 알아보기"
+            targetId="why"
+            scrollTo={scrollTo}
+          />
         </div>
       </section>
 
@@ -921,6 +1099,14 @@ export default function LandingV1() {
               </div>
             </Reveal>
           </div>
+
+          {/* SectionBridge: WHY → SCHEDULE */}
+          <SectionBridge
+            text="스케줄 관리까지 한번에"
+            subText="NEW 기능"
+            targetId="schedule"
+            scrollTo={scrollTo}
+          />
         </div>
       </section>
 
@@ -984,36 +1170,45 @@ export default function LandingV1() {
           {/* 서브타이틀 */}
           <Reveal delay={0.1}>
             <p className="text-center text-[17px] leading-[1.7] mb-[60px]" style={{ color: '#475569' }}>
-              출근 스케줄 확정, 근무지원, 일정 관리를 CATCH 하나로
+              출근 스케줄 확정, 근무지원, 긴급·추가모집 알림까지 CATCH 하나로
             </p>
           </Reveal>
 
-          {/* 3개 기능 카드 — 모바일 1열, 데스크탑 3열 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          {/* 4개 기능 카드 — 모바일 1열, 데스크탑 2x2 그리드 + Stagger 애니메이션 */}
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10"
+            variants={staggerContainerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.12 }}
+          >
             {[
               {
                 iconBg: 'linear-gradient(135deg, #2563eb, #3b82f6)',
                 emoji: '📋',
                 title: '근무 스케줄 확정',
                 desc: '예정된 근무 일정을 한눈에 확인하고 출근 여부를 빠르게 확정하세요',
-                delay: 0.1,
               },
               {
                 iconBg: 'linear-gradient(135deg, #7c3aed, #a855f7)',
                 emoji: '✅',
                 title: '근무지원 관리',
                 desc: '새로운 근무지 지원 현황과 결과를 실시간으로 확인하세요',
-                delay: 0.2,
               },
               {
                 iconBg: 'linear-gradient(135deg, #059669, #10b981)',
                 emoji: '🎁',
                 title: '포인트 적립',
                 desc: '스케줄 확정, 출근 인증 등 활동마다 포인트가 쌓입니다. 모은 포인트로 혜택을 누리세요',
-                delay: 0.3,
+              },
+              {
+                iconBg: 'linear-gradient(135deg, #ef4444, #f97316)',
+                emoji: '🔥',
+                title: '긴급·추가 모집 알림',
+                desc: '오늘 긴급모집, 추가모집, 내일 긴급모집 등 실시간 채용 정보를 놓치지 마세요',
               },
             ].map((card) => (
-              <Reveal key={card.title} delay={card.delay}>
+              <motion.div key={card.title} variants={staggerItemScale}>
                 <div
                   className="rounded-[20px] text-center transition-all hover:-translate-y-1"
                   style={{
@@ -1041,9 +1236,9 @@ export default function LandingV1() {
                     {card.desc}
                   </p>
                 </div>
-              </Reveal>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           {/* 하단 안내 배너 */}
           <Reveal delay={0.35}>
@@ -1073,6 +1268,15 @@ export default function LandingV1() {
               </button>
             </div>
           </Reveal>
+
+          {/* SectionBridge: SCHEDULE → STATS (다크 배경용) */}
+          <SectionBridge
+            text="숫자로 보는 CATCH"
+            subText="실적 데이터"
+            targetId="stats"
+            isDark={false}
+            scrollTo={scrollTo}
+          />
         </div>
       </section>
 
@@ -1090,15 +1294,21 @@ export default function LandingV1() {
           style={{ background: 'radial-gradient(ellipse 60% 80% at 50% 50%, rgba(255,255,255,0.08) 0%, transparent 70%)' }}
         />
         <div className="relative z-[1] max-w-[1100px] mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+          <motion.div
+            className="grid grid-cols-2 md:grid-cols-4 gap-10"
+            variants={staggerContainerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.12 }}
+          >
             {[
               // 실제 고용노동부 2023 통계로 교체 (허수 '800만+' 제거)
-              { num: '28만 3천', label: '임금체불 피해자\n(고용노동부 2023)', barWidth: '82%', delay: 0.1 },
-              { num: '4가지', label: '수당 계산기\n(퇴직·실업·주휴·연차)', barWidth: '100%', delay: 0.2 },
-              { num: '28일', label: '블록 알고리즘\n(법정 기준 정밀계산)', barWidth: '75%', delay: 0.3 },
-              { num: '100%', label: '무료 서비스\n(광고·유료 없음)', barWidth: '100%', delay: 0.4 },
+              { num: '28만 3천', label: '임금체불 피해자\n(고용노동부 2023)', barWidth: '82%' },
+              { num: '4가지', label: '수당 계산기\n(퇴직·실업·주휴·연차)', barWidth: '100%' },
+              { num: '28일', label: '블록 알고리즘\n(법정 기준 정밀계산)', barWidth: '75%' },
+              { num: '100%', label: '무료 서비스\n(광고·유료 없음)', barWidth: '100%' },
             ].map((item) => (
-              <Reveal key={item.num} delay={item.delay}>
+              <motion.div key={item.num} variants={staggerItemUp}>
                 <div className="text-center">
                   <div
                     className="font-black text-white mb-2"
@@ -1127,9 +1337,18 @@ export default function LandingV1() {
                     />
                   </div>
                 </div>
-              </Reveal>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
+
+          {/* SectionBridge: STATS → CTA (다크 배경용) */}
+          <SectionBridge
+            text="무료로 지금 시작하세요"
+            subText="준비 되셨나요?"
+            targetId="cta"
+            isDark={true}
+            scrollTo={scrollTo}
+          />
         </div>
       </section>
 
