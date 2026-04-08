@@ -62,9 +62,11 @@ CATCH (퇴직금 한번에) — 일용직 근로자 퇴직금·실업급여·주
 ## C — MEMORY: 세션 관리
 
 ### 세션 시작 루틴
-- memory/ 폴더 내 모든 .md 파일 읽기
+- ⚠️ **최우선: memory/progress.md 반드시 가장 먼저 읽기** (작업 일지 + 다음 작업 + 인프라 상태 전부 기록됨)
+- memory/ 폴더 내 나머지 .md 파일 읽기 (lessons.md, decisions.md)
 - tasks/todo.md 읽어서 현재 진행 상황 파악
 - 인사/요약 없이 바로 작업 가능 상태 보고
+- CLI, IDE, Dispatch, Cowork, 일반 채팅 — 어디서 시작하든 이 루틴 동일 적용
 
 ### 세션 종료 루틴 (/compact 또는 "끝" 입력 시)
 - memory/progress.md: 완료 작업 + 다음 할 일 업데이트
