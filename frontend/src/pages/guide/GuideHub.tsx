@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, BookOpen, Briefcase, ShieldCheck, Clock, CalendarDays, Calculator, ChevronRight } from 'lucide-react'
+import { BookOpen, Briefcase, ShieldCheck, Clock, CalendarDays, Calculator, ChevronRight } from 'lucide-react'
 
 // ── 가이드 데이터 ──
 const GUIDES = [
@@ -52,26 +52,10 @@ export default function GuideHub() {
   }, [])
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-28 bg-gradient-to-b from-blue-50 via-white to-white">
+    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-gradient-to-b from-blue-50 via-white to-white">
       <div className="w-full max-w-[460px] flex flex-col gap-6">
 
-        {/* ── 상단 네비게이션 ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex items-center justify-between px-1"
-        >
-          <button
-            onClick={() => navigate('/home')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
-          </button>
-          <span className="text-sm font-medium text-gray-500">가이드</span>
-          <div className="w-9" />
-        </motion.div>
-
-        {/* ── 히어로 섹션 ── */}
+        {/* ── 히어로 섹션 (TopNav가 Layout에서 제공되므로 자체 네비 제거) ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

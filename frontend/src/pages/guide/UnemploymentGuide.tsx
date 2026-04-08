@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Calculator, ChevronRight } from 'lucide-react'
+import { Calculator, ChevronRight } from 'lucide-react'
 
 // ── 섹션 ID 및 목차 ──
 const TABLE_OF_CONTENTS = [
@@ -116,24 +116,8 @@ export default function UnemploymentGuide() {
   }, [])
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-28 bg-gray-50">
+    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-gray-50">
       <div className="w-full max-w-[460px] flex flex-col gap-4">
-
-        {/* ── 상단 네비게이션 ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex items-center justify-between px-1"
-        >
-          <button
-            onClick={() => navigate('/guide')}
-            className="p-2 hover:bg-white rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
-          </button>
-          <h1 className="text-lg font-bold text-gray-900">실업급여 가이드</h1>
-          <div className="w-9" />
-        </motion.div>
 
         {/* ── 히어로 섹션 ── */}
         <motion.div
@@ -435,6 +419,22 @@ export default function UnemploymentGuide() {
               href="/guide/annual-leave"
             />
           </div>
+        </motion.div>
+
+        {/* ── 가이드 허브로 돌아가기 ── */}
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="mt-4 mb-4"
+        >
+          <button
+            onClick={() => navigate('/guide')}
+            className="w-full py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            ← 전체 가이드 목록 보기
+          </button>
         </motion.div>
 
       </div>

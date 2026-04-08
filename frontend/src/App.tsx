@@ -107,13 +107,6 @@ export default function App() {
           <Route path="/v4" element={<LandingV4 />} />
           <Route path="/v5" element={<LandingV5 />} />
 
-          {/* ── SEO 콘텐츠 가이드 페이지 — 검색엔진 유입용 독립 페이지 ── */}
-          <Route path="/guide" element={<GuideHub />} />
-          <Route path="/guide/severance" element={<SeveranceGuide />} />
-          <Route path="/guide/unemployment" element={<UnemploymentGuide />} />
-          <Route path="/guide/weekly-allowance" element={<WeeklyAllowanceGuide />} />
-          <Route path="/guide/annual-leave" element={<AnnualLeaveGuide />} />
-
           {/* ── 네비바(TopNav + BottomNav)가 있는 일반 페이지 ──
               Layout 컴포넌트가 Outlet을 통해 중첩 라우트를 렌더링합니다. */}
           <Route element={<OnboardingGuard><Layout /></OnboardingGuard>}>
@@ -148,6 +141,12 @@ export default function App() {
             <Route path="/my-benefits" element={<MyBenefitsPage />} />
             {/* 공지사항 전체 목록: 배너 클릭 시 이동 */}
             <Route path="/notices" element={<NoticesPage />} />
+            {/* ── SEO 콘텐츠 가이드 페이지 — 로그인 불필요, 검색엔진 크롤링 가능 ── */}
+            <Route path="/guide" element={<GuideHub />} />
+            <Route path="/guide/severance" element={<SeveranceGuide />} />
+            <Route path="/guide/unemployment" element={<UnemploymentGuide />} />
+            <Route path="/guide/weekly-allowance" element={<WeeklyAllowanceGuide />} />
+            <Route path="/guide/annual-leave" element={<AnnualLeaveGuide />} />
             {/* 정의되지 않은 경로는 메인 화면으로 */}
             <Route path="*" element={<Home />} />
           </Route>
