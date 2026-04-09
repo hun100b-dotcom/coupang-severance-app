@@ -1,0 +1,59 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# keep-alive.yml — Render 콜드스타트 방지 헬스체크 워크플로우
+#
+# Render 무료 티어는 15분 이상 요청이 없으면 서버를 절전(sleep) 상태로 전환합니다.
+# 절전 후 첫 요청은 40~60초가 걸려 사용자 경험이 크게 나빠집니다.
+# 이 워크플로우는 14분마다 /health 엔드포인트에 GET 요청을 보내
+# 서버가 항상 깨어 있도록 유지합니다.
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: 🏥 Keep Render Alive
+
+on:
+  schedule:
+    # 14분마다 실행 (Render의 15분 절전 기준보다 1분 빠르게)
+    # 크론 표현식: 분 시 일 월 요일
+    - cron: '*/14 * * * *'
+
+  # 수동으로도 실행 가능하도록 워크플로우 디스패치 허용
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Health Endpoint
+    # GitHub Actions 제공 Ubuntu 최신 LTS 러너에서 실행
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1단계: 헬스체크 요청 ────────────────────────────────────────────────
+      - name: 🩺 /health 엔드포인트 호출
+        run: |
+          echo "🕐 현재 시각 (UTC): $(date -u)"
+          echo "📡 Render 백엔드 워밍업 요청 중..."
+
+          # curl 옵션 설명:
+          #   --fail   : HTTP 4xx/5xx 응답 시 종료 코드 비영으로 실패 처리
+          #   --silent : 진행률 바 숨김 (로그 가독성)
+          #   --max-time 30 : 30초 이내 응답 없으면 타임아웃
+          #   --retry 2 : 실패 시 최대 2회 재시도
+          #   --retry-delay 5 : 재시도 간격 5초
+          HTTP_STATUS=$(curl \
+            --silent \
+            --max-time 30 \
+            --retry 2 \
+            --retry-delay 5 \
+            --write-out "%{http_code}" \
+            --output /dev/null \
+            "https://coupang-severance-api.onrender.com/health")
+
+          echo "📊 HTTP 응답 코드: $HTTP_STATUS"
+
+          # 200 응답이면 성공, 아니면 경고만 출력 (워크플로우 실패 처리 안 함)
+          # Render가 일시적으로 응답 못해도 워크플로우 자체가 실패로 표시되면 안 됨
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "✅ 서버 정상 응답 — 콜드스타트 방지 성공"
+          else
+            echo "⚠️ 비정상 응답 코드 ($HTTP_STATUS) — 서버 상태 확인 필요"
+            # exit 0으로 워크플로우 자체는 성공으로 처리 (알림 스팸 방지)
+            exit 0
+          fi
