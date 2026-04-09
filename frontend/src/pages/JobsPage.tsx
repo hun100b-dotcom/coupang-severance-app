@@ -16,6 +16,8 @@ import { listFavorites, addFavorite, removeFavorite, isFavorited } from '../lib/
 import { applyToJob, getAppliedJobIds } from '../lib/jobApplications'
 import type { JobPosting } from '../types/supabase'
 import type { JobFavorite } from '../types/supabase'
+import KakaoShareButton from '../components/KakaoShareButton'
+import { useKakaoShare } from '../hooks/useKakaoShare'
 
 // ── 지원 방법 타입 ──
 interface ApplyMethod {
@@ -129,6 +131,10 @@ export default function JobsPage() {
 
   const navigate = useNavigate()
   const { user, isLoggedIn } = useAuth()
+
+  // 카카오톡 공유 훅 초기화
+  const { shareJob } = useKakaoShare()
+
   const [loading, setLoading] = useState(true)
   // ── DB에서 불러온 공고 목록 (변환된 JobCardData 형태) ──
   const [allJobs, setAllJobs] = useState<JobCardData[]>([])
@@ -735,6 +741,25 @@ export default function JobsPage() {
                       <p className="text-center text-[13px] text-gray-400 py-1">원본 공고 링크 없음</p>
                     )}
                   </div>
+                </div>
+
+                {/* 카카오톡 공유 버튼 — 채용공고를 지인에게 공유 */}
+                <div className="mt-1">
+                  <p className="text-[12px] font-bold text-[#8b95a1] mb-2.5">이 공고 공유하기</p>
+                  <KakaoShareButton
+                    onClick={() =>
+                      shareJob({
+                        companyName: selectedJob.company_name,
+                        // job_title 필드 없음 — center_name을 직종 힌트로 사용
+                        jobTitle: selectedJob.center_name || undefined,
+                        region: selectedJob.region || undefined,
+                        hourlyWage: selectedJob.hourly_wage || undefined,
+                        dailyWage: selectedJob.daily_wage,
+                        logoUrl: selectedJob.logo_url,
+                      })
+                    }
+                    label="카카오톡으로 공유하기"
+                  />
                 </div>
               </div>
             </motion.div>

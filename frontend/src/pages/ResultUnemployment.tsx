@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import GlassCard from '../components/GlassCard'
 import { PrimaryButton, SecondaryButton } from '../components/Button'
+import KakaoShareButton from '../components/KakaoShareButton'
 import { UBResult } from '../lib/api'
 import { fmt } from '../lib/constants'
 import { supabase } from '../lib/supabase'
 import type { UnemploymentPayload } from '../types/supabase'
+import { useKakaoShare } from '../hooks/useKakaoShare'
 
 interface Props {
   result: UBResult
@@ -20,6 +22,9 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const { eligible_180, insured_days_in_18m, avg_daily_wage, daily_benefit, days, total_estimate, days_last_month } = result
   const eligible = eligible_180
+
+  // 카카오톡 공유 훅 초기화
+  const { shareUnemployment } = useKakaoShare()
 
   // ── 계산결과 저장 핸들러
   const handleSave = async () => {
@@ -158,6 +163,21 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
                saveState === 'login_required' ? '로그인 필요' : '💾 저장하기'}
             </button>
           )}
+        </div>
+
+        {/* ── 카카오톡 공유 버튼 ───────────────────────── */}
+        {/* 저장 버튼과 액션 버튼 사이에 위치 */}
+        <div style={{ marginBottom: 10 }}>
+          <KakaoShareButton
+            onClick={() =>
+              shareUnemployment({
+                totalAmount: Math.round(total_estimate),
+                company: company || undefined,
+                eligible,
+              })
+            }
+            label="카카오톡으로 공유하기"
+          />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

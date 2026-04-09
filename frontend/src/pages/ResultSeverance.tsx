@@ -5,11 +5,13 @@ import {
 } from 'recharts'
 import GlassCard from '../components/GlassCard'
 import { PrimaryButton, SecondaryButton } from '../components/Button'
+import KakaoShareButton from '../components/KakaoShareButton'
 import {
   SeverancePreciseResult, SeveranceSimpleResult, EmploymentReport, BlockItem,
 } from '../lib/api'
 import { fmt } from '../lib/constants'
 import { supabase } from '../lib/supabase'
+import { useKakaoShare } from '../hooks/useKakaoShare'
 
 interface Props {
   result: SeverancePreciseResult | SeveranceSimpleResult
@@ -461,6 +463,9 @@ export default function ResultSeverance({ result, resultType, company, onReset }
   const [reportOpen, setReportOpen] = useState(false)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'login_required' | 'error'>('idle')
 
+  // 카카오톡 공유 훅 초기화
+  const { shareSeverance } = useKakaoShare()
+
   const precise      = isPrecise(result)
   const severance    = result.severance
   const workDays     = result.work_days
@@ -726,8 +731,22 @@ export default function ResultSeverance({ result, resultType, company, onReset }
           </div>
         )}
 
+        {/* ── 카카오톡 공유 버튼 ───────────────────────── */}
+        {/* 저장 버튼과 액션 버튼 사이에 위치 */}
+        <div style={{ marginTop: 12, marginBottom: 2 }}>
+          <KakaoShareButton
+            onClick={() =>
+              shareSeverance({
+                amount: Math.round(severance),
+                company: company || undefined,
+              })
+            }
+            label="카카오톡으로 공유하기"
+          />
+        </div>
+
         {/* ── 액션 버튼 ────────────────────────────────── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
           <PrimaryButton onClick={onReset}>다시 계산하기</PrimaryButton>
           <SecondaryButton onClick={() => navigate('/home')}>← 홈으로</SecondaryButton>
         </div>
