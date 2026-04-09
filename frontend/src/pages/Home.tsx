@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift, MapPin, Briefcase, BookOpen } from 'lucide-react'
+import PageMeta from '../components/PageMeta'
 import { api, registerClick } from '../lib/api'
 import type { JobPosting } from '../types/supabase'
 import { INTRO_COPIES } from '../lib/constants'
@@ -66,7 +67,7 @@ const cardVariants = {
 export default function Home() {
   // ── SEO: 홈 페이지 탭 제목 설정 — 검색 결과에서 클릭을 유도하는 핵심 타이틀 ──
   useEffect(() => {
-    document.title = 'CATCH - 일용직 근로의 동반자'
+    // PageMeta 컴포넌트가 title을 관리하므로 document.title 직접 설정 제거
   }, [])
 
   const navigate = useNavigate()
@@ -185,6 +186,13 @@ export default function Home() {
 
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-8">
+      {/* ── SEO 메타태그: 홈 페이지 ── */}
+      <PageMeta
+        title="CATCH — 쿠팡·컬리 일용직 퇴직금·실업급여 계산기"
+        description="쿠팡·컬리·CJ대한통운 일용직 근로자를 위한 퇴직금, 실업급여, 주휴수당, 연차수당 무료 계산기. PDF 업로드 한 번으로 자동 계산."
+        canonical="https://catch-daily-worker.vercel.app/home"
+      />
+
       {/* ── 글래스모피즘 스티키 헤더 ── */}
       <header
         className={`sticky top-0 z-30 w-full max-w-[460px] grid grid-cols-3 items-center gap-2 py-3 pb-4 transition-all duration-300 ${

@@ -2,6 +2,19 @@
 // 근거: 근로자퇴직급여 보장법 제8조
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import PageMeta from '../components/PageMeta'
+
+// ── 퇴직금 계산기 — SoftwareApplication JSON-LD ──
+const SOFTWARE_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: '쿠팡 퇴직금 계산기',
+  applicationCategory: 'FinanceApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
+  description: '쿠팡·컬리 일용직 근로자 퇴직금 무료 자동 계산기. PDF 급여 명세서 업로드 지원, 28일 블록 알고리즘 적용.',
+  url: 'https://catch-daily-worker.vercel.app/severance',
+}
 import {
   CalcHeader, CalcStepCard, CalcStepIcon, CalcChoiceButton,
   CalcNextButton, CalcBackButton, CalcInputCard, CalcModeSelector,
@@ -41,8 +54,8 @@ const INIT: State = {
 export default function SeveranceFlow() {
   // ── SEO: 페이지 진입 시 브라우저 탭 제목 변경 → 뒤로가기 시 원래대로 복원 ──
   useEffect(() => {
-    document.title = '퇴직금 계산기 | CATCH'
-    return () => { document.title = 'CATCH - 쿠팡 일용직 퇴직금·실업급여 계산기' }
+    // PageMeta 컴포넌트가 title을 관리하므로 document.title 직접 설정 제거
+    return () => {}
   }, [])
 
   const [s, setS] = useState<State>(INIT)
@@ -191,6 +204,14 @@ export default function SeveranceFlow() {
   // ── 렌더링 ─────────────────────────────────────
   return (
     <CalcPageWrapper>
+      {/* ── SEO 메타태그: 계산기 페이지 동적 title + SoftwareApplication 구조화 데이터 ── */}
+      <PageMeta
+        title="퇴직금 계산기 — 쿠팡·컬리 일용직 무료 자동 계산 | CATCH"
+        description="PDF 급여 명세서 업로드 한 번으로 쿠팡·컬리 퇴직금을 자동 계산해드립니다. 28일 블록 알고리즘 적용, 3분 완성."
+        canonical="https://catch-daily-worker.vercel.app/severance"
+        jsonLd={SOFTWARE_SCHEMA}
+      />
+
       {loading && <LoadingOverlay message="퇴직금을 계산하고 있어요.." />}
 
       <CalcHeader

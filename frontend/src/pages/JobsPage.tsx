@@ -3,6 +3,7 @@
 // + 지원하기 버튼 (job_applications 테이블 연동)
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import PageMeta from '../components/PageMeta'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   MapPin, Clock, Users, Phone, MessageSquare, ExternalLink,
@@ -125,8 +126,8 @@ type SortKey = 'latest' | 'wage'
 export default function JobsPage() {
   // ── SEO: 채용정보 페이지 탭 제목 설정 → 언마운트 시 기본 타이틀 복원 ──
   useEffect(() => {
-    document.title = '채용정보 | CATCH'
-    return () => { document.title = 'CATCH - 쿠팡 일용직 퇴직금·실업급여 계산기' }
+    // PageMeta 컴포넌트가 title을 관리하므로 document.title 직접 설정 제거
+    return () => {}
   }, [])
 
   const navigate = useNavigate()
@@ -305,6 +306,12 @@ export default function JobsPage() {
 
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-28">
+      {/* ── SEO 메타태그: 채용정보 페이지 ── */}
+      <PageMeta
+        title="쿠팡·컬리 일용직 채용정보 | CATCH"
+        description="쿠팡, 쿠팡이츠, 마켓컬리, CJ대한통운 등 일용직 단기알바 최신 채용정보. 오늘 시작 가능한 급구 공고 확인하세요."
+        canonical="https://catch-daily-worker.vercel.app/jobs"
+      />
 
       {/* ── 인라인 토스트 배너 (alert 대체) ──
           fixed 상단 배너: 2초간 표시 후 AnimatePresence로 부드럽게 사라짐 */}

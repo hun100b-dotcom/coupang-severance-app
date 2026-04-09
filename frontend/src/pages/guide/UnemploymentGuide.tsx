@@ -2,6 +2,58 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Calculator, ChevronRight } from 'lucide-react'
+import PageMeta from '../../components/PageMeta'
+
+// ── 실업급여 가이드 — FAQPage JSON-LD (구글 FAQ 리치 스니펫) ──
+const FAQ_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: '일용직 근로자도 실업급여를 받을 수 있나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '네, 받을 수 있습니다. 최근 18개월 중 고용보험 가입 기간이 180일 이상이고, 비자발적으로 이직했다면 일용직도 실업급여 수급 자격이 있습니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '실업급여 180일은 어떻게 계산하나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '최근 18개월(540일) 중 고용보험료를 납부한 근무일수가 180일 이상이면 됩니다. 여러 사업장의 가입 기간도 합산됩니다. 정확한 가입 이력은 고용센터 또는 근로복지공단에서 확인할 수 있습니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '자발적으로 퇴직해도 실업급여를 받을 수 있나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '원칙적으로 자발적 퇴직은 실업급여 수급이 불가합니다. 다만 임금 체불, 직장 내 괴롭힘, 근로조건 일방 변경 등 정당한 사유가 있다면 예외적으로 인정될 수 있습니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '여러 회사에서 일용직으로 근무했는데 합산되나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '네, 합산됩니다. 최종이직일 기준으로 과거 18개월 기간 내 모든 사업장의 고용보험 가입 기간이 합산됩니다.',
+      },
+    },
+  ],
+}
+
+// ── BreadcrumbList JSON-LD (페이지 계층 구조) ──
+const BREADCRUMB_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://catch-daily-worker.vercel.app/home' },
+    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://catch-daily-worker.vercel.app/guide' },
+    { '@type': 'ListItem', position: 3, name: '실업급여 가이드', item: 'https://catch-daily-worker.vercel.app/guide/unemployment' },
+  ],
+}
 
 // ── 섹션 ID 및 목차 ──
 const TABLE_OF_CONTENTS = [
@@ -98,7 +150,7 @@ export default function UnemploymentGuide() {
   const [activeSection, setActiveSection] = useState('definition')
 
   useEffect(() => {
-    document.title = '실업급여 가이드 - CATCH'
+    // PageMeta 컴포넌트가 title을 관리하므로 document.title 직접 설정 제거
 
     // ── 스크롤 위치 감지 ──
     const handleScroll = () => {
@@ -117,6 +169,14 @@ export default function UnemploymentGuide() {
 
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-gray-50">
+      {/* ── SEO 메타태그: title, description, canonical, JSON-LD 구조화 데이터 ── */}
+      <PageMeta
+        title="실업급여 가이드 — 일용직 쿠팡 실업급여 조건·계산법 완전 정리 | CATCH"
+        description="일용직 실업급여 신청 조건(180일), 수급액 계산, 신청 방법까지 단계별로 안내합니다. 쿠팡·컬리 일용직도 수급 가능."
+        canonical="https://catch-daily-worker.vercel.app/guide/unemployment"
+        jsonLd={[FAQ_SCHEMA, BREADCRUMB_SCHEMA]}
+      />
+
       <div className="w-full max-w-[460px] flex flex-col gap-4">
 
         {/* ── 히어로 섹션 ── */}

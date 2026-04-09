@@ -3,6 +3,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import PageMeta from '../components/PageMeta'
+
+// ── 주휴수당 계산기 — SoftwareApplication JSON-LD ──
+const SOFTWARE_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: '주휴수당 계산기',
+  applicationCategory: 'FinanceApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
+  description: '알바·일용직 주휴수당 무료 자동 계산기. 시급과 근무시간을 입력하면 즉시 계산.',
+  url: 'https://catch-daily-worker.vercel.app/weekly-allowance',
+}
 import {
   Calendar, AlertCircle, CheckCircle2, Info,
   FileText, Calculator, ChevronRight, Loader2, Save, Clock,
@@ -189,6 +202,14 @@ export default function WeeklyAllowancePage() {
 
   return (
     <CalcPageWrapper>
+      {/* ── SEO 메타태그: 주휴수당 계산기 + SoftwareApplication 구조화 데이터 ── */}
+      <PageMeta
+        title="주휴수당 계산기 — 알바·일용직 주휴수당 무료 자동 계산 | CATCH"
+        description="주 15시간 이상 근무 시 받을 수 있는 주휴수당을 자동 계산합니다. 시급과 근무시간 입력, 즉시 계산."
+        canonical="https://catch-daily-worker.vercel.app/weekly-allowance"
+        jsonLd={SOFTWARE_SCHEMA}
+      />
+
       {/* 통일 헤더 */}
       <CalcHeader
         title="주휴수당 계산기"

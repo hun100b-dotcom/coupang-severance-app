@@ -2,6 +2,58 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Calculator, ChevronRight } from 'lucide-react'
+import PageMeta from '../../components/PageMeta'
+
+// ── 주휴수당 가이드 — FAQPage JSON-LD (구글 FAQ 리치 스니펫) ──
+const FAQ_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: '알바·일용직도 주휴수당을 받을 수 있나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '네, 받을 수 있습니다. 고용 형태(정규직·계약직·아르바이트·일용직)와 관계없이 주 15시간 이상 근무하고 소정근로일을 모두 출근하면 주휴수당이 발생합니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '주 15시간은 정확히 어떻게 계산하나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '1주일(월~일) 동안 실제 근무한 시간의 합계입니다. 단, 최근 4주간의 평균 근로시간이 기준이 될 수도 있습니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '한 날 결근하면 주휴수당을 못 받나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '그 주의 소정근로일을 모두 출근해야 주휴수당이 발생합니다. 정당한 사유 없이 결근하면 그 주 주휴수당은 발생하지 않습니다. 단, 유급휴가·질병 등 정당한 사유는 출근한 것으로 간주될 수 있습니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '주휴수당 계산 방법이 어떻게 되나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '주휴수당 = 시급 × 주 소정근로시간 ÷ 5입니다. 주 40시간 근무자 기준 시급 × 8시간, 단시간 근로자는 시급 × (주 소정근로시간 × 8 ÷ 40)으로 계산합니다.',
+      },
+    },
+  ],
+}
+
+// ── BreadcrumbList JSON-LD (페이지 계층 구조) ──
+const BREADCRUMB_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://catch-daily-worker.vercel.app/home' },
+    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://catch-daily-worker.vercel.app/guide' },
+    { '@type': 'ListItem', position: 3, name: '주휴수당 가이드', item: 'https://catch-daily-worker.vercel.app/guide/weekly-allowance' },
+  ],
+}
 
 // ── 섹션 ID 및 목차 ──
 const TABLE_OF_CONTENTS = [
@@ -98,7 +150,7 @@ export default function WeeklyAllowanceGuide() {
   const [activeSection, setActiveSection] = useState('definition')
 
   useEffect(() => {
-    document.title = '주휴수당 가이드 - CATCH'
+    // PageMeta 컴포넌트가 title을 관리하므로 document.title 직접 설정 제거
 
     // ── 스크롤 위치 감지 ──
     const handleScroll = () => {
@@ -117,6 +169,14 @@ export default function WeeklyAllowanceGuide() {
 
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-gray-50">
+      {/* ── SEO 메타태그: title, description, canonical, JSON-LD 구조화 데이터 ── */}
+      <PageMeta
+        title="주휴수당 가이드 — 알바·일용직 주휴수당 조건·계산법 완전 정리 | CATCH"
+        description="주 15시간 이상 근무하면 주휴수당을 받을 수 있습니다. 쿠팡·컬리 일용직·알바 주휴수당 발생 조건과 계산 방법을 안내합니다."
+        canonical="https://catch-daily-worker.vercel.app/guide/weekly-allowance"
+        jsonLd={[FAQ_SCHEMA, BREADCRUMB_SCHEMA]}
+      />
+
       <div className="w-full max-w-[460px] flex flex-col gap-4">
 
         {/* ── 히어로 섹션 ── */}

@@ -2,6 +2,17 @@ import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { BookOpen, Briefcase, ShieldCheck, Clock, CalendarDays, Calculator, ChevronRight } from 'lucide-react'
+import PageMeta from '../../components/PageMeta'
+
+// ── GuideHub — BreadcrumbList JSON-LD (가이드 허브 계층) ──
+const BREADCRUMB_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://catch-daily-worker.vercel.app/home' },
+    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://catch-daily-worker.vercel.app/guide' },
+  ],
+}
 
 // ── 가이드 데이터 ──
 const GUIDES = [
@@ -48,11 +59,19 @@ export default function GuideHub() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    document.title = 'CATCH 가이드 - 노동법 정보'
+    // PageMeta 컴포넌트가 title을 관리하므로 document.title 직접 설정 제거
   }, [])
 
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-gradient-to-b from-blue-50 via-white to-white">
+      {/* ── SEO 메타태그: title, description, canonical, JSON-LD 구조화 데이터 ── */}
+      <PageMeta
+        title="노동법 가이드 — 퇴직금·실업급여·주휴수당·연차수당 완전 정리 | CATCH"
+        description="쿠팡·컬리 일용직 근로자를 위한 노동법 가이드. 퇴직금, 실업급여, 주휴수당, 연차수당 조건과 계산 방법을 한 곳에서 확인하세요."
+        canonical="https://catch-daily-worker.vercel.app/guide"
+        jsonLd={BREADCRUMB_SCHEMA}
+      />
+
       <div className="w-full max-w-[460px] flex flex-col gap-6">
 
         {/* ── 히어로 섹션 (TopNav가 Layout에서 제공되므로 자체 네비 제거) ── */}
