@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import { getPendingRefCode, clearPendingRefCode, saveReferral } from '../lib/referral'
 
 export default function OnboardingPage() {
   const { user, loading: authLoading, needsOnboarding, refreshOnboardingStatus } = useAuth()
@@ -133,6 +134,21 @@ export default function OnboardingPage() {
             ...updatePayload,
           })
         if (insertError) throw insertError
+      }
+
+      // ── 추천인 관계 저장 ──────────────────────────────────────────────
+      // localStorage에 임시 보관된 추천 코드가 있으면 DB에 기록
+      // (실패해도 온보딩 완료에는 영향 없음)
+      const pendingRefCode = getPendingRefCode()
+      if (pendingRefCode) {
+        try {
+          await saveReferral(user.id, pendingRefCode)
+        } catch (refErr) {
+          console.warn('[온보딩] 추천 관계 저장 실패 (무시):', refErr)
+        } finally {
+          // 성공/실패 관계없이 localStorage 정리
+          clearPendingRefCode()
+        }
       }
 
       // AuthContext의 온보딩 상태 갱신

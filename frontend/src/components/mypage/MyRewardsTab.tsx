@@ -1,9 +1,11 @@
-// 🎁 포인트/쿠폰 탭 — 포인트 잔액, 이력, 보유 쿠폰 목록
+// 🎁 포인트/쿠폰 탭 — 포인트 잔액, 이력, 보유 쿠폰 목록 + 추천인 현황
 // user_points 테이블: SUM(amount)가 현재 잔액
 // user_coupons 테이블: 미사용/사용완료 탭으로 구분
+// user_referrals 테이블: 내 추천 코드 + 추천한 사람 수
 import { useEffect, useState, useMemo } from 'react'
-import { Loader2, Coffee, Tag, Coins, Gift, ChevronRight, CheckCircle2, Clock } from 'lucide-react'
+import { Loader2, Coffee, Tag, Coins, Gift, ChevronRight, CheckCircle2, Clock, Users, Copy, Check, Link } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { getReferralStats, type ReferralStats } from '../../lib/referral'
 import type { UserPoint, UserCoupon } from '../../types/supabase'
 
 interface Props {
@@ -35,13 +37,19 @@ export default function MyRewardsTab({ userId }: Props) {
   // 포인트 규칙 안내 펼치기/접기
   const [rulesOpen, setRulesOpen] = useState(false)
 
+  // ── 추천인 현황 상태 ──
+  const [referralStats, setReferralStats] = useState<ReferralStats | null>(null)
+  // 복사 완료 피드백 (코드/링크 각각)
+  const [codeCopied, setCodeCopied] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+
   useEffect(() => {
     const load = async () => {
       if (!supabase) { setLoading(false); return }
       setLoading(true)
 
-      // 포인트 이력 + 쿠폰 목록 동시 조회
-      const [ptResult, cpResult] = await Promise.all([
+      // 포인트 이력 + 쿠폰 목록 + 추천 현황 동시 조회
+      const [ptResult, cpResult, refStats] = await Promise.all([
         supabase
           .from('user_points')
           .select('*')
@@ -52,10 +60,12 @@ export default function MyRewardsTab({ userId }: Props) {
           .select('*')
           .eq('user_id', userId)
           .order('created_at', { ascending: false }),
+        getReferralStats(userId),
       ])
 
       setPoints((ptResult.data ?? []) as UserPoint[])
       setCoupons((cpResult.data ?? []) as UserCoupon[])
+      setReferralStats(refStats)
       setLoading(false)
     }
     load()
@@ -75,6 +85,45 @@ export default function MyRewardsTab({ userId }: Props) {
   const fmtDate = (iso: string) =>
     new Date(iso).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
 
+  // ── 클립보드 복사 핸들러 ──
+  // 2초 후 복사 완료 표시 리셋
+  const handleCopyCode = async () => {
+    if (!referralStats?.myCode) return
+    try {
+      await navigator.clipboard.writeText(referralStats.myCode)
+      setCodeCopied(true)
+      setTimeout(() => setCodeCopied(false), 2000)
+    } catch {
+      // clipboard API 미지원 환경 폴백 (구형 안드로이드 등)
+      const el = document.createElement('textarea')
+      el.value = referralStats.myCode
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+      setCodeCopied(true)
+      setTimeout(() => setCodeCopied(false), 2000)
+    }
+  }
+
+  const handleCopyLink = async () => {
+    if (!referralStats?.referralLink) return
+    try {
+      await navigator.clipboard.writeText(referralStats.referralLink)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    } catch {
+      const el = document.createElement('textarea')
+      el.value = referralStats.referralLink
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -86,6 +135,87 @@ export default function MyRewardsTab({ userId }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
+
+      {/* ── 친구 추천하기 섹션 ── */}
+      {/* referralStats가 로드된 경우에만 표시 (로딩 중 깜빡임 방지) */}
+      {referralStats && (
+        <div className="bg-white rounded-[24px] border border-slate-100 overflow-hidden">
+          {/* 헤더 */}
+          <div className="flex items-center gap-2 px-4 pt-4 pb-2">
+            <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+              <Users className="w-4 h-4 text-violet-500" />
+            </div>
+            <div>
+              <p className="text-[14px] font-extrabold text-[#191f28]">친구 추천하기</p>
+              <p className="text-[11px] text-[#8b95a1]">추천 링크로 가입하면 함께 혜택을 받아요</p>
+            </div>
+          </div>
+
+          <div className="px-4 pb-4 flex flex-col gap-2.5">
+            {/* 내 추천 코드 + 복사 버튼 */}
+            <div className="flex items-center justify-between bg-slate-50 rounded-2xl px-4 py-3">
+              <div>
+                <p className="text-[11px] text-[#8b95a1] mb-0.5">내 추천 코드</p>
+                {/* 추천 코드: 모노스페이스 폰트로 코드 느낌 강조 */}
+                <p className="text-[22px] font-black text-[#3182f6] tracking-widest font-mono">
+                  {referralStats.myCode ?? '로딩 중...'}
+                </p>
+              </div>
+              <button
+                onClick={handleCopyCode}
+                disabled={!referralStats.myCode}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold transition-all ${
+                  codeCopied
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-[#3182f6] text-white active:scale-95'
+                }`}
+              >
+                {codeCopied
+                  ? <><Check className="w-3.5 h-3.5" /> 복사됨</>
+                  : <><Copy className="w-3.5 h-3.5" /> 코드 복사</>
+                }
+              </button>
+            </div>
+
+            {/* 추천 링크 + 복사 버튼 */}
+            <div className="flex items-center justify-between bg-slate-50 rounded-2xl px-4 py-3 gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <Link className="w-3.5 h-3.5 text-[#8b95a1] shrink-0" />
+                {/* 긴 URL은 truncate 처리 */}
+                <p className="text-[11px] text-[#4e5968] truncate font-mono">
+                  {referralStats.referralLink ?? '—'}
+                </p>
+              </div>
+              <button
+                onClick={handleCopyLink}
+                disabled={!referralStats.referralLink}
+                className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold transition-all ${
+                  linkCopied
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-slate-200 text-[#4e5968] active:scale-95'
+                }`}
+              >
+                {linkCopied
+                  ? <><Check className="w-3.5 h-3.5" /> 복사됨</>
+                  : <><Copy className="w-3.5 h-3.5" /> 링크 복사</>
+                }
+              </button>
+            </div>
+
+            {/* 추천한 친구 수 */}
+            <div className="flex items-center gap-2 px-1 pt-1">
+              <Users className="w-3.5 h-3.5 text-[#8b95a1]" />
+              <p className="text-[12px] text-[#8b95a1]">
+                지금까지
+                <span className="font-extrabold text-[#3182f6] mx-1">
+                  {referralStats.referralCount}명
+                </span>
+                을 추천했어요
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── 현재 포인트 잔액 (크게 표시) ── */}
       <div className="bg-gradient-to-br from-[#3182F6] to-[#2563eb] rounded-[24px] p-5 text-white relative overflow-hidden">

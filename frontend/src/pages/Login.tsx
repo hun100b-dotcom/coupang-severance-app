@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import { extractRefCodeFromUrl, savePendingRefCode } from '../lib/referral'
 
 type Provider = 'kakao' | 'google'
 
@@ -42,6 +43,15 @@ export default function LoginPage() {
     setPrivacy(e.target.checked)
     setMarketing(e.target.checked)
   }
+
+  // ── 추천 코드 감지: URL ?ref= 파라미터를 localStorage에 임시 저장 ──
+  // OAuth 리다이렉트 중 URL 파라미터가 소실되므로 먼저 저장해 둠
+  useEffect(() => {
+    const refCode = extractRefCodeFromUrl()
+    if (refCode) {
+      savePendingRefCode(refCode)
+    }
+  }, [])
 
   // 이미 로그인된 사용자는 적절한 페이지로 리다이렉트
   useEffect(() => {
