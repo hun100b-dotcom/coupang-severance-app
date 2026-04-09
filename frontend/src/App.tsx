@@ -3,7 +3,7 @@
 // ── React 핵심 임포트 ────────────────────────────────────────────────────────
 // lazy: 컴포넌트를 처음 렌더링할 때만 동적으로 불러옵니다 (지연 로딩).
 // Suspense: lazy 컴포넌트가 로딩 중일 때 대신 보여줄 fallback UI를 지정합니다.
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom' // 브라우저 라우팅을 위해 react-router-dom을 가져옵니다.
 import { GoogleOAuthProvider } from '@react-oauth/google' // Google Identity Services 제공자
 import { AuthProvider } from './contexts/AuthContext' // 전역 로그인 상태를 제공하는 AuthProvider를 가져옵니다.
@@ -59,6 +59,30 @@ const AnnualLeaveGuide       = lazy(() => import('./pages/guide/AnnualLeaveGuide
 export default function App() {
   // 스플래시 화면 표시 여부 (최초 접속 시 true, 2.3초 후 false로 전환)
   const [showSplash, setShowSplash] = useState(true)
+
+  // ── Render 콜드스타트 사전 워밍업 (App 마운트 시 1회 실행) ─────────────────
+  // Render 무료 티어는 15분 이상 요청이 없으면 서버를 절전 상태로 전환합니다.
+  // 앱이 처음 열리는 순간 즉시 /health를 호출해 서버를 미리 깨워 둡니다.
+  // 사용자가 계산 버튼을 누를 때쯤 서버가 이미 준비되어 콜드스타트를 줄입니다.
+  // api.ts의 IIFE 워밍업과 이중 보호 역할을 합니다.
+  useEffect(() => {
+    // VITE_API_URL 환경변수에서 백엔드 주소를 가져옵니다.
+    // 개발 환경: 빈 문자열(Vite 프록시가 /api/* → localhost:8000 으로 중계)
+    // 프로덕션: https://coupang-severance-api.onrender.com
+    const apiUrl =
+      typeof import.meta.env.VITE_API_URL === 'string' && import.meta.env.VITE_API_URL
+        ? import.meta.env.VITE_API_URL.replace(/\/$/, '') // 끝 슬래시 제거
+        : '/api'
+
+    // fetch는 axios보다 번들 크기 부담이 없어 워밍업 단건 요청에 적합합니다.
+    fetch(`${apiUrl}/health`, {
+      method: 'GET',
+      signal: AbortSignal.timeout(15000), // 15초 이내 응답 없으면 자동 취소
+    }).catch(() => {
+      // 워밍업 실패는 조용히 무시합니다.
+      // 서버가 이미 깨어 있거나 네트워크 문제여도 앱 동작에는 영향 없습니다.
+    })
+  }, []) // [] — 앱 마운트 시 딱 한 번만 실행
 
   return (
     <BrowserRouter>
