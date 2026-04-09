@@ -3,6 +3,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import PageMeta from '../components/PageMeta'
+
+// ── 연차수당 계산기 — SoftwareApplication JSON-LD ──
+const SOFTWARE_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: '연차수당 계산기',
+  applicationCategory: 'FinanceApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
+  description: '일용직·정규직 미사용 연차수당 무료 자동 계산기. 근무 기간과 급여를 입력하면 즉시 계산.',
+  url: 'https://catch-daily-worker.vercel.app/annual-leave',
+}
 import {
   Calendar, AlertCircle, CheckCircle2, Info,
   FileText, Calculator, ChevronRight, Loader2, Save, User, Clock,
@@ -312,6 +325,14 @@ export default function AnnualLeaveAllowancePage() {
 
   return (
     <CalcPageWrapper>
+      {/* ── SEO 메타태그: 연차수당 계산기 + SoftwareApplication 구조화 데이터 ── */}
+      <PageMeta
+        title="연차수당 계산기 — 일용직 미사용 연차수당 무료 자동 계산 | CATCH"
+        description="미사용 연차수당을 자동 계산합니다. 근무 기간, 시급, 미사용 연차 일수를 입력하면 즉시 계산."
+        canonical="https://catch-daily-worker.vercel.app/annual-leave"
+        jsonLd={SOFTWARE_SCHEMA}
+      />
+
       {/* 통일 헤더 */}
       <CalcHeader
         title="연차수당 계산기"

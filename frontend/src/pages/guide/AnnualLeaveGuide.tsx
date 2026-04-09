@@ -2,6 +2,66 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Calculator, ChevronRight } from 'lucide-react'
+import PageMeta from '../../components/PageMeta'
+
+// ── 연차수당 가이드 — FAQPage JSON-LD (구글 FAQ 리치 스니펫) ──
+const FAQ_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: '일용직도 연차수당을 받을 수 있나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '네, 받을 수 있습니다. 일용직도 동일 사업장에서 1년 이상 근무하고 출근율이 80% 이상이면 연차휴가가 발생합니다. 미사용 연차는 연차수당으로 정산받을 수 있습니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '연차수당 계산 방법이 어떻게 되나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '연차수당 = 1일 통상임금 × 미사용 연차일수입니다. 1일 통상임금은 월급을 월 소정근로시간(보통 209시간)으로 나눈 후 8시간을 곱합니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '회사에서 연차를 못 쓰게 하면 어떻게 하나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '불법입니다. 근로자가 연차 사용을 신청하면 회사는 특별한 경영상 사유 없이 거절할 수 없습니다. 거절하더라도 미사용 연차는 수당으로 지급받을 수 있습니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '퇴직할 때 미사용 연차는 어떻게 되나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '퇴직 시 미사용 연차는 연차수당으로 정산받을 수 있습니다. 퇴직일 기준으로 남은 연차일수 × 1일 통상임금을 청구하세요.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '연차수당이 퇴직금과 다른가요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '네, 다릅니다. 퇴직금은 근로자퇴직급여보장법에 따른 별도 급여이고, 연차수당은 미사용 연차휴가를 금전으로 정산하는 것입니다. 둘 다 별도로 청구해야 합니다.',
+      },
+    },
+  ],
+}
+
+// ── BreadcrumbList JSON-LD (페이지 계층 구조) ──
+const BREADCRUMB_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://catch-daily-worker.vercel.app/home' },
+    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://catch-daily-worker.vercel.app/guide' },
+    { '@type': 'ListItem', position: 3, name: '연차수당 가이드', item: 'https://catch-daily-worker.vercel.app/guide/annual-leave' },
+  ],
+}
 
 // ── 섹션 ID 및 목차 ──
 const TABLE_OF_CONTENTS = [
@@ -98,7 +158,7 @@ export default function AnnualLeaveGuide() {
   const [activeSection, setActiveSection] = useState('definition')
 
   useEffect(() => {
-    document.title = '연차수당 가이드 - CATCH'
+    // PageMeta 컴포넌트가 title을 관리하므로 document.title 직접 설정 제거
 
     // ── 스크롤 위치 감지 ──
     const handleScroll = () => {
@@ -117,6 +177,14 @@ export default function AnnualLeaveGuide() {
 
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-gray-50">
+      {/* ── SEO 메타태그: title, description, canonical, JSON-LD 구조화 데이터 ── */}
+      <PageMeta
+        title="연차수당 가이드 — 일용직 연차수당 조건·계산법 완전 정리 | CATCH"
+        description="1년 이상 근무한 일용직 근로자도 연차수당을 받을 수 있습니다. 연차 발생 조건, 계산 방법, 미지급 대처법을 안내합니다."
+        canonical="https://catch-daily-worker.vercel.app/guide/annual-leave"
+        jsonLd={[FAQ_SCHEMA, BREADCRUMB_SCHEMA]}
+      />
+
       <div className="w-full max-w-[460px] flex flex-col gap-4">
 
         {/* ── 히어로 섹션 ── */}

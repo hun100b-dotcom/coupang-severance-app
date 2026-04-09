@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { HelmetProvider } from 'react-helmet-async'
 import './styles/index.css'
 import App from './App'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -31,9 +32,12 @@ if (!rootEl) {
   try {
     createRoot(rootEl).render(
     <StrictMode>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
+      {/* HelmetProvider: react-helmet-async의 전역 컨텍스트 — 모든 페이지의 동적 메타태그를 관리 */}
+      <HelmetProvider>
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
+      </HelmetProvider>
     </StrictMode>,
   )
   } catch (e) {

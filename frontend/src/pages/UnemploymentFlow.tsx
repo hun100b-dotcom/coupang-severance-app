@@ -2,6 +2,19 @@
 // 근거: 고용보험법 제40조(실업급여 수급요건)
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import PageMeta from '../components/PageMeta'
+
+// ── 실업급여 계산기 — SoftwareApplication JSON-LD ──
+const SOFTWARE_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: '일용직 실업급여 계산기',
+  applicationCategory: 'FinanceApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
+  description: '쿠팡·컬리 일용직 근로자 실업급여 수급액 무료 자동 계산기. PDF 급여 명세서 업로드 지원.',
+  url: 'https://catch-daily-worker.vercel.app/unemployment',
+}
 import {
   CalcHeader, CalcStepCard, CalcStepIcon, CalcChoiceButton,
   CalcNextButton, CalcBackButton, CalcInputCard, CalcModeSelector,
@@ -41,8 +54,8 @@ const INIT: State = {
 export default function UnemploymentFlow() {
   // ── SEO: 실업급여 계산기 페이지 탭 제목 설정 → 언마운트 시 기본 타이틀 복원 ──
   useEffect(() => {
-    document.title = '실업급여 계산기 | CATCH'
-    return () => { document.title = 'CATCH - 쿠팡 일용직 퇴직금·실업급여 계산기' }
+    // PageMeta 컴포넌트가 title을 관리하므로 document.title 직접 설정 제거
+    return () => {}
   }, [])
 
   const [s, setS] = useState<State>(INIT)
@@ -182,6 +195,14 @@ export default function UnemploymentFlow() {
   // ── 렌더링 ─────────────────────────────────────
   return (
     <CalcPageWrapper>
+      {/* ── SEO 메타태그: 실업급여 계산기 + SoftwareApplication 구조화 데이터 ── */}
+      <PageMeta
+        title="실업급여 계산기 — 일용직 쿠팡 실업급여 무료 자동 계산 | CATCH"
+        description="일용직 실업급여 수급액을 3분 만에 자동 계산. PDF 급여 명세서 업로드 지원. 쿠팡·컬리 근무자 전용."
+        canonical="https://catch-daily-worker.vercel.app/unemployment"
+        jsonLd={SOFTWARE_SCHEMA}
+      />
+
       {loading && <LoadingOverlay message="실업급여를 계산하고 있어요.." />}
 
       <CalcHeader

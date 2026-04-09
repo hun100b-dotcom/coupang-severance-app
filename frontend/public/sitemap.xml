@@ -99,4 +99,18 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- 계산기 허브: 4개 계산기 진입점 -->
+  <url>
+    <loc>https://catch-daily-worker.vercel.app/calculator</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- 랜딩 페이지: B2C 랜딩 (A/B 테스트 기본 경로) -->
+  <url>
+    <loc>https://catch-daily-worker.vercel.app/landing</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
 </urlset>

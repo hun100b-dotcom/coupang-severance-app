@@ -3,6 +3,7 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Briefcase, ShieldCheck, Clock, CalendarDays, ArrowRight } from 'lucide-react'
+import PageMeta from '../components/PageMeta'
 
 // 서비스별 고유 컬러 + 설명 + 히어로 스타일
 const SERVICES = [
@@ -65,6 +66,13 @@ export default function CalculatorPage() {
 
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-28">
+      {/* ── SEO 메타태그: 계산기 허브 ── */}
+      <PageMeta
+        title="일용직 계산기 허브 — 퇴직금·실업급여·주휴수당·연차수당 | CATCH"
+        description="퇴직금, 실업급여, 주휴수당, 연차수당 4가지 계산기를 한 곳에서. 쿠팡·컬리 일용직 근로자 전용 무료 계산 서비스."
+        canonical="https://catch-daily-worker.vercel.app/calculator"
+      />
+
       <div className="w-full max-w-[460px] flex flex-col gap-4">
 
         {/* ── 페이지 타이틀 ── */}

@@ -2,6 +2,66 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Calculator, ChevronRight } from 'lucide-react'
+import PageMeta from '../../components/PageMeta'
+
+// ── 퇴직금 가이드 — FAQPage JSON-LD (구글 FAQ 리치 스니펫) ──
+const FAQ_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: '일용직 근로자도 퇴직금을 받을 수 있나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '네, 받을 수 있습니다. 동일 사업장에서 1년 이상 근무하고 최근 4주 평균 주 15시간 이상 근무했다면 정규직·계약직·일용직 구분 없이 퇴직금 청구 권리가 있습니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '쿠팡 퇴직금은 어떻게 계산하나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '퇴직금 공식은 (1일 평균임금 × 30일) × (재직일수 ÷ 365)입니다. 1일 평균임금은 최근 3개월 급여 총액을 90일로 나눈 값입니다. CATCH 퇴직금 계산기에 PDF 급여명세서를 업로드하면 자동으로 계산됩니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '1년 미만 근무했으면 퇴직금을 못 받나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '네, 근로기준법상 퇴직금은 1년 이상 근무가 필수 조건입니다. 다만 일부 사업장은 자체 규정으로 1년 미만 근로자에게도 지급하기도 합니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '회사가 퇴직금을 안 줄 때 어떻게 하나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '퇴직일로부터 3년 이내에 고용노동부에 진정을 제기할 수 있습니다. 회사가 파산하거나 지급 불능 상태라면 국가 대지급제도를 통해 받을 수 있습니다. 관할 고용센터에 신청하세요.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '퇴직금 청구 소멸시효는 언제까지인가요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '퇴직금 청구권은 퇴직일로부터 3년입니다. 3년이 지나면 법적 청구권이 소멸되므로 가능한 빨리 청구하시기 바랍니다.',
+      },
+    },
+  ],
+}
+
+// ── BreadcrumbList JSON-LD (페이지 계층 구조) ──
+const BREADCRUMB_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://catch-daily-worker.vercel.app/home' },
+    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://catch-daily-worker.vercel.app/guide' },
+    { '@type': 'ListItem', position: 3, name: '퇴직금 가이드', item: 'https://catch-daily-worker.vercel.app/guide/severance' },
+  ],
+}
 
 // ── 섹션 ID 및 목차 ──
 const TABLE_OF_CONTENTS = [
@@ -97,7 +157,7 @@ export default function SeveranceGuide() {
   const [activeSection, setActiveSection] = useState('definition')
 
   useEffect(() => {
-    document.title = '퇴직금 가이드 - CATCH'
+    // PageMeta 컴포넌트가 title을 관리하므로 document.title 직접 설정 제거
 
     // ── 스크롤 위치 감지 ──
     const handleScroll = () => {
@@ -116,6 +176,14 @@ export default function SeveranceGuide() {
 
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-gray-50">
+      {/* ── SEO 메타태그: title, description, canonical, JSON-LD 구조화 데이터 ── */}
+      <PageMeta
+        title="퇴직금 가이드 — 일용직 쿠팡 퇴직금 조건·계산법 완전 정리 | CATCH"
+        description="쿠팡·컬리 일용직 근로자 퇴직금 수급 조건, 계산 방법, 청구 절차를 완전 정리했습니다. 1년 이상 근무 시 평균 250만원 수령 가능."
+        canonical="https://catch-daily-worker.vercel.app/guide/severance"
+        jsonLd={[FAQ_SCHEMA, BREADCRUMB_SCHEMA]}
+      />
+
       <div className="w-full max-w-[460px] flex flex-col gap-4">
 
         {/* ── 히어로 섹션 ── */}
