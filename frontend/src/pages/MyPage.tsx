@@ -1,5 +1,6 @@
 // 마이페이지 — 탭 기반 구조
 // 탭: 홈(기본 정보) / 즐겨찾기 / 지원현황 / 스케줄 / 설정
+// C-4: 지원현황 탭에 미읽음 알림 빨간 점 배지 (Supabase Realtime)
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, LogOut, Home, Star, ClipboardList, CalendarDays, Settings } from 'lucide-react'
@@ -50,6 +51,10 @@ export default function MyPage() {
 
   // ── 현재 활성 탭
   const [activeTab, setActiveTab] = useState<TabKey>('home')
+
+  // ── C-4: 미읽음 알림 카운트 (지원현황 탭 빨간 점 배지용) ──
+  // notifications 테이블에서 read=false 건 수를 실시간으로 구독
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0)
 
   // ── 모달 상태
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false)
@@ -120,6 +125,53 @@ export default function MyPage() {
   useEffect(() => {
     if (user) { logAccess('view_profile') }
   }, [user])
+
+  // ── C-4: 미읽음 알림 초기 카운트 로드 + Realtime 구독 ──
+  // notifications 테이블에서 read=false 건수를 실시간 감지
+  useEffect(() => {
+    if (!supabase || !isLoggedIn || !user) return
+    const sb = supabase
+    const userId = user.raw.id
+
+    // 미읽음 알림 카운트 로드
+    const loadUnread = async () => {
+      const { count } = await sb
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('read', false)
+      setUnreadNotifCount(count ?? 0)
+    }
+    loadUnread()
+
+    // Realtime 구독: 새 알림 INSERT 시 카운트 갱신
+    const channel = sb
+      .channel(`mypage_notif_${userId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
+        () => { loadUnread() }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
+        () => { loadUnread() }
+      )
+      .subscribe()
+
+    return () => { sb.removeChannel(channel) }
+  }, [isLoggedIn, user])
+
+  // ── C-4: 지원현황 탭 클릭 시 모든 알림 read=true 처리 ──
+  const markNotificationsRead = async () => {
+    if (!supabase || !isLoggedIn || !user) return
+    await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('user_id', user.raw.id)
+      .eq('read', false)
+    setUnreadNotifCount(0)
+  }
 
   // 로딩 중
   if (loading) {
@@ -195,22 +247,41 @@ export default function MyPage() {
         </div>
 
         {/* ── 탭 네비게이션 바 ── */}
+        {/* C-4: 지원현황 탭에 미읽음 알림 빨간 점 배지 */}
         <div className="max-w-[460px] mx-auto px-4 flex gap-0 overflow-x-auto">
           {TABS.map(tab => {
             const Icon = tab.icon
             const isActive = activeTab === tab.key
+            // 지원현황 탭에만 미읽음 배지 표시
+            const hasBadge = tab.key === 'applications' && unreadNotifCount > 0
             return (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-1.5 px-3 py-2.5 text-[12px] font-bold whitespace-nowrap border-b-2 transition-all shrink-0 ${
+                onClick={() => {
+                  setActiveTab(tab.key)
+                  // 지원현황 탭 클릭 시 알림 읽음 처리
+                  if (tab.key === 'applications') markNotificationsRead()
+                }}
+                className={`relative flex items-center gap-1.5 px-3 py-2.5 text-[12px] font-bold whitespace-nowrap border-b-2 transition-all shrink-0 ${
                   isActive
                     ? 'border-[#3182f6] text-[#3182f6]'
                     : 'border-transparent text-[#8b95a1] hover:text-[#4e5968]'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <div className="relative">
+                  <Icon className="w-3.5 h-3.5" />
+                  {/* 빨간 점 배지 — 미읽음 알림 있을 때만 표시 */}
+                  {hasBadge && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 ring-1 ring-white" />
+                  )}
+                </div>
                 {tab.label}
+                {/* 숫자 배지 (5개 이하면 숫자, 그 이상이면 점만) */}
+                {hasBadge && unreadNotifCount <= 9 && (
+                  <span className="ml-0.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">
+                    {unreadNotifCount}
+                  </span>
+                )}
               </button>
             )
           })}

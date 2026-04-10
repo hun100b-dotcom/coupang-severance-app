@@ -14,6 +14,7 @@ interface Props {
 }
 
 // ── 지원 상태 한글 라벨 + 색상 정의 ──
+// 'rejected' 추가 (20260410_job_applications_rejected.sql 마이그레이션과 연동)
 const STATUS_CONFIG = {
   applied: {
     label: '지원완료',
@@ -38,6 +39,12 @@ const STATUS_CONFIG = {
     badgeBg: 'bg-red-50',
     badgeText: 'text-red-500',
     dot: 'bg-red-300',
+  },
+  rejected: {
+    label: '지원거절',
+    badgeBg: 'bg-red-100',
+    badgeText: 'text-red-700',
+    dot: 'bg-red-500',
   },
 } as const
 
