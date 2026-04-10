@@ -12,6 +12,8 @@ export default function OnboardingPage() {
   const [fullName, setFullName] = useState('')
   const [birthdate, setBirthdate] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
+  // 성별 필드 추가됨 (2026-04-11) — 'male' | 'female' | '' (미선택)
+  const [gender, setGender] = useState<'male' | 'female' | ''>('')
   const [agreePersonalInfo, setAgreePersonalInfo] = useState(false)
   const [agreeTerms, setAgreeTerms] = useState(false)
   const [agreePrivacy, setAgreePrivacy] = useState(false)
@@ -68,6 +70,11 @@ export default function OnboardingPage() {
       setError('핸드폰 번호를 입력해 주세요.')
       return
     }
+    // 성별 필수 검증 — 미선택 시 진행 불가
+    if (!gender) {
+      setError('성별을 선택해 주세요.')
+      return
+    }
     if (!agreePersonalInfo || !agreeTerms || !agreePrivacy) {
       setError('필수 약관에 모두 동의해 주세요.')
       return
@@ -103,8 +110,12 @@ export default function OnboardingPage() {
         full_name: fullName.trim(),
         birthdate,
         phone_number: phoneNumber,
+        // 성별 저장 (2026-04-11 추가)
+        gender,
         display_name: fullName.trim(),
         terms_agreed_at: new Date().toISOString(),
+        // 개인정보 수집·이용 동의 시점 저장 (개인정보보호법 기록 요건)
+        consent_at: new Date().toISOString(),
         marketing_sms: agreeMarketingSMS,
         marketing_email: agreeMarketingEmail,
         marketing_phone: agreeMarketingPhone,
@@ -217,7 +228,7 @@ export default function OnboardingPage() {
           </div>
 
           {/* 핸드폰 번호 */}
-          <div className="mb-6">
+          <div className="mb-5">
             <label className="block text-sm font-semibold text-[#191F28] mb-2">
               핸드폰 번호 <span className="text-red-500">*</span>
             </label>
@@ -231,15 +242,47 @@ export default function OnboardingPage() {
             />
           </div>
 
+          {/* 성별 — 라디오 버튼 (남/여) */}
+          {/* 성별 필드 추가됨 (2026-04-11): 채용 지원 시 자동 prefill에 활용 */}
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-[#191F28] mb-2">
+              성별 <span className="text-red-500">*</span>
+            </label>
+            <div className="flex gap-3">
+              {(['male', 'female'] as const).map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => setGender(g)}
+                  className={`flex-1 h-12 rounded-xl border text-sm font-semibold transition-colors ${
+                    gender === g
+                      ? 'bg-[#3182F6] border-[#3182F6] text-white shadow-lg shadow-blue-500/25'
+                      : 'bg-white border-gray-200 text-[#4E5968] hover:border-[#3182F6] hover:text-[#3182F6]'
+                  }`}
+                >
+                  {g === 'male' ? '남성' : '여성'}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* 개인정보 수집 안내 */}
           <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
             <p className="font-semibold text-sm text-[#191F28] mb-3">개인정보 수집 안내</p>
             <ul className="text-xs text-gray-700 space-y-1.5 leading-relaxed">
               <li>• <span className="font-semibold">수집 목적:</span> 퇴직금 계산 결과 저장 및 1:1 상담 제공</li>
-              <li>• <span className="font-semibold">수집 항목:</span> 이메일, 실명, 생년월일, 핸드폰번호</li>
+              <li>• <span className="font-semibold">수집 항목:</span> 이메일, 실명, 생년월일, <strong>성별</strong>, 핸드폰번호</li>
               <li>• <span className="font-semibold">보유 기간:</span> 회원 탈퇴 시까지 (탈퇴 후 즉시 파기)</li>
               <li>• <span className="font-semibold">거부 권리:</span> 동의를 거부할 수 있으나, 서비스 이용이 제한됩니다.</li>
             </ul>
+            {/* 온보딩 화면은 푸터 없음 → 본문 내부에 처리방침 링크 직접 제공 */}
+            <p className="text-xs text-gray-500 mt-2">
+              자세한 내용은{' '}
+              <a href="/terms/privacy" target="_blank" className="text-[#3182F6] underline">
+                개인정보처리방침
+              </a>
+              에서 확인하세요.
+            </p>
           </div>
 
           {/* 약관 동의 */}
