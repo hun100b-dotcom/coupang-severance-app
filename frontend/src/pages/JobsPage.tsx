@@ -1,6 +1,6 @@
 // 채용정보 피드 — 물류센터 특화 UI v3
 // 히어로 로테이션 문구 + 섹션 분류 + 공식 로고 + 즐겨찾기 + 프레임카드 상세(지도 포함)
-// + 지원하기 버튼 (job_applications 테이블 연동)
+// + 지원하기 버튼: 로그인 게이트 → 인적사항 폼 모달 → job_applications INSERT (D-NEW-5)
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageMeta from '../components/PageMeta'
@@ -19,6 +19,8 @@ import type { JobPosting } from '../types/supabase'
 import type { JobFavorite } from '../types/supabase'
 import KakaoShareButton from '../components/KakaoShareButton'
 import { useKakaoShare } from '../hooks/useKakaoShare'
+// 지원 폼 모달: 인적사항 직접 입력 + 개인정보 동의 (D-NEW-4)
+import ApplyFormModal from '../components/jobs/ApplyFormModal'
 
 // ── 지원 방법 타입 ──
 interface ApplyMethod {
@@ -60,27 +62,26 @@ const COMPANY_LOGOS: Record<string, string> = {
 }
 
 // ── DB JobPosting → UI JobCardData 변환 함수 ──
-// job_postings 테이블에는 logo_url, benefits, apply_methods 컬럼이 없으므로
-// company_name 및 다른 컬럼으로부터 UI에 필요한 값을 파생합니다.
+// job_postings 테이블의 section + benefits 컬럼(20260410 추가)을 UI에 반영합니다.
 function toCardData(job: JobPosting): JobCardData {
-  // 오늘 날짜 (KST 기준 YYYY-MM-DD)
-  const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })
-  const createdStr = (job.created_at ?? '').slice(0, 10)
-
-  // recruit_type: is_urgent 여부 + 등록일이 오늘인지로 판별
-  // 오늘 등록된 급구 공고 → urgent_today / 이전에 등록된 급구 → urgent_tomorrow / 일반 → regular
+  // recruit_type: DB의 section 컬럼 우선 사용, 없으면 is_urgent로 폴백
+  // section 컬럼: today-urgent(오늘추가모집) | tomorrow-urgent(내일긴급) | always(상시)
   let recruit_type: 'urgent_today' | 'urgent_tomorrow' | 'regular' = 'regular'
-  if (job.is_urgent) {
-    recruit_type = createdStr === todayStr ? 'urgent_today' : 'urgent_tomorrow'
+  if (job.section === 'today-urgent') {
+    recruit_type = 'urgent_today'
+  } else if (job.section === 'tomorrow-urgent') {
+    recruit_type = 'urgent_tomorrow'
+  } else if (job.is_urgent) {
+    // 레거시 호환: section 없는 기존 긴급 공고 → 오늘 추가모집으로 표시
+    recruit_type = 'urgent_today'
   }
 
   // 로고: 회사명에 키워드가 포함되면 해당 로고, 없으면 기본 아이콘
   const logoKey = Object.keys(COMPANY_LOGOS).find(k => job.company_name.includes(k))
   const logo_url = logoKey ? COMPANY_LOGOS[logoKey] : '/logos/default.svg'
 
-  // 복리후생: description에서 파싱 (각 줄이 혜택 항목인 경우)
-  // description이 없거나 파싱 불가 시 빈 배열 → UI에서 description 텍스트로 대체 표시
-  const benefits: string[] = []
+  // 복리후생: DB의 benefits 배열 사용 (20260410 추가). 없으면 빈 배열
+  const benefits: string[] = Array.isArray(job.benefits) ? job.benefits : []
 
   // 지원 방법: contact_phone / external_link로부터 빌드
   const apply_methods: ApplyMethod[] = []
@@ -152,13 +153,18 @@ export default function JobsPage() {
 
   // 지원한 공고 ID 맵 (job_posting_id → application_id)
   const [appliedMap, setAppliedMap] = useState<Record<string, string>>({})
-  // 지원 진행 중인 공고 ID (버튼 로딩 표시용)
-  const [applyingId, setApplyingId] = useState<string | null>(null)
+  // 지원 진행 중인 공고 ID (버튼 로딩 표시용 — 레거시, isApplySubmitting으로 대체)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_applyingId, _setApplyingId] = useState<string | null>(null)
   // 로그인 유도 모달 표시 여부
   const [loginPromptOpen, setLoginPromptOpen] = useState(false)
   // 인라인 토스트 메시지 (alert 대체 — 2초 후 자동 소멸)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [toastType, setToastType] = useState<'success' | 'error'>('success')
+  // 지원 폼 모달 상태 (D-NEW-5: 로그인 게이트 → 인적사항 입력 → 지원 완료)
+  const [applyModalOpen, setApplyModalOpen] = useState(false)
+  const [pendingApplyJobId, setPendingApplyJobId] = useState<string | null>(null)
+  const [isApplySubmitting, setIsApplySubmitting] = useState(false)
 
   // 히어로 문구 로테이션
   useEffect(() => {
@@ -272,12 +278,12 @@ export default function JobsPage() {
     setTimeout(() => setToastMsg(null), 2000)
   }
 
-  // ── 지원하기 핸들러 ──
-  // 로그인 여부 확인 → 이미 지원한 공고인지 확인 → job_applications INSERT
-  const handleApply = async (e: React.MouseEvent, jobId: string) => {
+  // ── 지원하기 핸들러 — 1단계: 게이트 체크 ──
+  // 로그인 여부 확인 → 모달 오픈 (D-NEW-5)
+  const handleApply = (e: React.MouseEvent, jobId: string) => {
     e.stopPropagation()  // 카드 클릭 이벤트 버블링 방지
 
-    // 로그인 안 된 경우 → 로그인 유도 모달
+    // 비로그인 → 로그인 유도 모달
     if (!isLoggedIn || !user) {
       setLoginPromptOpen(true)
       return
@@ -286,18 +292,35 @@ export default function JobsPage() {
     // 이미 지원한 공고 → 중복 방지
     if (appliedMap[jobId]) return
 
-    setApplyingId(jobId)
+    // 지원 폼 모달 오픈 (인적사항 + 동의 입력)
+    setPendingApplyJobId(jobId)
+    setApplyModalOpen(true)
+  }
+
+  // ── 지원하기 핸들러 — 2단계: 폼 제출 ──
+  // ApplyFormModal에서 인적사항 + 동의를 받아 DB에 INSERT
+  const handleApplyModalSubmit = async (data: {
+    applicant_name: string
+    applicant_birth: string
+    applicant_gender: 'male' | 'female'
+    applicant_phone: string
+    consent_collect: boolean
+    consent_third_party: boolean
+  }) => {
+    if (!user || !pendingApplyJobId) return
+    setIsApplySubmitting(true)
     try {
-      const appId = await applyToJob(user.id, jobId)
+      const appId = await applyToJob(user.id, pendingApplyJobId, data)
       if (appId) {
-        // 성공 시 지원 목록 갱신 + 토스트 표시 (+50P 자동 지급은 applyToJob 내부에서 처리)
-        setAppliedMap(prev => ({ ...prev, [jobId]: appId }))
-        showToast('지원 완료! (+50P) 마이페이지 → 지원현황에서 확인하세요.', 'success')
+        setAppliedMap(prev => ({ ...prev, [pendingApplyJobId]: appId }))
+        setApplyModalOpen(false)
+        setPendingApplyJobId(null)
+        showToast('지원 완료! 마이페이지 → 지원현황에서 확인하세요.', 'success')
       } else {
         showToast('지원 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error')
       }
     } finally {
-      setApplyingId(null)
+      setIsApplySubmitting(false)
     }
   }
 
@@ -584,13 +607,13 @@ export default function JobsPage() {
                             // 지원하기 버튼 (활성)
                             <button
                               onClick={(e) => handleApply(e, job.id)}
-                              disabled={applyingId === job.id}
+                              disabled={isApplySubmitting && pendingApplyJobId === job.id}
                               className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#3182F6] to-[#2563eb]
                                 text-white font-bold text-[13px] flex items-center justify-center gap-1
                                 shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-transform
                                 disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                              {applyingId === job.id ? (
+                              {isApplySubmitting && pendingApplyJobId === job.id ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
                               ) : (
                                 <>지원하기 <ChevronRight className="w-3.5 h-3.5" /></>
@@ -777,6 +800,21 @@ export default function JobsPage() {
       </AnimatePresence>
 
       {regionOpen && <div className="fixed inset-0 z-20" onClick={() => setRegionOpen(false)} />}
+
+      {/* ── 지원 폼 모달 — 인적사항 + 개인정보 동의 (D-NEW-4) ── */}
+      <ApplyFormModal
+        isOpen={applyModalOpen}
+        onClose={() => { setApplyModalOpen(false); setPendingApplyJobId(null) }}
+        onSubmit={handleApplyModalSubmit}
+        jobTitle={
+          pendingApplyJobId
+            ? (allJobs.find(j => j.id === pendingApplyJobId)?.company_name ?? '') +
+              ' ' +
+              (allJobs.find(j => j.id === pendingApplyJobId)?.center_name ?? '')
+            : ''
+        }
+        isSubmitting={isApplySubmitting}
+      />
 
       {/* ── 로그인 유도 모달 — 비로그인 상태에서 지원하기 클릭 시 표시 ── */}
       <AnimatePresence>
