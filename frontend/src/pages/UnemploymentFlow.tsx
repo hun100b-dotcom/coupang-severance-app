@@ -8,12 +8,52 @@ import PageMeta from '../components/PageMeta'
 const SOFTWARE_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  name: '일용직 실업급여 계산기',
+  name: '쿠팡·CFS 일용직 실업급여 계산기',
   applicationCategory: 'FinanceApplication',
   operatingSystem: 'Any',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
-  description: '쿠팡·컬리 일용직 근로자 실업급여 수급액 무료 자동 계산기. PDF 급여 명세서 업로드 지원.',
+  description: '쿠팡·CFS·마켓컬리 일용직 근로자 실업급여 수급액 무료 자동 계산기. PDF 급여명세서 업로드 지원.',
   url: 'https://catch-daily-worker.vercel.app/unemployment',
+}
+
+// ── 실업급여 계산기 — FAQPage JSON-LD ──
+const FAQ_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: '쿠팡 일용직 실업급여를 받을 수 있는 조건은?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '① 최근 18개월 내 피보험단위기간 180일 이상 ② 최근 1개월 근로일수 10일 미만 ③ 자발적 퇴사가 아닌 경우(계약 만료, 권고사직 포함)입니다. 쿠팡·CFS 일용직도 고용보험 가입 기간이 있다면 신청 가능합니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '일용직 실업급여 하루에 얼마나 받나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '일용직 실업급여 1일 수급액 = 이직 전 평균임금의 60%. 2026년 기준 상한액은 66,000원/일, 하한액은 최저임금의 80%입니다. 수급 기간은 고용보험 가입 기간에 따라 120~270일입니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '쿠팡 CFS 실업급여 신청 방법은?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '고용24(www.work.go.kr)에서 온라인 신청하거나 가까운 고용센터를 방문하면 됩니다. CATCH 계산기로 예상 수급액을 먼저 확인한 후 신청하세요.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '일용직 실업급여 신청 기한이 있나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '마지막 근무일로부터 12개월 이내에 수급 신청을 완료해야 합니다. 기한이 지나면 수급 자격이 소멸됩니다. 빨리 신청할수록 더 많은 급여일수를 받을 수 있습니다.',
+      },
+    },
+  ],
 }
 import {
   CalcHeader, CalcStepCard, CalcStepIcon, CalcChoiceButton,
@@ -197,10 +237,10 @@ export default function UnemploymentFlow() {
     <CalcPageWrapper>
       {/* ── SEO 메타태그: 실업급여 계산기 + SoftwareApplication 구조화 데이터 ── */}
       <PageMeta
-        title="실업급여 계산기 — 일용직 쿠팡 실업급여 무료 자동 계산 | CATCH"
-        description="일용직 실업급여 수급액을 3분 만에 자동 계산. PDF 급여 명세서 업로드 지원. 쿠팡·컬리 근무자 전용."
+        title="쿠팡·CFS 일용직 실업급여 계산기 무료 | CATCH — 수급액 3분 확인"
+        description="쿠팡·CFS·마켓컬리 일용직 실업급여 수급액과 기간을 3분 만에 자동 계산. PDF 업로드 지원, 2026년 상한액 66,000원/일 반영."
         canonical="https://catch-daily-worker.vercel.app/unemployment"
-        jsonLd={SOFTWARE_SCHEMA}
+        jsonLd={[SOFTWARE_SCHEMA, FAQ_SCHEMA]}
       />
 
       {loading && <LoadingOverlay message="실업급여를 계산하고 있어요.." />}

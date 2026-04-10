@@ -188,9 +188,39 @@ export default function Home() {
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-8">
       {/* ── SEO 메타태그: 홈 페이지 ── */}
       <PageMeta
-        title="CATCH — 쿠팡·컬리 일용직 퇴직금·실업급여 계산기"
-        description="쿠팡·컬리·CJ대한통운 일용직 근로자를 위한 퇴직금, 실업급여, 주휴수당, 연차수당 무료 계산기. PDF 업로드 한 번으로 자동 계산."
+        title="쿠팡 일용직 퇴직금·실업급여 계산기 | CATCH — CFS·컬리 무료 자동 계산"
+        description="쿠팡·CFS·마켓컬리·CJ대한통운 일용직 퇴직금, 실업급여, 주휴수당, 연차수당 무료 자동 계산기. PDF 업로드 한 번, 3분 안에 내 권리 확인."
         canonical="https://catch-daily-worker.vercel.app/home"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: [
+            {
+              '@type': 'Question',
+              name: '쿠팡 일용직 퇴직금 얼마나 받나요?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: '쿠팡·CFS 일용직 퇴직금 평균 수령액은 약 250만 원입니다. 1년 이상·주 15시간 이상 근무 시 청구 가능하며, CATCH 계산기에서 PDF 업로드 한 번으로 3분 안에 정확한 금액을 확인할 수 있습니다.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'CATCH 계산기는 쿠팡 외 다른 회사도 되나요?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: '네, 쿠팡·CFS·마켓컬리·CJ대한통운·한진택배 등 일용직 근로자라면 모두 이용 가능합니다. PDF 급여명세서 또는 근무일수·임금 정보만 있으면 계산할 수 있습니다.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'CATCH 앱은 무료인가요?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: '완전 무료입니다. 퇴직금·실업급여·주휴수당·연차수당 계산 모두 무료이며, 회원가입 없이도 간편계산을 이용할 수 있습니다.',
+              },
+            },
+          ],
+        }}
       />
 
       {/* ── 글래스모피즘 스티키 헤더 ── */}

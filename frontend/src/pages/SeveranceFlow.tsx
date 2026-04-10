@@ -8,12 +8,75 @@ import PageMeta from '../components/PageMeta'
 const SOFTWARE_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  name: '쿠팡 퇴직금 계산기',
+  name: '쿠팡·CFS 일용직 퇴직금 계산기',
   applicationCategory: 'FinanceApplication',
   operatingSystem: 'Any',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
-  description: '쿠팡·컬리 일용직 근로자 퇴직금 무료 자동 계산기. PDF 급여 명세서 업로드 지원, 28일 블록 알고리즘 적용.',
+  description: '쿠팡·CFS·마켓컬리 일용직 근로자 퇴직금 무료 자동 계산기. PDF 급여명세서 업로드 지원, 28일 블록 알고리즘 적용.',
   url: 'https://catch-daily-worker.vercel.app/severance',
+}
+
+// ── 퇴직금 계산기 — FAQPage JSON-LD (구글 FAQ 리치 스니펫용) ──
+const FAQ_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: '쿠팡 일용직 퇴직금 계산기는 무료인가요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'CATCH 퇴직금 계산기는 완전 무료입니다. PDF 급여명세서 업로드 정밀계산과 수동 입력 간편계산 모두 무료로 이용 가능합니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '쿠팡 CFS 퇴직금도 계산할 수 있나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '네, 가능합니다. 쿠팡풀필먼트서비스(CFS) 일용직 근로자의 급여명세서 PDF를 업로드하면 28일 블록 알고리즘으로 정확한 퇴직금을 계산해드립니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '퇴직금 계산에 필요한 서류는 무엇인가요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '정밀계산은 PDF 급여명세서(쿠팡 앱 → 급여 내역 → PDF 저장)가 필요합니다. 간편계산은 총 근무일수와 평균일급만 알면 됩니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '퇴직금 계산 결과가 실제와 다를 수 있나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '28일 블록 알고리즘 기반의 정밀계산은 실제와 매우 근접합니다. 다만 사업장별 특수 수당, 각종 공제 항목 등에 따라 소폭 차이가 날 수 있습니다. 참고용으로 활용하고 최종 확인은 고용노동부에 문의하세요.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '1년 미만 일했는데 퇴직금을 받을 수 있나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '아니요. 근로기준법상 퇴직금은 동일 사업장 1년 이상 근무가 필수 조건입니다. 단, 3개월 이상 공백 없이 계속 근무한 경우에만 합산됩니다.',
+      },
+    },
+  ],
+}
+
+// ── 퇴직금 계산기 — HowTo JSON-LD (단계별 방법 마크업) ──
+const HOWTO_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'HowTo',
+  name: '쿠팡 일용직 퇴직금 계산하는 방법 (3분)',
+  description: 'CATCH 무료 계산기로 쿠팡·CFS·마켓컬리 일용직 퇴직금을 3분 안에 계산하는 방법',
+  totalTime: 'PT3M',
+  step: [
+    { '@type': 'HowToStep', position: 1, name: '근무처 선택', text: '쿠팡, CFS, 마켓컬리 중 내 근무처를 선택합니다.' },
+    { '@type': 'HowToStep', position: 2, name: '근무 조건 확인', text: '1년 이상·주 15시간 이상 근무 여부를 확인합니다.' },
+    { '@type': 'HowToStep', position: 3, name: 'PDF 업로드 또는 수동 입력', text: 'PDF 급여명세서를 업로드하거나 근무일수·평균임금을 직접 입력합니다.' },
+    { '@type': 'HowToStep', position: 4, name: '퇴직금 확인', text: '계산된 퇴직금 금액을 확인하고 필요 시 회사에 청구합니다.' },
+  ],
 }
 import {
   CalcHeader, CalcStepCard, CalcStepIcon, CalcChoiceButton,
@@ -206,10 +269,10 @@ export default function SeveranceFlow() {
     <CalcPageWrapper>
       {/* ── SEO 메타태그: 계산기 페이지 동적 title + SoftwareApplication 구조화 데이터 ── */}
       <PageMeta
-        title="퇴직금 계산기 — 쿠팡·컬리 일용직 무료 자동 계산 | CATCH"
-        description="PDF 급여 명세서 업로드 한 번으로 쿠팡·컬리 퇴직금을 자동 계산해드립니다. 28일 블록 알고리즘 적용, 3분 완성."
+        title="쿠팡·CFS 일용직 퇴직금 계산기 무료 | CATCH — 3분 자동 계산"
+        description="쿠팡·CFS·마켓컬리 일용직 퇴직금을 PDF 업로드 한 번으로 자동 계산. 28일 블록 알고리즘 적용, 평균 수령액 250만원, 3분 완성."
         canonical="https://catch-daily-worker.vercel.app/severance"
-        jsonLd={SOFTWARE_SCHEMA}
+        jsonLd={[SOFTWARE_SCHEMA, FAQ_SCHEMA, HOWTO_SCHEMA]}
       />
 
       {loading && <LoadingOverlay message="퇴직금을 계산하고 있어요.." />}
@@ -478,6 +541,62 @@ export default function SeveranceFlow() {
 
         </AnimatePresence>
       </CalcContentArea>
+
+      {/* ── SEO 콘텐츠 섹션: step 1에서만 표시 — 검색 의도 충족 + dwell time 향상 ── */}
+      {s.step === 1 && !s.result && (
+        <section
+          aria-label="쿠팡 일용직 퇴직금 안내"
+          className="w-full max-w-[460px] mx-auto px-4 pb-8 mt-2"
+        >
+          {/* ── 계산기 소개 ── */}
+          <div className="bg-blue-50 rounded-2xl p-5 mb-4">
+            <h1 className="text-base font-black text-blue-900 mb-2">
+              쿠팡·CFS 일용직 퇴직금 계산기
+            </h1>
+            <p className="text-sm text-blue-800 leading-relaxed">
+              쿠팡·쿠팡풀필먼트서비스(CFS)·마켓컬리·CJ대한통운 등 일용직 근로자도
+              <strong> 1년 이상·주 15시간 이상</strong> 근무했다면 퇴직금을 받을 권리가 있습니다.
+              CATCH 계산기는 PDF 급여명세서를 업로드하면 <strong>28일 블록 알고리즘</strong>으로
+              정확한 퇴직금을 자동 계산합니다. 평균 수령액은 약 <strong>250만 원</strong>이며,
+              퇴직 후 3년 이내에 청구할 수 있습니다.
+            </p>
+          </div>
+
+          {/* ── 자주 묻는 질문 ── */}
+          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+            <h2 className="text-sm font-black text-gray-900 mb-3">자주 묻는 질문</h2>
+            <div className="space-y-3">
+              <details className="border-b border-gray-100 pb-3">
+                <summary className="text-sm font-semibold text-gray-800 cursor-pointer">
+                  쿠팡 CFS 퇴직금도 계산할 수 있나요?
+                </summary>
+                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                  네, 가능합니다. 쿠팡·CFS·마켓컬리·CJ대한통운 급여명세서 PDF를 업로드하면
+                  자동으로 인식하여 계산합니다. 간편계산의 경우 근무일수와 평균임금만 입력하면 됩니다.
+                </p>
+              </details>
+              <details className="border-b border-gray-100 pb-3">
+                <summary className="text-sm font-semibold text-gray-800 cursor-pointer">
+                  퇴직금 계산에 필요한 서류는?
+                </summary>
+                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                  정밀계산: 쿠팡 앱 → 근로내역 → PDF 저장한 급여명세서
+                  간편계산: 총 근무일수 + 최근 3개월 평균 일급
+                </p>
+              </details>
+              <details>
+                <summary className="text-sm font-semibold text-gray-800 cursor-pointer">
+                  퇴직금 소멸시효는 언제인가요?
+                </summary>
+                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                  퇴직금 청구권의 소멸시효는 퇴직일로부터 <strong>3년</strong>입니다.
+                  3년이 지나면 법적 청구가 불가하므로 지금 바로 확인하세요.
+                </p>
+              </details>
+            </div>
+          </div>
+        </section>
+      )}
     </CalcPageWrapper>
   )
 }
