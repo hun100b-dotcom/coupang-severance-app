@@ -1,7 +1,8 @@
 // 관리자 — 채용공고 관리 메뉴
 // [공고 목록] 탭: 공고 CRUD (추가/수정/삭제/긴급 토글)
-// [지원자 관리] 탭: 공고별 지원자 목록 조회 + 출근확정/출근완료/취소 처리
-import { useEffect, useState } from 'react'
+// [지원자 관리] 탭: 공고별 지원자 목록 조회 + 출근확정/지원거절/취소 처리
+// [📊 확정 현황] 탭: 센터별 지원/확정/거절 현황 대시보드
+import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../contexts/AuthContext'
 import type { JobPosting } from '../../../types/supabase'
@@ -34,7 +35,8 @@ interface ApplicationRow {
   id: string
   user_id: string
   job_posting_id: string
-  status: 'applied' | 'confirmed' | 'completed' | 'cancelled'
+  // 'rejected' 추가: DB 마이그레이션(20260410_job_applications_rejected.sql)과 연동
+  status: 'applied' | 'confirmed' | 'completed' | 'cancelled' | 'rejected'
   applied_at: string
   work_date: string | null
   // JOIN된 공고 정보
@@ -42,7 +44,7 @@ interface ApplicationRow {
     company_name: string
     center_name: string
   } | null
-  // JOIN된 프로필 정보 (이름/이메일)
+  // JOIN된 프로필 정보 (이름/이메일) — LEFT JOIN으로 조회해 RLS 오류 방지
   profiles?: {
     full_name: string | null
     email: string | null
@@ -55,13 +57,24 @@ const STATUS_LABEL: Record<string, string> = {
   confirmed: '출근확정',
   completed: '출근완료',
   cancelled: '취소',
+  rejected: '지원거절',  // REQ7: 거절 상태 추가
 }
 
 export default function JobsMenu() {
   const { user } = useAuth()
 
-  // ── 상위 탭: 공고 목록 / 지원자 관리 ──
-  const [mainTab, setMainTab] = useState<'jobs' | 'applicants'>('jobs')
+  // ── 상위 탭: 공고 목록 / 지원자 관리 / 확정 현황 ──
+  const [mainTab, setMainTab] = useState<'jobs' | 'applicants' | 'dashboard'>('jobs')
+
+  // ── 인라인 토스트 (성공/에러 메시지) ──
+  // react-hot-toast 미사용 — 경량 커스텀 구현
+  const [adminToast, setAdminToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+  // 토스트 자동 소멸 (3초)
+  useEffect(() => {
+    if (!adminToast) return
+    const t = setTimeout(() => setAdminToast(null), 3000)
+    return () => clearTimeout(t)
+  }, [adminToast])
 
   // ───────────────────────────────────────
   // 공고 목록 탭 상태
@@ -73,8 +86,13 @@ export default function JobsMenu() {
   const [form, setForm] = useState<JobForm>(defaultForm)
   const [saving, setSaving] = useState(false)
   const [jobError, setJobError] = useState<string | null>(null) // CRUD 오류 메시지
+  // REQ10: 5단계 폼 — 현재 단계 (1~5)
+  // 1=기본정보, 2=근무조건, 3=상세/자격, 4=미리보기, 5=발행
+  const [formStep, setFormStep] = useState(1)
   // 공고 상태 필터: 전체/active/expired/deleted
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  // REQ5: 검색 키워드 (회사명/센터명/지역 필터링)
+  const [jobSearch, setJobSearch] = useState<string>('')
 
   // ───────────────────────────────────────
   // 지원자 관리 탭 상태
@@ -87,6 +105,8 @@ export default function JobsMenu() {
   const [appStatusFilter, setAppStatusFilter] = useState<string>('all')
   // 상태 변경 처리 중인 ID
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  // REQ6: 지원자 조회 에러를 UI에 표시하기 위한 state
+  const [appError, setAppError] = useState<string | null>(null)
 
   // ───────────────────────────────────────
   // 공고 목록 로드
@@ -111,40 +131,65 @@ export default function JobsMenu() {
 
   // ───────────────────────────────────────
   // 지원자 목록 로드
-  // job_applications + job_postings + profiles 3-way JOIN
+  // job_applications + job_postings 2-way JOIN 후
+  // profiles는 user_id 배열로 별도 조회 후 클라이언트 병합
+  // (job_applications.user_id FK가 auth.users 참조라 PostgREST 직접 JOIN 불가)
   // ───────────────────────────────────────
-  const fetchApplicants = async () => {
+  const fetchApplicants = useCallback(async () => {
     if (!supabase) return
     setAppLoading(true)
-    let query = supabase
-      .from('job_applications')
-      .select(`
-        *,
-        job_postings (
-          company_name,
-          center_name
-        ),
-        profiles (
-          full_name,
-          email
+    setAppError(null)  // 재조회 시 이전 에러 초기화
+    try {
+      let query = supabase
+        .from('job_applications')
+        .select(`
+          *,
+          job_postings (
+            company_name,
+            center_name
+          )
+        `)
+        .order('applied_at', { ascending: false })
+
+      // 공고별 필터가 선택된 경우 해당 공고만 조회
+      if (appJobFilter) {
+        query = query.eq('job_posting_id', appJobFilter)
+      }
+      // 상태 필터
+      if (appStatusFilter !== 'all') {
+        query = query.eq('status', appStatusFilter)
+      }
+
+      const { data, error } = await query
+      if (error) throw error
+
+      const rows = (data ?? []) as ApplicationRow[]
+
+      // profiles 별도 조회 후 user_id 기준으로 병합
+      const userIds = [...new Set(rows.map(r => r.user_id))]
+      if (userIds.length > 0) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', userIds)
+        const profileMap = Object.fromEntries(
+          (profileData ?? []).map((p: { id: string; full_name: string | null; email: string | null }) => [p.id, p])
         )
-      `)
-      .order('applied_at', { ascending: false })
+        rows.forEach(r => {
+          r.profiles = profileMap[r.user_id] ?? null
+        })
+      }
 
-    // 공고별 필터가 선택된 경우 해당 공고만 조회
-    if (appJobFilter) {
-      query = query.eq('job_posting_id', appJobFilter)
+      setApplicants(rows)
+    } catch (err: unknown) {
+      // REQ6: 에러를 console 대신 UI에 표시
+      const msg = err instanceof Error ? err.message : '지원자 목록을 불러오지 못했습니다.'
+      setAppError(msg)
+      console.error('[지원자 목록 조회 오류]', err)
+    } finally {
+      setAppLoading(false)
     }
-    // 상태 필터
-    if (appStatusFilter !== 'all') {
-      query = query.eq('status', appStatusFilter)
-    }
-
-    const { data, error } = await query
-    if (error) console.error('[지원자 목록 조회 오류]', error)
-    setApplicants((data ?? []) as ApplicationRow[])
-    setAppLoading(false)
-  }
+  }, [appJobFilter, appStatusFilter])
 
   // 지원자 탭으로 전환하거나 필터 변경 시 재조회
   useEffect(() => {
@@ -155,16 +200,18 @@ export default function JobsMenu() {
   // 공고 관리 핸들러
   // ───────────────────────────────────────
 
-  // 새 공고 추가 모달 열기
+  // 새 공고 추가 모달 열기 (REQ10: formStep 1로 초기화)
   const openCreate = () => {
     setEditTarget(null)
     setForm(defaultForm)
+    setFormStep(1)
     setModalOpen(true)
   }
 
-  // 수정 모달 열기
+  // 수정 모달 열기 (REQ10: 수정 시에는 단계 없이 전체 폼 표시 → step=0 사용)
   const openEdit = (job: JobPosting) => {
     setEditTarget(job)
+    setFormStep(0)  // 0 = 단계 없이 전체 폼 (수정 시)
     setForm({
       company_name: job.company_name,
       center_name: job.center_name,
@@ -216,8 +263,11 @@ export default function JobsMenu() {
       }
       setModalOpen(false)
       fetchJobs()
+      // REQ4: 저장 성공 토스트
+      setAdminToast({ msg: editTarget ? '✅ 공고가 수정됐습니다.' : '✅ 새 공고가 등록됐습니다.', type: 'success' })
     } catch (err: unknown) {
       setJobError(err instanceof Error ? err.message : '저장에 실패했습니다. RLS 정책 또는 컬럼명을 확인하세요.')
+      setAdminToast({ msg: '❌ 저장 실패 — 에러 메시지를 확인하세요.', type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -229,8 +279,13 @@ export default function JobsMenu() {
     const { error } = await supabase.from('job_postings')
       .update({ is_urgent: !job.is_urgent })
       .eq('id', job.id)
-    if (error) setJobError(error.message)
-    else fetchJobs()
+    if (error) {
+      setJobError(error.message)
+      setAdminToast({ msg: '❌ 긴급 토글 실패', type: 'error' })
+    } else {
+      fetchJobs()
+      setAdminToast({ msg: job.is_urgent ? '✅ 긴급 해제됨' : '🚨 긴급 공고로 설정됨', type: 'success' })
+    }
   }
 
   // 삭제 (soft delete → status = 'deleted')
@@ -240,8 +295,13 @@ export default function JobsMenu() {
     const { error } = await supabase.from('job_postings')
       .update({ status: 'deleted' })
       .eq('id', job.id)
-    if (error) setJobError(error.message)
-    else fetchJobs()
+    if (error) {
+      setJobError(error.message)
+      setAdminToast({ msg: '❌ 삭제 실패: ' + error.message, type: 'error' })
+    } else {
+      fetchJobs()
+      setAdminToast({ msg: '🗑️ 공고가 삭제됐습니다.', type: 'success' })
+    }
   }
 
   // ───────────────────────────────────────
@@ -249,10 +309,10 @@ export default function JobsMenu() {
   // ───────────────────────────────────────
 
   // 지원자 상태 변경 (어드민이 직접 처리)
-  // newStatus: 'confirmed' (출근확정), 'completed' (출근완료), 'cancelled' (취소)
+  // REQ7: 'rejected' 상태 추가, notifications 테이블에 알림 기록
   const handleUpdateStatus = async (
     appId: string,
-    newStatus: 'confirmed' | 'completed' | 'cancelled',
+    newStatus: 'confirmed' | 'completed' | 'cancelled' | 'rejected',
     workDate?: string  // 출근확정 시 출근일 설정 가능
   ) => {
     if (!supabase || updatingId) return
@@ -269,9 +329,42 @@ export default function JobsMenu() {
         .eq('id', appId)
       if (error) throw error
 
+      // REQ7: 출근확정 또는 지원거절 시 notifications 테이블에 알림 기록
+      // 사용자가 마이페이지에서 실시간으로 확인 가능 (Realtime 구독)
+      if (newStatus === 'confirmed' || newStatus === 'rejected') {
+        // 지원자 user_id 조회
+        const app = applicants.find(a => a.id === appId)
+        if (app?.user_id) {
+          const notifTitle = newStatus === 'confirmed' ? '출근이 확정됐어요! 🎉' : '지원이 거절됐습니다'
+          const notifBody = newStatus === 'confirmed'
+            ? `출근 예정일: ${workDate ?? '미정'} — 준비물을 챙기고 건강하게 출근하세요!`
+            : '아쉽지만 이번 공고는 어렵게 됐습니다. 다른 공고를 확인해보세요.'
+          // notifications 테이블 insert (마이그레이션으로 생성된 테이블)
+          await supabase.from('notifications').insert({
+            user_id: app.user_id,
+            type: newStatus === 'confirmed' ? 'application_confirmed' : 'application_rejected',
+            title: notifTitle,
+            body: notifBody,
+            metadata: { application_id: appId, job_posting_id: app.job_posting_id },
+          })
+        }
+      }
+
       // 목록 즉시 갱신
       await fetchApplicants()
+
+      // REQ4: 상태 변경 성공 토스트
+      const toastMsgs: Record<string, string> = {
+        confirmed: '✅ 출근 확정 처리됐습니다.',
+        completed: '✅ 출근 완료로 변경됐습니다.',
+        cancelled: '✅ 취소 처리됐습니다.',
+        rejected: '❌ 지원 거절 처리됐습니다.',
+      }
+      setAdminToast({ msg: toastMsgs[newStatus] ?? '✅ 상태가 변경됐습니다.', type: 'success' })
     } catch (err) {
+      // REQ4: 에러를 console 대신 toast로 표시
+      const msg = err instanceof Error ? err.message : '상태 변경에 실패했습니다.'
+      setAdminToast({ msg: '❌ ' + msg, type: 'error' })
       console.error('[지원자 상태 변경 오류]', err)
     } finally {
       setUpdatingId(null)
@@ -316,22 +409,56 @@ export default function JobsMenu() {
     marginBottom: 6,
   }
 
-  // 지원자 상태 배지 색상
+  // 지원자 상태 배지 색상 (REQ7: 'rejected' 색상 추가)
   const appStatusColor = (status: string) => {
     if (status === 'confirmed') return { bg: 'rgba(49,200,100,0.18)', color: '#3fc878' }
     if (status === 'completed') return { bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }
     if (status === 'cancelled') return { bg: 'rgba(240,68,82,0.18)', color: '#f04452' }
+    if (status === 'rejected') return { bg: 'rgba(240,68,82,0.25)', color: '#ff4d4d' }
     return { bg: 'rgba(49,130,246,0.18)', color: '#3182f6' }  // applied
   }
 
-  return (
-    <div style={{ padding: 'clamp(16px, 4vw, 32px)' }}>
+  // ── REQ9: 확정 현황 대시보드 데이터 집계 ──
+  // applicants 배열에서 센터별로 지원/확정/거절 수 집계
+  const dashboardStats = (() => {
+    const map: Record<string, { center: string; applied: number; confirmed: number; rejected: number; completed: number }> = {}
+    applicants.forEach(app => {
+      const key = `${app.job_postings?.company_name ?? ''} ${app.job_postings?.center_name ?? ''}`.trim() || '기타'
+      if (!map[key]) map[key] = { center: key, applied: 0, confirmed: 0, rejected: 0, completed: 0 }
+      if (app.status === 'applied') map[key].applied++
+      else if (app.status === 'confirmed') map[key].confirmed++
+      else if (app.status === 'rejected') map[key].rejected++
+      else if (app.status === 'completed') map[key].completed++
+    })
+    return Object.values(map)
+  })()
 
-      {/* ── 상위 탭: 공고 목록 / 지원자 관리 ── */}
+  return (
+    <div style={{ padding: 'clamp(16px, 4vw, 32px)', position: 'relative' }}>
+
+      {/* ── 인라인 토스트 (REQ4) — 성공/에러 알림 ── */}
+      {adminToast && (
+        <div style={{
+          position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 9999, minWidth: 280, maxWidth: 420,
+          padding: '12px 20px', borderRadius: 12,
+          background: adminToast.type === 'success' ? 'rgba(49,200,100,0.95)' : 'rgba(240,68,82,0.95)',
+          color: '#fff', fontWeight: 700, fontSize: '0.9rem',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          backdropFilter: 'blur(8px)',
+          textAlign: 'center',
+          pointerEvents: 'none',
+        }}>
+          {adminToast.msg}
+        </div>
+      )}
+
+      {/* ── 상위 탭: 공고 목록 / 지원자 관리 / 확정 현황 ── */}
       <div style={{ display: 'flex', gap: 0, marginBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         {[
           { key: 'jobs' as const, label: '💼 공고 목록' },
           { key: 'applicants' as const, label: '👥 지원자 관리' },
+          { key: 'dashboard' as const, label: '📊 확정 현황' },
         ].map(tab => (
           <button
             key={tab.key}
@@ -391,8 +518,8 @@ export default function JobsMenu() {
             </div>
           )}
 
-          {/* 공고 상태 필터 */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          {/* 공고 필터 바: 상태 탭 + 검색 (REQ5) */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
             {(['all', 'active', 'expired', 'deleted'] as const).map(s => (
               <button key={s} onClick={() => setStatusFilter(s)} style={{
                 padding: '5px 14px', borderRadius: 999, border: 'none',
@@ -403,84 +530,108 @@ export default function JobsMenu() {
                 {s === 'all' ? '전체' : s === 'active' ? '활성' : s === 'expired' ? '만료' : '삭제됨'}
               </button>
             ))}
+            {/* 검색 input — 회사명/센터명/지역 클라이언트 사이드 필터 */}
+            <input
+              value={jobSearch}
+              onChange={e => setJobSearch(e.target.value)}
+              placeholder="🔍 회사명·센터명·지역 검색"
+              style={{
+                padding: '5px 14px', borderRadius: 999,
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(255,255,255,0.05)', color: '#fff',
+                fontSize: '0.78rem', outline: 'none', minWidth: 200,
+              }}
+            />
           </div>
 
-          {/* 공고 테이블 */}
+          {/* 공고 카드 그리드 (REQ5 — 구식 테이블 대신 카드 기반 UI) */}
           {loading ? (
             <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>불러오는 중...</p>
-          ) : (
-            <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
-                  <thead>
-                    <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
-                      <th style={{ ...thStyle, width: 60 }}>긴급</th>
-                      <th style={thStyle}>회사</th>
-                      <th style={thStyle}>센터</th>
-                      <th style={thStyle}>지역</th>
-                      <th style={{ ...thStyle, width: 80 }}>시급</th>
-                      <th style={{ ...thStyle, width: 50 }}>인원</th>
-                      <th style={{ ...thStyle, width: 90 }}>마감일</th>
-                      <th style={{ ...thStyle, width: 60 }}>상태</th>
-                      <th style={{ ...thStyle, width: 130 }}>관리</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {jobs.length === 0 && (
-                      <tr>
-                        <td colSpan={9} style={{ ...cellStyle, textAlign: 'center', color: 'rgba(255,255,255,0.3)' }}>
-                          공고가 없습니다.
-                        </td>
-                      </tr>
-                    )}
-                    {jobs.map(job => (
-                      <tr key={job.id}>
-                        <td style={{ ...cellStyle, textAlign: 'center' }}>
-                          <button onClick={() => handleToggleUrgent(job)} style={{
-                            padding: '3px 10px', borderRadius: 999, border: 'none',
-                            background: job.is_urgent ? 'rgba(240,68,82,0.18)' : 'rgba(255,255,255,0.08)',
-                            color: job.is_urgent ? '#f04452' : 'rgba(255,255,255,0.35)',
-                            fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
-                          }}>
-                            {job.is_urgent ? '급구' : '-'}
-                          </button>
-                        </td>
-                        <td style={{ ...cellStyle, fontWeight: 700 }}>{job.company_name}</td>
-                        <td style={cellStyle}>{job.center_name}</td>
-                        <td style={cellStyle}>{job.region}</td>
-                        <td style={{ ...cellStyle, color: '#3182f6', fontWeight: 700 }}>{fmtWage(job.hourly_wage)}</td>
-                        <td style={{ ...cellStyle, textAlign: 'center' }}>{job.headcount}명</td>
-                        <td style={cellStyle}>{job.expires_at ?? '-'}</td>
-                        <td style={{ ...cellStyle, textAlign: 'center' }}>
-                          <span style={{
-                            padding: '2px 8px', borderRadius: 999, fontSize: '0.72rem', fontWeight: 700,
-                            background: job.status === 'active' ? 'rgba(49,200,100,0.18)' : job.status === 'expired' ? 'rgba(255,180,0,0.18)' : 'rgba(255,255,255,0.08)',
-                            color: job.status === 'active' ? '#3fc878' : job.status === 'expired' ? '#ffb400' : 'rgba(255,255,255,0.35)',
-                          }}>
-                            {job.status === 'active' ? '활성' : job.status === 'expired' ? '만료' : '삭제'}
-                          </span>
-                        </td>
-                        <td style={{ ...cellStyle, textAlign: 'center' }}>
-                          <button onClick={() => openEdit(job)} style={{
-                            marginRight: 6, padding: '3px 10px', borderRadius: 8, border: 'none',
-                            background: 'rgba(49,130,246,0.15)', color: '#3182f6',
-                            fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
-                          }}>수정</button>
-                          {job.status !== 'deleted' && (
-                            <button onClick={() => handleDelete(job)} style={{
-                              padding: '3px 10px', borderRadius: 8, border: 'none',
-                              background: 'rgba(240,68,82,0.12)', color: '#f04452',
-                              fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
-                            }}>삭제</button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          ) : (() => {
+            // 검색어 필터링 (클라이언트 사이드)
+            const filtered = jobSearch.trim()
+              ? jobs.filter(j =>
+                  `${j.company_name} ${j.center_name} ${j.region}`.toLowerCase()
+                    .includes(jobSearch.toLowerCase()))
+              : jobs
+            return filtered.length === 0 ? (
+              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.85rem', textAlign: 'center', padding: '24px 0' }}>
+                공고가 없습니다.
+              </p>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+                {filtered.map(job => (
+                  <div key={job.id} style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${job.is_urgent ? 'rgba(240,68,82,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                    borderRadius: 14, padding: '16px 18px',
+                    display: 'flex', flexDirection: 'column', gap: 8,
+                  }}>
+                    {/* 카드 상단: 긴급 배지 + 상태 배지 */}
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      {job.is_urgent && (
+                        <span style={{
+                          padding: '2px 8px', borderRadius: 999, fontSize: '0.7rem', fontWeight: 800,
+                          background: 'rgba(240,68,82,0.2)', color: '#f04452',
+                        }}>🚨 급구</span>
+                      )}
+                      <span style={{
+                        padding: '2px 8px', borderRadius: 999, fontSize: '0.7rem', fontWeight: 700,
+                        background: job.status === 'active' ? 'rgba(49,200,100,0.18)' : job.status === 'expired' ? 'rgba(255,180,0,0.18)' : 'rgba(255,255,255,0.08)',
+                        color: job.status === 'active' ? '#3fc878' : job.status === 'expired' ? '#ffb400' : 'rgba(255,255,255,0.35)',
+                      }}>
+                        {job.status === 'active' ? '활성' : job.status === 'expired' ? '만료' : '삭제'}
+                      </span>
+                    </div>
+
+                    {/* 회사명 + 센터명 */}
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: '0.92rem' }}>{job.company_name}</div>
+                      <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{job.center_name}</div>
+                    </div>
+
+                    {/* 시급/일급 + 지역 */}
+                    <div style={{ display: 'flex', gap: 10, fontSize: '0.8rem' }}>
+                      <span style={{ color: '#3182f6', fontWeight: 700 }}>시 {fmtWage(job.hourly_wage)}</span>
+                      {job.daily_wage ? <span style={{ color: '#7c3aed', fontWeight: 700 }}>일 {fmtWage(job.daily_wage)}</span> : null}
+                      <span style={{ color: 'rgba(255,255,255,0.4)' }}>📍 {job.region}</span>
+                    </div>
+
+                    {/* 인원 + 마감일 */}
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', display: 'flex', gap: 12 }}>
+                      <span>👥 {job.headcount}명</span>
+                      <span>📅 마감 {job.expires_at ?? '미정'}</span>
+                    </div>
+
+                    {/* 관리 버튼 그룹 */}
+                    <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                      <button onClick={() => openEdit(job)} style={{
+                        flex: 1, padding: '5px 0', borderRadius: 8, border: 'none',
+                        background: 'rgba(49,130,246,0.15)', color: '#3182f6',
+                        fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+                      }}>수정</button>
+                      <button
+                        onClick={() => handleToggleUrgent(job)}
+                        style={{
+                          flex: 1, padding: '5px 0', borderRadius: 8, border: 'none',
+                          background: job.is_urgent ? 'rgba(240,68,82,0.15)' : 'rgba(255,180,0,0.1)',
+                          color: job.is_urgent ? '#f04452' : '#ffb400',
+                          fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+                        }}
+                      >{job.is_urgent ? '급구 해제' : '급구 설정'}</button>
+                      {job.status !== 'deleted' && (
+                        <button onClick={() => handleDelete(job)} style={{
+                          flex: 1, padding: '5px 0', borderRadius: 8, border: 'none',
+                          background: 'rgba(240,68,82,0.12)', color: '#f04452',
+                          fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+                        }}>삭제</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          )}
+            )
+          })()}
         </>
       )}
 
@@ -520,7 +671,7 @@ export default function JobsMenu() {
             </select>
 
             {/* 상태 필터 */}
-            {(['all', 'applied', 'confirmed', 'completed', 'cancelled'] as const).map(s => (
+            {(['all', 'applied', 'confirmed', 'completed', 'cancelled', 'rejected'] as const).map(s => (
               <button key={s} onClick={() => setAppStatusFilter(s)} style={{
                 padding: '5px 14px', borderRadius: 999, border: 'none',
                 background: appStatusFilter === s ? '#3182f6' : 'rgba(255,255,255,0.08)',
@@ -531,6 +682,22 @@ export default function JobsMenu() {
               </button>
             ))}
           </div>
+
+          {/* REQ6: 지원자 조회 에러 표시 */}
+          {appError && (
+            <div style={{
+              background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
+              borderRadius: 10, padding: '12px 16px', marginBottom: 12,
+              color: '#ff6b6b', fontSize: '0.82rem',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <span>⚠️ {appError}</span>
+              <button
+                onClick={() => { setAppError(null); fetchApplicants() }}
+                style={{ background: 'none', border: 'none', color: '#ff6b6b', cursor: 'pointer', padding: '0 4px', fontSize: '0.8rem', fontWeight: 700 }}
+              >다시 시도 ↻</button>
+            </div>
+          )}
 
           {/* 지원자 테이블 */}
           {appLoading ? (
@@ -603,7 +770,7 @@ export default function JobsMenu() {
                             </span>
                           </td>
 
-                          {/* 상태 변경 버튼 그룹 */}
+                          {/* 상태 변경 버튼 그룹 (REQ7: 지원거절 버튼 추가) */}
                           <td style={{ ...cellStyle, textAlign: 'center' }}>
                             <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
                               {/* 출근확정 버튼 — applied 상태일 때만 활성 */}
@@ -624,7 +791,26 @@ export default function JobsMenu() {
                                     opacity: isUpdating ? 0.5 : 1,
                                   }}
                                 >
-                                  출근확정
+                                  ✅ 확정
+                                </button>
+                              )}
+
+                              {/* REQ7: 지원거절 버튼 — applied 상태일 때만 활성 + notifications 트리거 */}
+                              {app.status === 'applied' && (
+                                <button
+                                  disabled={isUpdating}
+                                  onClick={() => {
+                                    if (!window.confirm('이 지원자를 거절하시겠습니까?')) return
+                                    handleUpdateStatus(app.id, 'rejected')
+                                  }}
+                                  style={{
+                                    padding: '3px 10px', borderRadius: 8, border: 'none',
+                                    background: 'rgba(240,68,82,0.15)', color: '#f04452',
+                                    fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+                                    opacity: isUpdating ? 0.5 : 1,
+                                  }}
+                                >
+                                  ✕ 거절
                                 </button>
                               )}
 
@@ -644,14 +830,14 @@ export default function JobsMenu() {
                                 </button>
                               )}
 
-                              {/* 취소 버튼 — completed/cancelled 제외 */}
-                              {app.status !== 'completed' && app.status !== 'cancelled' && (
+                              {/* 취소 버튼 — completed/cancelled/rejected 제외 */}
+                              {app.status !== 'completed' && app.status !== 'cancelled' && app.status !== 'rejected' && app.status !== 'applied' && (
                                 <button
                                   disabled={isUpdating}
                                   onClick={() => handleUpdateStatus(app.id, 'cancelled')}
                                   style={{
                                     padding: '3px 10px', borderRadius: 8, border: 'none',
-                                    background: 'rgba(240,68,82,0.12)', color: '#f04452',
+                                    background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)',
                                     fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
                                     opacity: isUpdating ? 0.5 : 1,
                                   }}
@@ -661,7 +847,7 @@ export default function JobsMenu() {
                               )}
 
                               {/* 최종 처리 완료 표시 */}
-                              {(app.status === 'completed' || app.status === 'cancelled') && (
+                              {(app.status === 'completed' || app.status === 'cancelled' || app.status === 'rejected') && (
                                 <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)' }}>처리완료</span>
                               )}
                             </div>
@@ -695,123 +881,162 @@ export default function JobsMenu() {
               maxHeight: '85vh', overflowY: 'auto',
             }}
           >
-            <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem', fontWeight: 800 }}>
-              {editTarget ? '공고 수정' : '새 공고 추가'}
-            </h3>
-
-            {/* 공고 등록 안내 박스 */}
-            <div style={{
-              background: 'rgba(251,191,36,0.08)',
-              border: '1px solid rgba(251,191,36,0.2)',
-              borderRadius: 10, padding: '12px 16px', marginBottom: 18,
-            }}>
-              <div style={{ fontWeight: 700, marginBottom: 5, color: '#fbbf24', fontSize: '0.82rem' }}>
-                📋 공고 등록 안내
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7 }}>
-                <div>• 회사명에 [플랫폼명] + 지역 + 직종을 포함하면 검색 노출이 잘 됩니다</div>
-                <div>• 외부 링크는 지원자가 바로 지원할 수 있는 URL을 넣어주세요</div>
-                <div>• 공고는 등록 즉시 앱에 반영됩니다</div>
-              </div>
-            </div>
-
-            {/* 회사/플랫폼 + 센터명 */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 4 }}>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>회사/플랫폼 *</span>
-                <input value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))}
-                  placeholder="예: 쿠팡풀필먼트서비스, CJ대한통운, 컬리" style={inputStyle} />
-              </label>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>센터명 / 직종</span>
-                <input value={form.center_name} onChange={e => setForm(f => ({ ...f, center_name: e.target.value }))}
-                  placeholder="예: 부천 물류센터 야간" style={inputStyle} />
-              </label>
-            </div>
-            {/* 회사 입력 도움말 */}
-            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: '4px 0 14px' }}>
-              쿠팡FLC / 쿠팡이츠 등 플랫폼명을 정확히 입력해주세요
-            </p>
-
-            {/* 지역 */}
-            <label style={{ display: 'block', marginBottom: 14 }}>
-              <span style={labelSpan}>지역 *</span>
-              <input value={form.region} onChange={e => setForm(f => ({ ...f, region: e.target.value }))}
-                placeholder="예: 경기 부천시, 서울 송파구" style={inputStyle} />
-            </label>
-
-            {/* 시급 + 일급 + 인원 + 근무시간 */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>시급 (원)</span>
-                <input type="number" value={form.hourly_wage || ''} onChange={e => setForm(f => ({ ...f, hourly_wage: parseInt(e.target.value) || 0 }))}
-                  placeholder="예: 12000" style={inputStyle} />
-              </label>
-              {/* 일급: 시급 × 근무시간 계산 없이 직접 입력 (예: 일당 계약직인 경우) */}
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>일급 (원)</span>
-                <input type="number" value={form.daily_wage || ''} onChange={e => setForm(f => ({ ...f, daily_wage: parseInt(e.target.value) || 0 }))}
-                  placeholder="예: 130000" style={inputStyle} />
-              </label>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>모집인원</span>
-                <input type="number" value={form.headcount || ''} onChange={e => setForm(f => ({ ...f, headcount: parseInt(e.target.value) || 0 }))}
-                  placeholder="예: 00명" style={inputStyle} />
-              </label>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>근무시간</span>
-                <input value={form.work_hours} onChange={e => setForm(f => ({ ...f, work_hours: e.target.value }))}
-                  placeholder="야간 22:00~06:00" style={inputStyle} />
-              </label>
-            </div>
-
-            {/* 공고 내용/상세 */}
-            <label style={{ display: 'block', marginBottom: 14 }}>
-              <span style={labelSpan}>공고 내용 / 상세</span>
-              <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                rows={4} placeholder="근무 조건, 우대사항, 복리후생 등 상세 내용 입력" style={{ ...inputStyle, resize: 'vertical' as const }} />
-            </label>
-
-            {/* 연락처 + 외부링크 */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 4 }}>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>연락처</span>
-                <input value={form.contact_phone} onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))}
-                  placeholder="010-1234-5678" style={inputStyle} />
-              </label>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>원본 공고 URL</span>
-                <input value={form.external_link} onChange={e => setForm(f => ({ ...f, external_link: e.target.value }))}
-                  placeholder="쿠팡알바, 잡코리아, 사람인 등 원본 공고 URL 붙여넣기" style={inputStyle} />
-              </label>
-            </div>
-            {/* 외부 링크 도움말 */}
-            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: '4px 0 14px' }}>
-              선택 입력 — 지원 링크가 없으면 비워두세요
-            </p>
-
-            {/* 마감일 + 긴급 */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'flex-end' }}>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>공고 마감일 <span style={{ color: '#f04452' }}>*</span></span>
-                <input type="date" value={form.expires_at} onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
-                  required style={inputStyle} />
-              </label>
-              <label style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={labelSpan}>긴급</span>
-                <div onClick={() => setForm(f => ({ ...f, is_urgent: !f.is_urgent }))} style={{
-                  width: 44, height: 26, borderRadius: 999,
-                  background: form.is_urgent ? '#f04452' : 'rgba(255,255,255,0.12)',
-                  cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
-                }}>
-                  <div style={{
-                    width: 20, height: 20, borderRadius: '50%', background: '#fff',
-                    position: 'absolute', top: 3,
-                    left: form.is_urgent ? 21 : 3, transition: 'left 0.2s',
-                  }} />
+            {/* 모달 헤더 */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800 }}>
+                {editTarget ? '공고 수정' : '새 공고 추가'}
+              </h3>
+              {/* REQ10: 신규 등록 시 단계 표시 (수정=formStep 0은 표시 안 함) */}
+              {formStep > 0 && (
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {[1,2,3,4,5].map(s => (
+                    <div key={s} style={{
+                      width: s <= formStep ? 20 : 8, height: 8, borderRadius: 999,
+                      background: s <= formStep ? '#3182f6' : 'rgba(255,255,255,0.12)',
+                      transition: 'all 0.2s',
+                    }} />
+                  ))}
                 </div>
-              </label>
+              )}
             </div>
+
+            {/* ── 단계 표시 텍스트 (신규 등록만) ── */}
+            {formStep > 0 && (
+              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: '0 0 16px' }}>
+                {formStep === 1 && '1단계: 기본 정보'}
+                {formStep === 2 && '2단계: 근무 조건'}
+                {formStep === 3 && '3단계: 상세 내용 & 연락처'}
+                {formStep === 4 && '4단계: 미리보기 확인'}
+                {formStep === 5 && '5단계: 발행 설정'}
+              </p>
+            )}
+
+            {/* ── STEP 1: 기본 정보 (신규 등록) 또는 전체 폼 (수정) ── */}
+            {(formStep === 1 || formStep === 0) && (
+              <>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 4 }}>
+                  <label style={{ flex: 1 }}>
+                    <span style={labelSpan}>회사/플랫폼 *</span>
+                    <input value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))}
+                      placeholder="예: 쿠팡풀필먼트서비스, CJ대한통운, 컬리" style={inputStyle} />
+                  </label>
+                  <label style={{ flex: 1 }}>
+                    <span style={labelSpan}>센터명 / 직종</span>
+                    <input value={form.center_name} onChange={e => setForm(f => ({ ...f, center_name: e.target.value }))}
+                      placeholder="예: 부천 물류센터 야간" style={inputStyle} />
+                  </label>
+                </div>
+                <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: '4px 0 14px' }}>
+                  쿠팡FLC / 쿠팡이츠 등 플랫폼명을 정확히 입력해주세요
+                </p>
+                <label style={{ display: 'block', marginBottom: 14 }}>
+                  <span style={labelSpan}>지역 *</span>
+                  <input value={form.region} onChange={e => setForm(f => ({ ...f, region: e.target.value }))}
+                    placeholder="예: 경기 부천시, 서울 송파구" style={inputStyle} />
+                </label>
+              </>
+            )}
+
+            {/* ── STEP 2: 근무 조건 ── */}
+            {(formStep === 2 || formStep === 0) && (
+              <div style={{ display: 'flex', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
+                <label style={{ flex: 1, minWidth: 100 }}>
+                  <span style={labelSpan}>시급 (원)</span>
+                  <input type="number" value={form.hourly_wage || ''} onChange={e => setForm(f => ({ ...f, hourly_wage: parseInt(e.target.value) || 0 }))}
+                    placeholder="예: 12000" style={inputStyle} />
+                </label>
+                <label style={{ flex: 1, minWidth: 100 }}>
+                  <span style={labelSpan}>일급 (원)</span>
+                  <input type="number" value={form.daily_wage || ''} onChange={e => setForm(f => ({ ...f, daily_wage: parseInt(e.target.value) || 0 }))}
+                    placeholder="예: 130000" style={inputStyle} />
+                </label>
+                <label style={{ flex: 1, minWidth: 80 }}>
+                  <span style={labelSpan}>모집인원</span>
+                  <input type="number" value={form.headcount || ''} onChange={e => setForm(f => ({ ...f, headcount: parseInt(e.target.value) || 0 }))}
+                    placeholder="예: 10" style={inputStyle} />
+                </label>
+                <label style={{ flex: 1, minWidth: 100 }}>
+                  <span style={labelSpan}>근무시간</span>
+                  <input value={form.work_hours} onChange={e => setForm(f => ({ ...f, work_hours: e.target.value }))}
+                    placeholder="야간 22:00~06:00" style={inputStyle} />
+                </label>
+              </div>
+            )}
+
+            {/* ── STEP 3: 상세 내용 & 연락처 ── */}
+            {(formStep === 3 || formStep === 0) && (
+              <>
+                <label style={{ display: 'block', marginBottom: 14 }}>
+                  <span style={labelSpan}>공고 내용 / 상세</span>
+                  <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                    rows={4} placeholder="근무 조건, 우대사항, 복리후생 등 상세 내용 입력" style={{ ...inputStyle, resize: 'vertical' as const }} />
+                </label>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 4 }}>
+                  <label style={{ flex: 1 }}>
+                    <span style={labelSpan}>연락처</span>
+                    <input value={form.contact_phone} onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))}
+                      placeholder="010-1234-5678" style={inputStyle} />
+                  </label>
+                  <label style={{ flex: 1 }}>
+                    <span style={labelSpan}>원본 공고 URL</span>
+                    <input value={form.external_link} onChange={e => setForm(f => ({ ...f, external_link: e.target.value }))}
+                      placeholder="쿠팡알바, 잡코리아, 사람인 등 공고 URL" style={inputStyle} />
+                  </label>
+                </div>
+                <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: '4px 0 14px' }}>
+                  선택 입력 — 지원 링크가 없으면 비워두세요
+                </p>
+              </>
+            )}
+
+            {/* ── STEP 4: 미리보기 ── */}
+            {formStep === 4 && (
+              <div style={{
+                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 12, padding: '16px 18px', marginBottom: 8,
+              }}>
+                <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: 8 }}>
+                  {form.company_name || '회사명'} — {form.center_name || '센터명'}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>📍 {form.region || '지역'}</div>
+                <div style={{ display: 'flex', gap: 12, fontSize: '0.82rem', marginBottom: 6 }}>
+                  {form.hourly_wage ? <span style={{ color: '#3182f6', fontWeight: 700 }}>시 {form.hourly_wage.toLocaleString()}원</span> : null}
+                  {form.daily_wage ? <span style={{ color: '#7c3aed', fontWeight: 700 }}>일 {form.daily_wage.toLocaleString()}원</span> : null}
+                  <span style={{ color: 'rgba(255,255,255,0.4)' }}>👥 {form.headcount}명</span>
+                </div>
+                {form.work_hours && <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', marginBottom: 6 }}>⏰ {form.work_hours}</div>}
+                {form.description && <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', whiteSpace: 'pre-wrap', marginTop: 8 }}>{form.description}</div>}
+                <div style={{ marginTop: 8, fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)' }}>
+                  {form.contact_phone && <div>📞 {form.contact_phone}</div>}
+                  {form.external_link && <div>🔗 {form.external_link}</div>}
+                </div>
+              </div>
+            )}
+
+            {/* ── STEP 5: 발행 설정 ── */}
+            {(formStep === 5 || formStep === 0) && (
+              <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'flex-end' }}>
+                <label style={{ flex: 1 }}>
+                  <span style={labelSpan}>공고 마감일 <span style={{ color: '#f04452' }}>*</span></span>
+                  <input type="date" value={form.expires_at} onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
+                    required style={inputStyle} />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={labelSpan}>긴급</span>
+                  <div onClick={() => setForm(f => ({ ...f, is_urgent: !f.is_urgent }))} style={{
+                    width: 44, height: 26, borderRadius: 999,
+                    background: form.is_urgent ? '#f04452' : 'rgba(255,255,255,0.12)',
+                    cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
+                  }}>
+                    <div style={{
+                      width: 20, height: 20, borderRadius: '50%', background: '#fff',
+                      position: 'absolute', top: 3,
+                      left: form.is_urgent ? 21 : 3, transition: 'left 0.2s',
+                    }} />
+                  </div>
+                </label>
+              </div>
+            )}
 
             {/* 저장 오류 표시 */}
             {jobError && (
@@ -824,27 +1049,128 @@ export default function JobsMenu() {
               </div>
             )}
 
-            {/* 버튼 */}
+            {/* ── 버튼: 단계 진행 또는 저장 ── */}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button onClick={() => setModalOpen(false)} style={{
+              <button onClick={() => {
+                if (formStep > 1) setFormStep(s => s - 1)
+                else setModalOpen(false)
+              }} style={{
                 padding: '9px 20px', borderRadius: 10,
                 border: '1px solid rgba(255,255,255,0.12)',
                 background: 'transparent', color: 'rgba(255,255,255,0.6)',
                 fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
-              }}>취소</button>
-              <button onClick={handleSave}
-                disabled={saving || !form.company_name.trim() || !form.region.trim() || !form.expires_at}
-                style={{
-                  padding: '9px 20px', borderRadius: 10, border: 'none',
-                  background: saving || !form.company_name.trim() || !form.region.trim() || !form.expires_at
-                    ? 'rgba(49,130,246,0.3)' : '#3182f6',
-                  color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
-                }}>
-                {saving ? '저장 중...' : '저장'}
+              }}>
+                {formStep > 1 ? '← 이전' : '취소'}
               </button>
+
+              {/* 신규 등록: 1~4단계는 "다음", 5단계는 "발행" */}
+              {/* 수정(step=0) 또는 마지막 단계: 저장 버튼 */}
+              {(formStep === 0 || formStep === 5) ? (
+                <button onClick={handleSave}
+                  disabled={saving || !form.company_name.trim() || !form.region.trim() || !form.expires_at}
+                  style={{
+                    padding: '9px 20px', borderRadius: 10, border: 'none',
+                    background: saving || !form.company_name.trim() || !form.region.trim() || !form.expires_at
+                      ? 'rgba(49,130,246,0.3)' : '#3182f6',
+                    color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
+                  }}>
+                  {saving ? '저장 중...' : formStep === 5 ? '🚀 발행' : '저장'}
+                </button>
+              ) : (
+                <button
+                  onClick={() => setFormStep(s => s + 1)}
+                  disabled={
+                    (formStep === 1 && (!form.company_name.trim() || !form.region.trim()))
+                  }
+                  style={{
+                    padding: '9px 20px', borderRadius: 10, border: 'none',
+                    background: (formStep === 1 && (!form.company_name.trim() || !form.region.trim()))
+                      ? 'rgba(49,130,246,0.3)' : '#3182f6',
+                    color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
+                  }}
+                >
+                  다음 →
+                </button>
+              )}
             </div>
           </div>
         </div>
+      )}
+
+      {/* ══════════════════════════════════════
+          REQ9: 확정 현황 대시보드 탭
+          센터별 지원/확정/거절/완료 현황 + 합계
+      ══════════════════════════════════════ */}
+      {mainTab === 'dashboard' && (
+        <>
+          <div style={{ marginBottom: 20 }}>
+            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px' }}>📊 확정 현황 대시보드</h2>
+            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+              지원자 관리 탭 데이터 기반 집계 (필터 적용 중인 경우 해당 범위 반영)
+            </p>
+          </div>
+
+          {/* 요약 카드 4개 */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
+            {[
+              { label: '전체 지원', value: applicants.length, color: '#3182f6' },
+              { label: '출근확정', value: applicants.filter(a => a.status === 'confirmed').length, color: '#3fc878' },
+              { label: '지원거절', value: applicants.filter(a => a.status === 'rejected').length, color: '#f04452' },
+              { label: '출근완료', value: applicants.filter(a => a.status === 'completed').length, color: 'rgba(255,255,255,0.5)' },
+            ].map(stat => (
+              <div key={stat.label} style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 12, padding: '16px 14px', textAlign: 'center',
+              }}>
+                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: stat.color }}>{stat.value}</div>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* 센터별 상세 테이블 */}
+          {dashboardStats.length === 0 ? (
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.85rem' }}>
+              지원자 관리 탭에서 먼저 데이터를 로드하세요.
+            </p>
+          ) : (
+            <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 500 }}>
+                  <thead>
+                    <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
+                      <th style={thStyle}>센터명</th>
+                      <th style={{ ...thStyle, textAlign: 'center', width: 80 }}>지원</th>
+                      <th style={{ ...thStyle, textAlign: 'center', width: 80 }}>확정</th>
+                      <th style={{ ...thStyle, textAlign: 'center', width: 80 }}>거절</th>
+                      <th style={{ ...thStyle, textAlign: 'center', width: 80 }}>완료</th>
+                      <th style={{ ...thStyle, textAlign: 'center', width: 80 }}>확정률</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dashboardStats.map(stat => {
+                      const total = stat.applied + stat.confirmed + stat.rejected + stat.completed
+                      const confirmRate = total > 0 ? Math.round((stat.confirmed + stat.completed) / total * 100) : 0
+                      return (
+                        <tr key={stat.center}>
+                          <td style={{ ...cellStyle, fontWeight: 700 }}>{stat.center}</td>
+                          <td style={{ ...cellStyle, textAlign: 'center', color: '#3182f6' }}>{stat.applied}</td>
+                          <td style={{ ...cellStyle, textAlign: 'center', color: '#3fc878' }}>{stat.confirmed}</td>
+                          <td style={{ ...cellStyle, textAlign: 'center', color: '#f04452' }}>{stat.rejected}</td>
+                          <td style={{ ...cellStyle, textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>{stat.completed}</td>
+                          <td style={{ ...cellStyle, textAlign: 'center', fontWeight: 700, color: confirmRate >= 50 ? '#3fc878' : '#ffb400' }}>
+                            {confirmRate}%
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

@@ -89,9 +89,14 @@ function SectionBridge({
     }
   }
 
-  const textColor = isDark ? '#ffffff' : '#475569'
-  const subTextColor = isDark ? 'rgba(255, 255, 255, 0.6)' : '#94a3b8'
+  // 다크 배경에서는 흰색, 밝은 배경에서는 강한 파랑으로 화살표 강조
   const arrowColor = isDark ? '#ffffff' : '#2563eb'
+  // 텍스트 pill 배경: 배경색에 무관하게 가독성 확보
+  // isDark=true(어두운 배경)이면 반투명 흰색 pill, 밝은 배경이면 반투명 파랑 pill
+  const pillBg = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.85)'
+  const pillBorder = isDark ? '1px solid rgba(255,255,255,0.25)' : '1px solid rgba(37,99,235,0.15)'
+  const textColor = isDark ? '#ffffff' : '#1e3a5f'
+  const subTextColor = isDark ? 'rgba(255,255,255,0.75)' : '#475569'
 
   return (
     <motion.div
@@ -102,19 +107,25 @@ function SectionBridge({
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
     >
-      <p className="text-[13px] font-semibold mb-1" style={{ color: subTextColor }}>
+      {/* 서브텍스트 — pill 배경으로 어떤 섹션 배경에서도 읽힘 */}
+      <span
+        className="text-[12px] font-semibold mb-1 px-3 py-1 rounded-full"
+        style={{ color: subTextColor, background: pillBg, border: pillBorder, backdropFilter: 'blur(8px)' }}
+      >
         {subText}
-      </p>
-      <p
-        className="text-[16px] font-bold mb-3 group-hover:opacity-80 transition-opacity"
-        style={{ color: textColor }}
+      </span>
+      {/* 메인 텍스트 — pill 배경 적용 */}
+      <span
+        className="text-[15px] font-bold mb-3 mt-1 px-4 py-1.5 rounded-full group-hover:opacity-80 transition-opacity"
+        style={{ color: textColor, background: pillBg, border: pillBorder, backdropFilter: 'blur(8px)' }}
       >
         {text}
-      </p>
+      </span>
+      {/* 화살표 — 크기 키우고 색상 강화 */}
       <motion.div
-        animate={{ y: [0, 8, 0] }}
-        transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-        style={{ color: arrowColor, fontSize: 24 }}
+        animate={{ y: [0, 10, 0] }}
+        transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+        style={{ color: arrowColor, fontSize: 28, filter: isDark ? 'drop-shadow(0 0 4px rgba(255,255,255,0.5))' : 'drop-shadow(0 0 4px rgba(37,99,235,0.4))' }}
       >
         ↓
       </motion.div>
@@ -396,7 +407,7 @@ export default function LandingV1() {
 
           <Reveal delay={0.3}>
             <div className="flex gap-4 flex-wrap items-center">
-              {/* 메인 CTA — scrollTo 함수 사용 (pain 섹션으로 이동) */}
+              {/* 메인 CTA 1 — pain 섹션으로 스크롤, 파랑-보라 그래디언트 */}
               <button
                 onClick={() => scrollTo('pain')}
                 className="inline-flex items-center gap-2 font-bold text-white rounded-[16px] transition-all hover:-translate-y-1"
@@ -409,32 +420,16 @@ export default function LandingV1() {
               >
                 ✦ 내 권리 확인하기
               </button>
-              {/* 서브 CTA — href를 pain으로 변경 */}
-              <a
-                href="#pain"
-                className="inline-flex items-center gap-2 font-semibold rounded-[16px] transition-all hover:-translate-y-1"
+              {/* 메인 CTA 2 — 마지막 로그인 CTA 섹션으로 스크롤 (에메랄드-청록 그래디언트로 구분) */}
+              {/* 기존 "빠르게 시작하기" 플레인 텍스트 → 카드 스타일로 승격 */}
+              <button
+                onClick={() => scrollTo('cta')}
+                className="inline-flex items-center gap-2 font-bold text-white rounded-[16px] transition-all hover:-translate-y-1"
                 style={{
                   padding: '18px 36px',
                   fontSize: 17,
-                  color: '#2563eb',
-                  border: '1.5px solid rgba(37,99,235,0.35)',
-                  background: 'transparent',
-                  textDecoration: 'none',
-                }}
-              >
-                어떤 문제가 있나요? ↓
-              </a>
-              {/* 서브 텍스트 링크 — 기존 goLogin 역할 유지 */}
-              <button
-                onClick={goLogin}
-                className="text-[15px] font-semibold"
-                style={{
-                  color: '#2563eb',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: 0,
-                  textDecoration: 'underline',
+                  background: 'linear-gradient(135deg, #059669, #0891b2)',
+                  boxShadow: '0 8px 32px rgba(5,150,105,0.28)',
                 }}
               >
                 빠르게 시작하기 →

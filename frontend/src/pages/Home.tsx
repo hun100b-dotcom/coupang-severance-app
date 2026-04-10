@@ -187,10 +187,12 @@ export default function Home() {
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-8">
       {/* ── SEO 메타태그: 홈 페이지 ── */}
+      {/* noIndex: /home은 로그인 사용자 전용 — 검색 결과에 노출되면 공고 내용이 스니펫으로 잡힘 */}
       <PageMeta
         title="쿠팡 일용직 퇴직금·실업급여 계산기 | CATCH — CFS·컬리 무료 자동 계산"
         description="쿠팡·CFS·마켓컬리·CJ대한통운 일용직 퇴직금, 실업급여, 주휴수당, 연차수당 무료 자동 계산기. PDF 업로드 한 번, 3분 안에 내 권리 확인."
-        canonical="https://catch-daily-worker.vercel.app/home"
+        canonical="https://catch-daily-worker.vercel.app/"
+        noIndex={true}
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'FAQPage',

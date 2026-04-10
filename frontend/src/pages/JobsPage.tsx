@@ -307,10 +307,12 @@ export default function JobsPage() {
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-28">
       {/* ── SEO 메타태그: 채용정보 페이지 ── */}
+      {/* noIndex: 공고 본문(일급·회사명·센터명)이 Google 스니펫에 노출되지 않도록 차단 */}
       <PageMeta
         title="쿠팡·컬리 일용직 채용정보 | CATCH"
         description="쿠팡, 쿠팡이츠, 마켓컬리, CJ대한통운 등 일용직 단기알바 최신 채용정보. 오늘 시작 가능한 급구 공고 확인하세요."
         canonical="https://catch-daily-worker.vercel.app/jobs"
+        noIndex={true}
       />
 
       {/* ── 인라인 토스트 배너 (alert 대체) ──
