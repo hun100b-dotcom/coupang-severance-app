@@ -7,7 +7,6 @@ import { useEffect, useState, useCallback } from 'react'
 import { MapPin, Clock, Loader2, CheckCircle2, XCircle, Calendar, UserCheck, AlertCircle, RefreshCw } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { listApplications } from '../../lib/jobApplications'
-import { awardPoints } from '../../lib/jobApplications'
 import type { JobApplication } from '../../types/supabase'
 
 interface Props {
@@ -129,10 +128,7 @@ export default function MyApplicationsTab({ userId }: Props) {
 
       if (error) throw error
 
-      // 2. 출근완료 포인트 +100P 자동 지급
-      await awardPoints(userId, 100, '출근 완료')
-
-      // 3. UI 즉시 갱신 (Realtime으로도 반영되지만 즉각성을 위해 직접 갱신)
+      // 2. UI 즉시 갱신 (Realtime으로도 반영되지만 즉각성을 위해 직접 갱신)
       await fetchApplications()
     } catch (err) {
       console.error('[셀프 체크인 오류]', err)
@@ -332,8 +328,7 @@ export default function MyApplicationsTab({ userId }: Props) {
               </div>
 
               {/* ── 셀프 체크인 버튼 ──
-                  출근확정(confirmed) 상태이고 오늘이 출근일일 때만 표시
-                  클릭 시 status → completed + 포인트 +100P 자동 지급 */}
+                  출근확정(confirmed) 상태이고 오늘이 출근일일 때만 표시 */}
               {isCheckInDay && (
                 <button
                   onClick={() => handleSelfCheckIn(app)}
@@ -345,7 +340,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                   ) : (
                     <UserCheck className="w-4 h-4" />
                   )}
-                  {checkingIn === app.id ? '처리 중...' : '출근완료 체크 (+100P)'}
+                  {checkingIn === app.id ? '처리 중...' : '출근완료 체크'}
                 </button>
               )}
             </div>

@@ -4,7 +4,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../contexts/AuthContext'
-import { awardPoints } from '../../../lib/jobApplications'
 import type { JobPosting } from '../../../types/supabase'
 
 // ── 공고 등록/수정 폼 타입 ──
@@ -251,7 +250,6 @@ export default function JobsMenu() {
 
   // 지원자 상태 변경 (어드민이 직접 처리)
   // newStatus: 'confirmed' (출근확정), 'completed' (출근완료), 'cancelled' (취소)
-  // 출근완료 처리 시 → 해당 지원자에게 포인트 +100P 자동 지급
   const handleUpdateStatus = async (
     appId: string,
     newStatus: 'confirmed' | 'completed' | 'cancelled',
@@ -270,16 +268,6 @@ export default function JobsMenu() {
         .update(updatePayload)
         .eq('id', appId)
       if (error) throw error
-
-      // 출근완료 처리 시 → 지원자 user_id 찾아서 포인트 +100P 지급
-      if (newStatus === 'completed') {
-        // applicants 배열에서 해당 지원 건의 user_id 조회
-        const targetApp = applicants.find(a => a.id === appId)
-        if (targetApp?.user_id) {
-          // 실패해도 상태 변경 자체는 성공 처리 (조용히 에러 로그만 기록)
-          await awardPoints(targetApp.user_id, 100, '출근 완료 (관리자 확인)', appId)
-        }
-      }
 
       // 목록 즉시 갱신
       await fetchApplicants()

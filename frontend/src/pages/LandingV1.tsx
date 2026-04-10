@@ -1109,7 +1109,7 @@ export default function LandingV1() {
         </div>
       </section>
 
-      {/* ⑥ SCHEDULE — 스케줄 관리 & 포인트 적립 (WHY CATCH와 STATS 사이) ──────── */}
+      {/* ⑥ SCHEDULE — 스케줄 관리 & 채용정보 (WHY CATCH와 STATS 사이) ──────── */}
       <section
         id="schedule"
         className="relative z-[1] overflow-hidden"
@@ -1159,9 +1159,7 @@ export default function LandingV1() {
               <h2 className="font-extrabold leading-[1.2]" style={{ fontSize: 'clamp(28px, 5vw, 44px)', color: '#0f172a' }}>
                 근무 일정 관리하고
                 <br />
-                <span style={{ color: '#0f172a' }}>
-                  <span style={{ color: '#2563eb' }}>포인트</span>까지 받으세요
-                </span>
+                <span style={{ color: '#2563eb' }}>채용정보</span>까지 한번에
               </h2>
             </div>
           </Reveal>
@@ -1196,9 +1194,9 @@ export default function LandingV1() {
               },
               {
                 iconBg: 'linear-gradient(135deg, #059669, #10b981)',
-                emoji: '🎁',
-                title: '포인트 적립',
-                desc: '스케줄 확정, 출근 인증 등 활동마다 포인트가 쌓입니다. 모은 포인트로 혜택을 누리세요',
+                emoji: '🔔',
+                title: '채용 알림',
+                desc: '쿠팡·컬리 등 주요 물류센터 채용공고를 한눈에 확인하고 바로 지원하세요',
               },
               {
                 iconBg: 'linear-gradient(135deg, #ef4444, #f97316)',

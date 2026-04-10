@@ -103,8 +103,10 @@ export default function App() {
         <Suspense fallback={<LoadingOverlay />}>
         <Routes>
           {/* ── 네비바 없는 독립 페이지 ── */}
-          {/* / 경로: 첫 진입용 인트로 스플래시 (6초 후 자동 이동) */}
-          <Route path="/" element={<Intro />} />
+          {/* / 경로: 랜딩페이지 (마케팅/SEO 진입점) — 첫 방문자가 보는 서비스 소개 페이지 */}
+          <Route path="/" element={<LandingV1 />} />
+          {/* /intro: 브랜드 인트로 애니메이션 (로고 리빌 6초 스플래시) */}
+          <Route path="/intro" element={<Intro />} />
           {/* OAuth 콜백: 로그인 처리 후 리다이렉트 */}
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           {/* 로그인 페이지: 독립 UI로 표시 */}

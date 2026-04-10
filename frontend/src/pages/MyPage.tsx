@@ -1,8 +1,8 @@
-// 마이페이지 — 탭 기반 구조로 개편
-// 탭: 홈(기본 정보) / 즐겨찾기 / 지원현황 / 스케줄 / 포인트
+// 마이페이지 — 탭 기반 구조
+// 탭: 홈(기본 정보) / 즐겨찾기 / 지원현황 / 스케줄 / 설정
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, LogOut, Home, Star, ClipboardList, CalendarDays, Gift, Settings } from 'lucide-react'
+import { ChevronLeft, LogOut, Home, Star, ClipboardList, CalendarDays, Settings } from 'lucide-react'
 // Trash2는 계정관리 섹션 제거로 사용하지 않음 (설정 탭으로 이동)
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -18,7 +18,6 @@ import { InquiryModal } from '../components/mypage/InquiryModal'
 import MyFavoritesTab from '../components/mypage/MyFavoritesTab'
 import MyApplicationsTab from '../components/mypage/MyApplicationsTab'
 import MyScheduleTab from '../components/mypage/MyScheduleTab'
-import MyRewardsTab from '../components/mypage/MyRewardsTab'
 import MySettingsTab from '../components/mypage/MySettingsTab'
 import type { InquiryItem } from '../components/mypage/InquiryHistory'
 import type { ReportRow } from '../types/supabase'
@@ -35,15 +34,14 @@ function calcDaysFrom(iso: string | null | undefined): number | null {
   return Math.floor(ms / (24 * 60 * 60 * 1000))
 }
 
-// ── 탭 정의 ── (설정 탭을 맨 우측에 추가)
-type TabKey = 'home' | 'favorites' | 'applications' | 'schedule' | 'rewards' | 'settings'
+// ── 탭 정의 ──
+type TabKey = 'home' | 'favorites' | 'applications' | 'schedule' | 'settings'
 const TABS: { key: TabKey; icon: typeof Home; label: string }[] = [
   { key: 'home',         icon: Home,          label: '홈' },
   { key: 'favorites',    icon: Star,          label: '즐겨찾기' },
   { key: 'applications', icon: ClipboardList, label: '지원현황' },
   { key: 'schedule',     icon: CalendarDays,  label: '스케줄' },
-  { key: 'rewards',      icon: Gift,          label: '포인트' },
-  { key: 'settings',     icon: Settings,      label: '설정' },  // ⚙️ 설정 탭
+  { key: 'settings',     icon: Settings,      label: '설정' },
 ]
 
 export default function MyPage() {
@@ -274,12 +272,7 @@ export default function MyPage() {
           <MyScheduleTab userId={user.raw.id} />
         )}
 
-        {/* ⑤ 포인트/쿠폰 탭 */}
-        {activeTab === 'rewards' && (
-          <MyRewardsTab userId={user.raw.id} />
-        )}
-
-        {/* ⑥ 설정 탭 */}
+        {/* ⑤ 설정 탭 */}
         {activeTab === 'settings' && (
           <MySettingsTab />
         )}

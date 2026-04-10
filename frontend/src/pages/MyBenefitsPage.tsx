@@ -1,6 +1,4 @@
-// 나의 혜택 페이지 — 두 탭 구조
-// ① 포인트·쿠폰: Supabase user_points / user_coupons 테이블 연동
-// ② 지원금 안내: 정부 지원금·혜택 카드뉴스 (정적)
+// 나의 혜택 페이지 — 정부 지원금·혜택 안내
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -14,11 +12,7 @@ import {
   Heart,
   BookOpen,
   Shield,
-  LogIn,
-  Coins,
 } from 'lucide-react'
-import { useAuth } from '../contexts/AuthContext'
-import MyRewardsTab from '../components/mypage/MyRewardsTab'
 
 // ─────────────────────────────────────────────
 // 정부 지원금 카드 타입 & 데이터 (기존 그대로)
@@ -158,68 +152,6 @@ const BENEFITS: BenefitCard[] = [
   },
 ]
 
-// ─────────────────────────────────────────────
-// 탭 정의
-// ─────────────────────────────────────────────
-type TabKey = 'rewards' | 'guide'
-
-const TABS: { key: TabKey; icon: React.ElementType; label: string }[] = [
-  { key: 'rewards', icon: Coins,  label: '포인트·쿠폰' },
-  { key: 'guide',   icon: Gift,   label: '지원금 안내' },
-]
-
-// ─────────────────────────────────────────────
-// 로그인 유도 UI (포인트 탭에서 비로그인 시 표시)
-// ─────────────────────────────────────────────
-function LoginPrompt({ onLogin }: { onLogin: () => void }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center justify-center py-16 gap-4 text-center"
-    >
-      {/* 아이콘 장식 */}
-      <div className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-violet-100 to-blue-100 flex items-center justify-center shadow-[0_8px_32px_rgba(139,92,246,0.15)]">
-        <Gift className="w-10 h-10 text-violet-500" />
-      </div>
-
-      <div>
-        <p className="text-[18px] font-extrabold text-[#191f28] mb-1">
-          로그인하고 포인트를 모아보세요
-        </p>
-        <p className="text-[13px] text-[#8b95a1] leading-relaxed">
-          출근할 때마다 포인트가 쌓이고<br />
-          커피쿠폰으로 교환할 수 있어요
-        </p>
-      </div>
-
-      {/* 적립 미리보기 뱃지 */}
-      <div className="flex gap-2 flex-wrap justify-center">
-        {[
-          { label: '첫 지원', point: '+50P', color: 'bg-blue-50 text-blue-600 border-blue-100' },
-          { label: '출근완료', point: '+100P', color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
-          { label: '연속 3일', point: '+200P', color: 'bg-orange-50 text-orange-600 border-orange-100' },
-        ].map(item => (
-          <div key={item.label}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[12px] font-bold ${item.color}`}>
-            <span>{item.label}</span>
-            <span>{item.point}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* 로그인 버튼 */}
-      <button
-        type="button"
-        onClick={onLogin}
-        className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#3182f6] text-white text-[14px] font-extrabold shadow-[0_8px_24px_rgba(49,130,246,0.35)] active:scale-[0.97] transition-all"
-      >
-        <LogIn className="w-4 h-4" />
-        로그인하러 가기
-      </button>
-    </motion.div>
-  )
-}
 
 // ─────────────────────────────────────────────
 // 정부 지원금 카드 섹션 (기존 MyBenefitsPage 내용)
@@ -363,88 +295,32 @@ function GovernmentBenefitsSection() {
 // ─────────────────────────────────────────────
 export default function MyBenefitsPage() {
   const navigate = useNavigate()
-  const { isLoggedIn, user, loading } = useAuth()
-
-  // 기본 탭: 로그인 상태면 포인트·쿠폰, 아니면 지원금 안내
-  const [activeTab, setActiveTab] = useState<TabKey>('rewards')
 
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-10">
 
       {/* ── 헤더 ── */}
       <header className="sticky top-0 z-30 w-full max-w-[460px] py-3 mb-1">
-        <div className="flex flex-col gap-0 rounded-2xl bg-white/60 backdrop-blur-2xl border border-white/50 shadow-[0_2px_12px_rgba(49,130,246,0.07)] overflow-hidden">
-          {/* 타이틀 행 */}
-          <div className="flex items-center gap-2 px-2 py-2">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="p-1.5 rounded-xl hover:bg-black/5 transition-colors active:scale-95"
-            >
-              <ChevronLeft className="w-5 h-5 text-[#191f28]" />
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-violet-100 flex items-center justify-center">
-                <Gift className="w-4 h-4 text-violet-600" />
-              </div>
-              <h1 className="text-[17px] font-extrabold text-[#191f28] tracking-tight">나의 혜택</h1>
+        <div className="flex items-center gap-2 px-2 py-2 rounded-2xl bg-white/60 backdrop-blur-2xl border border-white/50 shadow-[0_2px_12px_rgba(49,130,246,0.07)]">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="p-1.5 rounded-xl hover:bg-black/5 transition-colors active:scale-95"
+          >
+            <ChevronLeft className="w-5 h-5 text-[#191f28]" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-xl bg-violet-100 flex items-center justify-center">
+              <Gift className="w-4 h-4 text-violet-600" />
             </div>
-          </div>
-
-          {/* 탭 네비게이션 */}
-          <div className="flex border-t border-white/40">
-            {TABS.map(tab => {
-              const Icon = tab.icon
-              const isActive = activeTab === tab.key
-              return (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[12px] font-bold border-b-2 transition-all ${
-                    isActive
-                      ? 'border-[#3182f6] text-[#3182f6]'
-                      : 'border-transparent text-[#8b95a1] hover:text-[#4e5968]'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {tab.label}
-                </button>
-              )
-            })}
+            <h1 className="text-[17px] font-extrabold text-[#191f28] tracking-tight">나의 혜택</h1>
           </div>
         </div>
       </header>
 
-      {/* ── 탭 콘텐츠 ── */}
+      {/* ── 콘텐츠 ── */}
       <div className="w-full max-w-[460px]">
-
-        {/* ① 포인트·쿠폰 탭 */}
-        {activeTab === 'rewards' && (
-          <>
-            {/* 로딩 중 */}
-            {loading && (
-              <div className="flex items-center justify-center py-20">
-                <div className="w-5 h-5 rounded-full border-2 border-[#3182f6] border-t-transparent animate-spin" />
-              </div>
-            )}
-
-            {/* 로그인 필요 */}
-            {!loading && !isLoggedIn && (
-              <LoginPrompt onLogin={() => navigate('/login')} />
-            )}
-
-            {/* 로그인 완료 — MyRewardsTab 재사용 */}
-            {!loading && isLoggedIn && user && (
-              <MyRewardsTab userId={user.raw.id} />
-            )}
-          </>
-        )}
-
-        {/* ② 지원금 안내 탭 */}
-        {activeTab === 'guide' && (
-          <GovernmentBenefitsSection />
-        )}
+        <GovernmentBenefitsSection />
       </div>
     </div>
   )
