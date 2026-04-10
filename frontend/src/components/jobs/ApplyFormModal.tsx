@@ -61,6 +61,7 @@ interface ApplyFormModalProps {
   jobTitle: string             // 공고 제목 (모달 상단 표시)
   isSubmitting: boolean
   taskOptions?: string[]       // 공고별 업무 옵션 (없으면 DEFAULT_TASK_OPTIONS 사용)
+  shiftOptions?: string[]      // 공고별 모집 근무조 (없거나 빈 배열이면 전체 표시)
   workDate?: string | null     // 공고 근무 예정일 (중복 체크에 전달)
 }
 
@@ -78,6 +79,7 @@ export default function ApplyFormModal({
   jobTitle,
   isSubmitting,
   taskOptions,
+  shiftOptions,
   workDate,
 }: ApplyFormModalProps) {
   const { user } = useAuth()
@@ -85,6 +87,23 @@ export default function ApplyFormModal({
   // 실제 사용할 업무 옵션 (공고별 또는 기본값)
   const effectiveTaskOptions =
     taskOptions && taskOptions.length > 0 ? taskOptions : DEFAULT_TASK_OPTIONS
+
+  // 실제 표시할 근무조 버튼 목록
+  // shift_options가 있으면 해당 조만 + 무관 항상 추가
+  // 없거나 비어있으면 전체(오전/오후/야간/무관) 표시
+  const ALL_SHIFTS = [
+    { value: 'morning',   label: '오전' },
+    { value: 'afternoon', label: '오후' },
+    { value: 'night',     label: '야간' },
+    { value: 'any',       label: '무관' },
+  ] as const
+  const effectiveShifts =
+    shiftOptions && shiftOptions.length > 0
+      ? [
+          ...ALL_SHIFTS.filter(s => s.value !== 'any' && shiftOptions.includes(s.value)),
+          { value: 'any' as const, label: '무관' },  // 무관은 항상 포함
+        ]
+      : [...ALL_SHIFTS]
 
   // 폼 초기 상태
   const emptyForm: ApplyFormData = {
@@ -509,13 +528,9 @@ export default function ApplyFormModal({
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     <span className="text-red-500 mr-1">*</span>희망 출근 시간대
                   </label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {([
-                      { value: 'morning', label: '오전' },
-                      { value: 'afternoon', label: '오후' },
-                      { value: 'night', label: '야간' },
-                      { value: 'any', label: '무관' },
-                    ] as const).map(opt => (
+                  {/* 공고에 설정된 근무조만 표시 (미설정이면 전체) */}
+                  <div className={`grid gap-2 ${effectiveShifts.length <= 2 ? 'grid-cols-2' : effectiveShifts.length === 3 ? 'grid-cols-3' : 'grid-cols-4'}`}>
+                    {effectiveShifts.map(opt => (
                       <button
                         key={opt.value}
                         type="button"

@@ -27,6 +27,7 @@ interface JobForm {
   section: 'today-urgent' | 'tomorrow-urgent' | 'always'  // A-3: 섹션 3종
   benefits: string[]   // A-4: 복리후생 태그
   task_options: string[]  // A-5: 지원자 선택 업무 종류 목록
+  shift_options: string[] // A-7: 모집 근무조 배열 (빈 배열이면 전체 표시)
   work_date: string    // A-6: 근무 예정일 (YYYY-MM-DD, 빈 문자열이면 미지정)
   expires_at: string
 }
@@ -37,6 +38,7 @@ const defaultForm: JobForm = {
   description: '', contact_phone: '', external_link: '',
   is_urgent: false, section: 'always', benefits: [],
   task_options: ['상차', '하차', '분류', '피킹', '포장'],  // 기본 업무 옵션
+  shift_options: [],   // 기본값: 빈 배열 (지원 폼에서 전체 표시)
   work_date: '',
   expires_at: '',
 }
@@ -248,6 +250,7 @@ export default function JobsMenu() {
       task_options: Array.isArray(job.task_options) && job.task_options.length > 0
         ? job.task_options
         : ['상차', '하차', '분류', '피킹', '포장'],  // 없으면 기본값
+      shift_options: Array.isArray(job.shift_options) ? job.shift_options : [],  // A-7: 모집 근무조
       work_date: job.work_date ?? '',
       expires_at: job.expires_at ?? '',
     })
@@ -282,6 +285,7 @@ export default function JobsMenu() {
         task_options: form.task_options.length > 0
           ? form.task_options
           : ['상차', '하차', '분류', '피킹', '포장'],  // A-5: 업무 옵션 (비어있으면 기본값)
+        shift_options: form.shift_options,              // A-7: 모집 근무조 배열
         work_date: form.work_date || null,              // A-6: 근무 예정일 (빈 문자열이면 null)
         expires_at: form.expires_at || null,
       }
@@ -1166,6 +1170,47 @@ export default function JobsMenu() {
                   <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>
                     엔터 또는 쉼표로 구분 입력 (예: 상차, 하차, 분류)
                   </p>
+                </div>
+
+                {/* A-7: 모집 근무조 체크박스 — 지원 폼에서 활성화할 근무조 선택 */}
+                <div style={{ marginBottom: 14 }}>
+                  <span style={labelSpan}>
+                    모집 근무조
+                    <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', marginLeft: 6 }}>
+                      (미선택 시 지원 폼에서 오전/오후/야간/무관 전체 표시)
+                    </span>
+                  </span>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 6 }}>
+                    {([
+                      { value: 'morning', label: '오전' },
+                      { value: 'afternoon', label: '오후' },
+                      { value: 'night', label: '야간' },
+                    ] as const).map(opt => {
+                      const checked = form.shift_options.includes(opt.value)
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setForm(f => ({
+                            ...f,
+                            shift_options: checked
+                              ? f.shift_options.filter(v => v !== opt.value)  // 체크 해제
+                              : [...f.shift_options, opt.value],               // 체크 추가
+                          }))}
+                          style={{
+                            padding: '6px 16px', borderRadius: 999,
+                            border: checked ? '2px solid #3182f6' : '2px solid rgba(255,255,255,0.15)',
+                            background: checked ? 'rgba(49,130,246,0.2)' : 'transparent',
+                            color: checked ? '#3182f6' : 'rgba(255,255,255,0.5)',
+                            fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
+                            transition: 'all 0.15s',
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
 
                 {/* A-6: 근무 예정일 */}

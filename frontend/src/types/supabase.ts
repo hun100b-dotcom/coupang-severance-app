@@ -109,6 +109,8 @@ export interface JobPosting {
   benefits: string[]
   // 지원자 선택 업무 종류 — 20260411 추가 (지원서 폼 드롭다운 옵션)
   task_options: string[]
+  // 모집 근무조 배열 — 20260411 추가 (빈 배열이면 지원 폼에서 전체 표시)
+  shift_options: string[]
   // 공고 근무 예정일 — 20260411 추가 (중복 확정 차단 기준일)
   work_date: string | null
   expires_at: string | null

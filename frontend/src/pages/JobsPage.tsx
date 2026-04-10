@@ -843,6 +843,12 @@ export default function JobsPage() {
             ? (allJobs.find(j => j.id === pendingApplyJobId)?.task_options ?? [])
             : []
         }
+        // 공고별 모집 근무조 (비어있으면 전체 표시)
+        shiftOptions={
+          pendingApplyJobId
+            ? (allJobs.find(j => j.id === pendingApplyJobId)?.shift_options ?? [])
+            : []
+        }
         // 공고 근무 예정일 — 중복 확정 차단 기준
         workDate={
           pendingApplyJobId
