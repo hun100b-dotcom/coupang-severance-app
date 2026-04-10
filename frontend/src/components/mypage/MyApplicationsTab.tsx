@@ -81,7 +81,16 @@ export default function MyApplicationsTab({ userId }: Props) {
     fetchApplications()
   }, [fetchApplications])
 
-  // ── Supabase Realtime 구독 ──
+  // ── Realtime 알림 토스트 state ──
+  // 어드민이 확정/거절 처리 시 notifications 테이블에 기록 → 즉시 toast 표시
+  const [notifToast, setNotifToast] = useState<string | null>(null)
+  useEffect(() => {
+    if (!notifToast) return
+    const t = setTimeout(() => setNotifToast(null), 4000)
+    return () => clearTimeout(t)
+  }, [notifToast])
+
+  // ── Supabase Realtime 구독 1: job_applications ──
   // 어드민이 출근확정/완료 처리하면 자동으로 화면이 갱신됩니다.
   useEffect(() => {
     if (!supabase) return
@@ -107,6 +116,38 @@ export default function MyApplicationsTab({ userId }: Props) {
     // 컴포넌트 언마운트 시 구독 해제 (메모리 누수 방지)
     return () => {
       sb.removeChannel(channel)
+    }
+  }, [userId, fetchApplications])
+
+  // ── Supabase Realtime 구독 2: notifications ──
+  // REQ8: 어드민이 notifications 테이블에 알림을 insert하면 즉시 toast 표시
+  useEffect(() => {
+    if (!supabase) return
+
+    const notifChannel = supabase
+      .channel('my_notifications_realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',      // 새 알림 삽입만 감지
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          // 새 알림 도착 시 toast 메시지 표시
+          const record = payload.new as { title?: string; body?: string }
+          const msg = record.title ?? '새 알림이 도착했습니다.'
+          setNotifToast(msg)
+          // job_applications 화면도 갱신 (상태 변경과 연동됨)
+          fetchApplications()
+        }
+      )
+      .subscribe()
+
+    const sb = supabase
+    return () => {
+      sb.removeChannel(notifChannel)
     }
   }, [userId, fetchApplications])
 
@@ -179,6 +220,24 @@ export default function MyApplicationsTab({ userId }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
+
+      {/* ── REQ8: 실시간 알림 토스트 ── */}
+      {/* notifications 테이블에 새 알림 INSERT 시 자동 표시, 4초 후 자동 소멸 */}
+      {notifToast && (
+        <div
+          className="fixed top-16 left-1/2 z-[500] w-[calc(100%-32px)] max-w-[380px]"
+          style={{ transform: 'translateX(-50%)' }}
+        >
+          <div className="rounded-2xl px-4 py-3 text-[14px] font-bold text-white text-center"
+            style={{
+              background: 'linear-gradient(135deg, #3182f6, #7c3aed)',
+              boxShadow: '0 8px 32px rgba(37,99,235,0.35)',
+            }}
+          >
+            🔔 {notifToast}
+          </div>
+        </div>
+      )}
 
       {/* ── 상태 필터 탭 ── */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
