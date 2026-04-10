@@ -110,9 +110,10 @@ export default function ApplyFormModal({
     }
 
     // 온보딩 시 저장한 프로필 값을 불러와서 자동 채움
+    // gender 컬럼 추가됨 (2026-04-11) — 온보딩에서 입력한 성별도 prefill
     supabase
       .from('profiles')
-      .select('full_name, birthdate, phone_number')
+      .select('full_name, birthdate, phone_number, gender')
       .eq('id', user.id)
       .single()
       .then(({ data, error }) => {
@@ -140,14 +141,19 @@ export default function ApplyFormModal({
           birthDay   = parts[2] ? String(parseInt(parts[2], 10)) : ''
         }
 
-        const hasPrefillData = !!(data.full_name || data.birthdate || data.phone_number)
+        // profiles.gender 가 있으면 자동 선택, 없으면 빈 상태 (기존 회원 등)
+        const prefillGender = (data.gender === 'male' || data.gender === 'female')
+          ? data.gender
+          : ''
+
+        const hasPrefillData = !!(data.full_name || data.birthdate || data.phone_number || data.gender)
 
         setForm({
           applicant_name: data.full_name || '',
           birth_year:     birthYear,
           birth_month:    birthMonth,
           birth_day:      birthDay,
-          applicant_gender: '',   // 성별은 profiles에 없으므로 직접 선택
+          applicant_gender: prefillGender,   // 성별 자동 prefill (온보딩 입력값)
           applicant_phone: data.phone_number || '',
           consent_collect: false,
           consent_third_party: false,
