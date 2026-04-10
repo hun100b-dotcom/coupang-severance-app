@@ -131,8 +131,9 @@ export default function JobsMenu() {
 
   // ───────────────────────────────────────
   // 지원자 목록 로드
-  // job_applications + job_postings + profiles 3-way JOIN
-  // profiles는 LEFT JOIN(profiles!left)으로 — RLS로 profiles 조회 실패 시에도 나머지 데이터 반환
+  // job_applications + job_postings 2-way JOIN 후
+  // profiles는 user_id 배열로 별도 조회 후 클라이언트 병합
+  // (job_applications.user_id FK가 auth.users 참조라 PostgREST 직접 JOIN 불가)
   // ───────────────────────────────────────
   const fetchApplicants = useCallback(async () => {
     if (!supabase) return
@@ -146,10 +147,6 @@ export default function JobsMenu() {
           job_postings (
             company_name,
             center_name
-          ),
-          profiles!left (
-            full_name,
-            email
           )
         `)
         .order('applied_at', { ascending: false })
@@ -165,7 +162,25 @@ export default function JobsMenu() {
 
       const { data, error } = await query
       if (error) throw error
-      setApplicants((data ?? []) as ApplicationRow[])
+
+      const rows = (data ?? []) as ApplicationRow[]
+
+      // profiles 별도 조회 후 user_id 기준으로 병합
+      const userIds = [...new Set(rows.map(r => r.user_id))]
+      if (userIds.length > 0) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', userIds)
+        const profileMap = Object.fromEntries(
+          (profileData ?? []).map((p: { id: string; full_name: string | null; email: string | null }) => [p.id, p])
+        )
+        rows.forEach(r => {
+          r.profiles = profileMap[r.user_id] ?? null
+        })
+      }
+
+      setApplicants(rows)
     } catch (err: unknown) {
       // REQ6: 에러를 console 대신 UI에 표시
       const msg = err instanceof Error ? err.message : '지원자 목록을 불러오지 못했습니다.'
