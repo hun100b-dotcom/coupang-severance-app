@@ -20,6 +20,60 @@
 
 ## ✅ 완료 작업 이력
 
+### 세션 6 — 2026-04-10 (하네스 v2 — sharp-hodgkin)
+
+**요구사항 D 전면 교체 + A/C/E 잔여 구현 (커밋 6개)**
+
+**DB 마이그레이션 (Supabase MCP 직접 적용)**
+- `20260410_job_postings_section_benefits.sql`: section(3종)/benefits 컬럼 추가
+- `20260410_applications_personal_info.sql`: applicant_name/birth/gender/phone/consent 컬럼
+
+**D-NEW (지원 시점 직접 입력 방식)**
+- `ApplyFormModal.tsx` 신규 생성: 성명/생년월일/성별/휴대폰 + 개인정보 동의 아코디언
+- 주민번호 뒤 1자리 미수집 — applicant_gender(남/여 텍스트)로 대체
+- 동의 기본값 false, 미체크 시 제출 버튼 비활성
+- 4자리 연도 강제 검증 (padStart 우회 버그 수정)
+- `JobsPage.tsx`: 로그인 게이트 → 폼 모달 → INSERT
+
+**A-1/2/3/4 어드민 공고 등록 개선**
+- A-1: 숫자 입력 type=text+inputMode=numeric+천단위콤마
+- A-2: date input min=오늘 + colorScheme=dark
+- A-3: 섹션 3종 라디오 (오늘추가/내일긴급/상시)
+- A-4: benefits 태그 칩 + 직접 입력 Enter
+
+**C-4 마이페이지 빨간 점 배지**
+- `MyPage.tsx`: notifications Realtime 구독 + 미읽음 카운트
+- 지원현황 탭 클릭 시 자동 read=true
+
+**E-1 xlsx 다운로드**
+- `JobsMenu.tsx`: CSV 다운로드 (consent_third_party=true 건만)
+- 휴대폰 마스킹 처리 (MVP 정책)
+
+**문서**
+- `docs/privacy-policy-draft.md`: 개인정보처리방침 초안
+- `docs/security-checklist.md`: 보안 체크리스트
+- `docs/plans/2026-04-10-v2-full-plan.md`: 전체 플랜
+
+**커밋 목록**
+- `089060d`: feat(db): section/benefits + 인적사항 마이그레이션
+- `33157b9`: feat(types): 타입 업데이트
+- `eda56e7`: feat(jobs): 지원 폼 모달
+- `dd6b8f6`: feat(admin): A-1/2/3/4 + E-1
+- `bfb0585`: feat(realtime): C-4 빨간 점 배지
+- `00f9df3`: fix(security): 4자리 연도 강제 검증
+
+**push 상태**: 미완료 (아래 참고)
+
+### 세션 5 — 2026-04-10
+
+**추천인 시스템 구축 (커밋 b5c4299)**
+- `supabase/migrations/20260410_referral_system.sql`: user_referrals 테이블 + profiles.referral_code + RLS + handle_new_user 트리거 업데이트
+- `frontend/src/lib/referral.ts`: 추천 코드 생성/저장/조회 유틸 (ensureReferralCode, saveReferral, getReferralStats)
+- `Login.tsx`: ?ref= URL 파라미터 감지 → localStorage 임시 저장
+- `Onboarding.tsx`: 온보딩 완료 시 추천 관계 DB 기록 → localStorage 정리
+- `MyRewardsTab.tsx`: 친구 추천하기 섹션 추가 (코드 복사, 링크 복사, 추천 수)
+- Supabase SQL 마이그레이션 실행 필요 (Supabase 대시보드 → SQL Editor에서 실행)
+
 ### 세션 4 — 2026-04-09 (Cowork)
 
 **Google Search Console 설정**
