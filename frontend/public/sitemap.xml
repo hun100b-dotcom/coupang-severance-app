@@ -9,9 +9,9 @@
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- 홈: 최고 우선순위, 주간 변경 (공지·채용 업데이트) -->
+  <!-- 랜딩 메인: 최고 우선순위 SEO 진입점 (비로그인 사용자 최초 방문 페이지) -->
   <url>
-    <loc>https://catch-daily-worker.vercel.app/home</loc>
+    <loc>https://catch-daily-worker.vercel.app/</loc>
     <lastmod>2026-04-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>

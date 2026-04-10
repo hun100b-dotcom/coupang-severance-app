@@ -19,6 +19,12 @@ interface PageMetaProps {
    * 예: FAQPage, BreadcrumbList, SoftwareApplication 스키마
    */
   jsonLd?: Record<string, unknown> | Record<string, unknown>[]
+  /**
+   * true이면 <meta name="robots" content="noindex, follow"> 주입
+   * 로그인 사용자 전용 페이지(Home) 또는 공고 목록 같이 검색 결과에
+   * 노출되면 안 되는 페이지에 사용합니다.
+   */
+  noIndex?: boolean
 }
 
 /**
@@ -35,7 +41,7 @@ interface PageMetaProps {
  *     jsonLd={[faqSchema, breadcrumbSchema]}
  *   />
  */
-export default function PageMeta({ title, description, canonical, ogImage, jsonLd }: PageMetaProps) {
+export default function PageMeta({ title, description, canonical, ogImage, jsonLd, noIndex }: PageMetaProps) {
   const ogImageUrl = ogImage ?? DEFAULT_OG_IMAGE
 
   // jsonLd가 배열이면 그대로, 단일 객체면 배열로 감싸서 처리
@@ -50,6 +56,9 @@ export default function PageMeta({ title, description, canonical, ogImage, jsonL
       {/* ── 기본 SEO 태그 ── */}
       <title>{title}</title>
       <meta name="description" content={description} />
+
+      {/* ── 크롤러 색인 제어: noIndex=true면 검색 결과에 표시 안 됨 ── */}
+      {noIndex && <meta name="robots" content="noindex, follow" />}
 
       {/* ── 중복 URL 방지: canonical은 항상 프로덕션 URL ── */}
       <link rel="canonical" href={canonical} />

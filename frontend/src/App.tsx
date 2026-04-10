@@ -4,9 +4,9 @@
 // lazy: 컴포넌트를 처음 렌더링할 때만 동적으로 불러옵니다 (지연 로딩).
 // Suspense: lazy 컴포넌트가 로딩 중일 때 대신 보여줄 fallback UI를 지정합니다.
 import { lazy, Suspense, useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom' // 브라우저 라우팅을 위해 react-router-dom을 가져옵니다.
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom' // 브라우저 라우팅을 위해 react-router-dom을 가져옵니다.
 import { GoogleOAuthProvider } from '@react-oauth/google' // Google Identity Services 제공자
-import { AuthProvider } from './contexts/AuthContext' // 전역 로그인 상태를 제공하는 AuthProvider를 가져옵니다.
+import { AuthProvider, useAuth } from './contexts/AuthContext' // 전역 로그인 상태를 제공하는 AuthProvider를 가져옵니다.
 import AnimatedBackground from './components/AnimatedBackground' // 배경 애니메이션 컴포넌트를 가져옵니다.
 import Layout from './components/Layout' // 상단/하단 네비바를 포함한 전역 레이아웃 컴포넌트입니다.
 import ProtectedRoute from './components/ProtectedRoute' // 로그인 필요 페이지를 보호하는 래퍼 컴포넌트를 가져옵니다.
@@ -55,6 +55,18 @@ const SeveranceGuide         = lazy(() => import('./pages/guide/SeveranceGuide')
 const UnemploymentGuide      = lazy(() => import('./pages/guide/UnemploymentGuide'))      // 실업급여 가이드
 const WeeklyAllowanceGuide   = lazy(() => import('./pages/guide/WeeklyAllowanceGuide'))   // 주휴수당 가이드
 const AnnualLeaveGuide       = lazy(() => import('./pages/guide/AnnualLeaveGuide'))       // 연차수당 가이드
+
+// ── /home 진입 가드 — 비로그인 사용자는 랜딩(/)으로, 로그인 사용자는 Home 표시 ──
+// Google이 /home을 크롤·인덱싱하는 것을 방지하고 랜딩 페이지를 SEO 진입점으로 유지합니다.
+function HomeGuard() {
+  const { user, loading } = useAuth()
+  // 세션 확인 중에는 빈 화면 (깜빡임 방지)
+  if (loading) return null
+  // 비로그인 사용자: 랜딩 페이지로 이동
+  if (!user) return <Navigate to="/" replace />
+  // 로그인 사용자: 기존 Home 컴포넌트 렌더
+  return <Home />
+}
 
 export default function App() {
   // 스플래시 화면 표시 여부 (최초 접속 시 true, 2.3초 후 false로 전환)
@@ -136,8 +148,8 @@ export default function App() {
           {/* ── 네비바(TopNav + BottomNav)가 있는 일반 페이지 ──
               Layout 컴포넌트가 Outlet을 통해 중첩 라우트를 렌더링합니다. */}
           <Route element={<OnboardingGuard><Layout /></OnboardingGuard>}>
-            {/* 메인 홈 화면 */}
-            <Route path="/home" element={<Home />} />
+            {/* 메인 홈 화면 — HomeGuard가 비로그인 사용자를 /로 리다이렉트 */}
+            <Route path="/home" element={<HomeGuard />} />
             {/* 채용정보 피드 */}
             <Route path="/jobs" element={<JobsPage />} />
             {/* 계산기 허브 (4개 서비스 선택) */}
