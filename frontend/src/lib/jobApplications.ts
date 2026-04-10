@@ -40,11 +40,20 @@ export async function hasApplied(userId: string, jobPostingId: string): Promise<
   return (data ?? []).length > 0
 }
 
-// ── 지원하기 (공고 지원) ──
+// ── 지원하기 (공고 지원) — 인적사항 포함 버전 ──
 // 성공 시 생성된 application의 id 반환, 실패 시 null
+// applicantInfo: 지원 시점 직접 입력한 인적사항 (D-NEW-3)
 export async function applyToJob(
   userId: string,
   jobPostingId: string,
+  applicantInfo?: {
+    applicant_name: string
+    applicant_birth: string       // YYYY-MM-DD
+    applicant_gender: 'male' | 'female'
+    applicant_phone: string
+    consent_collect: boolean
+    consent_third_party: boolean
+  },
 ): Promise<string | null> {
   if (!supabase) return null
   const { data, error } = await supabase
@@ -53,6 +62,12 @@ export async function applyToJob(
       user_id: userId,
       job_posting_id: jobPostingId,
       status: 'applied',
+      // 인적사항 포함 (없으면 null로 저장)
+      ...(applicantInfo ?? {}),
+      // 동의 시각: 동의한 경우에만 기록
+      consent_at: applicantInfo?.consent_collect && applicantInfo?.consent_third_party
+        ? new Date().toISOString()
+        : null,
     })
     .select('id')
     .single()

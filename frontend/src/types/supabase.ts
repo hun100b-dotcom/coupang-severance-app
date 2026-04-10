@@ -103,6 +103,10 @@ export interface JobPosting {
   contact_phone: string
   external_link: string
   is_urgent: boolean
+  // 공고 섹션 — 20260410 추가
+  section: 'today-urgent' | 'tomorrow-urgent' | 'always'
+  // 복리후생 목록 — 20260410 추가
+  benefits: string[]
   expires_at: string | null
   status: 'active' | 'expired' | 'deleted'
   created_by: string | null
@@ -110,18 +114,37 @@ export interface JobPosting {
   updated_at: string
 }
 
+/** 지원자 인적사항 — 지원 시점 직접 입력 */
+export interface ApplicantInfo {
+  applicant_name: string        // 성명
+  applicant_birth: string       // 생년월일 YYYY-MM-DD (6자리)
+  applicant_gender: 'male' | 'female'  // 성별 (주민번호 뒤 1자리 아님)
+  applicant_phone: string       // 휴대폰번호
+  consent_collect: boolean      // 개인정보 수집·이용 동의
+  consent_third_party: boolean  // 제3자 제공 동의
+  consent_at: string            // 동의 일시 (ISO string)
+}
+
 /** job_applications 테이블 한 행 — 채용 지원 내역 */
 export interface JobApplication {
   id: string
   user_id: string
   job_posting_id: string
-  // 지원 상태: applied(지원완료) | confirmed(출근확정) | completed(출근완료) | cancelled(취소)
-  status: 'applied' | 'confirmed' | 'completed' | 'cancelled'
+  // 지원 상태: applied(지원완료) | confirmed(출근확정) | completed(출근완료) | cancelled(취소) | rejected(거절)
+  status: 'applied' | 'confirmed' | 'completed' | 'cancelled' | 'rejected'
   applied_at: string
   work_date: string | null          // 출근 예정일 (YYYY-MM-DD)
   work_confirmed_at: string | null  // 출근 확정 시각
   note: string | null
   created_at: string
+  // 인적사항 (지원 시점 직접 입력) — 20260410 추가
+  applicant_name: string | null
+  applicant_birth: string | null    // YYYY-MM-DD
+  applicant_gender: 'male' | 'female' | null
+  applicant_phone: string | null
+  consent_collect: boolean | null
+  consent_third_party: boolean | null
+  consent_at: string | null
   // Supabase JOIN 시 포함되는 공고 상세 (선택)
   job_postings?: Pick<JobPosting, 'company_name' | 'center_name' | 'region' | 'hourly_wage' | 'daily_wage' | 'work_hours'> | null
 }
