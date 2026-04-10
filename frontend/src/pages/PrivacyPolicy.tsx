@@ -24,7 +24,7 @@ export default function PrivacyPolicyPage() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">개인정보 처리방침</h1>
           {/* 시행일 표시 */}
-          <p className="text-sm text-gray-500">시행일: 2025년 1월 1일</p>
+          <p className="text-sm text-gray-500">시행일: 2026년 4월 11일 (최종 개정)</p>
         </div>
 
         {/* 처리방침 서문 */}
@@ -66,10 +66,16 @@ export default function PrivacyPolicyPage() {
                       <td className="py-2 px-3">서비스 이용 기록, 접속 로그, IP 주소, 쿠키(OAuth 세션 토큰)</td>
                       <td className="py-2 px-3">서비스 이용 중 자동 생성</td>
                     </tr>
-                    <tr>
+                    <tr className="border-b border-gray-100">
                       <td className="py-2 px-3 font-medium">선택</td>
                       <td className="py-2 px-3">마케팅 수신 동의 여부</td>
                       <td className="py-2 px-3">이용자 직접 입력</td>
+                    </tr>
+                    <tr>
+                      {/* 채용 지원 시 추가 수집 — 지원 폼 동의 기반 (2026-04-11 추가) */}
+                      <td className="py-2 px-3 font-medium">채용 지원 시<br/><span className="text-xs text-gray-500">(동의 시에만)</span></td>
+                      <td className="py-2 px-3">성명, 생년월일, 성별, 휴대폰번호<br/><span className="text-xs text-gray-500">※ 주민등록번호 미수집</span></td>
+                      <td className="py-2 px-3">채용 지원 폼 직접 입력<br/>(개인정보 동의 후 수집)</td>
                     </tr>
                   </tbody>
                 </table>
@@ -136,6 +142,11 @@ export default function PrivacyPolicyPage() {
                       <td className="py-2 px-3">장기 미접속 계정 (3년 이상)</td>
                       <td className="py-2 px-3">최종 로그인 후 3년 경과 시 자동 파기</td>
                     </tr>
+                    <tr className="border-b border-gray-100">
+                      {/* 채용 지원 정보 보유기간 — 2026-04-11 추가 */}
+                      <td className="py-2 px-3">채용 지원 정보<br/><span className="text-xs text-gray-500">(성명·생년월일·성별·휴대폰)</span></td>
+                      <td className="py-2 px-3">채용 종료 후 6개월 이내 파기<br/><span className="text-xs text-gray-500">(합격·불합격 여부 무관)</span></td>
+                    </tr>
                     <tr>
                       <td className="py-2 px-3">관련 법령상 보존 의무 정보</td>
                       <td className="py-2 px-3">각 법령에서 정한 기간 (예: 전자상거래법 5년)</td>
@@ -167,6 +178,14 @@ export default function PrivacyPolicyPage() {
                 </li>
                 <li>
                   <strong>이용자 동의:</strong> 이용자가 사전에 제3자 제공에 명시적으로 동의한 경우
+                </li>
+                <li>
+                  {/* 채용 지원 시 제3자(채용 기업) 제공 — 2026-04-11 추가 */}
+                  <strong>채용 지원 시 채용 기업 제공 (동의 기반):</strong> 이용자가 채용 공고에
+                  지원 시 "개인정보 제3자 제공 동의"에 명시적으로 동의한 경우, 해당 공고의
+                  채용 담당 기업(쿠팡풀필먼트서비스, CJ대한통운, 마켓컬리 등)에 성명·생년월일·성별·
+                  휴대폰번호를 제공합니다. 제공 목적은 채용 절차 진행 및 합격 통보이며,
+                  보유 기간은 채용 종료 후 6개월입니다.
                 </li>
               </ol>
               <p className="text-gray-600 text-xs">
