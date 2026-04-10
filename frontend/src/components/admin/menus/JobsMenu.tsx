@@ -86,6 +86,9 @@ export default function JobsMenu() {
   const [form, setForm] = useState<JobForm>(defaultForm)
   const [saving, setSaving] = useState(false)
   const [jobError, setJobError] = useState<string | null>(null) // CRUD 오류 메시지
+  // REQ10: 5단계 폼 — 현재 단계 (1~5)
+  // 1=기본정보, 2=근무조건, 3=상세/자격, 4=미리보기, 5=발행
+  const [formStep, setFormStep] = useState(1)
   // 공고 상태 필터: 전체/active/expired/deleted
   const [statusFilter, setStatusFilter] = useState<string>('all')
   // REQ5: 검색 키워드 (회사명/센터명/지역 필터링)
@@ -182,16 +185,18 @@ export default function JobsMenu() {
   // 공고 관리 핸들러
   // ───────────────────────────────────────
 
-  // 새 공고 추가 모달 열기
+  // 새 공고 추가 모달 열기 (REQ10: formStep 1로 초기화)
   const openCreate = () => {
     setEditTarget(null)
     setForm(defaultForm)
+    setFormStep(1)
     setModalOpen(true)
   }
 
-  // 수정 모달 열기
+  // 수정 모달 열기 (REQ10: 수정 시에는 단계 없이 전체 폼 표시 → step=0 사용)
   const openEdit = (job: JobPosting) => {
     setEditTarget(job)
+    setFormStep(0)  // 0 = 단계 없이 전체 폼 (수정 시)
     setForm({
       company_name: job.company_name,
       center_name: job.center_name,
@@ -861,123 +866,162 @@ export default function JobsMenu() {
               maxHeight: '85vh', overflowY: 'auto',
             }}
           >
-            <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem', fontWeight: 800 }}>
-              {editTarget ? '공고 수정' : '새 공고 추가'}
-            </h3>
-
-            {/* 공고 등록 안내 박스 */}
-            <div style={{
-              background: 'rgba(251,191,36,0.08)',
-              border: '1px solid rgba(251,191,36,0.2)',
-              borderRadius: 10, padding: '12px 16px', marginBottom: 18,
-            }}>
-              <div style={{ fontWeight: 700, marginBottom: 5, color: '#fbbf24', fontSize: '0.82rem' }}>
-                📋 공고 등록 안내
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7 }}>
-                <div>• 회사명에 [플랫폼명] + 지역 + 직종을 포함하면 검색 노출이 잘 됩니다</div>
-                <div>• 외부 링크는 지원자가 바로 지원할 수 있는 URL을 넣어주세요</div>
-                <div>• 공고는 등록 즉시 앱에 반영됩니다</div>
-              </div>
-            </div>
-
-            {/* 회사/플랫폼 + 센터명 */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 4 }}>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>회사/플랫폼 *</span>
-                <input value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))}
-                  placeholder="예: 쿠팡풀필먼트서비스, CJ대한통운, 컬리" style={inputStyle} />
-              </label>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>센터명 / 직종</span>
-                <input value={form.center_name} onChange={e => setForm(f => ({ ...f, center_name: e.target.value }))}
-                  placeholder="예: 부천 물류센터 야간" style={inputStyle} />
-              </label>
-            </div>
-            {/* 회사 입력 도움말 */}
-            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: '4px 0 14px' }}>
-              쿠팡FLC / 쿠팡이츠 등 플랫폼명을 정확히 입력해주세요
-            </p>
-
-            {/* 지역 */}
-            <label style={{ display: 'block', marginBottom: 14 }}>
-              <span style={labelSpan}>지역 *</span>
-              <input value={form.region} onChange={e => setForm(f => ({ ...f, region: e.target.value }))}
-                placeholder="예: 경기 부천시, 서울 송파구" style={inputStyle} />
-            </label>
-
-            {/* 시급 + 일급 + 인원 + 근무시간 */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>시급 (원)</span>
-                <input type="number" value={form.hourly_wage || ''} onChange={e => setForm(f => ({ ...f, hourly_wage: parseInt(e.target.value) || 0 }))}
-                  placeholder="예: 12000" style={inputStyle} />
-              </label>
-              {/* 일급: 시급 × 근무시간 계산 없이 직접 입력 (예: 일당 계약직인 경우) */}
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>일급 (원)</span>
-                <input type="number" value={form.daily_wage || ''} onChange={e => setForm(f => ({ ...f, daily_wage: parseInt(e.target.value) || 0 }))}
-                  placeholder="예: 130000" style={inputStyle} />
-              </label>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>모집인원</span>
-                <input type="number" value={form.headcount || ''} onChange={e => setForm(f => ({ ...f, headcount: parseInt(e.target.value) || 0 }))}
-                  placeholder="예: 00명" style={inputStyle} />
-              </label>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>근무시간</span>
-                <input value={form.work_hours} onChange={e => setForm(f => ({ ...f, work_hours: e.target.value }))}
-                  placeholder="야간 22:00~06:00" style={inputStyle} />
-              </label>
-            </div>
-
-            {/* 공고 내용/상세 */}
-            <label style={{ display: 'block', marginBottom: 14 }}>
-              <span style={labelSpan}>공고 내용 / 상세</span>
-              <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                rows={4} placeholder="근무 조건, 우대사항, 복리후생 등 상세 내용 입력" style={{ ...inputStyle, resize: 'vertical' as const }} />
-            </label>
-
-            {/* 연락처 + 외부링크 */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 4 }}>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>연락처</span>
-                <input value={form.contact_phone} onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))}
-                  placeholder="010-1234-5678" style={inputStyle} />
-              </label>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>원본 공고 URL</span>
-                <input value={form.external_link} onChange={e => setForm(f => ({ ...f, external_link: e.target.value }))}
-                  placeholder="쿠팡알바, 잡코리아, 사람인 등 원본 공고 URL 붙여넣기" style={inputStyle} />
-              </label>
-            </div>
-            {/* 외부 링크 도움말 */}
-            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: '4px 0 14px' }}>
-              선택 입력 — 지원 링크가 없으면 비워두세요
-            </p>
-
-            {/* 마감일 + 긴급 */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'flex-end' }}>
-              <label style={{ flex: 1 }}>
-                <span style={labelSpan}>공고 마감일 <span style={{ color: '#f04452' }}>*</span></span>
-                <input type="date" value={form.expires_at} onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
-                  required style={inputStyle} />
-              </label>
-              <label style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={labelSpan}>긴급</span>
-                <div onClick={() => setForm(f => ({ ...f, is_urgent: !f.is_urgent }))} style={{
-                  width: 44, height: 26, borderRadius: 999,
-                  background: form.is_urgent ? '#f04452' : 'rgba(255,255,255,0.12)',
-                  cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
-                }}>
-                  <div style={{
-                    width: 20, height: 20, borderRadius: '50%', background: '#fff',
-                    position: 'absolute', top: 3,
-                    left: form.is_urgent ? 21 : 3, transition: 'left 0.2s',
-                  }} />
+            {/* 모달 헤더 */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800 }}>
+                {editTarget ? '공고 수정' : '새 공고 추가'}
+              </h3>
+              {/* REQ10: 신규 등록 시 단계 표시 (수정=formStep 0은 표시 안 함) */}
+              {formStep > 0 && (
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {[1,2,3,4,5].map(s => (
+                    <div key={s} style={{
+                      width: s <= formStep ? 20 : 8, height: 8, borderRadius: 999,
+                      background: s <= formStep ? '#3182f6' : 'rgba(255,255,255,0.12)',
+                      transition: 'all 0.2s',
+                    }} />
+                  ))}
                 </div>
-              </label>
+              )}
             </div>
+
+            {/* ── 단계 표시 텍스트 (신규 등록만) ── */}
+            {formStep > 0 && (
+              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: '0 0 16px' }}>
+                {formStep === 1 && '1단계: 기본 정보'}
+                {formStep === 2 && '2단계: 근무 조건'}
+                {formStep === 3 && '3단계: 상세 내용 & 연락처'}
+                {formStep === 4 && '4단계: 미리보기 확인'}
+                {formStep === 5 && '5단계: 발행 설정'}
+              </p>
+            )}
+
+            {/* ── STEP 1: 기본 정보 (신규 등록) 또는 전체 폼 (수정) ── */}
+            {(formStep === 1 || formStep === 0) && (
+              <>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 4 }}>
+                  <label style={{ flex: 1 }}>
+                    <span style={labelSpan}>회사/플랫폼 *</span>
+                    <input value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))}
+                      placeholder="예: 쿠팡풀필먼트서비스, CJ대한통운, 컬리" style={inputStyle} />
+                  </label>
+                  <label style={{ flex: 1 }}>
+                    <span style={labelSpan}>센터명 / 직종</span>
+                    <input value={form.center_name} onChange={e => setForm(f => ({ ...f, center_name: e.target.value }))}
+                      placeholder="예: 부천 물류센터 야간" style={inputStyle} />
+                  </label>
+                </div>
+                <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: '4px 0 14px' }}>
+                  쿠팡FLC / 쿠팡이츠 등 플랫폼명을 정확히 입력해주세요
+                </p>
+                <label style={{ display: 'block', marginBottom: 14 }}>
+                  <span style={labelSpan}>지역 *</span>
+                  <input value={form.region} onChange={e => setForm(f => ({ ...f, region: e.target.value }))}
+                    placeholder="예: 경기 부천시, 서울 송파구" style={inputStyle} />
+                </label>
+              </>
+            )}
+
+            {/* ── STEP 2: 근무 조건 ── */}
+            {(formStep === 2 || formStep === 0) && (
+              <div style={{ display: 'flex', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
+                <label style={{ flex: 1, minWidth: 100 }}>
+                  <span style={labelSpan}>시급 (원)</span>
+                  <input type="number" value={form.hourly_wage || ''} onChange={e => setForm(f => ({ ...f, hourly_wage: parseInt(e.target.value) || 0 }))}
+                    placeholder="예: 12000" style={inputStyle} />
+                </label>
+                <label style={{ flex: 1, minWidth: 100 }}>
+                  <span style={labelSpan}>일급 (원)</span>
+                  <input type="number" value={form.daily_wage || ''} onChange={e => setForm(f => ({ ...f, daily_wage: parseInt(e.target.value) || 0 }))}
+                    placeholder="예: 130000" style={inputStyle} />
+                </label>
+                <label style={{ flex: 1, minWidth: 80 }}>
+                  <span style={labelSpan}>모집인원</span>
+                  <input type="number" value={form.headcount || ''} onChange={e => setForm(f => ({ ...f, headcount: parseInt(e.target.value) || 0 }))}
+                    placeholder="예: 10" style={inputStyle} />
+                </label>
+                <label style={{ flex: 1, minWidth: 100 }}>
+                  <span style={labelSpan}>근무시간</span>
+                  <input value={form.work_hours} onChange={e => setForm(f => ({ ...f, work_hours: e.target.value }))}
+                    placeholder="야간 22:00~06:00" style={inputStyle} />
+                </label>
+              </div>
+            )}
+
+            {/* ── STEP 3: 상세 내용 & 연락처 ── */}
+            {(formStep === 3 || formStep === 0) && (
+              <>
+                <label style={{ display: 'block', marginBottom: 14 }}>
+                  <span style={labelSpan}>공고 내용 / 상세</span>
+                  <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                    rows={4} placeholder="근무 조건, 우대사항, 복리후생 등 상세 내용 입력" style={{ ...inputStyle, resize: 'vertical' as const }} />
+                </label>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 4 }}>
+                  <label style={{ flex: 1 }}>
+                    <span style={labelSpan}>연락처</span>
+                    <input value={form.contact_phone} onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))}
+                      placeholder="010-1234-5678" style={inputStyle} />
+                  </label>
+                  <label style={{ flex: 1 }}>
+                    <span style={labelSpan}>원본 공고 URL</span>
+                    <input value={form.external_link} onChange={e => setForm(f => ({ ...f, external_link: e.target.value }))}
+                      placeholder="쿠팡알바, 잡코리아, 사람인 등 공고 URL" style={inputStyle} />
+                  </label>
+                </div>
+                <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: '4px 0 14px' }}>
+                  선택 입력 — 지원 링크가 없으면 비워두세요
+                </p>
+              </>
+            )}
+
+            {/* ── STEP 4: 미리보기 ── */}
+            {formStep === 4 && (
+              <div style={{
+                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 12, padding: '16px 18px', marginBottom: 8,
+              }}>
+                <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: 8 }}>
+                  {form.company_name || '회사명'} — {form.center_name || '센터명'}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>📍 {form.region || '지역'}</div>
+                <div style={{ display: 'flex', gap: 12, fontSize: '0.82rem', marginBottom: 6 }}>
+                  {form.hourly_wage ? <span style={{ color: '#3182f6', fontWeight: 700 }}>시 {form.hourly_wage.toLocaleString()}원</span> : null}
+                  {form.daily_wage ? <span style={{ color: '#7c3aed', fontWeight: 700 }}>일 {form.daily_wage.toLocaleString()}원</span> : null}
+                  <span style={{ color: 'rgba(255,255,255,0.4)' }}>👥 {form.headcount}명</span>
+                </div>
+                {form.work_hours && <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', marginBottom: 6 }}>⏰ {form.work_hours}</div>}
+                {form.description && <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', whiteSpace: 'pre-wrap', marginTop: 8 }}>{form.description}</div>}
+                <div style={{ marginTop: 8, fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)' }}>
+                  {form.contact_phone && <div>📞 {form.contact_phone}</div>}
+                  {form.external_link && <div>🔗 {form.external_link}</div>}
+                </div>
+              </div>
+            )}
+
+            {/* ── STEP 5: 발행 설정 ── */}
+            {(formStep === 5 || formStep === 0) && (
+              <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'flex-end' }}>
+                <label style={{ flex: 1 }}>
+                  <span style={labelSpan}>공고 마감일 <span style={{ color: '#f04452' }}>*</span></span>
+                  <input type="date" value={form.expires_at} onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
+                    required style={inputStyle} />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={labelSpan}>긴급</span>
+                  <div onClick={() => setForm(f => ({ ...f, is_urgent: !f.is_urgent }))} style={{
+                    width: 44, height: 26, borderRadius: 999,
+                    background: form.is_urgent ? '#f04452' : 'rgba(255,255,255,0.12)',
+                    cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
+                  }}>
+                    <div style={{
+                      width: 20, height: 20, borderRadius: '50%', background: '#fff',
+                      position: 'absolute', top: 3,
+                      left: form.is_urgent ? 21 : 3, transition: 'left 0.2s',
+                    }} />
+                  </div>
+                </label>
+              </div>
+            )}
 
             {/* 저장 오류 표시 */}
             {jobError && (
@@ -990,24 +1034,49 @@ export default function JobsMenu() {
               </div>
             )}
 
-            {/* 버튼 */}
+            {/* ── 버튼: 단계 진행 또는 저장 ── */}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button onClick={() => setModalOpen(false)} style={{
+              <button onClick={() => {
+                if (formStep > 1) setFormStep(s => s - 1)
+                else setModalOpen(false)
+              }} style={{
                 padding: '9px 20px', borderRadius: 10,
                 border: '1px solid rgba(255,255,255,0.12)',
                 background: 'transparent', color: 'rgba(255,255,255,0.6)',
                 fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
-              }}>취소</button>
-              <button onClick={handleSave}
-                disabled={saving || !form.company_name.trim() || !form.region.trim() || !form.expires_at}
-                style={{
-                  padding: '9px 20px', borderRadius: 10, border: 'none',
-                  background: saving || !form.company_name.trim() || !form.region.trim() || !form.expires_at
-                    ? 'rgba(49,130,246,0.3)' : '#3182f6',
-                  color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
-                }}>
-                {saving ? '저장 중...' : '저장'}
+              }}>
+                {formStep > 1 ? '← 이전' : '취소'}
               </button>
+
+              {/* 신규 등록: 1~4단계는 "다음", 5단계는 "발행" */}
+              {/* 수정(step=0) 또는 마지막 단계: 저장 버튼 */}
+              {(formStep === 0 || formStep === 5) ? (
+                <button onClick={handleSave}
+                  disabled={saving || !form.company_name.trim() || !form.region.trim() || !form.expires_at}
+                  style={{
+                    padding: '9px 20px', borderRadius: 10, border: 'none',
+                    background: saving || !form.company_name.trim() || !form.region.trim() || !form.expires_at
+                      ? 'rgba(49,130,246,0.3)' : '#3182f6',
+                    color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
+                  }}>
+                  {saving ? '저장 중...' : formStep === 5 ? '🚀 발행' : '저장'}
+                </button>
+              ) : (
+                <button
+                  onClick={() => setFormStep(s => s + 1)}
+                  disabled={
+                    (formStep === 1 && (!form.company_name.trim() || !form.region.trim()))
+                  }
+                  style={{
+                    padding: '9px 20px', borderRadius: 10, border: 'none',
+                    background: (formStep === 1 && (!form.company_name.trim() || !form.region.trim()))
+                      ? 'rgba(49,130,246,0.3)' : '#3182f6',
+                    color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
+                  }}
+                >
+                  다음 →
+                </button>
+              )}
             </div>
           </div>
         </div>
