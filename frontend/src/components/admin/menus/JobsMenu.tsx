@@ -1428,7 +1428,10 @@ function downloadXlsx(applicants: Array<{
     a.applicant_name ?? '',
     a.applicant_birth ?? '',
     a.applicant_gender === 'male' ? '남' : a.applicant_gender === 'female' ? '여' : '',
-    a.applicant_phone ? maskPhone(a.applicant_phone) : '',  // 마스킹 처리
+    // TODO: 채용담당자가 지원자에게 직접 연락해야 한다면 마스킹 해제 필요
+    // 현재는 개인정보 최소 노출 원칙 + Phase 1 MVP 정책으로 마스킹 유지
+    // 실번호 필요 시 이 줄을 `a.applicant_phone ?? ''` 로 교체하세요
+    a.applicant_phone ? maskPhone(a.applicant_phone) : '',
     a.job_postings?.company_name ?? '',
     a.job_postings?.center_name ?? '',
     a.applied_at ? new Date(a.applied_at).toLocaleString('ko-KR') : '',

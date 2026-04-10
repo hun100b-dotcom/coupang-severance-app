@@ -120,8 +120,12 @@ export default function ApplyFormModal({
       newErrors.birth_year = '생년월일을 모두 입력해주세요.'
     } else if (isNaN(year) || isNaN(month) || isNaN(day)) {
       newErrors.birth_year = '올바른 생년월일을 입력해주세요.'
+    } else if (form.birth_year.length !== 4 || year < 1930) {
+      // 연도는 반드시 4자리 (1930~현재 사이)
+      // padStart("85" → "2085") 우회 방지 — 직접 4자리 입력 강제
+      newErrors.birth_year = '연도는 4자리로 입력해주세요. (예: 1990)'
     } else {
-      // 만 15세 미만 차단 (대략 연도 기준으로 판별)
+      // 만 15세 미만 차단
       const currentYear = new Date().getFullYear()
       const age = currentYear - year
       if (age < 15) {
@@ -155,7 +159,8 @@ export default function ApplyFormModal({
     e.preventDefault()
     if (!validate()) return
 
-    const year = form.birth_year.padStart(4, '20')
+    // validate()에서 4자리 강제 검증 통과 후 도달 — padStart 불필요
+    const year = form.birth_year                     // 이미 4자리 확정
     const month = form.birth_month.padStart(2, '0')
     const day = form.birth_day.padStart(2, '0')
 
