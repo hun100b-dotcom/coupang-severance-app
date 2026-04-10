@@ -111,6 +111,7 @@ export default function ApplyFormModal({
 
     // 온보딩 시 저장한 프로필 값을 불러와서 자동 채움
     // gender 컬럼 추가됨 (2026-04-11) — 온보딩에서 입력한 성별도 prefill
+    if (!supabase) return // supabase 클라이언트가 초기화되지 않은 경우 방어 처리
     supabase
       .from('profiles')
       .select('full_name, birthdate, phone_number, gender')
