@@ -10,6 +10,8 @@ import type { JobPosting } from '../../../types/supabase'
 // ── 공고 등록/수정 폼 타입 ──
 // A-3: section 3종 추가 (today-urgent | tomorrow-urgent | always)
 // A-4: benefits 복리후생 태그 배열 추가
+// A-5: task_options 지원자 선택 업무 배열 추가 (2026-04-11)
+// A-6: work_date 근무 예정일 추가 (2026-04-11, 중복 확정 차단 기준)
 interface JobForm {
   company_name: string
   center_name: string
@@ -24,6 +26,8 @@ interface JobForm {
   is_urgent: boolean
   section: 'today-urgent' | 'tomorrow-urgent' | 'always'  // A-3: 섹션 3종
   benefits: string[]   // A-4: 복리후생 태그
+  task_options: string[]  // A-5: 지원자 선택 업무 종류 목록
+  work_date: string    // A-6: 근무 예정일 (YYYY-MM-DD, 빈 문자열이면 미지정)
   expires_at: string
 }
 
@@ -31,7 +35,10 @@ const defaultForm: JobForm = {
   company_name: '', center_name: '', region: '',
   headcount: 0, hourly_wage: 0, daily_wage: 0, work_hours: '',
   description: '', contact_phone: '', external_link: '',
-  is_urgent: false, section: 'always', benefits: [], expires_at: '',
+  is_urgent: false, section: 'always', benefits: [],
+  task_options: ['상차', '하차', '분류', '피킹', '포장'],  // 기본 업무 옵션
+  work_date: '',
+  expires_at: '',
 }
 
 // ── 지원자 한 행의 타입 (job_postings JOIN 포함) ──
@@ -220,7 +227,7 @@ export default function JobsMenu() {
   }
 
   // 수정 모달 열기 (REQ10: 수정 시에는 단계 없이 전체 폼 표시 → step=0 사용)
-  // A-3/A-4: section + benefits도 함께 로드
+  // A-3/A-4/A-5/A-6: section + benefits + task_options + work_date도 함께 로드
   const openEdit = (job: JobPosting) => {
     setEditTarget(job)
     setFormStep(0)  // 0 = 단계 없이 전체 폼 (수정 시)
@@ -230,14 +237,18 @@ export default function JobsMenu() {
       region: job.region,
       headcount: job.headcount,
       hourly_wage: job.hourly_wage,
-      daily_wage: job.daily_wage ?? 0,   // DB에 저장된 일급 (없으면 0)
+      daily_wage: job.daily_wage ?? 0,
       work_hours: job.work_hours,
       description: job.description,
       contact_phone: job.contact_phone,
       external_link: job.external_link,
       is_urgent: job.is_urgent,
-      section: (job.section as 'today-urgent' | 'tomorrow-urgent' | 'always') ?? 'always',  // A-3
-      benefits: Array.isArray(job.benefits) ? job.benefits : [],  // A-4
+      section: (job.section as 'today-urgent' | 'tomorrow-urgent' | 'always') ?? 'always',
+      benefits: Array.isArray(job.benefits) ? job.benefits : [],
+      task_options: Array.isArray(job.task_options) && job.task_options.length > 0
+        ? job.task_options
+        : ['상차', '하차', '분류', '피킹', '포장'],  // 없으면 기본값
+      work_date: job.work_date ?? '',
       expires_at: job.expires_at ?? '',
     })
     setModalOpen(true)
@@ -260,14 +271,18 @@ export default function JobsMenu() {
         region: form.region.trim(),
         headcount: form.headcount,
         hourly_wage: form.hourly_wage,
-        daily_wage: form.daily_wage,          // 일급 저장
+        daily_wage: form.daily_wage,
         work_hours: form.work_hours.trim(),
         description: form.description.trim(),
         contact_phone: form.contact_phone.trim(),
         external_link: form.external_link.trim(),
-        is_urgent: form.section === 'today-urgent' || form.section === 'tomorrow-urgent', // A-3: section → is_urgent 연동
-        section: form.section,       // A-3: 섹션 3종 저장
-        benefits: form.benefits,     // A-4: 복리후생 배열 저장
+        is_urgent: form.section === 'today-urgent' || form.section === 'tomorrow-urgent',  // A-3: section → is_urgent 연동
+        section: form.section,        // A-3: 섹션 3종 저장
+        benefits: form.benefits,      // A-4: 복리후생 배열 저장
+        task_options: form.task_options.length > 0
+          ? form.task_options
+          : ['상차', '하차', '분류', '피킹', '포장'],  // A-5: 업무 옵션 (비어있으면 기본값)
+        work_date: form.work_date || null,              // A-6: 근무 예정일 (빈 문자열이면 null)
         expires_at: form.expires_at || null,
       }
       if (editTarget) {
@@ -1102,6 +1117,74 @@ export default function JobsMenu() {
                     inputStyle={inputStyle}
                   />
                 </div>
+
+                {/* A-5: 지원자 선택 업무 종류 태그 칩 입력 */}
+                <div style={{ marginBottom: 14 }}>
+                  <span style={labelSpan}>
+                    지원자 선택 업무 <span style={{ color: '#f04452' }}>*</span>
+                    <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', marginLeft: 6 }}>
+                      (지원서 폼 드롭다운에 표시됨)
+                    </span>
+                  </span>
+                  {/* 현재 추가된 업무 칩 */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                    {form.task_options.map(task => (
+                      <span
+                        key={task}
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 4,
+                          padding: '4px 10px', borderRadius: 999,
+                          background: 'rgba(49,130,246,0.18)', color: '#3182f6',
+                          fontSize: '0.75rem', fontWeight: 600,
+                        }}
+                      >
+                        {task}
+                        {/* X 버튼으로 삭제 */}
+                        <button
+                          type="button"
+                          onClick={() => setForm(f => ({
+                            ...f,
+                            task_options: f.task_options.filter(t => t !== task),
+                          }))}
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            color: '#3182f6', padding: 0, lineHeight: 1,
+                            fontSize: '0.85rem', fontWeight: 700,
+                          }}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  {/* 태그 칩 직접 입력 컴포넌트 */}
+                  <TaskOptionsInput
+                    taskOptions={form.task_options}
+                    onChange={opts => setForm(f => ({ ...f, task_options: opts }))}
+                    inputStyle={inputStyle}
+                  />
+                  <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>
+                    엔터 또는 쉼표로 구분 입력 (예: 상차, 하차, 분류)
+                  </p>
+                </div>
+
+                {/* A-6: 근무 예정일 */}
+                <div style={{ marginBottom: 4 }}>
+                  <label>
+                    <span style={labelSpan}>
+                      근무 예정일
+                      <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', marginLeft: 6 }}>
+                        (중복 출근 방지 기준 — 상시 공고면 비워도 됩니다)
+                      </span>
+                    </span>
+                    <input
+                      type="date"
+                      value={form.work_date}
+                      onChange={e => setForm(f => ({ ...f, work_date: e.target.value }))}
+                      style={{ ...inputStyle, colorScheme: 'dark' }}
+                    />
+                  </label>
+                </div>
               </>
             )}
 
@@ -1395,6 +1478,50 @@ function BenefitsInput({
           }}
         >추가</button>
       </div>
+    </div>
+  )
+}
+
+// ── 지원자 선택 업무 직접 입력 컴포넌트 (A-5) ──
+// 엔터/쉼표로 업무 추가, × 버튼으로 삭제 (BenefitsInput과 동일 패턴)
+function TaskOptionsInput({
+  taskOptions,
+  onChange,
+  inputStyle,
+}: {
+  taskOptions: string[]
+  onChange: (opts: string[]) => void
+  inputStyle: React.CSSProperties
+}) {
+  const [draft, setDraft] = useState('')
+
+  const addTag = () => {
+    const tag = draft.trim().replace(/,/g, '')  // 쉼표 제거
+    if (tag && !taskOptions.includes(tag)) {
+      onChange([...taskOptions, tag])
+    }
+    setDraft('')
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: 8 }}>
+      <input
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag() }
+        }}
+        placeholder="업무 입력 후 Enter (예: 상차, 하차, 분류)"
+        style={{ ...inputStyle, flex: 1 }}
+      />
+      <button
+        type="button"
+        onClick={addTag}
+        style={{
+          padding: '8px 14px', borderRadius: 10, border: 'none',
+          background: '#3182f6', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+        }}
+      >추가</button>
     </div>
   )
 }
