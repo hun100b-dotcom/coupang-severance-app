@@ -1,6 +1,6 @@
 // 관리자 — 채용공고 관리 메뉴
 // [공고 목록] 탭: 공고 CRUD (추가/수정/삭제/긴급 토글)
-// [지원자 관리] 탭: 공고별 지원자 목록 조회 + 출근확정/지원거절/취소 처리
+// [지원자 관리] 탭: 공고별 지원자 목록 조회 + 출근확정/지원거절/취소 처리 + xlsx 다운로드
 // [📊 확정 현황] 탭: 센터별 지원/확정/거절 현황 대시보드
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../../../lib/supabase'
@@ -8,6 +8,8 @@ import { useAuth } from '../../../contexts/AuthContext'
 import type { JobPosting } from '../../../types/supabase'
 
 // ── 공고 등록/수정 폼 타입 ──
+// A-3: section 3종 추가 (today-urgent | tomorrow-urgent | always)
+// A-4: benefits 복리후생 태그 배열 추가
 interface JobForm {
   company_name: string
   center_name: string
@@ -20,6 +22,8 @@ interface JobForm {
   contact_phone: string
   external_link: string
   is_urgent: boolean
+  section: 'today-urgent' | 'tomorrow-urgent' | 'always'  // A-3: 섹션 3종
+  benefits: string[]   // A-4: 복리후생 태그
   expires_at: string
 }
 
@@ -27,7 +31,7 @@ const defaultForm: JobForm = {
   company_name: '', center_name: '', region: '',
   headcount: 0, hourly_wage: 0, daily_wage: 0, work_hours: '',
   description: '', contact_phone: '', external_link: '',
-  is_urgent: false, expires_at: '',
+  is_urgent: false, section: 'always', benefits: [], expires_at: '',
 }
 
 // ── 지원자 한 행의 타입 (job_postings JOIN 포함) ──
@@ -39,6 +43,13 @@ interface ApplicationRow {
   status: 'applied' | 'confirmed' | 'completed' | 'cancelled' | 'rejected'
   applied_at: string
   work_date: string | null
+  // D-NEW-3: 지원 시점 직접 입력한 인적사항
+  applicant_name: string | null
+  applicant_birth: string | null   // YYYY-MM-DD
+  applicant_gender: 'male' | 'female' | null
+  applicant_phone: string | null
+  consent_collect: boolean | null
+  consent_third_party: boolean | null
   // JOIN된 공고 정보
   job_postings?: {
     company_name: string
@@ -209,6 +220,7 @@ export default function JobsMenu() {
   }
 
   // 수정 모달 열기 (REQ10: 수정 시에는 단계 없이 전체 폼 표시 → step=0 사용)
+  // A-3/A-4: section + benefits도 함께 로드
   const openEdit = (job: JobPosting) => {
     setEditTarget(job)
     setFormStep(0)  // 0 = 단계 없이 전체 폼 (수정 시)
@@ -224,6 +236,8 @@ export default function JobsMenu() {
       contact_phone: job.contact_phone,
       external_link: job.external_link,
       is_urgent: job.is_urgent,
+      section: (job.section as 'today-urgent' | 'tomorrow-urgent' | 'always') ?? 'always',  // A-3
+      benefits: Array.isArray(job.benefits) ? job.benefits : [],  // A-4
       expires_at: job.expires_at ?? '',
     })
     setModalOpen(true)
@@ -251,7 +265,9 @@ export default function JobsMenu() {
         description: form.description.trim(),
         contact_phone: form.contact_phone.trim(),
         external_link: form.external_link.trim(),
-        is_urgent: form.is_urgent,
+        is_urgent: form.section === 'today-urgent' || form.section === 'tomorrow-urgent', // A-3: section → is_urgent 연동
+        section: form.section,       // A-3: 섹션 3종 저장
+        benefits: form.benefits,     // A-4: 복리후생 배열 저장
         expires_at: form.expires_at || null,
       }
       if (editTarget) {
@@ -642,11 +658,24 @@ export default function JobsMenu() {
       ══════════════════════════════════════ */}
       {mainTab === 'applicants' && (
         <>
-          <div style={{ marginBottom: 20 }}>
-            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px' }}>👥 지원자 관리</h2>
-            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-              지원자 상태를 출근확정 → 출근완료 순으로 처리하세요.
-            </p>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
+            <div>
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px' }}>👥 지원자 관리</h2>
+              <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+                지원자 상태를 출근확정 → 출근완료 순으로 처리하세요.
+              </p>
+            </div>
+            {/* E-1: 엑셀 다운로드 버튼 — consent_third_party=true 건만 내보내기 */}
+            <button
+              onClick={() => downloadXlsx(applicants)}
+              style={{
+                padding: '7px 16px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.15)',
+                background: 'rgba(49,200,100,0.1)', color: '#3fc878',
+                fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              📥 엑셀 다운로드
+            </button>
           </div>
 
           {/* 필터: 공고 선택 + 상태 선택 */}
@@ -708,12 +737,12 @@ export default function JobsMenu() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 750 }}>
                   <thead>
                     <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
-                      <th style={thStyle}>지원자</th>
+                      <th style={thStyle}>지원자 정보</th>
+                      <th style={thStyle}>인적사항</th>
                       <th style={thStyle}>공고</th>
-                      <th style={{ ...thStyle, width: 90 }}>지원일</th>
-                      <th style={{ ...thStyle, width: 90 }}>출근예정일</th>
+                      <th style={{ ...thStyle, width: 80 }}>지원일</th>
                       <th style={{ ...thStyle, width: 80 }}>상태</th>
-                      <th style={{ ...thStyle, width: 220 }}>상태 변경</th>
+                      <th style={{ ...thStyle, width: 200 }}>상태 변경</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -729,14 +758,32 @@ export default function JobsMenu() {
                       const isUpdating = updatingId === app.id
                       return (
                         <tr key={app.id}>
-                          {/* 지원자 이름/이메일 */}
+                          {/* 지원자 계정 정보 (소셜 로그인 기준) */}
                           <td style={cellStyle}>
-                            <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                            <div style={{ fontWeight: 600, fontSize: '0.82rem' }}>
                               {app.profiles?.full_name ?? '이름 없음'}
                             </div>
-                            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>
+                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>
                               {app.profiles?.email ?? '-'}
                             </div>
+                          </td>
+                          {/* D-NEW-3: 지원 시점 입력한 인적사항 */}
+                          <td style={cellStyle}>
+                            {app.applicant_name ? (
+                              <>
+                                <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#fff' }}>
+                                  {app.applicant_name}
+                                  <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginLeft: 4 }}>
+                                    {app.applicant_gender === 'male' ? '남' : app.applicant_gender === 'female' ? '여' : ''}
+                                  </span>
+                                </div>
+                                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginTop: 1 }}>
+                                  {app.applicant_birth ? app.applicant_birth.slice(0, 10) : '-'} · {app.applicant_phone ? maskPhone(app.applicant_phone) : '-'}
+                                </div>
+                              </>
+                            ) : (
+                              <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.2)' }}>미입력</span>
+                            )}
                           </td>
 
                           {/* 공고명 */}
@@ -938,22 +985,54 @@ export default function JobsMenu() {
             )}
 
             {/* ── STEP 2: 근무 조건 ── */}
+            {/* A-1: 숫자 입력 spinner 제거 — type=text + inputMode=numeric + 천단위 콤마 파싱 */}
             {(formStep === 2 || formStep === 0) && (
               <div style={{ display: 'flex', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
                 <label style={{ flex: 1, minWidth: 100 }}>
                   <span style={labelSpan}>시급 (원)</span>
-                  <input type="number" value={form.hourly_wage || ''} onChange={e => setForm(f => ({ ...f, hourly_wage: parseInt(e.target.value) || 0 }))}
-                    placeholder="예: 12000" style={inputStyle} />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9,]*"
+                    value={form.hourly_wage ? form.hourly_wage.toLocaleString('ko-KR') : ''}
+                    onChange={e => {
+                      // 콤마 제거 후 숫자만 추출해 저장
+                      const num = parseInt(e.target.value.replace(/,/g, '')) || 0
+                      setForm(f => ({ ...f, hourly_wage: num }))
+                    }}
+                    placeholder="예: 12,000"
+                    style={inputStyle}
+                  />
                 </label>
                 <label style={{ flex: 1, minWidth: 100 }}>
                   <span style={labelSpan}>일급 (원)</span>
-                  <input type="number" value={form.daily_wage || ''} onChange={e => setForm(f => ({ ...f, daily_wage: parseInt(e.target.value) || 0 }))}
-                    placeholder="예: 130000" style={inputStyle} />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9,]*"
+                    value={form.daily_wage ? form.daily_wage.toLocaleString('ko-KR') : ''}
+                    onChange={e => {
+                      const num = parseInt(e.target.value.replace(/,/g, '')) || 0
+                      setForm(f => ({ ...f, daily_wage: num }))
+                    }}
+                    placeholder="예: 130,000"
+                    style={inputStyle}
+                  />
                 </label>
                 <label style={{ flex: 1, minWidth: 80 }}>
                   <span style={labelSpan}>모집인원</span>
-                  <input type="number" value={form.headcount || ''} onChange={e => setForm(f => ({ ...f, headcount: parseInt(e.target.value) || 0 }))}
-                    placeholder="예: 10" style={inputStyle} />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={form.headcount || ''}
+                    onChange={e => {
+                      const num = parseInt(e.target.value.replace(/\D/g, '')) || 0
+                      setForm(f => ({ ...f, headcount: num }))
+                    }}
+                    placeholder="예: 10"
+                    style={inputStyle}
+                  />
                 </label>
                 <label style={{ flex: 1, minWidth: 100 }}>
                   <span style={labelSpan}>근무시간</span>
@@ -986,6 +1065,43 @@ export default function JobsMenu() {
                 <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: '4px 0 14px' }}>
                   선택 입력 — 지원 링크가 없으면 비워두세요
                 </p>
+
+                {/* A-4: 복리후생 태그 입력 */}
+                <div style={{ marginBottom: 14 }}>
+                  <span style={labelSpan}>복리후생 (태그 추가)</span>
+                  {/* 미리 정의된 추천 태그 */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                    {['식대제공', '교통비지원', '4대보험', '주휴수당', '기숙사제공', '연장수당', '야간수당', '주5일', '주6일'].map(tag => {
+                      const isSelected = form.benefits.includes(tag)
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => setForm(f => ({
+                            ...f,
+                            benefits: isSelected
+                              ? f.benefits.filter(b => b !== tag)
+                              : [...f.benefits, tag],
+                          }))}
+                          style={{
+                            padding: '4px 10px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                            fontSize: '0.75rem', fontWeight: 600,
+                            background: isSelected ? '#3182f6' : 'rgba(255,255,255,0.08)',
+                            color: isSelected ? '#fff' : 'rgba(255,255,255,0.5)',
+                          }}
+                        >
+                          {isSelected ? '✓ ' : '+'}{tag}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {/* 직접 입력 필드 */}
+                  <BenefitsInput
+                    benefits={form.benefits}
+                    onChange={b => setForm(f => ({ ...f, benefits: b }))}
+                    inputStyle={inputStyle}
+                  />
+                </div>
               </>
             )}
 
@@ -1013,29 +1129,61 @@ export default function JobsMenu() {
               </div>
             )}
 
-            {/* ── STEP 5: 발행 설정 ── */}
+            {/* ── STEP 5 / 수정 전체폼: 발행 설정 ── */}
             {(formStep === 5 || formStep === 0) && (
-              <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'flex-end' }}>
-                <label style={{ flex: 1 }}>
-                  <span style={labelSpan}>공고 마감일 <span style={{ color: '#f04452' }}>*</span></span>
-                  <input type="date" value={form.expires_at} onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
-                    required style={inputStyle} />
-                </label>
-                <label style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={labelSpan}>긴급</span>
-                  <div onClick={() => setForm(f => ({ ...f, is_urgent: !f.is_urgent }))} style={{
-                    width: 44, height: 26, borderRadius: 999,
-                    background: form.is_urgent ? '#f04452' : 'rgba(255,255,255,0.12)',
-                    cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
-                  }}>
-                    <div style={{
-                      width: 20, height: 20, borderRadius: '50%', background: '#fff',
-                      position: 'absolute', top: 3,
-                      left: form.is_urgent ? 21 : 3, transition: 'left 0.2s',
-                    }} />
+              <>
+                {/* A-3: 섹션 3종 선택 (라디오 그룹) */}
+                <div style={{ marginBottom: 16 }}>
+                  <span style={labelSpan}>섹션 구분 <span style={{ color: '#f04452' }}>*</span></span>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {([
+                      { value: 'today-urgent',    label: '🔥 오늘 추가모집', color: '#ef4444' },
+                      { value: 'tomorrow-urgent', label: '⚡ 내일 긴급모집', color: '#f97316' },
+                      { value: 'always',          label: '✅ 상시모집',      color: '#22c55e' },
+                    ] as const).map(opt => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, section: opt.value }))}
+                        style={{
+                          flex: 1, minWidth: 100, padding: '8px 12px',
+                          borderRadius: 10, border: 'none', cursor: 'pointer',
+                          fontWeight: 700, fontSize: '0.8rem',
+                          background: form.section === opt.value
+                            ? `${opt.color}22` : 'rgba(255,255,255,0.05)',
+                          color: form.section === opt.value ? opt.color : 'rgba(255,255,255,0.45)',
+                          outline: form.section === opt.value ? `2px solid ${opt.color}` : '2px solid transparent',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
                   </div>
-                </label>
-              </div>
+                </div>
+
+                {/* A-2: 공고 마감일 — min=오늘, 달력 아이콘 명시 */}
+                <div style={{ marginBottom: 20 }}>
+                  <label>
+                    <span style={labelSpan}>공고 마감일 <span style={{ color: '#f04452' }}>*</span> <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>(오늘 이후만 선택 가능)</span></span>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="date"
+                        value={form.expires_at}
+                        onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
+                        min={new Date().toISOString().slice(0, 10)}  // 과거 날짜 비활성
+                        required
+                        style={{
+                          ...inputStyle,
+                          paddingRight: 36,
+                          // date 인풋 달력 아이콘 색상 (브라우저 기본값 흰색으로)
+                          colorScheme: 'dark',
+                        }}
+                      />
+                    </div>
+                  </label>
+                </div>
+              </>
             )}
 
             {/* 저장 오류 표시 */}
@@ -1174,4 +1322,130 @@ export default function JobsMenu() {
       )}
     </div>
   )
+}
+
+// ── 휴대폰 번호 마스킹 (개인정보 보호) ──
+// 예: 01012345678 → 010-****-5678
+function maskPhone(phone: string): string {
+  const nums = phone.replace(/\D/g, '')
+  if (nums.length < 10) return phone
+  return `${nums.slice(0, 3)}-****-${nums.slice(-4)}`
+}
+
+// ── 복리후생 직접 입력 컴포넌트 (A-4) ──
+// 태그를 직접 타이핑 후 엔터/쉼표로 추가, × 버튼으로 삭제
+function BenefitsInput({
+  benefits,
+  onChange,
+  inputStyle,
+}: {
+  benefits: string[]
+  onChange: (b: string[]) => void
+  inputStyle: React.CSSProperties
+}) {
+  const [draft, setDraft] = useState('')
+
+  const addTag = () => {
+    const tag = draft.trim()
+    if (tag && !benefits.includes(tag)) {
+      onChange([...benefits, tag])
+    }
+    setDraft('')
+  }
+
+  return (
+    <div>
+      {/* 선택된 태그 칩 목록 */}
+      {benefits.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+          {benefits.map(b => (
+            <span key={b} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              padding: '3px 10px', borderRadius: 999, fontSize: '0.75rem', fontWeight: 600,
+              background: 'rgba(49,130,246,0.15)', color: '#3182f6',
+              border: '1px solid rgba(49,130,246,0.3)',
+            }}>
+              {b}
+              <button
+                type="button"
+                onClick={() => onChange(benefits.filter(x => x !== b))}
+                style={{ background: 'none', border: 'none', color: '#3182f6', cursor: 'pointer', padding: 0, fontSize: '0.8rem', lineHeight: 1 }}
+              >×</button>
+            </span>
+          ))}
+        </div>
+      )}
+      {/* 직접 입력 필드 */}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag() }
+          }}
+          placeholder="직접 입력 후 Enter"
+          style={{ ...inputStyle, flex: 1 }}
+        />
+        <button
+          type="button"
+          onClick={addTag}
+          style={{
+            padding: '8px 14px', borderRadius: 10, border: 'none',
+            background: '#3182f6', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+          }}
+        >추가</button>
+      </div>
+    </div>
+  )
+}
+
+// ── E-1: xlsx 다운로드 함수 (SheetJS 없이 CSV → xlsx 확장자로 저장) ──
+// consent_third_party=true 건만 내보내기 (D-NEW-7)
+// SheetJS(xlsx) 라이브러리 설치 없이 순수 CSV로 동작합니다.
+// 추후 npm install xlsx 설치 후 진짜 xlsx 포맷으로 교체 가능.
+function downloadXlsx(applicants: Array<{
+  applicant_name: string | null
+  applicant_birth: string | null
+  applicant_gender: string | null
+  applicant_phone: string | null
+  consent_third_party: boolean | null
+  job_postings?: { company_name: string; center_name: string } | null
+  applied_at: string
+  status: string
+}>) {
+  // D-NEW-7: 제3자 제공 동의한 건만 포함
+  const filtered = applicants.filter(a => a.consent_third_party === true && a.applicant_name)
+
+  if (filtered.length === 0) {
+    alert('다운로드 가능한 지원자가 없습니다.\n(제3자 제공 동의 + 인적사항 입력 건만 포함됩니다)')
+    return
+  }
+
+  // CSV 헤더 + 데이터 생성
+  const BOM = '\uFEFF'  // Excel 한글 깨짐 방지용 BOM
+  const header = ['이름', '생년월일', '성별', '휴대폰', '공고', '센터', '지원일시', '상태']
+  const rows = filtered.map(a => [
+    a.applicant_name ?? '',
+    a.applicant_birth ?? '',
+    a.applicant_gender === 'male' ? '남' : a.applicant_gender === 'female' ? '여' : '',
+    a.applicant_phone ? maskPhone(a.applicant_phone) : '',  // 마스킹 처리
+    a.job_postings?.company_name ?? '',
+    a.job_postings?.center_name ?? '',
+    a.applied_at ? new Date(a.applied_at).toLocaleString('ko-KR') : '',
+    a.status,
+  ])
+
+  const csv = BOM + [header, ...rows]
+    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\r\n')
+
+  // 파일 다운로드
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  const date = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+  a.href = url
+  a.download = `CATCH_지원자_${date}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
 }
