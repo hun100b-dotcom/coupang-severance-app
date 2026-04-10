@@ -1,57 +1,75 @@
-// 채용 지원 폼 모달 — 회원 프로필 자동 연계 + 개인정보 동의 (D-NEW-4)
-// 로그인한 사용자가 "지원하기" 클릭 시 표시되는 모달
+// 채용 지원 폼 모달 — 전면 개편 버전 (2026-04-11)
+// 섹션 1: 지원자 인적사항 (profiles 자동 prefill + 수정 가능)
+// 섹션 2: 근무 관련 (업무선택 / 경험 / 시간대 / 교통 / 안전화 / 특이사항 / 비상연락처)
+// 섹션 3: 동의 (제3자 제공 동의 1개만 — 수집·이용은 온보딩 포괄 동의로 대체)
 // 주민번호 뒤 1자리(성별코드) 절대 미수집 — applicant_gender(남/여)로 대체
-// profiles 테이블(온보딩 시 저장)에서 이름/생년월일/전화번호 자동 prefill
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ChevronDown, ChevronUp, Calendar, Phone, User, Check, Loader2, Sparkles } from 'lucide-react'
+import {
+  X, ChevronDown, ChevronUp, Calendar, Phone, User, Check,
+  Loader2, Sparkles, Briefcase, AlertCircle,
+} from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 
-// 지원 폼 데이터 타입
+// ── 기본 업무 옵션 (공고에 task_options 없을 때 fallback) ──
+const DEFAULT_TASK_OPTIONS = ['상차', '하차', '분류', '피킹', '포장']
+
+// ── 안전화 사이즈 옵션 (230~290mm, 5mm 단위) ──
+const SHOE_SIZE_OPTIONS = ['230', '235', '240', '245', '250', '255', '260', '265', '270', '275', '280', '285', '290']
+
+// ── 폼 데이터 타입 ──
 interface ApplyFormData {
+  // 섹션 1: 인적사항
   applicant_name: string
-  birth_year: string   // 6자리 생년월일: 연도
+  birth_year: string
   birth_month: string
   birth_day: string
   applicant_gender: 'male' | 'female' | ''
   applicant_phone: string
-  consent_collect: boolean
+  // 섹션 2: 근무 관련
+  applied_task: string
+  prior_experience_90d: boolean | null  // null = 미선택
+  preferred_shift: 'morning' | 'afternoon' | 'night' | 'any' | ''
+  transportation: 'car' | 'public' | 'shuttle' | ''
+  shoe_size: string
+  notes: string
+  emergency_contact: string
+  // 섹션 3: 동의
   consent_third_party: boolean
 }
 
-// 모달 Props 타입
+// ── Props 타입 ──
 interface ApplyFormModalProps {
   isOpen: boolean
   onClose: () => void
   onSubmit: (data: {
     applicant_name: string
-    applicant_birth: string  // YYYY-MM-DD
+    applicant_birth: string    // YYYY-MM-DD
     applicant_gender: 'male' | 'female'
     applicant_phone: string
-    consent_collect: boolean
+    applied_task: string
+    prior_experience_90d: boolean
+    preferred_shift: 'morning' | 'afternoon' | 'night' | 'any'
+    transportation: 'car' | 'public' | 'shuttle'
+    shoe_size: string
+    notes?: string
+    emergency_contact?: string
     consent_third_party: boolean
+    work_date?: string | null
   }) => Promise<void>
-  jobTitle: string     // 공고 제목 (모달 상단 표시용)
+  jobTitle: string             // 공고 제목 (모달 상단 표시)
   isSubmitting: boolean
+  taskOptions?: string[]       // 공고별 업무 옵션 (없으면 DEFAULT_TASK_OPTIONS 사용)
+  workDate?: string | null     // 공고 근무 예정일 (중복 체크에 전달)
 }
 
-// ── 개인정보 동의 전문 텍스트 ──
-const COLLECT_POLICY_TEXT = `
-수집 항목: 성명, 생년월일, 성별, 휴대폰번호
-수집·이용 목적: 채용 지원 접수 및 전형 진행, 지원 현황 안내
-보유 및 이용 기간: 채용 종료 후 6개월 (당선·불합격 관계없이)
-※ 위 기간 이후 즉시 파기됩니다.
-※ 개인정보 제공에 동의하지 않으실 수 있으나, 동의하지 않을 경우 지원 서비스 이용이 제한됩니다.
-`.trim()
-
-const THIRD_PARTY_POLICY_TEXT = `
-제공받는 자: 지원한 공고의 채용 담당 기업(쿠팡풀필먼트서비스, CJ대한통운, 마켓컬리 등)
-제공하는 항목: 성명, 생년월일, 성별, 휴대폰번호
-제공 목적: 채용 절차 진행 및 합격 통보
-보유 기간: 채용 종료 후 6개월
-※ 정보를 제공받는 자가 달라질 경우 별도 동의를 받습니다.
-`.trim()
+// ── 제3자 제공 상세 내용 ──
+const THIRD_PARTY_DETAIL = `제공받는 자: 공고 등록사(채용 담당 기업 — 쿠팡풀필먼트서비스, CJ대한통운, 마켓컬리 등)
+제공하는 항목: 성명, 생년월일, 성별, 휴대폰번호, 지원 업무, 센터 근무 경험, 안전화 사이즈, 특이사항
+제공 목적: 채용 절차 진행 및 출근 확정 통보
+보유 기간: 채용 종료 후 3개월
+※ 정보를 제공받는 자가 달라질 경우 별도 동의를 받습니다.`.trim()
 
 export default function ApplyFormModal({
   isOpen,
@@ -59,59 +77,52 @@ export default function ApplyFormModal({
   onSubmit,
   jobTitle,
   isSubmitting,
+  taskOptions,
+  workDate,
 }: ApplyFormModalProps) {
-  // 로그인된 사용자 정보 (프로필 prefill용)
   const { user } = useAuth()
 
-  // 폼 데이터 상태
-  const [form, setForm] = useState<ApplyFormData>({
+  // 실제 사용할 업무 옵션 (공고별 또는 기본값)
+  const effectiveTaskOptions =
+    taskOptions && taskOptions.length > 0 ? taskOptions : DEFAULT_TASK_OPTIONS
+
+  // 폼 초기 상태
+  const emptyForm: ApplyFormData = {
     applicant_name: '',
-    birth_year: '',
-    birth_month: '',
-    birth_day: '',
+    birth_year: '', birth_month: '', birth_day: '',
     applicant_gender: '',
     applicant_phone: '',
-    consent_collect: false,
+    applied_task: '',
+    prior_experience_90d: null,
+    preferred_shift: '',
+    transportation: '',
+    shoe_size: '',
+    notes: '',
+    emergency_contact: '',
     consent_third_party: false,
-  })
+  }
 
-  // 각 동의 아코디언 열림 여부
-  const [collectOpen, setCollectOpen] = useState(false)
-  const [thirdPartyOpen, setThirdPartyOpen] = useState(false)
-
-  // 유효성 검사 오류 메시지
+  const [form, setForm] = useState<ApplyFormData>(emptyForm)
+  const [thirdPartyOpen, setThirdPartyOpen] = useState(false)  // 제3자 상세 아코디언
   const [errors, setErrors] = useState<Partial<Record<keyof ApplyFormData, string>>>({})
-
-  // 프로필 자동 연계 여부 (배너 표시용)
   const [prefilled, setPrefilled] = useState(false)
 
-  // 모달이 열릴 때 profiles 테이블에서 회원 정보를 자동으로 불러옴
+  // ── 모달 열릴 때 profiles 에서 자동 prefill ──
   useEffect(() => {
     if (!isOpen) return
 
+    // 리셋
     setErrors({})
-    setCollectOpen(false)
     setThirdPartyOpen(false)
     setPrefilled(false)
 
     if (!user) {
-      // 비로그인 상태면 빈 폼으로 시작
-      setForm({
-        applicant_name: '',
-        birth_year: '',
-        birth_month: '',
-        birth_day: '',
-        applicant_gender: '',
-        applicant_phone: '',
-        consent_collect: false,
-        consent_third_party: false,
-      })
+      setForm(emptyForm)
       return
     }
 
-    // 온보딩 시 저장한 프로필 값을 불러와서 자동 채움
-    // gender 컬럼 추가됨 (2026-04-11) — 온보딩에서 입력한 성별도 prefill
-    if (!supabase) return // supabase 클라이언트가 초기화되지 않은 경우 방어 처리
+    if (!supabase) return  // null 가드 — TS18047 방지
+
     supabase
       .from('profiles')
       .select('full_name, birthdate, phone_number, gender')
@@ -119,21 +130,11 @@ export default function ApplyFormModal({
       .single()
       .then(({ data, error }) => {
         if (error || !data) {
-          // 프로필 조회 실패 시 빈 폼으로 (기존 동작 유지)
-          setForm({
-            applicant_name: '',
-            birth_year: '',
-            birth_month: '',
-            birth_day: '',
-            applicant_gender: '',
-            applicant_phone: '',
-            consent_collect: false,
-            consent_third_party: false,
-          })
+          setForm(emptyForm)
           return
         }
 
-        // birthdate "1990-05-03" → year:"1990", month:"5", day:"3"
+        // birthdate "1990-05-03" → year/month/day 분리
         let birthYear = '', birthMonth = '', birthDay = ''
         if (data.birthdate) {
           const parts = (data.birthdate as string).split('-')
@@ -142,30 +143,28 @@ export default function ApplyFormModal({
           birthDay   = parts[2] ? String(parseInt(parts[2], 10)) : ''
         }
 
-        // profiles.gender 가 있으면 자동 선택, 없으면 빈 상태 (기존 회원 등)
+        // profiles.gender → 성별 자동 선택
         const prefillGender = (data.gender === 'male' || data.gender === 'female')
-          ? data.gender
+          ? data.gender as 'male' | 'female'
           : ''
 
         const hasPrefillData = !!(data.full_name || data.birthdate || data.phone_number || data.gender)
 
         setForm({
+          ...emptyForm,
           applicant_name: data.full_name || '',
-          birth_year:     birthYear,
-          birth_month:    birthMonth,
-          birth_day:      birthDay,
-          applicant_gender: prefillGender,   // 성별 자동 prefill (온보딩 입력값)
+          birth_year: birthYear,
+          birth_month: birthMonth,
+          birth_day: birthDay,
+          applicant_gender: prefillGender,
           applicant_phone: data.phone_number || '',
-          consent_collect: false,
-          consent_third_party: false,
         })
         setPrefilled(hasPrefillData)
       })
-  }, [isOpen, user])
+  }, [isOpen, user])  // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── 휴대폰 번호 자동 포맷 (010-0000-0000) ──
   function formatPhone(raw: string): string {
-    // 숫자만 추출
     const nums = raw.replace(/\D/g, '').slice(0, 11)
     if (nums.length <= 3) return nums
     if (nums.length <= 7) return `${nums.slice(0, 3)}-${nums.slice(3)}`
@@ -176,6 +175,7 @@ export default function ApplyFormModal({
   function validate(): boolean {
     const newErrors: Partial<Record<keyof ApplyFormData, string>> = {}
 
+    // 섹션 1 검증
     if (form.applicant_name.trim().length < 2) {
       newErrors.applicant_name = '이름은 2자 이상 입력해주세요.'
     }
@@ -189,16 +189,9 @@ export default function ApplyFormModal({
     } else if (isNaN(year) || isNaN(month) || isNaN(day)) {
       newErrors.birth_year = '올바른 생년월일을 입력해주세요.'
     } else if (form.birth_year.length !== 4 || year < 1930) {
-      // 연도는 반드시 4자리 (1930~현재 사이)
-      // padStart("85" → "2085") 우회 방지 — 직접 4자리 입력 강제
       newErrors.birth_year = '연도는 4자리로 입력해주세요. (예: 1990)'
-    } else {
-      // 만 15세 미만 차단
-      const currentYear = new Date().getFullYear()
-      const age = currentYear - year
-      if (age < 15) {
-        newErrors.birth_year = '만 15세 미만은 지원할 수 없습니다.'
-      }
+    } else if (new Date().getFullYear() - year < 15) {
+      newErrors.birth_year = '만 15세 미만은 지원할 수 없습니다.'
     }
 
     if (!form.applicant_gender) {
@@ -210,12 +203,29 @@ export default function ApplyFormModal({
       newErrors.applicant_phone = '올바른 휴대폰 번호를 입력해주세요.'
     }
 
-    if (!form.consent_collect) {
-      newErrors.consent_collect = '개인정보 수집·이용에 동의해주세요.'
+    // 섹션 2 검증
+    if (!form.applied_task) {
+      newErrors.applied_task = '지원 업무를 선택해주세요.'
+    }
+    if (form.prior_experience_90d === null) {
+      newErrors.prior_experience_90d = '90일 이내 근무 경험 여부를 선택해주세요.'
+    }
+    if (!form.preferred_shift) {
+      newErrors.preferred_shift = '희망 출근 시간대를 선택해주세요.'
+    }
+    if (!form.transportation) {
+      newErrors.transportation = '교통 수단을 선택해주세요.'
+    }
+    if (!form.shoe_size) {
+      newErrors.shoe_size = '안전화 사이즈를 선택해주세요.'
+    }
+    if (form.notes.length > 300) {
+      newErrors.notes = '특이사항은 300자 이하로 입력해주세요.'
     }
 
+    // 섹션 3 검증
     if (!form.consent_third_party) {
-      newErrors.consent_third_party = '제3자 제공에 동의해주세요.'
+      newErrors.consent_third_party = '제3자 제공 동의는 필수입니다.'
     }
 
     setErrors(newErrors)
@@ -227,8 +237,7 @@ export default function ApplyFormModal({
     e.preventDefault()
     if (!validate()) return
 
-    // validate()에서 4자리 강제 검증 통과 후 도달 — padStart 불필요
-    const year = form.birth_year                     // 이미 4자리 확정
+    const year = form.birth_year
     const month = form.birth_month.padStart(2, '0')
     const day = form.birth_day.padStart(2, '0')
 
@@ -237,13 +246,32 @@ export default function ApplyFormModal({
       applicant_birth: `${year}-${month}-${day}`,
       applicant_gender: form.applicant_gender as 'male' | 'female',
       applicant_phone: form.applicant_phone.replace(/\D/g, ''),
-      consent_collect: form.consent_collect,
+      applied_task: form.applied_task,
+      prior_experience_90d: form.prior_experience_90d as boolean,
+      preferred_shift: form.preferred_shift as 'morning' | 'afternoon' | 'night' | 'any',
+      transportation: form.transportation as 'car' | 'public' | 'shuttle',
+      shoe_size: form.shoe_size,
+      notes: form.notes.trim() || undefined,
+      emergency_contact: form.emergency_contact.replace(/\D/g, '') || undefined,
       consent_third_party: form.consent_third_party,
+      work_date: workDate ?? null,
     })
   }
 
-  // 두 동의가 모두 체크되었는지 (제출 버튼 활성 조건)
-  const canSubmit = form.consent_collect && form.consent_third_party && !isSubmitting
+  // 제출 버튼 활성 조건: 제3자 동의 체크 + 제출 중 아님
+  const canSubmit = form.consent_third_party && !isSubmitting
+
+  // 섹션 공통 헤더 스타일
+  const sectionHeader = 'text-[13px] font-bold text-gray-500 uppercase tracking-wide mb-3 mt-1'
+
+  // 라디오 그룹 옵션 공통 버튼 스타일
+  function radioBtn(selected: boolean) {
+    return `flex-1 py-2 rounded-xl border text-sm font-medium transition-colors ${
+      selected
+        ? 'bg-blue-500 border-blue-500 text-white'
+        : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-blue-300'
+    }`
+  }
 
   return (
     <AnimatePresence>
@@ -256,15 +284,15 @@ export default function ApplyFormModal({
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
         >
-          {/* 모달 본체 */}
+          {/* 모달 본체 — 풀스크린 모달로 넉넉한 스크롤 공간 확보 */}
           <motion.div
             initial={{ y: '100%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto"
           >
-            {/* 헤더 */}
+            {/* ── 헤더 (sticky) ── */}
             <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between z-10">
               <div>
                 <h2 className="text-lg font-bold text-gray-900">지원하기</h2>
@@ -278,248 +306,399 @@ export default function ApplyFormModal({
               </button>
             </div>
 
-            {/* 폼 */}
+            {/* ── 폼 ── */}
             <form onSubmit={handleSubmit} className="px-5 py-6 space-y-5">
 
-              {/* ─ 회원 정보 자동 연계 안내 배너 ─ */}
-              {prefilled && (
-                <div className="flex items-center gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-                  <Sparkles className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                  <p className="text-xs text-blue-700 leading-relaxed">
-                    <span className="font-semibold">회원 정보에서 자동으로 불러왔어요.</span>
-                    <br />내용이 다르다면 수정 후 제출하세요.
-                  </p>
-                </div>
-              )}
+              {/* 안내 문구 */}
+              <p className="text-xs text-gray-400 leading-relaxed">
+                수집된 정보는 해당 공고 지원 및 안전보건교육 대상 판별 목적으로 사용됩니다.
+              </p>
 
-              {/* ─ 성명 ─ */}
+              {/* ─────────────────────────────────────
+                  섹션 1 — 지원자 정보 (prefill 자동)
+              ───────────────────────────────────── */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  <span className="text-red-500 mr-1">*</span>성명
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="실명을 입력해주세요"
-                    value={form.applicant_name}
-                    onChange={(e) => setForm(f => ({ ...f, applicant_name: e.target.value }))}
-                    className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                      errors.applicant_name ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
-                    }`}
-                  />
-                </div>
-                {errors.applicant_name && (
-                  <p className="text-xs text-red-500 mt-1">{errors.applicant_name}</p>
+                <p className={sectionHeader}>지원자 정보</p>
+
+                {/* 자동 연계 배너 */}
+                {prefilled && (
+                  <div className="flex items-center gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-4">
+                    <Sparkles className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                    <p className="text-xs text-blue-700 leading-relaxed">
+                      <span className="font-semibold">회원 정보에서 자동으로 불러왔어요.</span>
+                      <br />내용이 다르다면 수정 후 제출하세요.
+                    </p>
+                  </div>
                 )}
-              </div>
 
-              {/* ─ 생년월일 ─ */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  <span className="text-red-500 mr-1">*</span>생년월일
-                  <span className="text-xs font-normal text-gray-400 ml-2">(주민번호 아님, 6자리 생년월일)</span>
-                </label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                {/* 성명 */}
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    <span className="text-red-500 mr-1">*</span>성명
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="실명을 입력해주세요"
+                      value={form.applicant_name}
+                      onChange={(e) => setForm(f => ({ ...f, applicant_name: e.target.value }))}
+                      className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                        errors.applicant_name ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                      }`}
+                    />
+                  </div>
+                  {errors.applicant_name && (
+                    <p className="text-xs text-red-500 mt-1">{errors.applicant_name}</p>
+                  )}
+                </div>
+
+                {/* 생년월일 */}
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    <span className="text-red-500 mr-1">*</span>생년월일
+                    <span className="text-xs font-normal text-gray-400 ml-2">(주민번호 아님)</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="연도(4자리)"
+                        maxLength={4}
+                        value={form.birth_year}
+                        onChange={(e) => setForm(f => ({ ...f, birth_year: e.target.value.replace(/\D/g, '') }))}
+                        className={`w-full pl-8 pr-2 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                          errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                        }`}
+                      />
+                    </div>
                     <input
                       type="text"
                       inputMode="numeric"
-                      placeholder="연도(4자리)"
-                      maxLength={4}
-                      value={form.birth_year}
-                      onChange={(e) => setForm(f => ({ ...f, birth_year: e.target.value.replace(/\D/g, '') }))}
-                      className={`w-full pl-8 pr-2 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      placeholder="월"
+                      maxLength={2}
+                      value={form.birth_month}
+                      onChange={(e) => setForm(f => ({ ...f, birth_month: e.target.value.replace(/\D/g, '') }))}
+                      className={`w-16 text-center py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                      }`}
+                    />
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="일"
+                      maxLength={2}
+                      value={form.birth_day}
+                      onChange={(e) => setForm(f => ({ ...f, birth_day: e.target.value.replace(/\D/g, '') }))}
+                      className={`w-16 text-center py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
                       }`}
                     />
                   </div>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="월"
-                    maxLength={2}
-                    value={form.birth_month}
-                    onChange={(e) => setForm(f => ({ ...f, birth_month: e.target.value.replace(/\D/g, '') }))}
-                    className={`w-16 text-center py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
-                    }`}
-                  />
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="일"
-                    maxLength={2}
-                    value={form.birth_day}
-                    onChange={(e) => setForm(f => ({ ...f, birth_day: e.target.value.replace(/\D/g, '') }))}
-                    className={`w-16 text-center py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
-                    }`}
-                  />
+                  {errors.birth_year && (
+                    <p className="text-xs text-red-500 mt-1">{errors.birth_year}</p>
+                  )}
                 </div>
-                {errors.birth_year && (
-                  <p className="text-xs text-red-500 mt-1">{errors.birth_year}</p>
-                )}
-              </div>
 
-              {/* ─ 성별 ─ */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  <span className="text-red-500 mr-1">*</span>성별
-                </label>
-                <div className="flex gap-3">
-                  {(['male', 'female'] as const).map((g) => (
-                    <button
-                      key={g}
-                      type="button"
-                      onClick={() => setForm(f => ({ ...f, applicant_gender: g }))}
-                      className={`flex-1 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
-                        form.applicant_gender === g
-                          ? 'bg-blue-500 border-blue-500 text-white'
-                          : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-blue-300'
-                      }`}
-                    >
-                      {g === 'male' ? '남성' : '여성'}
-                    </button>
-                  ))}
-                </div>
-                {errors.applicant_gender && (
-                  <p className="text-xs text-red-500 mt-1">{errors.applicant_gender}</p>
-                )}
-              </div>
-
-              {/* ─ 휴대폰 번호 ─ */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  <span className="text-red-500 mr-1">*</span>휴대폰 번호
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="tel"
-                    inputMode="tel"
-                    placeholder="010-0000-0000"
-                    value={form.applicant_phone}
-                    onChange={(e) => setForm(f => ({ ...f, applicant_phone: formatPhone(e.target.value) }))}
-                    className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.applicant_phone ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
-                    }`}
-                  />
-                </div>
-                {errors.applicant_phone && (
-                  <p className="text-xs text-red-500 mt-1">{errors.applicant_phone}</p>
-                )}
-              </div>
-
-              {/* ─ 개인정보 동의 영역 ─ */}
-              <div className="border border-gray-200 rounded-xl overflow-hidden">
-                <p className="px-4 py-3 text-xs font-semibold text-gray-700 bg-gray-50 border-b border-gray-200">
-                  개인정보 동의 (필수)
-                </p>
-
-                {/* 수집·이용 동의 */}
-                <div className="border-b border-gray-100">
-                  <div className="flex items-center gap-3 px-4 py-3">
-                    <button
-                      type="button"
-                      onClick={() => setForm(f => ({ ...f, consent_collect: !f.consent_collect }))}
-                      className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors flex-shrink-0 ${
-                        form.consent_collect
-                          ? 'bg-blue-500 border-blue-500'
-                          : 'border-gray-300 bg-white'
-                      }`}
-                    >
-                      {form.consent_collect && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-                    </button>
-                    <span className="text-sm text-gray-800 flex-1">
-                      <span className="text-red-500 font-medium">[필수] </span>
-                      개인정보 수집·이용에 동의합니다.
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setCollectOpen(!collectOpen)}
-                      className="text-gray-400 hover:text-gray-600 flex items-center gap-0.5 text-xs"
-                    >
-                      상세
-                      {collectOpen
-                        ? <ChevronUp className="w-3.5 h-3.5" />
-                        : <ChevronDown className="w-3.5 h-3.5" />
-                      }
-                    </button>
-                  </div>
-                  {/* 상세 아코디언 */}
-                  <AnimatePresence>
-                    {collectOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
+                {/* 성별 */}
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    <span className="text-red-500 mr-1">*</span>성별
+                  </label>
+                  <div className="flex gap-3">
+                    {(['male', 'female'] as const).map((g) => (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, applicant_gender: g }))}
+                        className={radioBtn(form.applicant_gender === g)}
                       >
-                        <pre className="text-xs text-gray-500 bg-gray-50 px-4 pb-3 whitespace-pre-wrap font-sans leading-relaxed">
-                          {COLLECT_POLICY_TEXT}
-                        </pre>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                        {g === 'male' ? '남성' : '여성'}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.applicant_gender && (
+                    <p className="text-xs text-red-500 mt-1">{errors.applicant_gender}</p>
+                  )}
                 </div>
 
-                {/* 제3자 제공 동의 */}
+                {/* 휴대폰 번호 */}
                 <div>
-                  <div className="flex items-center gap-3 px-4 py-3">
-                    <button
-                      type="button"
-                      onClick={() => setForm(f => ({ ...f, consent_third_party: !f.consent_third_party }))}
-                      className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors flex-shrink-0 ${
-                        form.consent_third_party
-                          ? 'bg-blue-500 border-blue-500'
-                          : 'border-gray-300 bg-white'
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    <span className="text-red-500 mr-1">*</span>휴대폰 번호
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="tel"
+                      inputMode="tel"
+                      placeholder="010-0000-0000"
+                      value={form.applicant_phone}
+                      onChange={(e) => setForm(f => ({ ...f, applicant_phone: formatPhone(e.target.value) }))}
+                      className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        errors.applicant_phone ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
                       }`}
-                    >
-                      {form.consent_third_party && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-                    </button>
-                    <span className="text-sm text-gray-800 flex-1">
-                      <span className="text-red-500 font-medium">[필수] </span>
-                      개인정보를 제3자에게 제공하는 것에 동의합니다.
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setThirdPartyOpen(!thirdPartyOpen)}
-                      className="text-gray-400 hover:text-gray-600 flex items-center gap-0.5 text-xs"
-                    >
-                      상세
-                      {thirdPartyOpen
-                        ? <ChevronUp className="w-3.5 h-3.5" />
-                        : <ChevronDown className="w-3.5 h-3.5" />
-                      }
-                    </button>
+                    />
                   </div>
-                  <AnimatePresence>
-                    {thirdPartyOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <pre className="text-xs text-gray-500 bg-gray-50 px-4 pb-3 whitespace-pre-wrap font-sans leading-relaxed">
-                          {THIRD_PARTY_POLICY_TEXT}
-                        </pre>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {errors.applicant_phone && (
+                    <p className="text-xs text-red-500 mt-1">{errors.applicant_phone}</p>
+                  )}
                 </div>
               </div>
 
-              {/* 동의 오류 메시지 */}
-              {(errors.consent_collect || errors.consent_third_party) && (
-                <p className="text-xs text-red-500">
-                  {errors.consent_collect || errors.consent_third_party}
-                </p>
-              )}
+              {/* 섹션 구분선 */}
+              <div className="border-t border-gray-100" />
 
-              {/* 제출 버튼 */}
+              {/* ─────────────────────────────────────
+                  섹션 2 — 근무 관련
+              ───────────────────────────────────── */}
+              <div>
+                <p className={sectionHeader}>근무 관련</p>
+
+                {/* 5. 지원 업무 선택 */}
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    <span className="text-red-500 mr-1">*</span>지원 업무
+                  </label>
+                  <div className="relative">
+                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <select
+                      value={form.applied_task}
+                      onChange={(e) => setForm(f => ({ ...f, applied_task: e.target.value }))}
+                      className={`w-full pl-9 pr-8 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-no-repeat ${
+                        errors.applied_task ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                      }`}
+                    >
+                      <option value="">업무를 선택해주세요</option>
+                      {effectiveTaskOptions.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                  {errors.applied_task && (
+                    <p className="text-xs text-red-500 mt-1">{errors.applied_task}</p>
+                  )}
+                </div>
+
+                {/* 6. 90일 이내 센터 근무 경험 */}
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    <span className="text-red-500 mr-1">*</span>
+                    해당 센터에서 지난 90일 이내 근무한 경험이 있나요?
+                  </label>
+                  <p className="text-xs text-gray-400 mb-2 leading-relaxed">
+                    신규 근로자 안전보건교육 대상 판별을 위해 수집합니다.
+                    (산업안전보건법 제29조)
+                  </p>
+                  <div className="flex gap-3">
+                    {([true, false] as const).map((val) => (
+                      <button
+                        key={String(val)}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, prior_experience_90d: val }))}
+                        className={radioBtn(form.prior_experience_90d === val)}
+                      >
+                        {val ? '네, 있어요' : '아니요, 없어요'}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.prior_experience_90d && (
+                    <p className="text-xs text-red-500 mt-1">{errors.prior_experience_90d}</p>
+                  )}
+                </div>
+
+                {/* 7. 희망 출근 시간대 */}
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    <span className="text-red-500 mr-1">*</span>희망 출근 시간대
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {([
+                      { value: 'morning', label: '오전' },
+                      { value: 'afternoon', label: '오후' },
+                      { value: 'night', label: '야간' },
+                      { value: 'any', label: '무관' },
+                    ] as const).map(opt => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, preferred_shift: opt.value }))}
+                        className={radioBtn(form.preferred_shift === opt.value)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.preferred_shift && (
+                    <p className="text-xs text-red-500 mt-1">{errors.preferred_shift}</p>
+                  )}
+                </div>
+
+                {/* 8. 교통 수단 */}
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    <span className="text-red-500 mr-1">*</span>교통 수단
+                  </label>
+                  <div className="flex gap-2">
+                    {([
+                      { value: 'car', label: '자차' },
+                      { value: 'public', label: '대중교통' },
+                      { value: 'shuttle', label: '셔틀 필요' },
+                    ] as const).map(opt => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, transportation: opt.value }))}
+                        className={radioBtn(form.transportation === opt.value)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.transportation && (
+                    <p className="text-xs text-red-500 mt-1">{errors.transportation}</p>
+                  )}
+                </div>
+
+                {/* 9. 안전화 사이즈 */}
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    <span className="text-red-500 mr-1">*</span>안전화 사이즈
+                    <span className="text-xs font-normal text-gray-400 ml-2">(안전화 지급용)</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={form.shoe_size}
+                      onChange={(e) => setForm(f => ({ ...f, shoe_size: e.target.value }))}
+                      className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none ${
+                        errors.shoe_size ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                      }`}
+                    >
+                      <option value="">사이즈 선택 (mm)</option>
+                      {SHOE_SIZE_OPTIONS.map(sz => (
+                        <option key={sz} value={sz}>{sz}mm</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                  {errors.shoe_size && (
+                    <p className="text-xs text-red-500 mt-1">{errors.shoe_size}</p>
+                  )}
+                </div>
+
+                {/* 10. 특이사항 / 건강상 이슈 (선택) */}
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    특이사항 / 건강상 이슈
+                    <span className="text-xs font-normal text-gray-400 ml-2">(선택, 최대 300자)</span>
+                  </label>
+                  <textarea
+                    placeholder="작업 배치 시 참고할 특이사항이나 건강상 이슈를 입력해주세요 (예: 허리 디스크, 오른손 부상 중)"
+                    value={form.notes}
+                    onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))}
+                    rows={3}
+                    maxLength={300}
+                    className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
+                      errors.notes ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                    }`}
+                  />
+                  <p className="text-xs text-gray-400 text-right mt-0.5">{form.notes.length}/300자</p>
+                  {errors.notes && (
+                    <p className="text-xs text-red-500 mt-1">{errors.notes}</p>
+                  )}
+                </div>
+
+                {/* 11. 비상 연락처 (선택) */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    비상 연락처
+                    <span className="text-xs font-normal text-gray-400 ml-2">(선택, 산재 대비)</span>
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="tel"
+                      inputMode="tel"
+                      placeholder="010-0000-0000"
+                      value={form.emergency_contact}
+                      onChange={(e) => setForm(f => ({ ...f, emergency_contact: formatPhone(e.target.value) }))}
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 섹션 구분선 */}
+              <div className="border-t border-gray-100" />
+
+              {/* ─────────────────────────────────────
+                  섹션 3 — 동의 (제3자 제공 1개)
+              ───────────────────────────────────── */}
+              <div>
+                <p className={sectionHeader}>동의</p>
+
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  {/* 제3자 제공 동의 */}
+                  <div>
+                    <div className="flex items-center gap-3 px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, consent_third_party: !f.consent_third_party }))}
+                        className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors flex-shrink-0 ${
+                          form.consent_third_party
+                            ? 'bg-blue-500 border-blue-500'
+                            : 'border-gray-300 bg-white'
+                        }`}
+                      >
+                        {form.consent_third_party && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                      </button>
+                      <span className="text-sm text-gray-800 flex-1">
+                        <span className="text-red-500 font-medium">[필수] </span>
+                        위 정보를 공고 등록사(고객사)에게 제공하는 것에 동의합니다.{' '}
+                        <span className="font-semibold text-blue-600">제3자 제공</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setThirdPartyOpen(!thirdPartyOpen)}
+                        className="text-gray-400 hover:text-gray-600 flex items-center gap-0.5 text-xs flex-shrink-0"
+                      >
+                        상세
+                        {thirdPartyOpen
+                          ? <ChevronUp className="w-3.5 h-3.5" />
+                          : <ChevronDown className="w-3.5 h-3.5" />
+                        }
+                      </button>
+                    </div>
+                    {/* 상세 아코디언 */}
+                    <AnimatePresence>
+                      {thirdPartyOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <pre className="text-xs text-gray-500 bg-gray-50 px-4 pb-3 whitespace-pre-wrap font-sans leading-relaxed">
+                            {THIRD_PARTY_DETAIL}
+                          </pre>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                {errors.consent_third_party && (
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
+                    <p className="text-xs text-red-500">{errors.consent_third_party}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* ── 제출 버튼 ── */}
               <button
                 type="submit"
                 disabled={!canSubmit}
@@ -539,10 +718,10 @@ export default function ApplyFormModal({
                 )}
               </button>
 
-              {/* 안내 문구 */}
-              <p className="text-xs text-gray-400 text-center leading-relaxed">
+              {/* 하단 안내 */}
+              <p className="text-xs text-gray-400 text-center leading-relaxed pb-2">
                 입력하신 정보는 채용 목적으로만 사용되며<br />
-                채용 종료 후 6개월 이내 파기됩니다.
+                채용 종료 후 3개월 이내 파기됩니다.
               </p>
             </form>
           </motion.div>

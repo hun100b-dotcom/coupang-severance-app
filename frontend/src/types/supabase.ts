@@ -107,6 +107,10 @@ export interface JobPosting {
   section: 'today-urgent' | 'tomorrow-urgent' | 'always'
   // 복리후생 목록 — 20260410 추가
   benefits: string[]
+  // 지원자 선택 업무 종류 — 20260411 추가 (지원서 폼 드롭다운 옵션)
+  task_options: string[]
+  // 공고 근무 예정일 — 20260411 추가 (중복 확정 차단 기준일)
+  work_date: string | null
   expires_at: string | null
   status: 'active' | 'expired' | 'deleted'
   created_by: string | null
@@ -145,6 +149,14 @@ export interface JobApplication {
   consent_collect: boolean | null
   consent_third_party: boolean | null
   consent_at: string | null
+  // 근무 관련 추가 정보 — 20260411 추가 (지원서 폼 전면 개편)
+  applied_task: string | null               // 선택 업무 (예: 상차, 분류)
+  prior_experience_90d: boolean | null      // 90일 이내 근무 경험 여부
+  preferred_shift: 'morning' | 'afternoon' | 'night' | 'any' | null  // 희망 시간대
+  transportation: 'car' | 'public' | 'shuttle' | null  // 교통 수단
+  shoe_size: string | null                  // 안전화 사이즈 (mm)
+  notes: string | null                      // 특이사항/건강상 이슈
+  emergency_contact: string | null          // 비상 연락처
   // Supabase JOIN 시 포함되는 공고 상세 (선택)
   job_postings?: Pick<JobPosting, 'company_name' | 'center_name' | 'region' | 'hourly_wage' | 'daily_wage' | 'work_hours'> | null
 }

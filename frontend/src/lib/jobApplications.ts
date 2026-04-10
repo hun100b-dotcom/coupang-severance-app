@@ -40,19 +40,51 @@ export async function hasApplied(userId: string, jobPostingId: string): Promise<
   return (data ?? []).length > 0
 }
 
-// ── 지원하기 (공고 지원) — 인적사항 포함 버전 ──
+// ── 같은 날짜에 이미 확정(confirmed)된 지원이 있는지 프론트 사전 체크 ──
+// DB trigger(trg_check_no_confirmed_same_day)와 2중 방어 구조
+// workDate: 공고의 근무 예정일 (job_postings.work_date)
+// 반환: null이면 충돌 없음, string이면 충돌된 날짜
+export async function checkConfirmedOnDate(
+  userId: string,
+  workDate: string | null
+): Promise<string | null> {
+  // work_date 가 없으면 중복 체크 불필요
+  if (!supabase || !workDate) return null
+  const { data, error } = await supabase
+    .from('job_applications')
+    .select('id, work_date')
+    .eq('user_id', userId)
+    .eq('work_date', workDate)
+    .eq('status', 'confirmed')
+    .limit(1)
+  if (error) return null
+  // 충돌 건이 있으면 해당 날짜 문자열 반환 → 프론트에서 에러 토스트 표시
+  return (data ?? []).length > 0 ? workDate : null
+}
+
+// ── 지원하기 (공고 지원) — 인적사항 + 근무 정보 포함 버전 ──
 // 성공 시 생성된 application의 id 반환, 실패 시 null
-// applicantInfo: 지원 시점 직접 입력한 인적사항 (D-NEW-3)
 export async function applyToJob(
   userId: string,
   jobPostingId: string,
   applicantInfo?: {
+    // 섹션 1: 지원자 인적사항
     applicant_name: string
     applicant_birth: string       // YYYY-MM-DD
     applicant_gender: 'male' | 'female'
     applicant_phone: string
-    consent_collect: boolean
+    // 섹션 2: 근무 관련
+    applied_task: string          // 선택 업무
+    prior_experience_90d: boolean // 90일 이내 근무 경험
+    preferred_shift: 'morning' | 'afternoon' | 'night' | 'any'  // 희망 시간대
+    transportation: 'car' | 'public' | 'shuttle'  // 교통 수단
+    shoe_size: string             // 안전화 사이즈 (mm)
+    notes?: string                // 특이사항 (선택)
+    emergency_contact?: string    // 비상 연락처 (선택)
+    // 섹션 3: 동의 (제3자 제공만, 수집·이용은 온보딩에서 포괄 동의)
     consent_third_party: boolean
+    // 근무일 (공고의 work_date → 중복 확정 차단 기준)
+    work_date?: string | null
   },
 ): Promise<string | null> {
   if (!supabase) return null
@@ -62,16 +94,21 @@ export async function applyToJob(
       user_id: userId,
       job_posting_id: jobPostingId,
       status: 'applied',
-      // 인적사항 포함 (없으면 null로 저장)
+      // 인적사항 (없으면 null)
       ...(applicantInfo ?? {}),
-      // 동의 시각: 동의한 경우에만 기록
-      consent_at: applicantInfo?.consent_collect && applicantInfo?.consent_third_party
+      // 동의 시각: 제3자 제공 동의 시에만 기록
+      consent_at: applicantInfo?.consent_third_party
         ? new Date().toISOString()
         : null,
+      // 수집·이용 동의는 온보딩 시 이미 포괄 동의 받음 → true 고정 기록
+      consent_collect: true,
     })
     .select('id')
     .single()
-  if (error) { console.error('[지원하기 오류]', error); return null }
+  if (error) {
+    console.error('[지원하기 오류]', error)
+    return null
+  }
   return data?.id ?? null
 }
 

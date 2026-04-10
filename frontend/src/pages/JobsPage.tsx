@@ -14,7 +14,7 @@ import {
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { listFavorites, addFavorite, removeFavorite, isFavorited } from '../lib/jobFavorites'
-import { applyToJob, getAppliedJobIds } from '../lib/jobApplications'
+import { applyToJob, getAppliedJobIds, checkConfirmedOnDate } from '../lib/jobApplications'
 import type { JobPosting } from '../types/supabase'
 import type { JobFavorite } from '../types/supabase'
 import KakaoShareButton from '../components/KakaoShareButton'
@@ -279,8 +279,8 @@ export default function JobsPage() {
   }
 
   // ── 지원하기 핸들러 — 1단계: 게이트 체크 ──
-  // 로그인 여부 확인 → 모달 오픈 (D-NEW-5)
-  const handleApply = (e: React.MouseEvent, jobId: string) => {
+  // 로그인 여부 → 중복 확정 사전 체크 → 모달 오픈 (D-NEW-5)
+  const handleApply = async (e: React.MouseEvent, jobId: string) => {
     e.stopPropagation()  // 카드 클릭 이벤트 버블링 방지
 
     // 비로그인 → 로그인 유도 모달
@@ -292,20 +292,43 @@ export default function JobsPage() {
     // 이미 지원한 공고 → 중복 방지
     if (appliedMap[jobId]) return
 
-    // 지원 폼 모달 오픈 (인적사항 + 동의 입력)
+    // 해당 공고의 work_date 조회 (중복 확정 체크용)
+    const targetJob = allJobs.find(j => j.id === jobId)
+    const jobWorkDate = targetJob?.work_date ?? null
+
+    // 프론트 사전 체크: 같은 날짜에 이미 confirmed 상태인 지원이 있으면 차단
+    if (jobWorkDate) {
+      const conflictDate = await checkConfirmedOnDate(user.id, jobWorkDate)
+      if (conflictDate) {
+        showToast(
+          `해당 날짜(${conflictDate})에 이미 출근 확정된 지원이 있어 추가 지원이 불가능합니다.`,
+          'error'
+        )
+        return
+      }
+    }
+
+    // 지원 폼 모달 오픈 (인적사항 + 근무정보 + 동의 입력)
     setPendingApplyJobId(jobId)
     setApplyModalOpen(true)
   }
 
   // ── 지원하기 핸들러 — 2단계: 폼 제출 ──
-  // ApplyFormModal에서 인적사항 + 동의를 받아 DB에 INSERT
+  // ApplyFormModal에서 인적사항 + 근무정보 + 동의를 받아 DB에 INSERT
   const handleApplyModalSubmit = async (data: {
     applicant_name: string
     applicant_birth: string
     applicant_gender: 'male' | 'female'
     applicant_phone: string
-    consent_collect: boolean
+    applied_task: string
+    prior_experience_90d: boolean
+    preferred_shift: 'morning' | 'afternoon' | 'night' | 'any'
+    transportation: 'car' | 'public' | 'shuttle'
+    shoe_size: string
+    notes?: string
+    emergency_contact?: string
     consent_third_party: boolean
+    work_date?: string | null
   }) => {
     if (!user || !pendingApplyJobId) return
     setIsApplySubmitting(true)
@@ -801,7 +824,7 @@ export default function JobsPage() {
 
       {regionOpen && <div className="fixed inset-0 z-20" onClick={() => setRegionOpen(false)} />}
 
-      {/* ── 지원 폼 모달 — 인적사항 + 개인정보 동의 (D-NEW-4) ── */}
+      {/* ── 지원 폼 모달 — 인적사항 + 근무정보 + 동의 (전면 개편 2026-04-11) ── */}
       <ApplyFormModal
         isOpen={applyModalOpen}
         onClose={() => { setApplyModalOpen(false); setPendingApplyJobId(null) }}
@@ -814,6 +837,18 @@ export default function JobsPage() {
             : ''
         }
         isSubmitting={isApplySubmitting}
+        // 공고별 업무 선택지 (task_options 없으면 기본값 사용)
+        taskOptions={
+          pendingApplyJobId
+            ? (allJobs.find(j => j.id === pendingApplyJobId)?.task_options ?? [])
+            : []
+        }
+        // 공고 근무 예정일 — 중복 확정 차단 기준
+        workDate={
+          pendingApplyJobId
+            ? (allJobs.find(j => j.id === pendingApplyJobId)?.work_date ?? null)
+            : null
+        }
       />
 
       {/* ── 로그인 유도 모달 — 비로그인 상태에서 지원하기 클릭 시 표시 ── */}
