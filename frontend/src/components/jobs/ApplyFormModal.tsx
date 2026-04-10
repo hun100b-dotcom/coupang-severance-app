@@ -1,9 +1,12 @@
-// 채용 지원 폼 모달 — 인적사항 직접 입력 + 개인정보 동의 (D-NEW-4)
+// 채용 지원 폼 모달 — 회원 프로필 자동 연계 + 개인정보 동의 (D-NEW-4)
 // 로그인한 사용자가 "지원하기" 클릭 시 표시되는 모달
 // 주민번호 뒤 1자리(성별코드) 절대 미수집 — applicant_gender(남/여)로 대체
+// profiles 테이블(온보딩 시 저장)에서 이름/생년월일/전화번호 자동 prefill
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ChevronDown, ChevronUp, Calendar, Phone, User, Check, Loader2 } from 'lucide-react'
+import { X, ChevronDown, ChevronUp, Calendar, Phone, User, Check, Loader2, Sparkles } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../contexts/AuthContext'
 
 // 지원 폼 데이터 타입
 interface ApplyFormData {
@@ -57,6 +60,9 @@ export default function ApplyFormModal({
   jobTitle,
   isSubmitting,
 }: ApplyFormModalProps) {
+  // 로그인된 사용자 정보 (프로필 prefill용)
+  const { user } = useAuth()
+
   // 폼 데이터 상태
   const [form, setForm] = useState<ApplyFormData>({
     applicant_name: '',
@@ -76,9 +82,20 @@ export default function ApplyFormModal({
   // 유효성 검사 오류 메시지
   const [errors, setErrors] = useState<Partial<Record<keyof ApplyFormData, string>>>({})
 
-  // 모달이 열릴 때마다 폼 초기화
+  // 프로필 자동 연계 여부 (배너 표시용)
+  const [prefilled, setPrefilled] = useState(false)
+
+  // 모달이 열릴 때 profiles 테이블에서 회원 정보를 자동으로 불러옴
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) return
+
+    setErrors({})
+    setCollectOpen(false)
+    setThirdPartyOpen(false)
+    setPrefilled(false)
+
+    if (!user) {
+      // 비로그인 상태면 빈 폼으로 시작
       setForm({
         applicant_name: '',
         birth_year: '',
@@ -89,11 +106,55 @@ export default function ApplyFormModal({
         consent_collect: false,
         consent_third_party: false,
       })
-      setErrors({})
-      setCollectOpen(false)
-      setThirdPartyOpen(false)
+      return
     }
-  }, [isOpen])
+
+    // 온보딩 시 저장한 프로필 값을 불러와서 자동 채움
+    supabase
+      .from('profiles')
+      .select('full_name, birthdate, phone_number')
+      .eq('id', user.id)
+      .single()
+      .then(({ data, error }) => {
+        if (error || !data) {
+          // 프로필 조회 실패 시 빈 폼으로 (기존 동작 유지)
+          setForm({
+            applicant_name: '',
+            birth_year: '',
+            birth_month: '',
+            birth_day: '',
+            applicant_gender: '',
+            applicant_phone: '',
+            consent_collect: false,
+            consent_third_party: false,
+          })
+          return
+        }
+
+        // birthdate "1990-05-03" → year:"1990", month:"5", day:"3"
+        let birthYear = '', birthMonth = '', birthDay = ''
+        if (data.birthdate) {
+          const parts = (data.birthdate as string).split('-')
+          birthYear  = parts[0] || ''
+          birthMonth = parts[1] ? String(parseInt(parts[1], 10)) : ''
+          birthDay   = parts[2] ? String(parseInt(parts[2], 10)) : ''
+        }
+
+        const hasPrefillData = !!(data.full_name || data.birthdate || data.phone_number)
+
+        setForm({
+          applicant_name: data.full_name || '',
+          birth_year:     birthYear,
+          birth_month:    birthMonth,
+          birth_day:      birthDay,
+          applicant_gender: '',   // 성별은 profiles에 없으므로 직접 선택
+          applicant_phone: data.phone_number || '',
+          consent_collect: false,
+          consent_third_party: false,
+        })
+        setPrefilled(hasPrefillData)
+      })
+  }, [isOpen, user])
 
   // ── 휴대폰 번호 자동 포맷 (010-0000-0000) ──
   function formatPhone(raw: string): string {
@@ -212,6 +273,17 @@ export default function ApplyFormModal({
 
             {/* 폼 */}
             <form onSubmit={handleSubmit} className="px-5 py-6 space-y-5">
+
+              {/* ─ 회원 정보 자동 연계 안내 배너 ─ */}
+              {prefilled && (
+                <div className="flex items-center gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                  <Sparkles className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    <span className="font-semibold">회원 정보에서 자동으로 불러왔어요.</span>
+                    <br />내용이 다르다면 수정 후 제출하세요.
+                  </p>
+                </div>
+              )}
 
               {/* ─ 성명 ─ */}
               <div>
