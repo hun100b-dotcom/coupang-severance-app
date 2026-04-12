@@ -1,8 +1,9 @@
 // 관리자 — 채용공고 관리 메뉴
-// [공고 목록] 탭: 공고 CRUD (추가/수정/삭제/긴급 토글) + 풀페이지 스텝퍼 등록/수정
+// [공고 목록] 탭: 공고 CRUD (추가/수정/삭제/섹션 변경) + 풀페이지 스텝퍼 등록/수정
 // [지원자 관리] 탭: 공고별 지원자 목록 조회 + 출근확정/지원거절/취소 처리 + xlsx 다운로드
-// [📊 확정 현황] 탭: 센터별 지원/확정/거절 현황 대시보드
+// [📊 확정 현황] 탭: 기간 필터 + 일별 추이 차트 + KPI 증감 + 센터별 테이블
 import { useEffect, useState, useCallback } from 'react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../contexts/AuthContext'
 import type { JobPosting } from '../../../types/supabase'
@@ -105,6 +106,8 @@ export default function JobsMenu() {
   const [formStep, setFormStep] = useState(1)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [jobSearch, setJobSearch] = useState<string>('')
+  // 확정 현황 기간 필터 (오늘/7일/30일/전체)
+  const [dashboardPeriod, setDashboardPeriod] = useState<'today' | '7d' | '30d' | 'all'>('today')
 
   // ── 지원자 상태 ──
   const [applicants, setApplicants] = useState<ApplicationRow[]>([])
@@ -120,7 +123,13 @@ export default function JobsMenu() {
     setLoading(true)
     try {
       let query = supabase.from('job_postings').select('*').order('created_at', { ascending: false })
-      if (statusFilter !== 'all') query = query.eq('status', statusFilter)
+      if (statusFilter !== 'all') {
+        // 특정 상태 필터
+        query = query.eq('status', statusFilter)
+      } else {
+        // 전체 탭: 삭제된 공고는 제외 (삭제됨 탭에서만 표시)
+        query = query.neq('status', 'deleted')
+      }
       const { data, error } = await query
       if (error) throw error
       setJobs((data ?? []) as JobPosting[])
@@ -269,17 +278,24 @@ export default function JobsMenu() {
     }
   }
 
-  // 긴급 토글
-  const handleToggleUrgent = async (job: JobPosting) => {
+  // 섹션 변경 (오늘추가/내일긴급/상시)
+  const handleChangeSection = async (job: JobPosting, newSection: 'today-urgent' | 'tomorrow-urgent' | 'always') => {
     if (!supabase) return
+    if ((job.section as string) === newSection) return // 이미 같은 섹션이면 무시
+    const isUrgent = newSection === 'today-urgent' || newSection === 'tomorrow-urgent'
     const { error } = await supabase.from('job_postings')
-      .update({ is_urgent: !job.is_urgent })
+      .update({ section: newSection, is_urgent: isUrgent })
       .eq('id', job.id)
     if (error) {
-      setAdminToast({ msg: '❌ 긴급 토글 실패', type: 'error' })
+      setAdminToast({ msg: '❌ 섹션 변경 실패', type: 'error' })
     } else {
       fetchJobs()
-      setAdminToast({ msg: job.is_urgent ? '✅ 긴급 해제됨' : '🚨 긴급 공고로 설정됨', type: 'success' })
+      const labels: Record<string, string> = {
+        'today-urgent': '🔥 오늘 추가모집으로 변경됨',
+        'tomorrow-urgent': '⚡ 내일 긴급모집으로 변경됨',
+        'always': '📌 상시모집으로 변경됨',
+      }
+      setAdminToast({ msg: labels[newSection] ?? '✅ 섹션 변경됨', type: 'success' })
     }
   }
 
@@ -393,10 +409,39 @@ export default function JobsMenu() {
     return { bg: 'rgba(49,130,246,0.18)', color: '#3182f6' }
   }
 
-  // 확정 현황 대시보드 데이터 집계
+  // ── 기간 필터 적용 유틸 ──
+  const filterByPeriod = (list: ApplicationRow[], period: 'today' | '7d' | '30d' | 'all') => {
+    if (period === 'all') return list
+    const now = new Date()
+    const cutoff = new Date()
+    if (period === 'today') {
+      cutoff.setHours(0, 0, 0, 0) // 오늘 00:00
+    } else if (period === '7d') {
+      cutoff.setDate(now.getDate() - 7)
+    } else if (period === '30d') {
+      cutoff.setDate(now.getDate() - 30)
+    }
+    return list.filter(a => new Date(a.applied_at) >= cutoff)
+  }
+
+  // 현재 기간 필터 적용된 지원자 목록
+  const filteredApplicants = filterByPeriod(applicants, dashboardPeriod)
+
+  // 전일 기준 applicants (증감 계산용)
+  const yesterdayApplicants = (() => {
+    const now = new Date()
+    const todayStart = new Date(now); todayStart.setHours(0, 0, 0, 0)
+    const yesterdayStart = new Date(todayStart); yesterdayStart.setDate(todayStart.getDate() - 1)
+    return applicants.filter(a => {
+      const d = new Date(a.applied_at)
+      return d >= yesterdayStart && d < todayStart
+    })
+  })()
+
+  // 확정 현황 대시보드 데이터 집계 (기간 필터 반영)
   const dashboardStats = (() => {
     const map: Record<string, { center: string; applied: number; confirmed: number; rejected: number; completed: number }> = {}
-    applicants.forEach(app => {
+    filteredApplicants.forEach(app => {
       const key = `${app.job_postings?.company_name ?? ''} ${app.job_postings?.center_name ?? ''}`.trim() || '기타'
       if (!map[key]) map[key] = { center: key, applied: 0, confirmed: 0, rejected: 0, completed: 0 }
       if (app.status === 'applied') map[key].applied++
@@ -405,6 +450,28 @@ export default function JobsMenu() {
       else if (app.status === 'completed') map[key].completed++
     })
     return Object.values(map)
+  })()
+
+  // 일별 추이 데이터 (최근 14일 — 기간 필터 무관하게 전체 기준)
+  const dailyTrendData = (() => {
+    const days = dashboardPeriod === 'today' ? 7 : dashboardPeriod === '7d' ? 7 : dashboardPeriod === '30d' ? 14 : 14
+    const result: { date: string; 지원: number; 확정: number; 거절: number }[] = []
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i); d.setHours(0, 0, 0, 0)
+      const next = new Date(d); next.setDate(d.getDate() + 1)
+      const dayApps = applicants.filter(a => {
+        const t = new Date(a.applied_at)
+        return t >= d && t < next
+      })
+      const label = `${d.getMonth() + 1}/${d.getDate()}`
+      result.push({
+        date: label,
+        지원: dayApps.length,
+        확정: dayApps.filter(a => a.status === 'confirmed' || a.status === 'completed').length,
+        거절: dayApps.filter(a => a.status === 'rejected').length,
+      })
+    }
+    return result
   })()
 
   // ══════════════════════════════════════════════════════════════
@@ -1396,15 +1463,6 @@ export default function JobsMenu() {
                           background: 'rgba(49,130,246,0.15)', color: '#3182f6',
                           fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
                         }}>✏️ 수정</button>
-                        <button
-                          onClick={() => handleToggleUrgent(job)}
-                          style={{
-                            flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
-                            background: job.is_urgent ? 'rgba(240,68,82,0.15)' : 'rgba(255,180,0,0.1)',
-                            color: job.is_urgent ? '#f04452' : '#ffb400',
-                            fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
-                          }}
-                        >{job.is_urgent ? '급구 해제' : '급구 설정'}</button>
                         {job.status !== 'deleted' && (
                           <button onClick={() => handleDelete(job)} style={{
                             flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
@@ -1412,6 +1470,32 @@ export default function JobsMenu() {
                             fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
                           }}>🗑️ 삭제</button>
                         )}
+                      </div>
+
+                      {/* 섹션 변경 — 3버튼 그룹 */}
+                      <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
+                        {([
+                          { value: 'today-urgent' as const,    label: '🔥 오늘',   color: '#ef4444' },
+                          { value: 'tomorrow-urgent' as const, label: '⚡ 내일',  color: '#f97316' },
+                          { value: 'always' as const,          label: '📌 상시',  color: '#6b7280' },
+                        ] as const).map(opt => {
+                          const current = (job.section as string) ?? 'always'
+                          const isActive = current === opt.value
+                          return (
+                            <button
+                              key={opt.value}
+                              onClick={() => handleChangeSection(job, opt.value)}
+                              style={{
+                                flex: 1, padding: '6px 0', borderRadius: 8, border: 'none',
+                                background: isActive ? `${opt.color}22` : 'rgba(255,255,255,0.05)',
+                                color: isActive ? opt.color : 'rgba(255,255,255,0.35)',
+                                fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer',
+                                outline: isActive ? `2px solid ${opt.color}` : '2px solid transparent',
+                                transition: 'all 0.15s',
+                              }}
+                            >{opt.label}</button>
+                          )
+                        })}
                       </div>
                     </div>
                   )
@@ -1638,31 +1722,127 @@ export default function JobsMenu() {
       {/* ══ 확정 현황 대시보드 탭 ══ */}
       {mainTab === 'dashboard' && (
         <>
-          <div style={{ marginBottom: 20 }}>
-            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px' }}>📊 확정 현황 대시보드</h2>
-            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-              지원자 관리 탭 데이터 기반 집계 (필터 적용 중인 경우 해당 범위 반영)
-            </p>
+          {/* 헤더 + 기간 필터 */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
+            <div>
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px' }}>📊 확정 현황 대시보드</h2>
+              <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+                지원자 관리 탭 데이터 기반 집계
+              </p>
+            </div>
+            {/* 기간 필터 버튼 그룹 */}
+            <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: 4 }}>
+              {([
+                { key: 'today' as const, label: '오늘' },
+                { key: '7d'   as const, label: '7일' },
+                { key: '30d'  as const, label: '30일' },
+                { key: 'all'  as const, label: '전체' },
+              ] as const).map(p => (
+                <button key={p.key} onClick={() => setDashboardPeriod(p.key)} style={{
+                  padding: '5px 14px', borderRadius: 7, border: 'none', cursor: 'pointer',
+                  background: dashboardPeriod === p.key ? '#3182f6' : 'transparent',
+                  color: dashboardPeriod === p.key ? '#fff' : 'rgba(255,255,255,0.45)',
+                  fontSize: '0.78rem', fontWeight: 700, transition: 'all 0.15s',
+                }}>{p.label}</button>
+              ))}
+            </div>
           </div>
 
-          {/* 요약 카드 */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
-            {[
-              { label: '전체 지원', value: applicants.length, color: '#3182f6' },
-              { label: '출근확정', value: applicants.filter(a => a.status === 'confirmed').length, color: '#3fc878' },
-              { label: '지원거절', value: applicants.filter(a => a.status === 'rejected').length, color: '#f04452' },
-              { label: '출근완료', value: applicants.filter(a => a.status === 'completed').length, color: 'rgba(255,255,255,0.5)' },
-            ].map(stat => (
-              <div key={stat.label} style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 12, padding: '16px 14px', textAlign: 'center',
-              }}>
-                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: stat.color }}>{stat.value}</div>
-                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{stat.label}</div>
-              </div>
-            ))}
+          {/* KPI 카드 (전일 대비 증감 + 확정률 진행률 바) */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, marginBottom: 24 }}>
+            {(() => {
+              const total    = filteredApplicants.length
+              const conf     = filteredApplicants.filter(a => a.status === 'confirmed').length
+              const rej      = filteredApplicants.filter(a => a.status === 'rejected').length
+              const done     = filteredApplicants.filter(a => a.status === 'completed').length
+              const confRate = total > 0 ? Math.round((conf + done) / total * 100) : 0
+
+              // 전일 대비 (오늘 기간일 때만 의미 있음)
+              const ydTotal = yesterdayApplicants.length
+              const ydConf  = yesterdayApplicants.filter(a => a.status === 'confirmed').length
+              const ydRej   = yesterdayApplicants.filter(a => a.status === 'rejected').length
+
+              const delta = (cur: number, prev: number) => {
+                if (dashboardPeriod !== 'today') return null
+                const d = cur - prev
+                if (d === 0) return null
+                return (
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: d > 0 ? '#3fc878' : '#f04452', marginLeft: 4 }}>
+                    {d > 0 ? `▲+${d}` : `▼${d}`}
+                  </span>
+                )
+              }
+
+              return [
+                { label: '전체 지원', value: total, color: '#3182f6', prev: ydTotal },
+                { label: '출근확정', value: conf,  color: '#3fc878', prev: ydConf,  bar: confRate },
+                { label: '지원거절', value: rej,   color: '#f04452', prev: ydRej },
+                { label: '출근완료', value: done,  color: 'rgba(255,255,255,0.5)', prev: null },
+              ].map(stat => (
+                <div key={stat.label} style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 14, padding: '16px 14px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: '2rem', fontWeight: 900, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
+                    {stat.prev !== null && delta(stat.value, stat.prev)}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: 5 }}>{stat.label}</div>
+                  {/* 확정률 진행률 바 */}
+                  {'bar' in stat && stat.bar !== undefined && (
+                    <div style={{ marginTop: 8 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                        <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)' }}>확정률</span>
+                        <span style={{ fontSize: '0.65rem', color: '#3fc878', fontWeight: 700 }}>{stat.bar}%</span>
+                      </div>
+                      <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                        <div style={{
+                          height: '100%', borderRadius: 99,
+                          background: stat.bar >= 50 ? '#3fc878' : '#ffb400',
+                          width: `${stat.bar}%`, transition: 'width 0.4s',
+                        }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))
+            })()}
           </div>
+
+          {/* 일별 추이 차트 */}
+          {applicants.length > 0 && (
+            <div style={{
+              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 14, padding: '20px 16px', marginBottom: 24,
+            }}>
+              <p style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.7)', margin: '0 0 16px' }}>
+                📈 일별 지원 추이
+              </p>
+              <ResponsiveContainer width="100%" height={180}>
+                <LineChart data={dailyTrendData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" />
+                  <XAxis dataKey="date" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <Tooltip
+                    contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, fontSize: 12 }}
+                    labelStyle={{ color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}
+                  />
+                  <Line type="monotone" dataKey="지원" stroke="#3182f6" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="확정" stroke="#3fc878" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="거절" stroke="#f04452" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+              <div style={{ display: 'flex', gap: 16, marginTop: 10, justifyContent: 'center' }}>
+                {[{ label: '지원', color: '#3182f6' }, { label: '확정', color: '#3fc878' }, { label: '거절', color: '#f04452' }].map(l => (
+                  <span key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>
+                    <span style={{ width: 12, height: 3, borderRadius: 2, background: l.color, display: 'inline-block' }} />
+                    {l.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* 센터별 상세 테이블 */}
           {dashboardStats.length === 0 ? (
