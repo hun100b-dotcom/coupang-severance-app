@@ -243,7 +243,10 @@ export default function UnemploymentFlow() {
         jsonLd={[SOFTWARE_SCHEMA, FAQ_SCHEMA]}
       />
 
-      {loading && <LoadingOverlay message="실업급여를 계산하고 있어요.." />}
+      {/* PDF 분석 중 또는 계산 중 전체 화면 오버레이 — 배경 터치 차단 */}
+      {(loading || extractLoading) && (
+        <LoadingOverlay message={extractLoading ? "PDF를 분석하고 있어요.." : "실업급여를 계산하고 있어요.."} />
+      )}
 
       <CalcHeader
         title="실업급여 계산기"

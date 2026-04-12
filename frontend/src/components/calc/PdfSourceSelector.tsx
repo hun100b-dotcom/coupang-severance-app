@@ -37,6 +37,8 @@ export default function PdfSourceSelector({
   const [savedPdfs, setSavedPdfs] = useState<SavedPdf[]>([])
   const [loadingList, setLoadingList] = useState(false)
   const [loadingDownload, setLoadingDownload] = useState<string | null>(null)
+  // 다운로드 실패 에러 메시지
+  const [downloadError, setDownloadError] = useState<string | null>(null)
 
   // 탭: 'saved' | 'upload'
   const [tab, setTab] = useState<'saved' | 'upload'>('upload')
@@ -75,11 +77,18 @@ export default function PdfSourceSelector({
 
   // ── 저장된 PDF 선택 → 다운로드 → File 전달 ──
   const handleSelectSaved = async (pdf: SavedPdf) => {
+    setDownloadError(null) // 이전 에러 초기화
     setLoadingDownload(pdf.id)
     const file = await downloadPdf(pdf)
     setLoadingDownload(null)
     if (file) {
       onFileSelect(file)
+    } else {
+      // 다운로드 실패 시 사용자에게 명확한 에러 표시
+      // (Storage 파일 손상, 인증 만료, 네트워크 오류 등)
+      setDownloadError(
+        `'${pdf.file_name}' 파일을 불러오지 못했어요.\n저장 목록에서 삭제 후 다시 업로드해 주세요.`
+      )
     }
   }
 
@@ -234,6 +243,21 @@ export default function PdfSourceSelector({
               onChange={handleNewFile}
             />
           </div>
+        </div>
+      )}
+
+      {/* ─── 다운로드 실패 에러 메시지 ─── */}
+      {downloadError && (
+        <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-red-50 border border-red-100">
+          <span className="text-red-500 text-[13px] leading-snug whitespace-pre-line">{downloadError}</span>
+          <button
+            type="button"
+            onClick={() => setDownloadError(null)}
+            className="shrink-0 text-red-300 hover:text-red-500 ml-auto"
+            aria-label="에러 닫기"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
