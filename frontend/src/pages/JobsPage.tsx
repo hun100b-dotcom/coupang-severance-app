@@ -439,6 +439,7 @@ export default function JobsPage() {
         </motion.div>
 
         {/* ── 검색바 ── */}
+        {/* text-base(16px): iOS에서 16px 미만 input은 자동 줌인 발생 → 반드시 16px 이상 */}
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8b95a1]" />
           <input
@@ -447,17 +448,17 @@ export default function JobsPage() {
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="회사, 센터, 지역, 업무 검색"
             className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white/80 backdrop-blur-md border border-white/60
-              text-[14px] text-[#191f28] placeholder:text-[#c8cdd2] outline-none
+              text-base text-[#191f28] placeholder:text-[#c8cdd2] outline-none
               focus:ring-2 focus:ring-[#3182f6]/30 shadow-[0_4px_16px_rgba(49,130,246,0.06)] transition-all"
           />
         </div>
 
-        {/* ── 카테고리 바 ── */}
-        <div className="flex items-center gap-2 bg-white/50 backdrop-blur-md rounded-2xl p-2 border border-white/60 shadow-[0_4px_16px_rgba(49,130,246,0.04)]">
+        {/* ── 카테고리 바 — 모바일 375px 기준 가로 스크롤 허용 */}
+        <div className="flex items-center gap-2 bg-white/50 backdrop-blur-md rounded-2xl p-2 border border-white/60 shadow-[0_4px_16px_rgba(49,130,246,0.04)] overflow-x-auto">
           {/* 지역 드롭다운 */}
-          <div className="relative">
+          <div className="relative flex-shrink-0">
             <button onClick={() => setRegionOpen(v => !v)}
-              className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[13px] font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[13px] font-bold transition-all whitespace-nowrap ${
                 regionFilter !== '전체'
                   ? 'bg-[#3182f6] text-white shadow-md shadow-blue-500/20'
                   : 'bg-white text-[#4e5968] shadow-sm'
@@ -480,19 +481,19 @@ export default function JobsPage() {
             )}
           </div>
 
-          {/* 급구 토글 */}
+          {/* 급구 토글 — flex-shrink-0으로 축소 방지 */}
           <button onClick={() => setUrgentOnly(v => !v)}
-            className={`px-3.5 py-2.5 rounded-xl text-[13px] font-bold transition-all ${
+            className={`flex-shrink-0 px-3.5 py-2.5 rounded-xl text-[13px] font-bold transition-all whitespace-nowrap ${
               urgentOnly ? 'bg-red-500 text-white shadow-md shadow-red-500/20' : 'bg-white text-[#8b95a1] shadow-sm'
             }`}>
             🔥 급구
           </button>
 
-          <div className="flex-1" />
+          <div className="flex-1 min-w-[8px]" />
 
-          {/* 정렬 */}
+          {/* 정렬 — flex-shrink-0으로 축소 방지 */}
           <button onClick={() => setSortKey(s => s === 'latest' ? 'wage' : 'latest')}
-            className="flex items-center gap-1 px-3 py-2.5 rounded-xl bg-white text-[12px] font-bold text-[#4e5968] shadow-sm">
+            className="flex-shrink-0 flex items-center gap-1 px-3 py-2.5 rounded-xl bg-white text-[12px] font-bold text-[#4e5968] shadow-sm whitespace-nowrap">
             <ArrowUpDown className="w-3.5 h-3.5" />
             {sortKey === 'latest' ? '최신순' : '시급순'}
           </button>

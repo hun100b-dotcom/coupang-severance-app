@@ -284,9 +284,9 @@ export default function ApplyFormModal({
   // 섹션 공통 헤더 스타일
   const sectionHeader = 'text-[13px] font-bold text-gray-500 uppercase tracking-wide mb-3 mt-1'
 
-  // 라디오 그룹 옵션 공통 버튼 스타일
+  // 라디오 그룹 옵션 공통 버튼 스타일 — py-3으로 터치 타겟 최소 44px 확보
   function radioBtn(selected: boolean) {
-    return `flex-1 py-2 rounded-xl border text-sm font-medium transition-colors ${
+    return `flex-1 py-3 rounded-xl border text-sm font-medium transition-colors ${
       selected
         ? 'bg-blue-500 border-blue-500 text-white'
         : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-blue-300'
@@ -352,6 +352,7 @@ export default function ApplyFormModal({
                 )}
 
                 {/* 성명 */}
+                {/* text-base(16px): iOS에서 input 16px 미만 → 자동 줌인 발생 방지 */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     <span className="text-red-500 mr-1">*</span>성명
@@ -361,7 +362,7 @@ export default function ApplyFormModal({
                     placeholder="실명을 입력해주세요"
                     value={form.applicant_name}
                     onChange={(e) => setForm(f => ({ ...f, applicant_name: e.target.value }))}
-                    className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    className={`w-full px-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                       errors.applicant_name ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
                     }`}
                   />
@@ -370,14 +371,14 @@ export default function ApplyFormModal({
                   )}
                 </div>
 
-                {/* 생년월일 — 연/월/일 라벨 + 연도 필드 넉넉하게 */}
+                {/* 생년월일 — 연/월/일 3열 그리드: 375px에서도 안정적 레이아웃 */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     <span className="text-red-500 mr-1">*</span>생년월일
                   </label>
-                  <div className="flex gap-2 items-end">
-                    {/* 연도 — flex-[3] + min-w로 4자리가 충분히 표시되도록 */}
-                    <div className="flex-[3] min-w-[90px]">
+                  <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
+                    {/* 연도 — flex-1로 남은 공간 모두 사용 */}
+                    <div>
                       <input
                         type="text"
                         inputMode="numeric"
@@ -385,14 +386,14 @@ export default function ApplyFormModal({
                         maxLength={4}
                         value={form.birth_year}
                         onChange={(e) => setForm(f => ({ ...f, birth_year: e.target.value.replace(/\D/g, '') }))}
-                        className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        className={`w-full px-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                           errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
                         }`}
                       />
-                      <span className="text-[10px] text-gray-400 mt-0.5 block text-center">년</span>
+                      <span className="text-[11px] text-gray-400 mt-0.5 block text-center">년</span>
                     </div>
-                    {/* 월 */}
-                    <div className="min-w-[58px] w-[58px]">
+                    {/* 월 — 고정 너비 60px (375px에서 안전) */}
+                    <div className="w-[60px]">
                       <input
                         type="text"
                         inputMode="numeric"
@@ -400,14 +401,14 @@ export default function ApplyFormModal({
                         maxLength={2}
                         value={form.birth_month}
                         onChange={(e) => setForm(f => ({ ...f, birth_month: e.target.value.replace(/\D/g, '') }))}
-                        className={`w-full text-center py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        className={`w-full text-center py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                           errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
                         }`}
                       />
-                      <span className="text-[10px] text-gray-400 mt-0.5 block text-center">월</span>
+                      <span className="text-[11px] text-gray-400 mt-0.5 block text-center">월</span>
                     </div>
-                    {/* 일 */}
-                    <div className="min-w-[58px] w-[58px]">
+                    {/* 일 — 고정 너비 60px */}
+                    <div className="w-[60px]">
                       <input
                         type="text"
                         inputMode="numeric"
@@ -415,11 +416,11 @@ export default function ApplyFormModal({
                         maxLength={2}
                         value={form.birth_day}
                         onChange={(e) => setForm(f => ({ ...f, birth_day: e.target.value.replace(/\D/g, '') }))}
-                        className={`w-full text-center py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        className={`w-full text-center py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                           errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
                         }`}
                       />
-                      <span className="text-[10px] text-gray-400 mt-0.5 block text-center">일</span>
+                      <span className="text-[11px] text-gray-400 mt-0.5 block text-center">일</span>
                     </div>
                   </div>
                   {errors.birth_year && (
@@ -427,7 +428,7 @@ export default function ApplyFormModal({
                   )}
                 </div>
 
-                {/* 성별 */}
+                {/* 성별 — py-3으로 터치 타겟 44px 확보 */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     <span className="text-red-500 mr-1">*</span>성별
@@ -449,7 +450,7 @@ export default function ApplyFormModal({
                   )}
                 </div>
 
-                {/* 휴대폰 번호 */}
+                {/* 휴대폰 번호 — text-base(16px)로 iOS 줌인 방지 */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     <span className="text-red-500 mr-1">*</span>휴대폰 번호
@@ -462,7 +463,7 @@ export default function ApplyFormModal({
                       placeholder="010-0000-0000"
                       value={form.applicant_phone}
                       onChange={(e) => setForm(f => ({ ...f, applicant_phone: formatPhone(e.target.value) }))}
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      className={`w-full pl-9 pr-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         errors.applicant_phone ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
                       }`}
                     />
@@ -482,7 +483,7 @@ export default function ApplyFormModal({
               <div>
                 <p className={sectionHeader}>근무 관련</p>
 
-                {/* 5. 지원 업무 선택 */}
+                {/* 5. 지원 업무 선택 — text-base(16px): iOS 줌인 방지 */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     <span className="text-red-500 mr-1">*</span>지원 업무
@@ -492,7 +493,7 @@ export default function ApplyFormModal({
                     <select
                       value={form.applied_task}
                       onChange={(e) => setForm(f => ({ ...f, applied_task: e.target.value }))}
-                      className={`w-full pl-9 pr-8 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-no-repeat ${
+                      className={`w-full pl-9 pr-8 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-no-repeat ${
                         errors.applied_task ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
                       }`}
                     >
@@ -584,7 +585,7 @@ export default function ApplyFormModal({
                   )}
                 </div>
 
-                {/* 9. 안전화 사이즈 */}
+                {/* 9. 안전화 사이즈 — text-base(16px): iOS 줌인 방지 */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     <span className="text-red-500 mr-1">*</span>안전화 사이즈
@@ -594,7 +595,7 @@ export default function ApplyFormModal({
                     <select
                       value={form.shoe_size}
                       onChange={(e) => setForm(f => ({ ...f, shoe_size: e.target.value }))}
-                      className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none ${
+                      className={`w-full px-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none ${
                         errors.shoe_size ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
                       }`}
                     >
@@ -610,7 +611,7 @@ export default function ApplyFormModal({
                   )}
                 </div>
 
-                {/* 10. 특이사항 / 건강상 이슈 (선택) */}
+                {/* 10. 특이사항 / 건강상 이슈 (선택) — text-base(16px): iOS 줌인 방지 */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     특이사항 / 건강상 이슈
@@ -622,7 +623,7 @@ export default function ApplyFormModal({
                     onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))}
                     rows={3}
                     maxLength={300}
-                    className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
+                    className={`w-full px-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
                       errors.notes ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
                     }`}
                   />
@@ -632,7 +633,7 @@ export default function ApplyFormModal({
                   )}
                 </div>
 
-                {/* 11. 비상 연락처 (선택) */}
+                {/* 11. 비상 연락처 (선택) — text-base(16px): iOS 줌인 방지 */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     비상 연락처
@@ -646,7 +647,7 @@ export default function ApplyFormModal({
                       placeholder="010-0000-0000"
                       value={form.emergency_contact}
                       onChange={(e) => setForm(f => ({ ...f, emergency_contact: formatPhone(e.target.value) }))}
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-9 pr-3 py-3 rounded-xl border border-gray-200 bg-gray-50 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
@@ -719,11 +720,11 @@ export default function ApplyFormModal({
                 )}
               </div>
 
-              {/* ── 제출 버튼 ── */}
+              {/* ── 제출 버튼 — py-4로 터치 타겟 48px 확보 ── */}
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className={`w-full py-3.5 rounded-xl text-sm font-bold transition-all ${
+                className={`w-full py-4 rounded-xl text-sm font-bold transition-all ${
                   canSubmit
                     ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/25'
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'

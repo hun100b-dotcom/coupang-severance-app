@@ -452,12 +452,12 @@ export default function Home() {
                           <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold shrink-0">급구</span>
                         )}
                       </div>
-                      {/* 센터명 */}
+                      {/* 센터명 — 12px 이상으로 가독성 확보 */}
                       {job.center_name && (
-                        <p className="text-[11px] text-[#8b95a1] truncate">{job.center_name}</p>
+                        <p className="text-xs text-[#8b95a1] truncate">{job.center_name}</p>
                       )}
                       {/* 지역 + 근무시간 */}
-                      <div className="flex items-center gap-2 mt-0.5 text-[12px] text-[#8b95a1]">
+                      <div className="flex items-center gap-2 mt-0.5 text-xs text-[#8b95a1]">
                         <span className="flex items-center gap-0.5"><MapPin className="w-3 h-3" />{job.region}</span>
                         {job.work_hours && <span>{job.work_hours}</span>}
                       </div>
@@ -515,8 +515,10 @@ export default function Home() {
               <div className={`w-10 h-10 ${card.bg} rounded-xl flex items-center justify-center mb-2`}>
                 <card.icon className={`w-5 h-5 ${card.color}`} />
               </div>
+              {/* text-sm(14px): 모바일 가독성 확보 */}
               <p className="font-semibold text-[#191F28] text-sm">{card.label}</p>
-              <p className="text-xs text-[#8B95A1] mt-0.5">{card.sub}</p>
+              {/* text-xs(12px): 서브텍스트 최소 허용 크기 */}
+              <p className="text-xs text-[#8B95A1] mt-0.5 leading-tight">{card.sub}</p>
             </motion.button>
           ))}
         </motion.div>
@@ -574,11 +576,11 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="text-center text-[10px] font-light text-gray-400 leading-relaxed mt-2"
+          className="text-center text-xs font-light text-gray-400 leading-relaxed mt-2"
         >
           © 2026 CATCH by LEAF-MASTER. All rights reserved.
           <br />
-          <span className="text-[9px]">이 결과는 참고용이에요. 정확한 금액은 노무사 상담을 받으세요.</span>
+          <span className="text-[10px]">이 결과는 참고용이에요. 정확한 금액은 노무사 상담을 받으세요.</span>
         </motion.p>
       </div>
 

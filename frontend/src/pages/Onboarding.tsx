@@ -196,9 +196,9 @@ export default function OnboardingPage() {
           <p className="text-sm text-[#4E5968]">서비스 이용을 위해 추가 정보를 입력해 주세요.</p>
         </div>
 
-        {/* 폼 카드 */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-gray-100/50 p-8">
-          {/* 이름 */}
+        {/* 폼 카드 — p-5(모바일) 기본값, sm 이상은 p-8로 확장 */}
+        <form onSubmit={handleSubmit} className="bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-gray-100/50 p-5 sm:p-8">
+          {/* 이름 — text-base(16px): iOS 줌인 방지 */}
           <div className="mb-5">
             <label className="block text-sm font-semibold text-[#191F28] mb-2">
               이름 (실명) <span className="text-red-500">*</span>
@@ -209,11 +209,11 @@ export default function OnboardingPage() {
               onChange={(e) => setFullName(e.target.value)}
               placeholder="홍길동"
               maxLength={50}
-              className="w-full h-12 px-4 rounded-xl border border-gray-200 text-[#191F28] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full h-12 px-4 rounded-xl border border-gray-200 text-base text-[#191F28] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
-          {/* 생년월일 */}
+          {/* 생년월일 — text-base(16px): iOS 줌인 방지 */}
           <div className="mb-5">
             <label className="block text-sm font-semibold text-[#191F28] mb-2">
               생년월일 <span className="text-red-500">*</span>
@@ -223,11 +223,11 @@ export default function OnboardingPage() {
               value={birthdate}
               onChange={(e) => setBirthdate(e.target.value)}
               max={new Date().toISOString().split('T')[0]}
-              className="w-full h-12 px-4 rounded-xl border border-gray-200 text-[#191F28] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full h-12 px-4 rounded-xl border border-gray-200 text-base text-[#191F28] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
-          {/* 핸드폰 번호 */}
+          {/* 핸드폰 번호 — text-base(16px): iOS 줌인 방지 */}
           <div className="mb-5">
             <label className="block text-sm font-semibold text-[#191F28] mb-2">
               핸드폰 번호 <span className="text-red-500">*</span>
@@ -238,7 +238,7 @@ export default function OnboardingPage() {
               onChange={(e) => handlePhoneChange(e.target.value)}
               placeholder="010-1234-5678"
               maxLength={13}
-              className="w-full h-12 px-4 rounded-xl border border-gray-200 text-[#191F28] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full h-12 px-4 rounded-xl border border-gray-200 text-base text-[#191F28] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
