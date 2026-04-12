@@ -270,9 +270,29 @@ export default function JobsMenu() {
       setJobError('마감일은 필수 입력입니다.')
       return
     }
+
+    // ── 날짜 형식 유효성 검사 (YYYY-MM-DD 완전한 형식인지 확인) ──
+    const isValidDate = (d: string) => !d || /^\d{4}-\d{2}-\d{2}$/.test(d)
+    if (!isValidDate(form.work_date)) {
+      setJobError('근무 예정일 형식이 올바르지 않습니다. 숫자 8자리로 입력하세요. 예: 20260420')
+      return
+    }
+    if (!isValidDate(form.expires_at)) {
+      setJobError('공고 마감일 형식이 올바르지 않습니다. 숫자 8자리로 입력하세요. 예: 20260531')
+      return
+    }
+
     setSaving(true)
     setJobError(null)
     try {
+      // ── Supabase 세션 확인 ──
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        setJobError('로그인 세션이 만료됐습니다. 페이지를 새로고침 후 다시 로그인해주세요.')
+        setSaving(false)
+        return
+      }
+
       const saveStatus = asDraft ? 'draft' : (form.status === 'draft' ? 'active' : form.status)
       const payload = {
         company_name: form.company_name.trim(),
@@ -292,8 +312,8 @@ export default function JobsMenu() {
           ? form.task_options
           : ['상차', '하차', '분류', '피킹', '포장'],
         shift_options: form.shift_options,
-        work_date: form.work_date || null,
-        expires_at: form.expires_at || null,
+        work_date: form.work_date || null,   // YYYY-MM-DD 또는 null
+        expires_at: form.expires_at || null, // YYYY-MM-DD 또는 null
         status: saveStatus,
       }
       if (editTarget) {
@@ -310,7 +330,11 @@ export default function JobsMenu() {
         type: 'success',
       })
     } catch (err: unknown) {
-      setJobError(err instanceof Error ? err.message : '저장에 실패했습니다.')
+      // Supabase PostgrestError는 instanceof Error가 false — 직접 message 추출
+      const pgErr = err as { message?: string; details?: string; hint?: string; code?: string }
+      const msg = pgErr?.message ?? pgErr?.details ?? '알 수 없는 오류'
+      console.error('[공고 저장 에러]', err)
+      setJobError(`저장 실패: ${msg}${pgErr?.hint ? ` (힌트: ${pgErr.hint})` : ''}`)
       setAdminToast({ msg: '❌ 저장 실패 — 에러 메시지를 확인하세요.', type: 'error' })
     } finally {
       setSaving(false)
