@@ -3,6 +3,10 @@
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
   "framework": null,
+  "redirects": [
+    { "source": "/home", "destination": "/", "permanent": false },
+    { "source": "/landing", "destination": "/", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],

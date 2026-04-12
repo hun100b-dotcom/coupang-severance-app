@@ -8,15 +8,15 @@ export default function Intro() {
   const [phase, setPhase] = useState<'logo' | 'text' | 'ready'>('logo')
   const [exiting, setExiting] = useState(false)
 
-  // /landing 으로 이동 — navigate 실패 시 window.location.replace 폴백 (모바일 호환)
+  // / 으로 이동 — /landing 대신 루트로 통일. navigate 실패 시 폴백 (모바일 호환)
   const handleSkip = useCallback(() => {
     setExiting(true)
     setTimeout(() => {
-      navigate('/landing', { replace: true })
+      navigate('/', { replace: true })
       // 300ms 후에도 경로가 바뀌지 않았으면 강제 이동 (모바일 브라우저 대응)
       setTimeout(() => {
-        if (window.location.pathname !== '/landing') {
-          window.location.replace('/landing')
+        if (window.location.pathname !== '/') {
+          window.location.replace('/')
         }
       }, 300)
     }, 400)

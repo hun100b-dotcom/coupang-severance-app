@@ -45,37 +45,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
 
-  // 프로필에서 온보딩 완료 여부 확인 (타임아웃 포함)
+  // 프로필에서 온보딩 완료 여부 확인 (타임아웃 포함, 재시도 로직)
   const checkOnboarding = useCallback(async (userId: string) => {
     if (!supabase) {
-      setNeedsOnboarding(true)
+      // supabase 클라이언트 없으면 차단하지 않음 (서비스 이용 가능)
+      setNeedsOnboarding(false)
       return
     }
-    try {
-      // 5초 타임아웃 (쿼리가 무한 대기되는 것 방지)
-      const queryPromise = supabase
+
+    // null 체크 이후 지역 변수로 확정 (TypeScript TS18047 방지)
+    const client = supabase
+
+    // 단일 조회 시도 함수 (타임아웃 적용)
+    const attemptFetch = async (timeoutMs: number) => {
+      const queryPromise = client
         .from('profiles')
         .select('onboarding_completed, full_name')
         .eq('id', userId)
         .maybeSingle()
 
+      // 지정한 시간 안에 응답 없으면 timeout 에러 반환
       const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) =>
-        setTimeout(() => resolve({ data: null, error: { message: 'timeout' } }), 5000)
+        setTimeout(() => resolve({ data: null, error: { message: 'timeout' } }), timeoutMs)
       )
 
-      const { data: profile, error } = await Promise.race([queryPromise, timeoutPromise])
+      return Promise.race([queryPromise, timeoutPromise])
+    }
+
+    try {
+      // 1차 시도: 15초 타임아웃 (기존 5초에서 연장)
+      const { data: profile, error } = await attemptFetch(15000)
 
       if (error) {
-        console.error('[AuthContext] 프로필 조회 오류:', error.message)
-        setNeedsOnboarding(true)
+        console.warn('[AuthContext] 프로필 조회 1차 실패:', error.message)
+
+        if (error.message === 'timeout') {
+          // 타임아웃 시 2초 후 1회 재시도
+          await new Promise(r => setTimeout(r, 2000))
+          try {
+            const { data: retryProfile, error: retryError } = await attemptFetch(10000)
+            if (!retryError && retryProfile) {
+              // 재시도 성공: 온보딩 상태 정상 처리
+              // 필수 필드: full_name만 (gender는 선택 사항이므로 체크 제외)
+              const completed = !!(retryProfile.onboarding_completed && retryProfile.full_name)
+              setNeedsOnboarding(!completed)
+              return
+            }
+          } catch {
+            // 재시도도 실패 — graceful fallback
+          }
+        }
+
+        // 조회 실패해도 서비스 차단하지 않음 (온보딩 리다이렉트 안 함)
+        // 이렇게 하면 네트워크 느릴 때 /onboarding 으로 튕기는 현상 방지
+        console.error('[AuthContext] 프로필 조회 오류 — graceful fallback 적용:', error.message)
+        setNeedsOnboarding(false)
         return
       }
 
+      // 성공: 필수 필드 확인 (full_name만 — gender는 선택 필드라 제외)
       const completed = !!(profile?.onboarding_completed && profile?.full_name)
       setNeedsOnboarding(!completed)
     } catch (err) {
-      console.error('[AuthContext] 프로필 확인 실패:', err)
-      setNeedsOnboarding(true)
+      // 예외 발생 시에도 서비스 차단하지 않음
+      console.error('[AuthContext] 프로필 확인 실패 — graceful fallback:', err)
+      setNeedsOnboarding(false)
     }
   }, [])
 
