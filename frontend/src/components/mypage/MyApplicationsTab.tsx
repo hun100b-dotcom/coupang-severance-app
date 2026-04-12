@@ -4,7 +4,7 @@
 // ✅ Supabase Realtime 구독으로 어드민이 상태를 바꾸면 즉시 반영
 // ✅ 출근확정 상태의 공고 중 오늘이 출근일이면 "출근완료 체크" 버튼 표시
 import { useEffect, useState, useCallback } from 'react'
-import { MapPin, Clock, Loader2, CheckCircle2, XCircle, Calendar, UserCheck, AlertCircle, RefreshCw } from 'lucide-react'
+import { MapPin, Clock, Loader2, CheckCircle2, XCircle, Calendar, UserCheck, AlertCircle, RefreshCw, Eye, Pencil, X as XIcon } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { listApplications } from '../../lib/jobApplications'
 import type { JobApplication } from '../../types/supabase'
@@ -66,6 +66,26 @@ export default function MyApplicationsTab({ userId }: Props) {
   const [filter, setFilter] = useState<FilterStatus>('all')
   // 셀프 체크인 처리 중인 지원 ID (중복 클릭 방지)
   const [checkingIn, setCheckingIn] = useState<string | null>(null)
+
+  // ── 지원서 상세보기 / 수정 모달 상태 ──
+  const [selectedApp, setSelectedApp] = useState<JobApplication | null>(null)
+  const [editMode, setEditMode] = useState(false)
+  // 수정 폼 데이터 (편집 시 사용)
+  const [editForm, setEditForm] = useState({
+    applicant_name: '',
+    birth_year: '', birth_month: '', birth_day: '',
+    applicant_gender: '' as 'male' | 'female' | '',
+    applicant_phone: '',
+    applied_task: '',
+    prior_experience_90d: null as boolean | null,
+    preferred_shift: '' as 'morning' | 'afternoon' | 'night' | 'any' | '',
+    transportation: '' as 'car' | 'public' | 'shuttle' | '',
+    shoe_size: '',
+    notes: '',
+    emergency_contact: '',
+  })
+  const [editSaving, setEditSaving] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
 
   // ── 데이터 로드 함수 (Realtime 이벤트 수신 시에도 재사용) ──
   // try-catch로 감싸서 네트워크 오류 / Supabase 에러를 화면에 표시
@@ -184,6 +204,72 @@ export default function MyApplicationsTab({ userId }: Props) {
       setCheckingIn(null)
     }
   }
+
+  // ── 상세보기 모달 열기 ──
+  const openDetail = (app: JobApplication) => {
+    setSelectedApp(app)
+    setEditMode(false)
+    setEditError(null)
+    // editForm 초기화 (현재 데이터로 pre-fill)
+    const birth = app.applicant_birth ?? ''
+    const parts = birth.split('-')
+    setEditForm({
+      applicant_name: app.applicant_name ?? '',
+      birth_year: parts[0] ?? '',
+      birth_month: parts[1] ? String(parseInt(parts[1], 10)) : '',
+      birth_day: parts[2] ? String(parseInt(parts[2], 10)) : '',
+      applicant_gender: (app.applicant_gender ?? '') as 'male' | 'female' | '',
+      applicant_phone: app.applicant_phone ?? '',
+      applied_task: (app.applied_task ?? '') as string,
+      prior_experience_90d: (app.prior_experience_90d ?? null) as boolean | null,
+      preferred_shift: (app.preferred_shift ?? '') as 'morning' | 'afternoon' | 'night' | 'any' | '',
+      transportation: (app.transportation ?? '') as 'car' | 'public' | 'shuttle' | '',
+      shoe_size: app.shoe_size ?? '',
+      notes: app.notes ?? '',
+      emergency_contact: app.emergency_contact ?? '',
+    })
+  }
+
+  // ── 수정 저장 ──
+  // applied(지원중) 상태에서만 가능 — confirmed/rejected 이면 호출 불가
+  const handleEditSave = async () => {
+    if (!supabase || !selectedApp || editSaving) return
+    setEditSaving(true)
+    setEditError(null)
+    try {
+      const birth = `${editForm.birth_year}-${editForm.birth_month.padStart(2,'0')}-${editForm.birth_day.padStart(2,'0')}`
+      const { error } = await supabase
+        .from('job_applications')
+        .update({
+          applicant_name: editForm.applicant_name.trim() || null,
+          applicant_birth: birth || null,
+          applicant_gender: editForm.applicant_gender || null,
+          applicant_phone: editForm.applicant_phone.replace(/\D/g, '') || null,
+          applied_task: editForm.applied_task || null,
+          prior_experience_90d: editForm.prior_experience_90d,
+          preferred_shift: editForm.preferred_shift || null,
+          transportation: editForm.transportation || null,
+          shoe_size: editForm.shoe_size || null,
+          notes: editForm.notes.trim() || null,
+          emergency_contact: editForm.emergency_contact.replace(/\D/g, '') || null,
+        })
+        .eq('id', selectedApp.id)
+      if (error) throw error
+      // 목록 갱신 + 모달 닫기
+      await fetchApplications()
+      setSelectedApp(null)
+      setEditMode(false)
+    } catch (err) {
+      console.error('[지원서 수정 오류]', err)
+      setEditError(err instanceof Error ? err.message : '수정에 실패했습니다. 다시 시도해주세요.')
+    } finally {
+      setEditSaving(false)
+    }
+  }
+
+  // 한글 라벨 헬퍼
+  const SHIFT_LABEL: Record<string, string> = { morning: '오전', afternoon: '오후', night: '야간', any: '무관' }
+  const TRANSPORT_LABEL: Record<string, string> = { car: '자차', public: '대중교통', shuttle: '셔틀 필요' }
 
   // 필터 적용 (취소 제외, 선택한 상태만)
   const filtered = applications.filter(app => {
@@ -318,7 +404,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                     {job?.company_name ?? '공고 정보 없음'}
                   </span>
                   {job?.center_name && (
-                    <p className="text-[12px] text-[#8b95a1] mt-0.5">{job.center_name}</p>
+                    <p className="text-[12px] text-[#8b95a1] mt-0.5 break-words">{job.center_name}</p>
                   )}
                 </div>
                 {/* 상태 배지 */}
@@ -328,17 +414,17 @@ export default function MyApplicationsTab({ userId }: Props) {
                 </span>
               </div>
 
-              {/* 위치 + 근무시간 */}
+              {/* 위치 + 근무시간 — flex-wrap으로 줄바꿈 허용 */}
               {job && (
-                <div className="flex items-center gap-3 text-[12px] text-[#8b95a1] mb-3">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-[#8b95a1] mb-3">
                   {job.region && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-[#3182f6]" />{job.region}
+                    <span className="flex items-center gap-1 min-w-0 break-words">
+                      <MapPin className="w-3 h-3 text-[#3182f6] shrink-0" />{job.region}
                     </span>
                   )}
                   {job.work_hours && (
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />{job.work_hours}
+                    <span className="flex items-center gap-1 min-w-0 break-words">
+                      <Clock className="w-3 h-3 shrink-0" />{job.work_hours}
                     </span>
                   )}
                 </div>
@@ -409,10 +495,330 @@ export default function MyApplicationsTab({ userId }: Props) {
                   {checkingIn === app.id ? '처리 중...' : '출근완료 체크'}
                 </button>
               )}
+
+              {/* ── 상세보기 버튼 ── */}
+              <button
+                onClick={() => openDetail(app)}
+                className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 rounded-2xl border border-slate-200 text-[12px] text-[#4e5968] font-medium hover:bg-slate-50 transition-colors"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                지원서 상세보기
+              </button>
             </div>
           )
         })
       )}
+      {/* ── 지원서 상세보기 / 수정 모달 ── */}
+      {selectedApp && (() => {
+        const job = selectedApp.job_postings
+        const canEdit = selectedApp.status === 'applied'
+        const statusLock = selectedApp.status === 'confirmed'
+          ? '출근 확정된 지원서는 수정할 수 없습니다.'
+          : selectedApp.status === 'rejected'
+          ? '거절된 지원서는 수정할 수 없습니다.'
+          : null
+        return (
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4"
+            onClick={() => setSelectedApp(null)}
+          >
+            <div
+              className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* 헤더 */}
+              <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between z-10">
+                <div>
+                  <h2 className="text-[16px] font-bold text-[#191f28]">지원서 상세</h2>
+                  <p className="text-[11px] text-[#8b95a1] mt-0.5">
+                    {job?.company_name} {job?.center_name}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {/* 수정 버튼 — applied 상태일 때만 활성 */}
+                  {!editMode && (
+                    <button
+                      onClick={() => {
+                        if (!canEdit) return
+                        setEditMode(true)
+                      }}
+                      disabled={!canEdit}
+                      title={statusLock ?? undefined}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-bold transition-colors ${
+                        canEdit
+                          ? 'bg-blue-50 text-[#3182f6] hover:bg-blue-100'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      수정하기
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setSelectedApp(null)}
+                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                  >
+                    <XIcon className="w-5 h-5 text-gray-600" />
+                  </button>
+                </div>
+              </div>
+
+              {/* 본문 */}
+              <div className="px-5 py-4 space-y-4">
+
+                {/* 수정 불가 안내 (confirmed/rejected) */}
+                {statusLock && (
+                  <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                    <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
+                    <p className="text-[12px] text-amber-700 font-medium">{statusLock}</p>
+                  </div>
+                )}
+
+                {/* 수정 에러 표시 */}
+                {editError && (
+                  <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                    <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                    <p className="text-[12px] text-red-700">{editError}</p>
+                  </div>
+                )}
+
+                {/* 공고 정보 요약 */}
+                {job && (
+                  <div className="bg-gray-50 rounded-2xl p-4">
+                    <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2">공고 정보</p>
+                    <div className="space-y-1 text-[12px] text-[#4e5968]">
+                      <p><span className="text-gray-400">회사</span> · {job.company_name} {job.center_name}</p>
+                      {job.region && <p><span className="text-gray-400">지역</span> · {job.region}</p>}
+                      {job.work_hours && <p><span className="text-gray-400">근무시간</span> · {job.work_hours}</p>}
+                      <p className="text-[#3182f6] font-bold">
+                        시급 {job.hourly_wage.toLocaleString('ko-KR')}원
+                        {job.daily_wage > 0 && ` · 일급 ${job.daily_wage.toLocaleString('ko-KR')}원`}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 지원 인적사항 */}
+                <div>
+                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-3">지원자 정보</p>
+                  {editMode ? (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-[12px] font-medium text-gray-600 mb-1">성명</label>
+                        <input
+                          type="text"
+                          value={editForm.applicant_name}
+                          onChange={e => setEditForm(f => ({ ...f, applicant_name: e.target.value }))}
+                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[12px] font-medium text-gray-600 mb-1">생년월일</label>
+                        <div className="flex gap-2 items-end">
+                          <div className="flex-[3] min-w-[80px]">
+                            <input type="text" inputMode="numeric" placeholder="1990" maxLength={4}
+                              value={editForm.birth_year}
+                              onChange={e => setEditForm(f => ({ ...f, birth_year: e.target.value.replace(/\D/g, '') }))}
+                              className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <span className="text-[10px] text-gray-400 block text-center mt-0.5">년</span>
+                          </div>
+                          <div className="w-[54px]">
+                            <input type="text" inputMode="numeric" placeholder="1" maxLength={2}
+                              value={editForm.birth_month}
+                              onChange={e => setEditForm(f => ({ ...f, birth_month: e.target.value.replace(/\D/g, '') }))}
+                              className="w-full text-center py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <span className="text-[10px] text-gray-400 block text-center mt-0.5">월</span>
+                          </div>
+                          <div className="w-[54px]">
+                            <input type="text" inputMode="numeric" placeholder="1" maxLength={2}
+                              value={editForm.birth_day}
+                              onChange={e => setEditForm(f => ({ ...f, birth_day: e.target.value.replace(/\D/g, '') }))}
+                              className="w-full text-center py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <span className="text-[10px] text-gray-400 block text-center mt-0.5">일</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[12px] font-medium text-gray-600 mb-1">성별</label>
+                        <div className="flex gap-2">
+                          {(['male', 'female'] as const).map(g => (
+                            <button key={g} type="button"
+                              onClick={() => setEditForm(f => ({ ...f, applicant_gender: g }))}
+                              className={`flex-1 py-2 rounded-xl border text-sm font-medium transition-colors ${
+                                editForm.applicant_gender === g
+                                  ? 'bg-blue-500 border-blue-500 text-white'
+                                  : 'bg-gray-50 border-gray-200 text-gray-700'
+                              }`}
+                            >
+                              {g === 'male' ? '남성' : '여성'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[12px] font-medium text-gray-600 mb-1">휴대폰 번호</label>
+                        <input type="tel"
+                          value={editForm.applicant_phone}
+                          onChange={e => setEditForm(f => ({ ...f, applicant_phone: e.target.value }))}
+                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[12px]">
+                      <div><span className="text-gray-400">성명</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.applicant_name ?? '—'}</span></div>
+                      <div><span className="text-gray-400">생년월일</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.applicant_birth ?? '—'}</span></div>
+                      <div><span className="text-gray-400">성별</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.applicant_gender === 'male' ? '남성' : selectedApp.applicant_gender === 'female' ? '여성' : '—'}</span></div>
+                      <div><span className="text-gray-400">휴대폰</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.applicant_phone ?? '—'}</span></div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 근무 관련 */}
+                <div>
+                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-3">근무 관련</p>
+                  {editMode ? (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-[12px] font-medium text-gray-600 mb-1">지원 업무</label>
+                        <input type="text"
+                          value={editForm.applied_task}
+                          onChange={e => setEditForm(f => ({ ...f, applied_task: e.target.value }))}
+                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[12px] font-medium text-gray-600 mb-1">90일 이내 근무 경험</label>
+                        <div className="flex gap-2">
+                          {([true, false] as const).map(v => (
+                            <button key={String(v)} type="button"
+                              onClick={() => setEditForm(f => ({ ...f, prior_experience_90d: v }))}
+                              className={`flex-1 py-2 rounded-xl border text-sm font-medium transition-colors ${
+                                editForm.prior_experience_90d === v
+                                  ? 'bg-blue-500 border-blue-500 text-white'
+                                  : 'bg-gray-50 border-gray-200 text-gray-700'
+                              }`}
+                            >
+                              {v ? '있음' : '없음'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[12px] font-medium text-gray-600 mb-1">희망 출근 시간대</label>
+                        <div className="flex gap-2 flex-wrap">
+                          {(['morning','afternoon','night','any'] as const).map(s => (
+                            <button key={s} type="button"
+                              onClick={() => setEditForm(f => ({ ...f, preferred_shift: s }))}
+                              className={`px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${
+                                editForm.preferred_shift === s
+                                  ? 'bg-blue-500 border-blue-500 text-white'
+                                  : 'bg-gray-50 border-gray-200 text-gray-700'
+                              }`}
+                            >
+                              {SHIFT_LABEL[s]}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[12px] font-medium text-gray-600 mb-1">교통 수단</label>
+                        <div className="flex gap-2">
+                          {(['car','public','shuttle'] as const).map(t => (
+                            <button key={t} type="button"
+                              onClick={() => setEditForm(f => ({ ...f, transportation: t }))}
+                              className={`flex-1 py-2 rounded-xl border text-[12px] font-medium transition-colors ${
+                                editForm.transportation === t
+                                  ? 'bg-blue-500 border-blue-500 text-white'
+                                  : 'bg-gray-50 border-gray-200 text-gray-700'
+                              }`}
+                            >
+                              {TRANSPORT_LABEL[t]}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[12px] font-medium text-gray-600 mb-1">안전화 사이즈</label>
+                        <input type="text"
+                          value={editForm.shoe_size}
+                          onChange={e => setEditForm(f => ({ ...f, shoe_size: e.target.value }))}
+                          placeholder="예: 270"
+                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[12px] font-medium text-gray-600 mb-1">특이사항</label>
+                        <textarea
+                          value={editForm.notes}
+                          onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
+                          rows={3}
+                          className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[12px] font-medium text-gray-600 mb-1">비상 연락처</label>
+                        <input type="tel"
+                          value={editForm.emergency_contact}
+                          onChange={e => setEditForm(f => ({ ...f, emergency_contact: e.target.value }))}
+                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[12px]">
+                      <div><span className="text-gray-400">지원 업무</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.applied_task ?? '—'}</span></div>
+                      <div><span className="text-gray-400">근무 경험 (90일)</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.prior_experience_90d === true ? '있음' : selectedApp.prior_experience_90d === false ? '없음' : '—'}</span></div>
+                      <div><span className="text-gray-400">희망 시간대</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.preferred_shift ? SHIFT_LABEL[selectedApp.preferred_shift] : '—'}</span></div>
+                      <div><span className="text-gray-400">교통 수단</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.transportation ? TRANSPORT_LABEL[selectedApp.transportation] : '—'}</span></div>
+                      <div><span className="text-gray-400">안전화 사이즈</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.shoe_size ? `${selectedApp.shoe_size}mm` : '—'}</span></div>
+                      <div><span className="text-gray-400">비상 연락처</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.emergency_contact ?? '—'}</span></div>
+                      {selectedApp.notes && (
+                        <div className="col-span-2"><span className="text-gray-400">특이사항</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.notes}</span></div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* 동의 + 지원일 */}
+                <div className="bg-gray-50 rounded-2xl p-4 text-[12px]">
+                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2">지원 정보</p>
+                  <div className="grid grid-cols-2 gap-y-1 text-[#4e5968]">
+                    <span className="text-gray-400">지원 일시</span>
+                    <span>{new Date(selectedApp.applied_at).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                    <span className="text-gray-400">제3자 제공 동의</span>
+                    <span>{selectedApp.consent_third_party ? '✅ 동의함' : '❌ 미동의'}</span>
+                  </div>
+                </div>
+
+                {/* 수정 모드 버튼 */}
+                {editMode && (
+                  <div className="flex gap-2 pt-2 pb-4">
+                    <button
+                      onClick={() => { setEditMode(false); setEditError(null) }}
+                      className="flex-1 py-3 rounded-2xl border border-gray-200 text-[14px] font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      취소
+                    </button>
+                    <button
+                      onClick={handleEditSave}
+                      disabled={editSaving}
+                      className="flex-[2] py-3 rounded-2xl bg-[#3182f6] text-white text-[14px] font-bold flex items-center justify-center gap-2 disabled:opacity-60 transition-opacity"
+                    >
+                      {editSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                      {editSaving ? '저장 중...' : '수정 완료'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
     </div>
   )
 }
