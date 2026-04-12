@@ -140,7 +140,8 @@ export function CalcStepCard({ motionKey, children, className = '' }: CalcStepCa
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -40 }}
       transition={{ duration: 0.28 }}
-      className={`flex flex-col gap-4 rounded-[20px] bg-white/70 backdrop-blur-2xl border border-white/40 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.03)] p-5 sm:p-7 ${className}`}
+      className={/* p-4(모바일) → p-5(sm 이상): 375px에서 내부 컨텐츠 좌우 여백 최소 16px 확보 */
+        `flex flex-col gap-4 rounded-[20px] bg-white/70 backdrop-blur-2xl border border-white/40 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.03)] p-4 sm:p-5 ${className}`}
     >
       {children}
     </motion.div>
@@ -162,7 +163,8 @@ export function CalcStepIcon({ icon, accentColor, title, subtitle }: CalcStepIco
       <div className={`w-14 h-14 rounded-3xl ${a.bg100} flex items-center justify-center mx-auto mb-3`}>
         <span className={a.text600}>{icon}</span>
       </div>
-      <p className="text-[22px] font-extrabold text-[#191f28] tracking-tight leading-tight">
+      {/* clamp: 모바일(375px)에서 텍스트 줄바꿈 방지 — 최소 18px, 최대 22px */}
+      <p className="text-[clamp(18px,5vw,22px)] font-extrabold text-[#191f28] tracking-tight leading-tight">
         {title}
       </p>
       {subtitle && (
@@ -218,6 +220,7 @@ export function CalcNextButton({
   disabled, accentColor, children, onClick,
 }: CalcNextButtonProps) {
   const a = ACCENT[accentColor]
+  // py-4(16px) = 총 높이 약 48px → 모바일 터치 타겟 44px 충족
   return (
     <button type="button" onClick={onClick} disabled={disabled}
       className={`w-full py-4 rounded-2xl text-sm font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${

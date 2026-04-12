@@ -134,11 +134,11 @@ export default function Intro() {
             </motion.p>
           </div>
 
-          {/* CTA 버튼 (ready 단계에서 등장) */}
+          {/* CTA 버튼 (ready 단계에서 등장) — 모바일 최소 터치 타겟 44px 확보 */}
           <motion.button
             type="button"
             onClick={handleSkip}
-            className="mt-8 px-8 py-3.5 rounded-[20px] bg-[#3182F6] text-white font-bold text-[15px] tracking-tight shadow-[0_12px_40px_rgba(49,130,246,0.3)]"
+            className="mt-8 w-[240px] max-w-[80vw] py-3.5 rounded-[20px] bg-[#3182F6] text-white font-bold text-[15px] tracking-tight shadow-[0_12px_40px_rgba(49,130,246,0.3)]"
             initial={{ opacity: 0, y: 16 }}
             animate={phase === 'ready' ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
