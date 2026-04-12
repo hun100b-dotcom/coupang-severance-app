@@ -54,12 +54,14 @@ export default function LoginPage() {
   }, [])
 
   // 이미 로그인된 사용자는 적절한 페이지로 리다이렉트
+  // /home → Navigate to="/" 리다이렉트 때문에 랜딩 첫 섹션으로 돌아가는 버그 수정
+  // → /mypage 로 직접 이동 (Layout 내부, TopNav+BottomNav 있는 페이지)
   useEffect(() => {
     if (!loading && isLoggedIn) {
       if (needsOnboarding) {
         navigate('/onboarding', { replace: true })
       } else {
-        navigate('/home', { replace: true })
+        navigate('/mypage', { replace: true })
       }
     }
   }, [loading, isLoggedIn, needsOnboarding, navigate])

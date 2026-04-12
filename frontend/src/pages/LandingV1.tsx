@@ -463,7 +463,7 @@ export default function LandingV1() {
                   <div className="text-[12px] mt-1" style={{ color: '#64748b' }}>{card.desc}</div>
                   {/* 출처 표기 (공식 통계에만 표시) */}
                   {card.source && (
-                    <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: 2 }}>{card.source}</div>
+                    <div style={{ fontSize: '0.65rem', color: '#6b7280', marginTop: 2 }}>{card.source}</div>
                   )}
                 </div>
               ))}
@@ -606,7 +606,7 @@ export default function LandingV1() {
                   <div className="text-[15px] leading-[1.5]" style={{ color: '#475569' }}>
                     2023년 임금체불 총액
                   </div>
-                  <div className="text-[13px] mt-1" style={{ color: '#94a3b8' }}>
+                  <div className="text-[13px] mt-1" style={{ color: '#6b7280' }}>
                     이 중 40%가 퇴직급여 미지급
                   </div>
                 </div>
@@ -637,7 +637,7 @@ export default function LandingV1() {
                   >
                     525만 명+
                   </div>
-                  <div className="text-[12px]" style={{ color: '#94a3b8' }}>
+                  <div className="text-[12px]" style={{ color: '#6b7280' }}>
                     임시·일용직 근로자 규모 (통계청 2023)
                   </div>
                 </div>
@@ -673,7 +673,7 @@ export default function LandingV1() {
                   >
                     3년
                   </div>
-                  <div className="text-[12px]" style={{ color: '#94a3b8' }}>
+                  <div className="text-[12px]" style={{ color: '#6b7280' }}>
                     퇴직금 청구권 소멸시효
                   </div>
                 </div>
@@ -704,8 +704,8 @@ export default function LandingV1() {
       >
         <div className="max-w-[1100px] mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-[60px] items-center">
-            {/* 왼쪽: 설명 텍스트 */}
-            <div>
+            {/* 왼쪽: 설명 텍스트 — bg-white/90 카드로 blob 차단 */}
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 md:p-8">
               <Reveal>
                 <span
                   className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-medium mb-5"
@@ -720,14 +720,14 @@ export default function LandingV1() {
               </Reveal>
               <Reveal delay={0.05}>
                 <h2
-                  className="font-extrabold leading-[1.25] mb-5"
+                  className="font-extrabold leading-[1.25] mb-5 text-gray-900"
                   style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, color: '#0f172a' }}
                 >
                   CATCH가 해결합니다
                 </h2>
               </Reveal>
               <Reveal delay={0.1}>
-                <p className="text-[17px] leading-[1.7] mb-8" style={{ color: '#475569' }}>
+                <p className="text-[17px] leading-[1.7] mb-8 text-gray-700" style={{ color: '#374151' }}>
                   복잡한 노동법을 몰라도 됩니다. PDF 한 장이면 충분합니다.
                   <br />
                   4가지 수당을 하나의 앱에서 모두 계산하세요.
@@ -865,7 +865,9 @@ export default function LandingV1() {
               'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
           }}
         />
+        {/* bg-white/90 카드: HOW 섹션 전체 내용을 불투명 카드로 감싸 blob 차단 */}
         <div className="relative z-[1] max-w-[1100px] mx-auto px-6">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 md:p-10">
           <Reveal>
             <div className="text-center mb-[70px]">
               <span
@@ -920,8 +922,9 @@ export default function LandingV1() {
                     </div>
                   </Reveal>
                   {/* 세로 연결 화살표 — 마지막 단계 이후엔 숨김 */}
+                  {/* color #6b7280: 밝은 배경에서도 읽히는 gray-500 */}
                   {i < 2 && (
-                    <div style={{ color: '#94a3b8', fontSize: 24, lineHeight: 1, marginBottom: 4 }}>↓</div>
+                    <div style={{ color: '#6b7280', fontSize: 24, lineHeight: 1, marginBottom: 4 }}>↓</div>
                   )}
                 </div>
               ))}
@@ -960,10 +963,11 @@ export default function LandingV1() {
                   </Reveal>
 
                   {/* 화살표 — 마지막 단계 이후엔 숨김 */}
+                  {/* color #6b7280: 밝은 배경에서도 읽히는 gray-500 */}
                   {i < 2 && (
                     <div
                       className="flex items-start pt-[38px] px-1 flex-shrink-0"
-                      style={{ color: '#94a3b8', fontSize: 28, fontWeight: 300 }}
+                      style={{ color: '#6b7280', fontSize: 28, fontWeight: 300 }}
                     >
                       →
                     </div>
@@ -972,6 +976,8 @@ export default function LandingV1() {
               ))}
             </div>
           )}
+
+          </div>{/* /bg-white/90 카드 닫기 */}
 
           {/* SectionBridge: HOW → WHY */}
           <SectionBridge
@@ -1363,7 +1369,9 @@ export default function LandingV1() {
               'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
           }}
         />
+        {/* bg-white/90 카드: CTA 섹션 텍스트 영역을 불투명 카드로 감싸 blob 차단 */}
         <div className="relative z-[1] max-w-[700px] mx-auto px-6">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-8 md:p-12">
           <Reveal>
             <span
               className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-medium mb-8"
@@ -1379,8 +1387,8 @@ export default function LandingV1() {
 
           <Reveal delay={0.1}>
             <h2
-              className="font-extrabold leading-[1.2] mb-5"
-              style={{ fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 800, color: '#0f172a' }}
+              className="font-extrabold leading-[1.2] mb-5 text-gray-900"
+              style={{ fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 800, color: '#111827' }}
             >
               당신이 받아야 할 돈,
               <br />
@@ -1389,7 +1397,7 @@ export default function LandingV1() {
           </Reveal>
 
           <Reveal delay={0.2}>
-            <p className="text-[18px] leading-[1.7] mb-12" style={{ color: '#475569' }}>
+            <p className="text-[18px] leading-[1.7] mb-12 text-gray-700" style={{ color: '#374151' }}>
               무료로, 지금 바로. 5초 로그인 후 계산 시작.
             </p>
           </Reveal>
@@ -1433,10 +1441,12 @@ export default function LandingV1() {
 
           {/* 안심 문구 */}
           <Reveal delay={0.4}>
-            <p className="mt-7 text-[13px]" style={{ color: '#94a3b8' }}>
+            {/* color #6b7280: 밝은 배경에서도 읽히는 gray-500 (기존 #94a3b8 은 대비 부족) */}
+            <p className="mt-7 text-[13px]" style={{ color: '#6b7280' }}>
               신용카드 불필요 · 즉시 시작 · 언제든 탈퇴 가능
             </p>
           </Reveal>
+          </div>{/* /bg-white/90 카드 닫기 */}
         </div>
       </section>
 

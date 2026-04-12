@@ -82,7 +82,8 @@ export default function CalculatorPage() {
           className="px-1 mb-1"
         >
           <h1 className="text-[22px] font-black text-[#191f28] tracking-tight">계산기</h1>
-          <p className="text-[13px] text-[#8b95a1] mt-0.5">무료로 정확하게, PDF 정밀계산 또는 간편 입력</p>
+          {/* text-gray-600: 가독성 확보 (기존 #8b95a1 은 밝은 배경에서 대비 부족) */}
+          <p className="text-[13px] text-gray-600 mt-0.5">무료로 정확하게, PDF 정밀계산 또는 간편 입력</p>
         </motion.div>
 
         {/* ── 서비스 카드 스택 ── */}

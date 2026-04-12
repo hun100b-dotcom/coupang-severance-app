@@ -263,7 +263,7 @@ export default function UnemploymentGuide() {
   }, [])
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-gray-50">
+    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-white">{/* bg-white: blob 완전 차단 */}
       {/* ── SEO 메타태그: title, description, canonical, JSON-LD 구조화 데이터 ── */}
       <PageMeta
         title="쿠팡 일용직 실업급여 계산기 | 2026년 최신 기준 완전정복 | CATCH"
