@@ -105,7 +105,7 @@ export default function CalculatorPage() {
                   <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
                     <Icon className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-[12px] font-bold text-white/70">{svc.label}</span>
+                  <span className="text-[12px] font-bold text-white/90">{svc.label}</span>
                 </div>
 
                 {/* 헤드라인 */}
@@ -114,13 +114,13 @@ export default function CalculatorPage() {
                 </h2>
 
                 {/* 설명 */}
-                <p className="text-[13px] text-white/60 leading-relaxed mb-4 relative z-10">{svc.desc}</p>
+                <p className="text-[13px] text-white/85 leading-relaxed mb-4 relative z-10">{svc.desc}</p>
 
                 {/* 수치 뱃지 */}
                 <div className="flex gap-2 mb-4 relative z-10">
                   {svc.stats.map(st => (
                     <div key={st.label} className="px-3 py-1.5 rounded-xl bg-white/15 backdrop-blur-sm">
-                      <p className="text-[10px] text-white/50">{st.label}</p>
+                      <p className="text-[10px] text-white/80">{st.label}</p>
                       <p className={`text-[14px] font-extrabold ${st.accent ? 'text-yellow-300' : 'text-white'}`}>{st.value}</p>
                     </div>
                   ))}

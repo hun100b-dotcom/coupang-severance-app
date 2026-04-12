@@ -40,8 +40,16 @@ html, body, #root {
   font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: var(--toss-text);
+  /* CSS 변수 미지원 브라우저 폴백 + 강제 최소 색상 보장 */
+  color: #191f28;
+  color: var(--toss-text, #191f28);
   scroll-behavior: smooth;
+}
+
+/* 모든 일반 텍스트 요소가 최소 대비를 유지하도록 강제 */
+p, span, div, li, td, th, label, h1, h2, h3, h4, h5, h6 {
+  /* 명시적 color 없는 요소는 부모에서 상속 — 투명 방지 */
+  color: inherit;
 }
 
 /* ─────────────────────────────────────────────
