@@ -275,7 +275,10 @@ export default function SeveranceFlow() {
         jsonLd={[SOFTWARE_SCHEMA, FAQ_SCHEMA, HOWTO_SCHEMA]}
       />
 
-      {loading && <LoadingOverlay message="퇴직금을 계산하고 있어요.." />}
+      {/* PDF 분석 중 또는 계산 중 전체 화면 오버레이 — 배경 터치 차단 */}
+      {(loading || extractLoading) && (
+        <LoadingOverlay message={extractLoading ? "PDF를 분석하고 있어요.." : "퇴직금을 계산하고 있어요.."} />
+      )}
 
       <CalcHeader
         title="퇴직금 계산기"
