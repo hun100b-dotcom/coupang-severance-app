@@ -2,9 +2,9 @@
 // job_applications 테이블에서 내 지원 내역을 상태별로 필터링해서 보여줍니다.
 // 상태: 전체 / 지원중(applied) / 출근확정(confirmed) / 출근완료(completed)
 // ✅ Supabase Realtime 구독으로 어드민이 상태를 바꾸면 즉시 반영
-// ✅ 출근확정 상태의 공고 중 오늘이 출근일이면 "출근완료 체크" 버튼 표시
+// ✅ 출근완료 처리는 어드민만 가능 (본인 직접 처리 불가)
 import { useEffect, useState, useCallback } from 'react'
-import { MapPin, Clock, Loader2, CheckCircle2, XCircle, Calendar, UserCheck, AlertCircle, RefreshCw, Eye, Pencil, X as XIcon } from 'lucide-react'
+import { MapPin, Clock, Loader2, CheckCircle2, XCircle, Calendar, AlertCircle, RefreshCw, Eye, Pencil, X as XIcon } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { listApplications } from '../../lib/jobApplications'
 import type { JobApplication } from '../../types/supabase'
@@ -64,8 +64,7 @@ export default function MyApplicationsTab({ userId }: Props) {
   const [fetchError, setFetchError] = useState<string | null>(null)
   // 현재 선택된 상태 필터
   const [filter, setFilter] = useState<FilterStatus>('all')
-  // 셀프 체크인 처리 중인 지원 ID (중복 클릭 방지)
-  const [checkingIn, setCheckingIn] = useState<string | null>(null)
+  // (셀프 체크인 제거됨 — 출근완료는 어드민만 처리 가능)
 
   // ── 지원서 상세보기 / 수정 모달 상태 ──
   const [selectedApp, setSelectedApp] = useState<JobApplication | null>(null)
@@ -186,35 +185,6 @@ export default function MyApplicationsTab({ userId }: Props) {
       sb.removeChannel(notifChannel)
     }
   }, [userId, fetchApplications])
-
-  // ── 오늘 날짜 문자열 (KST 기준 YYYY-MM-DD) ──
-  const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })
-
-  // ── 셀프 체크인 처리 ──
-  // 출근확정 상태이고 오늘이 출근일인 경우에만 호출
-  const handleSelfCheckIn = async (app: JobApplication) => {
-    if (!supabase || checkingIn) return
-    setCheckingIn(app.id)
-    try {
-      // 1. status를 'completed'로 변경
-      const { error } = await supabase
-        .from('job_applications')
-        .update({ status: 'completed' })
-        .eq('id', app.id)
-        .eq('user_id', userId)  // 보안: 내 건만 변경 가능
-
-      if (error) throw error
-
-      // 2. UI 즉시 갱신 (Realtime으로도 반영되지만 즉각성을 위해 직접 갱신)
-      await fetchApplications()
-      setActionToast({ msg: '출근완료 처리되었습니다!', type: 'success' })
-    } catch (err) {
-      console.error('[셀프 체크인 오류]', err)
-      setActionToast({ msg: '출근완료 처리에 실패했어요. 다시 시도해 주세요.', type: 'error' })
-    } finally {
-      setCheckingIn(null)
-    }
-  }
 
   // ── 상세보기 모달 열기 ──
   const openDetail = (app: JobApplication) => {
@@ -414,12 +384,6 @@ export default function MyApplicationsTab({ userId }: Props) {
           const status = STATUS_CONFIG[app.status] ?? STATUS_CONFIG.applied
           const job = app.job_postings
 
-          // 출근확정 상태이고 오늘이 출근일인지 확인
-          // work_date가 오늘(KST)과 같아야 셀프 체크인 버튼 활성화
-          const isCheckInDay = app.status === 'confirmed'
-            && app.work_date
-            && app.work_date.slice(0, 10) === todayStr
-
           return (
             <div key={app.id}
               className={`bg-white rounded-[24px] p-4 border shadow-[0_4px_16px_rgba(49,130,246,0.04)] ${
@@ -510,21 +474,11 @@ export default function MyApplicationsTab({ userId }: Props) {
                 )}
               </div>
 
-              {/* ── 셀프 체크인 버튼 ──
-                  출근확정(confirmed) 상태이고 오늘이 출근일일 때만 표시 */}
-              {isCheckInDay && (
-                <button
-                  onClick={() => handleSelfCheckIn(app)}
-                  disabled={checkingIn === app.id}
-                  className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-emerald-500 text-white text-[13px] font-bold transition-opacity disabled:opacity-60"
-                >
-                  {checkingIn === app.id ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <UserCheck className="w-4 h-4" />
-                  )}
-                  {checkingIn === app.id ? '처리 중...' : '출근완료 체크'}
-                </button>
+              {/* 출근완료 안내 — 어드민이 처리하면 자동 반영 */}
+              {app.status === 'confirmed' && (
+                <p className="mt-2 text-[11px] text-emerald-600 text-center">
+                  ✅ 출근 확정됨 — 출근 완료 처리는 관리자가 진행합니다
+                </p>
               )}
 
               {/* ── 상세보기 버튼 ── */}
