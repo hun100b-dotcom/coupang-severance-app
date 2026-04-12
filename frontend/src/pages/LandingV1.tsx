@@ -327,8 +327,8 @@ export default function LandingV1() {
           }}
         />
 
-        {/* 콘텐츠 */}
-        <div className="relative w-full max-w-[1100px] mx-auto px-6" style={{ zIndex: 1 }}>
+        {/* 콘텐츠 — 모바일 px-4, 데스크탑 px-6 이상 */}
+        <div className="relative w-full max-w-[1100px] mx-auto px-4 sm:px-6" style={{ zIndex: 1 }}>
           <Reveal>
             <p
               className="text-sm font-bold tracking-[2px] uppercase mb-6"
@@ -406,28 +406,28 @@ export default function LandingV1() {
           </Reveal>
 
           <Reveal delay={0.3}>
-            <div className="flex gap-4 flex-wrap items-center">
+            {/* 모바일(375px): flex-col로 전환, 데스크탑: flex-row */}
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
               {/* 메인 CTA 1 — pain 섹션으로 스크롤, 파랑-보라 그래디언트 */}
               <button
                 onClick={() => scrollTo('pain')}
-                className="inline-flex items-center gap-2 font-bold text-white rounded-[16px] transition-all hover:-translate-y-1"
+                className="inline-flex items-center justify-center gap-2 font-bold text-white rounded-[16px] transition-all hover:-translate-y-1 min-h-[52px]"
                 style={{
-                  padding: '18px 36px',
-                  fontSize: 17,
+                  padding: '14px 28px',
+                  fontSize: 16,
                   background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
                   boxShadow: '0 8px 32px rgba(37,99,235,0.30)',
                 }}
               >
                 ✦ 내 권리 확인하기
               </button>
-              {/* 메인 CTA 2 — 마지막 로그인 CTA 섹션으로 스크롤 (에메랄드-청록 그래디언트로 구분) */}
-              {/* 기존 "빠르게 시작하기" 플레인 텍스트 → 카드 스타일로 승격 */}
+              {/* 메인 CTA 2 — 마지막 로그인 CTA 섹션으로 스크롤 */}
               <button
                 onClick={() => scrollTo('cta')}
-                className="inline-flex items-center gap-2 font-bold text-white rounded-[16px] transition-all hover:-translate-y-1"
+                className="inline-flex items-center justify-center gap-2 font-bold text-white rounded-[16px] transition-all hover:-translate-y-1 min-h-[52px]"
                 style={{
-                  padding: '18px 36px',
-                  fontSize: 17,
+                  padding: '14px 28px',
+                  fontSize: 16,
                   background: 'linear-gradient(135deg, #059669, #0891b2)',
                   boxShadow: '0 8px 32px rgba(5,150,105,0.28)',
                 }}
@@ -499,7 +499,8 @@ export default function LandingV1() {
               'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
           }}
         />
-        <div className="relative z-[1] max-w-[1100px] mx-auto px-6">
+        {/* PAIN 섹션 콘텐츠 — 모바일 px-4, 데스크탑 px-6 */}
+        <div className="relative z-[1] max-w-[1100px] mx-auto px-4 sm:px-6">
           <Reveal>
             {/* 빨간 경고 배지 */}
             <span
@@ -586,27 +587,27 @@ export default function LandingV1() {
           >
             {/* 카드 1: 실제 고용노동부 2023 수치 */}
             <motion.div variants={staggerItemLeft}>
+              {/* 통계 카드 1 — 모바일 p-4, 데스크탑 p-7 */}
               <div
-                className="flex items-center gap-6 rounded-[20px] transition-all hover:-translate-y-1"
+                className="flex items-center gap-4 rounded-[20px] transition-all hover:-translate-y-1 p-4 sm:p-7"
                 style={{
                   background: '#ffffff',
                   border: '1px solid rgba(239,68,68,0.15)',
                   borderLeft: '4px solid #ef4444',
                   boxShadow: '0 4px 24px rgba(239,68,68,0.06)',
-                  padding: '28px 32px',
                 }}
               >
                 <div
                   className="font-black tracking-tight whitespace-nowrap"
-                  style={{ fontSize: 20, color: '#ef4444', letterSpacing: '-1px', minWidth: 70 }}
+                  style={{ fontSize: 18, color: '#ef4444', letterSpacing: '-1px', minWidth: 60 }}
                 >
                   1조 7,845억
                 </div>
-                <div>
-                  <div className="text-[15px] leading-[1.5]" style={{ color: '#475569' }}>
+                <div className="min-w-0">
+                  <div className="text-[14px] leading-[1.5] break-words" style={{ color: '#475569' }}>
                     2023년 임금체불 총액
                   </div>
-                  <div className="text-[13px] mt-1" style={{ color: '#6b7280' }}>
+                  <div className="text-[12px] mt-1" style={{ color: '#6b7280' }}>
                     이 중 40%가 퇴직급여 미지급
                   </div>
                 </div>
@@ -615,14 +616,14 @@ export default function LandingV1() {
 
             {/* 카드 2: 실업급여 관련 — 통계청 2023 */}
             <motion.div variants={staggerItemLeft}>
+              {/* 모바일 p-4, 데스크탑 p-7 */}
               <div
-                className="rounded-[20px] transition-all hover:-translate-y-1"
+                className="rounded-[20px] transition-all hover:-translate-y-1 p-4 sm:p-7"
                 style={{
                   background: '#ffffff',
                   border: '1px solid rgba(239,68,68,0.15)',
                   borderLeft: '4px solid #ef4444',
                   boxShadow: '0 4px 24px rgba(239,68,68,0.06)',
-                  padding: '28px 32px',
                 }}
               >
                 {/* 카드 제목 */}
@@ -651,14 +652,14 @@ export default function LandingV1() {
 
             {/* 카드 3: 퇴직금 소멸시효 */}
             <motion.div variants={staggerItemLeft}>
+              {/* 모바일 p-4, 데스크탑 p-7 */}
               <div
-                className="rounded-[20px] transition-all hover:-translate-y-1"
+                className="rounded-[20px] transition-all hover:-translate-y-1 p-4 sm:p-7"
                 style={{
                   background: '#ffffff',
                   border: '1px solid rgba(239,68,68,0.15)',
                   borderLeft: '4px solid #ef4444',
                   boxShadow: '0 4px 24px rgba(239,68,68,0.06)',
-                  padding: '28px 32px',
                 }}
               >
                 {/* 카드 제목 */}
@@ -702,8 +703,9 @@ export default function LandingV1() {
         className="relative z-[1]"
         style={{ padding: '100px 0', background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)' }}
       >
-        <div className="max-w-[1100px] mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-[60px] items-center">
+        {/* SOLUTION 섹션 콘텐츠 — 모바일 px-4, 데스크탑 px-6 */}
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-[60px] items-center">
             {/* 왼쪽: 설명 텍스트 — bg-white/90 카드로 blob 차단 */}
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 md:p-8">
               <Reveal>
@@ -785,13 +787,13 @@ export default function LandingV1() {
                 },
               ].map((card) => (
                 <motion.div key={card.title} variants={staggerItemUp}>
+                  {/* 기능 카드 — 모바일 p-3, 데스크탑 p-5 */}
                   <div
-                    className="relative overflow-hidden rounded-[16px] flex items-start gap-4 transition-all group hover:-translate-y-[2px]"
+                    className="relative overflow-hidden rounded-[16px] flex items-start gap-3 transition-all group hover:-translate-y-[2px] p-3 sm:p-5"
                     style={{
                       background: '#ffffff',
                       border: '1px solid rgba(37,99,235,0.12)',
                       boxShadow: '0 4px 20px rgba(37,99,235,0.07)',
-                      padding: '20px 24px',
                     }}
                   >
                     {/* 상단 hover 라인 */}
@@ -866,7 +868,8 @@ export default function LandingV1() {
           }}
         />
         {/* bg-white/90 카드: HOW 섹션 전체 내용을 불투명 카드로 감싸 blob 차단 */}
-        <div className="relative z-[1] max-w-[1100px] mx-auto px-6">
+        {/* 모바일 px-4, 데스크탑 px-6 */}
+        <div className="relative z-[1] max-w-[1100px] mx-auto px-4 sm:px-6">
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 md:p-10">
           <Reveal>
             <div className="text-center mb-[70px]">
@@ -995,7 +998,8 @@ export default function LandingV1() {
         className="relative z-[1]"
         style={{ padding: '100px 0', background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)' }}
       >
-        <div className="max-w-[1100px] mx-auto px-6">
+        {/* WHY 섹션 콘텐츠 — 모바일 px-4, 데스크탑 px-6 */}
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6">
           {/* 소셜 프루프 배너 */}
           <Reveal>
             <div className="text-center mb-[60px]">
@@ -1012,7 +1016,8 @@ export default function LandingV1() {
             </div>
           </Reveal>
 
-          <div className="grid md:grid-cols-2 gap-[80px] items-center">
+          {/* 모바일 gap-8, 데스크탑 gap-80px */}
+          <div className="grid md:grid-cols-2 gap-8 md:gap-[80px] items-center">
             <div>
               <Reveal delay={0.1}>
                 {/* 타이틀 */}
@@ -1055,13 +1060,13 @@ export default function LandingV1() {
 
             {/* 오른쪽 통계 카드 — shadow 강화 */}
             <Reveal delay={0.2}>
+              {/* 통계 카드 — 모바일 p-6, 데스크탑 p-12 */}
               <div
-                className="rounded-[20px] text-center"
+                className="rounded-[20px] text-center p-6 sm:p-12"
                 style={{
                   background: '#ffffff',
                   border: '1px solid rgba(37,99,235,0.12)',
                   boxShadow: '0 8px 32px rgba(37,99,235,0.1)',
-                  padding: '48px 40px',
                 }}
               >
                 {/* 대형 숫자 강조 */}
@@ -1082,13 +1087,13 @@ export default function LandingV1() {
                     { num: 'PDF', label: '정밀 분석' },
                     { num: '즉시', label: '결과 확인' },
                   ].map((stat) => (
+                    // 통계 소카드 — 모바일 p-3, 데스크탑 p-5
                     <div
                       key={stat.label}
-                      className="rounded-[14px] text-left"
+                      className="rounded-[14px] text-left p-3 sm:p-5"
                       style={{
                         background: 'linear-gradient(135deg, rgba(37,99,235,0.05), rgba(124,58,237,0.04))',
                         border: '1px solid rgba(37,99,235,0.10)',
-                        padding: '20px',
                       }}
                     >
                       <div className="text-[28px] font-black mb-1" style={{ color: '#0f172a' }}>{stat.num}</div>
@@ -1131,7 +1136,8 @@ export default function LandingV1() {
           }}
         />
 
-        <div className="relative z-[1] max-w-[1100px] mx-auto px-6">
+        {/* SCHEDULE 섹션 콘텐츠 — 모바일 px-4, 데스크탑 px-6 */}
+        <div className="relative z-[1] max-w-[1100px] mx-auto px-4 sm:px-6">
           {/* 상단 뱃지 */}
           <Reveal>
             <div className="text-center mb-3">
@@ -1207,13 +1213,13 @@ export default function LandingV1() {
               },
             ].map((card) => (
               <motion.div key={card.title} variants={staggerItemScale}>
+                {/* 기능 카드 — 모바일 p-4, 데스크탑 p-9 */}
                 <div
-                  className="rounded-[20px] text-center transition-all hover:-translate-y-1"
+                  className="rounded-[20px] text-center transition-all hover:-translate-y-1 p-4 sm:p-9"
                   style={{
                     background: '#ffffff',
                     border: '1px solid rgba(37,99,235,0.12)',
                     boxShadow: '0 4px 24px rgba(37,99,235,0.08)',
-                    padding: '36px 28px',
                   }}
                 >
                   {/* 아이콘 원형 배경 */}
@@ -1240,11 +1246,11 @@ export default function LandingV1() {
 
           {/* 하단 안내 배너 */}
           <Reveal delay={0.35}>
+            {/* 하단 안내 배너 — 모바일 p-4, 데스크탑 p-8 */}
             <div
-              className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-[16px]"
+              className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-[16px] p-4 sm:p-8"
               style={{
                 background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-                padding: '24px 32px',
               }}
             >
               <div className="flex items-center gap-3">
@@ -1291,9 +1297,11 @@ export default function LandingV1() {
           className="absolute inset-0"
           style={{ background: 'radial-gradient(ellipse 60% 80% at 50% 50%, rgba(255,255,255,0.08) 0%, transparent 70%)' }}
         />
-        <div className="relative z-[1] max-w-[1100px] mx-auto px-6">
+        {/* STATS 섹션 콘텐츠 — 모바일 px-4, 데스크탑 px-6 */}
+        <div className="relative z-[1] max-w-[1100px] mx-auto px-4 sm:px-6">
+          {/* 모바일 gap-6, 데스크탑 gap-10 */}
           <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-10"
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10"
             variants={staggerContainerVariants}
             initial="hidden"
             whileInView="visible"
@@ -1308,9 +1316,10 @@ export default function LandingV1() {
             ].map((item) => (
               <motion.div key={item.num} variants={staggerItemUp}>
                 <div className="text-center">
+                  {/* 큰 숫자 — 모바일에서 clamp 최솟값 축소, whitespace-nowrap 제거로 줄바꿈 허용 */}
                   <div
                     className="font-black text-white mb-2"
-                    style={{ fontSize: 'clamp(2rem, 4.5vw, 4rem)', letterSpacing: '-1px', whiteSpace: 'nowrap' }}
+                    style={{ fontSize: 'clamp(1.4rem, 4.5vw, 4rem)', letterSpacing: '-1px' }}
                   >
                     {item.num}
                   </div>
@@ -1370,8 +1379,10 @@ export default function LandingV1() {
           }}
         />
         {/* bg-white/90 카드: CTA 섹션 텍스트 영역을 불투명 카드로 감싸 blob 차단 */}
-        <div className="relative z-[1] max-w-[700px] mx-auto px-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-8 md:p-12">
+        {/* 모바일 px-4, 데스크탑 px-6 */}
+        <div className="relative z-[1] max-w-[700px] mx-auto px-4 sm:px-6">
+          {/* 모바일 p-6, 데스크탑 p-12 */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 md:p-12">
           <Reveal>
             <span
               className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-medium mb-8"
@@ -1403,12 +1414,13 @@ export default function LandingV1() {
           </Reveal>
 
           <Reveal delay={0.3}>
-            <div className="flex gap-4 justify-center flex-wrap">
+            {/* CTA 버튼 — 모바일 flex-col, 데스크탑 flex-row */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center flex-wrap">
               {/* 카카오 버튼 */}
               <button
                 onClick={goLogin}
-                className="inline-flex items-center gap-[10px] rounded-[16px] text-[16px] font-bold transition-all hover:-translate-y-1"
-                style={{ padding: '18px 36px', background: '#fee500', color: '#191919', boxShadow: '0 8px 24px rgba(254,229,0,0.30)' }}
+                className="inline-flex items-center justify-center gap-[10px] rounded-[16px] text-[16px] font-bold transition-all hover:-translate-y-1 min-h-[52px]"
+                style={{ padding: '14px 28px', background: '#fee500', color: '#191919', boxShadow: '0 8px 24px rgba(254,229,0,0.30)' }}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="#191919">
                   <path d="M12 3C6.477 3 2 6.477 2 10.5c0 2.56 1.522 4.817 3.828 6.213-.167.606-.625 2.193-.715 2.534-.11.42.154.414.324.302.133-.088 2.107-1.43 2.96-2.013.496.073 1.006.11 1.603.11 5.523 0 10-3.477 10-7.646C22 6.477 17.523 3 12 3z" />
@@ -1419,9 +1431,9 @@ export default function LandingV1() {
               {/* 구글 버튼 */}
               <button
                 onClick={goLogin}
-                className="inline-flex items-center gap-[10px] rounded-[16px] text-[16px] font-bold transition-all hover:-translate-y-1"
+                className="inline-flex items-center justify-center gap-[10px] rounded-[16px] text-[16px] font-bold transition-all hover:-translate-y-1 min-h-[52px]"
                 style={{
-                  padding: '18px 36px',
+                  padding: '14px 28px',
                   background: '#fff',
                   color: '#333',
                   border: '1px solid rgba(37,99,235,0.15)',
