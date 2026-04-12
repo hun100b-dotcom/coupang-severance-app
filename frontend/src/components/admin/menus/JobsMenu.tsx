@@ -729,7 +729,7 @@ export default function JobsMenu() {
                     })}
                   </div>
                 </div>
-                {/* 근무 예정일 */}
+                {/* 근무 예정일 — 숫자 입력 시 YYYY-MM-DD 자동 포맷 */}
                 <label>
                   <span style={labelSpan}>
                     근무 예정일
@@ -738,10 +738,22 @@ export default function JobsMenu() {
                     </span>
                   </span>
                   <input
-                    type="date"
+                    type="text"
                     value={form.work_date}
-                    onChange={e => setForm(f => ({ ...f, work_date: e.target.value }))}
-                    style={{ ...inputStyle, colorScheme: 'dark' }}
+                    onChange={e => {
+                      // 숫자만 추출 후 YYYY-MM-DD 자동 포맷
+                      const digits = e.target.value.replace(/\D/g, '').slice(0, 8)
+                      let formatted = digits
+                      if (digits.length > 6) {
+                        formatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`
+                      } else if (digits.length > 4) {
+                        formatted = `${digits.slice(0, 4)}-${digits.slice(4)}`
+                      }
+                      setForm(f => ({ ...f, work_date: formatted }))
+                    }}
+                    placeholder="예: 2026-04-20 (숫자만 입력해도 됩니다)"
+                    maxLength={10}
+                    style={{ ...inputStyle }}
                   />
                 </label>
               </div>
@@ -910,12 +922,23 @@ export default function JobsMenu() {
                     </span>
                   </span>
                   <input
-                    type="date"
+                    type="text"
                     value={form.expires_at}
-                    onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
-                    min={new Date().toISOString().slice(0, 10)}
+                    onChange={e => {
+                      // 숫자만 추출 후 YYYY-MM-DD 자동 포맷
+                      const digits = e.target.value.replace(/\D/g, '').slice(0, 8)
+                      let formatted = digits
+                      if (digits.length > 6) {
+                        formatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`
+                      } else if (digits.length > 4) {
+                        formatted = `${digits.slice(0, 4)}-${digits.slice(4)}`
+                      }
+                      setForm(f => ({ ...f, expires_at: formatted }))
+                    }}
+                    placeholder="예: 2026-05-31 (숫자만 입력해도 됩니다)"
+                    maxLength={10}
                     required
-                    style={{ ...inputStyle, colorScheme: 'dark' }}
+                    style={{ ...inputStyle }}
                   />
                 </label>
 
@@ -1255,7 +1278,7 @@ export default function JobsMenu() {
           {/* 헤더 */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
             <div>
-              <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0 }}>💼 채용공고 관리</h2>
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0, color: '#fff' }}>💼 채용공고 관리</h2>
               <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: '4px 0 0' }}>
                 채용정보 피드에 노출되는 공고를 관리합니다. ({jobs.length}건)
               </p>
@@ -1383,6 +1406,14 @@ export default function JobsMenu() {
                         }}>
                           {job.status === 'active' ? '활성' : job.status === 'draft' ? '임시저장' : job.status === 'expired' ? '만료' : '삭제'}
                         </span>
+                        {/* 만료일이 지난 활성 공고 경고 — 실서비스에서 자동 숨겨짐 */}
+                        {job.status === 'active' && job.expires_at && new Date(job.expires_at) < new Date(new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })) && (
+                          <span style={{
+                            padding: '2px 8px', borderRadius: 999, fontSize: '0.68rem', fontWeight: 700,
+                            background: 'rgba(240,68,82,0.18)', color: '#ff6b6b',
+                            border: '1px solid rgba(240,68,82,0.3)',
+                          }}>⚠️ 만료(실서비스 숨김)</span>
+                        )}
                       </div>
 
                       {/* 회사명 + 센터명 — 텍스트 잘림 없음 */}
