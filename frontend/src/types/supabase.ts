@@ -114,7 +114,7 @@ export interface JobPosting {
   // 공고 근무 예정일 — 20260411 추가 (중복 확정 차단 기준일)
   work_date: string | null
   expires_at: string | null
-  status: 'active' | 'expired' | 'deleted'
+  status: 'active' | 'draft' | 'expired' | 'deleted'
   created_by: string | null
   created_at: string
   updated_at: string
