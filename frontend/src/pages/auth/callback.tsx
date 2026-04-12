@@ -10,9 +10,9 @@ const GIVE_UP_MS = 8000 // 8초 안에 세션이 안 잡히면 실패
 
 export default function AuthCallbackPage() {
   const [status, setStatus] = useState<Status>('처리 중...')
-  const doneRef = useRef(false)
+  const doneRef = useRef(false) // true가 되면 이후 모든 리다이렉트 시도를 차단
 
-  const goTo = (path: '/mypage' | '/login' | '/onboarding') => {
+  const goTo = (path: '/home' | '/login' | '/onboarding') => {
     if (doneRef.current) return
     doneRef.current = true
 
@@ -51,8 +51,15 @@ export default function AuthCallbackPage() {
   }
 
   useEffect(() => {
-    // StrictMode에서 useEffect가 두 번 실행될 때 cleanup에서 true로 된 doneRef 리셋
-    doneRef.current = false
+    // ── StrictMode 이중 실행 방지 ──────────────────────────────────────────
+    // React StrictMode는 개발/프로덕션 모두 useEffect를 mount→cleanup→mount 순으로
+    // 두 번 실행합니다. doneRef.current가 이미 true라면 이전 실행에서 리다이렉트가
+    // 예약된 것이므로 두 번째 실행은 즉시 종료해 중복 처리를 막습니다.
+    if (doneRef.current) return
+
+    // cancelled: 이 Effect 인스턴스가 cleanup으로 취소됐는지 여부
+    // (doneRef와 달리 Effect 단위로 독립적으로 관리)
+    let cancelled = false
 
     const client = supabase
     if (!client) {
@@ -62,10 +69,13 @@ export default function AuthCallbackPage() {
 
     // 온보딩 필요 여부 확인 + 마케팅 동의 저장 함수
     const checkOnboardingAndRedirect = async (userId: string) => {
-      if (doneRef.current) return
+      if (cancelled || doneRef.current) return
 
       // 마케팅 동의 저장 (실패해도 리다이렉트 흐름 계속)
       await saveMarketingAgreed(userId)
+
+      // await 이후 취소 여부 재확인 (비동기 중 cleanup이 실행될 수 있음)
+      if (cancelled || doneRef.current) return
 
       try {
         const { data: profile, error } = await client
@@ -73,6 +83,8 @@ export default function AuthCallbackPage() {
           .select('onboarding_completed, full_name')
           .eq('id', userId)
           .maybeSingle() // single() 대신 maybeSingle() 사용 - 행이 없어도 에러 안남
+
+        if (cancelled || doneRef.current) return
 
         if (error) {
           console.error('[콜백] 프로필 조회 오류:', error.message)
@@ -84,17 +96,17 @@ export default function AuthCallbackPage() {
         if (!profile || !profile.onboarding_completed || !profile.full_name) {
           goTo('/onboarding')
         } else {
-          goTo('/mypage')
+          goTo('/home') // 로그인 성공 → 홈화면으로 이동
         }
       } catch (err) {
         console.error('[콜백] 프로필 확인 실패:', err)
-        goTo('/onboarding')
+        if (!cancelled && !doneRef.current) goTo('/onboarding')
       }
     }
 
     // 1) onAuthStateChange로 세션 감지
     const { data: { subscription } } = client.auth.onAuthStateChange(async (event, session) => {
-      if (doneRef.current) return
+      if (cancelled || doneRef.current) return
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
         await checkOnboardingAndRedirect(session.user.id)
       }
@@ -104,12 +116,14 @@ export default function AuthCallbackPage() {
     const pollSession = async () => {
       const delays = [100, 300, 700, 1500, 3000]
       for (const delay of delays) {
-        if (doneRef.current) return
+        if (cancelled || doneRef.current) return
         await new Promise(resolve => setTimeout(resolve, delay))
-        if (doneRef.current) return
+        if (cancelled || doneRef.current) return
 
         try {
           const { data, error } = await client.auth.getSession()
+          // getSession() 완료 후 취소 여부 재확인
+          if (cancelled || doneRef.current) return
           if (!error && data.session?.user) {
             await checkOnboardingAndRedirect(data.session.user.id)
             return
@@ -123,7 +137,7 @@ export default function AuthCallbackPage() {
 
     // 3) 타임아웃
     const timeoutId = window.setTimeout(() => {
-      if (doneRef.current) return
+      if (cancelled || doneRef.current) return
       console.warn('[콜백] 세션 타임아웃 - 로그인 페이지로 이동')
       // 타임아웃 시 pending_marketing_agreed 정리
       localStorage.removeItem('pending_marketing_agreed')
@@ -131,7 +145,7 @@ export default function AuthCallbackPage() {
     }, GIVE_UP_MS)
 
     return () => {
-      doneRef.current = true
+      cancelled = true // 이 Effect 인스턴스의 모든 비동기 콜백을 취소
       subscription.unsubscribe()
       window.clearTimeout(timeoutId)
     }

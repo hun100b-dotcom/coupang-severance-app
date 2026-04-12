@@ -61,7 +61,7 @@ export default function LoginPage() {
       if (needsOnboarding) {
         navigate('/onboarding', { replace: true })
       } else {
-        navigate('/mypage', { replace: true })
+        navigate('/home', { replace: true })
       }
     }
   }, [loading, isLoggedIn, needsOnboarding, navigate])
