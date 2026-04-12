@@ -108,6 +108,15 @@ export default function MyApplicationsTab({ userId }: Props) {
     fetchApplications()
   }, [fetchApplications])
 
+  // ── 일반 에러/정보 토스트 state ──
+  // 셀프 체크인 실패 등 사용자 액션 결과를 toast로 피드백
+  const [actionToast, setActionToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+  useEffect(() => {
+    if (!actionToast) return
+    const t = setTimeout(() => setActionToast(null), 3500)
+    return () => clearTimeout(t)
+  }, [actionToast])
+
   // ── Realtime 알림 토스트 state ──
   // 어드민이 확정/거절 처리 시 notifications 테이블에 기록 → 즉시 toast 표시
   const [notifToast, setNotifToast] = useState<string | null>(null)
@@ -198,8 +207,10 @@ export default function MyApplicationsTab({ userId }: Props) {
 
       // 2. UI 즉시 갱신 (Realtime으로도 반영되지만 즉각성을 위해 직접 갱신)
       await fetchApplications()
+      setActionToast({ msg: '출근완료 처리되었습니다!', type: 'success' })
     } catch (err) {
       console.error('[셀프 체크인 오류]', err)
+      setActionToast({ msg: '출근완료 처리에 실패했어요. 다시 시도해 주세요.', type: 'error' })
     } finally {
       setCheckingIn(null)
     }
@@ -313,6 +324,26 @@ export default function MyApplicationsTab({ userId }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
+
+      {/* ── 액션 결과 토스트 (셀프 체크인 성공/실패 등) ── */}
+      {actionToast && (
+        <div
+          className="fixed top-16 left-1/2 z-[501] w-[calc(100%-32px)] max-w-[380px]"
+          style={{ transform: 'translateX(-50%)' }}
+        >
+          <div
+            className="rounded-2xl px-4 py-3 text-[14px] font-bold text-white text-center"
+            style={{
+              background: actionToast.type === 'success'
+                ? 'linear-gradient(135deg, #10b981, #059669)'
+                : 'linear-gradient(135deg, #ef4444, #dc2626)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+            }}
+          >
+            {actionToast.type === 'success' ? '✅' : '❌'} {actionToast.msg}
+          </div>
+        </div>
+      )}
 
       {/* ── REQ8: 실시간 알림 토스트 ── */}
       {/* notifications 테이블에 새 알림 INSERT 시 자동 표시, 4초 후 자동 소멸 */}
