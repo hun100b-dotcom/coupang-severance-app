@@ -11,7 +11,11 @@
 | 우선순위 | 작업 | 상세 |
 |---------|------|------|
 | **P0** | GSC 나머지 URL 색인 요청 | 하루 2~3개씩. `/landing`, `/guide`, `/guide/severance`, `/guide/unemployment`, `/guide/weekly-allowance`, `/guide/annual-leave`, `/severance`, `/unemployment`, `/calculator` (GSC 상단 검색바에 URL 입력 → "색인 생성 요청" 클릭) |
+| **P1** | [계획 완료] 모바일 반응형 전수 점검 + 수정 | iPhone SE 375px 기준 10~15개 파일 — 플랜: `docs/plans/2026-04-12-p1-plan.md` |
+| **P1** | [계획 완료] 실업급여·주휴수당·연차수당 E2E 테스트 | Playwright 3개 spec 파일 신규 생성 — 플랜: `docs/plans/2026-04-12-p1-plan.md` |
 | **P1** | Phase 1 잔여 작업 | 실제 채용팀 연락→공고 수집, 홈 채용 프리뷰 고도화, 관리자 채용공고 데이터 관리 검증 |
+| **P2** | [계획 완료] 네이버 SEO 블로그 원고 2편 | `docs/blog/naver-severance-guide.md`, `docs/blog/naver-unemployment-guide.md` |
+| **P2** | [계획 완료] Product Hunt / Alternativeto 등재 자료 | `docs/launch/product-hunt-draft.md`, `docs/launch/alternativeto-draft.md` |
 | **P2** | Phase 2 B2C 랜딩 + SEO 고도화 | 랜딩 페이지 추가 개선, 검색 노출 모니터링(1~4주 소요) |
 | **P3** | 앱스토어/플레이스토어 출시 | PWA → 네이티브 앱 래핑(Capacitor/TWA) 검토 필요 |
 | **P4** | Phase 3 B2B 랜딩 + 유료화 | - |
@@ -19,6 +23,20 @@
 ---
 
 ## ✅ 완료 작업 이력
+
+### 세션 7 — 2026-04-12 (플래너 에이전트 — objective-boyd)
+
+**P1 작업 플랜 수립 (플랜 문서 작성)**
+
+- `docs/plans/2026-04-12-p1-plan.md` 신규 생성
+  - 작업 1: 모바일 반응형 전수 점검 (10~15개 파일, iPhone SE 375px 기준)
+  - 작업 2: 실업급여·주휴수당·연차수당 E2E 테스트 (Playwright spec 3~5개 신규)
+  - 작업 3: 네이버 SEO 블로그 원고 2편 (docs/blog/ 신규)
+  - 작업 4: Product Hunt / Alternativeto 등재 자료 (docs/launch/ 신규)
+- `memory/progress.md` TODO 테이블 업데이트 (4개 작업 계획 추가)
+- 각 작업별 영향 파일 목록, 구현 전략, 리스크 평가 완료
+
+---
 
 ### 세션 6 — 2026-04-10 (하네스 v2 — sharp-hodgkin)
 
