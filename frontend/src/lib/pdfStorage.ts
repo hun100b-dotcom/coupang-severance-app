@@ -74,16 +74,45 @@ export async function uploadPdf(
   return { success: true, pdf: data as SavedPdf }
 }
 
-/** 저장된 PDF 다운로드 → File 객체로 반환 */
+/** 저장된 PDF 다운로드 → File 객체로 반환
+ *
+ *  실패 케이스:
+ *  1. Supabase Storage 오류 (인증 만료, 파일 없음 등)
+ *  2. 다운로드 성공했지만 실제 PDF 바이트가 아닌 경우 (오류 응답이 Blob으로 온 경우)
+ *  3. 빈 파일 (0 바이트)
+ *
+ *  모든 케이스에서 null을 반환하므로 호출 측에서 에러 처리 필수.
+ */
 export async function downloadPdf(pdf: SavedPdf): Promise<File | null> {
   if (!supabase) return null
   const { data, error } = await supabase.storage
     .from(BUCKET)
     .download(pdf.storage_path)
   if (error || !data) {
-    console.error('[PDF 다운로드 오류]', error)
+    console.error('[PDF 다운로드 오류] Storage 응답 에러:', error?.message ?? 'data=null')
     return null
   }
+
+  // ── PDF 유효성 검사 ──────────────────────────────────────────────────────
+  // Supabase Storage가 간혹 오류 응답 본문(HTML/JSON)을 Blob으로 반환하는 경우 방지
+  // PDF 파일 헤더는 반드시 "%PDF" (0x25 0x50 0x44 0x46)로 시작해야 함
+  if (data.size === 0) {
+    console.error('[PDF 다운로드 오류] 빈 파일(0 bytes) 반환됨 — Storage에서 파일이 삭제되었거나 접근 불가')
+    return null
+  }
+  try {
+    const headerBuf = await data.slice(0, 4).arrayBuffer()
+    const header = new Uint8Array(headerBuf)
+    const isPdf = header[0] === 0x25 && header[1] === 0x50 && header[2] === 0x44 && header[3] === 0x46
+    if (!isPdf) {
+      console.error('[PDF 다운로드 오류] PDF 시그니처 불일치 — 잘못된 파일 형식:', Array.from(header))
+      return null
+    }
+  } catch {
+    // 헤더 검사 실패는 치명적이지 않으므로 계속 진행
+    console.warn('[PDF 다운로드 경고] 헤더 검사 실패, 파일 그대로 사용')
+  }
+
   // Blob → File 변환 (원본 파일명 유지)
   return new File([data], pdf.file_name, { type: 'application/pdf' })
 }

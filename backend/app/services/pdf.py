@@ -27,7 +27,8 @@ COMPANY_KEYWORDS: dict[str, list[str]] = {
 
 
 def _norm(s: str) -> str:
-    return (s or "").replace(" ", "").replace("\u3000", "")
+    # 공백(반각·전각)과 줄바꿈(\r\n\t) 모두 제거 — PDF 셀 내부 개행으로 인한 토큰 미매칭 방지
+    return (s or "").replace(" ", "").replace("\u3000", "").replace("\r", "").replace("\n", "").replace("\t", "")
 
 
 def _normalize_company(s: str) -> str:
@@ -160,10 +161,15 @@ def _is_header_row(row: list, header: list) -> bool:
 
 
 def _looks_like_header_row(row: list) -> bool:
-    """실제 컬럼 헤더 행인지 판별."""
+    """실제 컬럼 헤더 행인지 판별.
+
+    각 셀을 개별 정규화 후 합쳐야 셀 내부 개행(\n)으로 인한 토큰 미매칭을 방지할 수 있음.
+    예: "임금\n총액" → _norm 처리 → "임금총액" 로 올바르게 매칭됨.
+    """
     if not row:
         return False
-    joined = _norm(" ".join(str(c or "") for c in row))
+    # ✅ 수정: 각 셀을 _norm 처리 후 합산 → 셀 내 개행 포함 헤더도 정확히 탐지
+    joined = "".join(_norm(str(c or "")) for c in row)
     return all(
         token in joined
         for token in ("근로년월", "사업장명", "근로일자", "근로일수")
@@ -311,7 +317,9 @@ def _infer_column_indices(header: list) -> tuple[int, int, int, int, int]:
         n = _norm(str(h or ""))
         if "근로년월" in n or ("근로" in n and "년월" in n) or "근로년" in n:
             idx_ym = i
-        if "사업장" in str(h) and "명" in str(h):
+        # 개행 포함 헤더 처리: "사업장\n명칭" → _norm 후 "사업장명칭" → "사업장"+"명" 모두 포함
+        nh = _norm(str(h or ""))
+        if "사업장" in nh and ("명" in nh or "명칭" in nh):
             idx_site = i
         if "근로일자" in n or ("일자" in str(h) and "근로" in n):
             idx_dates = i
