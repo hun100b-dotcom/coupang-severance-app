@@ -262,7 +262,7 @@ export default function MyPage() {
                   // 지원현황 탭 클릭 시 알림 읽음 처리
                   if (tab.key === 'applications') markNotificationsRead()
                 }}
-                className={`relative flex items-center gap-1.5 px-3 py-2.5 text-[12px] font-bold whitespace-nowrap border-b-2 transition-all shrink-0 ${
+                className={`relative flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] text-[12px] font-bold whitespace-nowrap border-b-2 transition-all shrink-0 ${
                   isActive
                     ? 'border-[#3182f6] text-[#3182f6]'
                     : 'border-transparent text-[#8b95a1] hover:text-[#4e5968]'

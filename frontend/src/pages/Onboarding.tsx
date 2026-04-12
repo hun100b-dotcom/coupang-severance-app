@@ -185,7 +185,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative z-[1] px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative z-[1] px-4 py-8 overflow-x-hidden">{/* overflow-x-hidden으로 가로 스크롤 방지 */}
       <div className="w-full max-w-[520px]">
         {/* 상단 로고 */}
         <div className="text-center mb-8">
@@ -196,8 +196,8 @@ export default function OnboardingPage() {
           <p className="text-sm text-[#4E5968]">서비스 이용을 위해 추가 정보를 입력해 주세요.</p>
         </div>
 
-        {/* 폼 카드 */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-gray-100/50 p-8">
+        {/* 폼 카드 — 모바일(375px) px-4 최소 확보, 데스크탑 p-8 유지 */}
+        <form onSubmit={handleSubmit} className="bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-gray-100/50 p-4 sm:p-8">
           {/* 이름 */}
           <div className="mb-5">
             <label className="block text-sm font-semibold text-[#191F28] mb-2">

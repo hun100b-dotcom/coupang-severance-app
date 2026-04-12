@@ -226,8 +226,9 @@ export default function Home() {
       />
 
       {/* ── 글래스모피즘 스티키 헤더 ── */}
+      {/* 홈 헤더 — grid-cols-3이나 중앙 버튼이 375px에서 좁아지지 않도록 gap 축소 */}
       <header
-        className={`sticky top-0 z-30 w-full max-w-[460px] grid grid-cols-3 items-center gap-2 py-3 pb-4 transition-all duration-300 ${
+        className={`sticky top-0 z-30 w-full max-w-[460px] grid grid-cols-3 items-center gap-1 py-3 pb-4 transition-all duration-300 ${
           scrolled
             ? 'bg-white/70 backdrop-blur-2xl border-b border-white/40 shadow-[0_1px_3px_rgba(0,0,0,0.04)] rounded-b-2xl -mx-2 px-4'
             : 'bg-transparent'

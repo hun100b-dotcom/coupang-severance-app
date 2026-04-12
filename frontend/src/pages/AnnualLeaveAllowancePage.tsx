@@ -152,27 +152,28 @@ export default function AnnualLeaveAllowancePage() {
   void getStepLabel  // lint 방지
 
   // ── 현재 스텝에서 다음 스텝 번호 계산
+  // 재직 중(true):  0→1→2(목적)→3(사용연차)→4(일급,조건부)→mode
+  // 퇴직(false):   0→1→2(퇴직일)→3(목적)→4(사용연차)→5(일급,조건부)→mode
   const nextStep = (cur: number): number | 'mode' => {
     if (cur === 0) return 1  // 재직여부 → 입사일
-    if (cur === 1) return survey.isStillWorking === false ? 2 : 3  // 입사일 → (퇴직이면 퇴직일, 재직이면 목적)
-    if (cur === 2) return survey.isStillWorking === false ? 3 : 4  // 퇴직일 → 목적 / 목적 → 사용연차
+    if (cur === 1) return survey.isStillWorking === false ? 2 : 2  // 입사일 → (퇴직이면 퇴직일, 재직이면 목적) — 둘 다 스텝2
+    if (cur === 2) return survey.isStillWorking === false ? 3 : 3  // 퇴직일→목적(3) / 목적→사용연차(3)
     if (cur === 3) {
-      // 퇴직여부에 따라 다름
       if (survey.isStillWorking === false) {
-        return 4  // 목적 → 사용연차
+        return 4  // 퇴직: 목적 → 사용연차
       } else {
-        // 재직중이고 목적이 미지급/남은이면 일급 스텝
+        // 재직: 사용연차 → 일급(조건부) or mode
         if (survey.purpose === '미지급청구' || survey.purpose === '남은일수') return 4
         return 'mode'
       }
     }
     if (cur === 4) {
       if (survey.isStillWorking === false) {
-        // 사용연차 → 일급(조건부) or mode
+        // 퇴직: 사용연차 → 일급(조건부) or mode
         if (survey.purpose === '미지급청구' || survey.purpose === '남은일수') return 5
         return 'mode'
       } else {
-        // 일급 → mode
+        // 재직: 일급 → mode
         return 'mode'
       }
     }
@@ -184,8 +185,8 @@ export default function AnnualLeaveAllowancePage() {
     if (cur === 0) return null
     if (cur === 1) return 0
     if (cur === 2) return 1
-    if (cur === 3) return survey.isStillWorking === false ? 2 : 1
-    if (cur === 4) return survey.isStillWorking === false ? 3 : 3
+    if (cur === 3) return 2  // 재직/퇴직 모두 이전은 2
+    if (cur === 4) return 3  // 재직/퇴직 모두 이전은 3
     if (cur === 5) return 4
     return null
   }
@@ -238,9 +239,11 @@ export default function AnnualLeaveAllowancePage() {
   const handleSave = async () => {
     if (!simpleResult) return
     if (!isLoggedIn) { setSaveState('login_required'); return }
+    // supabase 클라이언트가 null이면 저장 불가 (환경변수 미설정 상황 대비)
+    if (!supabase) { setSaveState('login_required'); return }
     setSaveState('saving')
     try {
-      const { data: { user } } = await supabase!.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setSaveState('login_required'); return }
       const payload: AnnualLeavePayload = {
         type: 'annual_leave',
@@ -251,7 +254,7 @@ export default function AnnualLeaveAllowancePage() {
         annual_leave_days: simpleResult.totalEntitlement,
         annual_leave_allowance: simpleResult.unpaidAllowance ?? 0,
       }
-      const { error } = await supabase!.from('reports').insert({
+      const { error } = await supabase.from('reports').insert({
         user_id: user.id,
         title: '연차수당 계산 결과',
         company_name: null,

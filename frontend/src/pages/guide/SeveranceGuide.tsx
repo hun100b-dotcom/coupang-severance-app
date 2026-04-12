@@ -285,7 +285,8 @@ export default function SeveranceGuide() {
           {/* H1 — SEO 타겟 키워드 포함 */}
           <h1 className="text-xl font-black mb-1 leading-tight">쿠팡 일용직 퇴직금 계산기</h1>
           <p className="text-blue-100 text-sm mb-3">2026년 최신 기준 완전정복</p>
-          <div className="flex gap-3 text-xs">
+          {/* flex-wrap으로 뱃지가 375px 이하에서 줄바꿈 허용 */}
+          <div className="flex flex-wrap gap-2 text-xs">
             <span className="bg-white/20 rounded-full px-2.5 py-1 font-bold">평균 수령 250만원</span>
             <span className="bg-white/20 rounded-full px-2.5 py-1 font-bold">미청구율 70%</span>
             <span className="bg-white/20 rounded-full px-2.5 py-1 font-bold">소멸시효 3년</span>

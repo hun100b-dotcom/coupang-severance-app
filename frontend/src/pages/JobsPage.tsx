@@ -420,17 +420,17 @@ export default function JobsPage() {
                 </AnimatePresence>
               </div>
 
-              {/* 요약 수치 */}
-              <div className="grid grid-cols-4 gap-2">
+              {/* 요약 수치 — 375px 모바일에서 4칸 유지하되 px-1로 패딩 축소 */}
+              <div className="grid grid-cols-4 gap-1.5">
                 {[
                   { n: allJobs.length, label: '전체', c: 'text-white' },
-                  { n: allJobs.filter(j => j.recruit_type === 'urgent_today').length, label: '오늘 긴급', c: 'text-red-300' },
-                  { n: allJobs.filter(j => j.recruit_type === 'urgent_tomorrow').length, label: '내일 긴급', c: 'text-amber-300' },
+                  { n: allJobs.filter(j => j.recruit_type === 'urgent_today').length, label: '오늘긴급', c: 'text-red-300' },
+                  { n: allJobs.filter(j => j.recruit_type === 'urgent_tomorrow').length, label: '내일긴급', c: 'text-amber-300' },
                   { n: allJobs.filter(j => j.recruit_type === 'regular').length, label: '상시', c: 'text-emerald-300' },
                 ].map(s => (
-                  <div key={s.label} className="px-2 py-2 rounded-2xl bg-white/[0.12] backdrop-blur-sm text-center">
-                    <p className={`text-[18px] font-black ${s.c}`}>{s.n}</p>
-                    <p className="text-[10px] text-white/50 font-medium">{s.label}</p>
+                  <div key={s.label} className="px-1 py-2 rounded-2xl bg-white/[0.12] backdrop-blur-sm text-center">
+                    <p className={`text-[16px] font-black ${s.c}`}>{s.n}</p>
+                    <p className="text-[9px] text-white/50 font-medium leading-tight">{s.label}</p>
                   </div>
                 ))}
               </div>
@@ -452,8 +452,8 @@ export default function JobsPage() {
           />
         </div>
 
-        {/* ── 카테고리 바 ── */}
-        <div className="flex items-center gap-2 bg-white/50 backdrop-blur-md rounded-2xl p-2 border border-white/60 shadow-[0_4px_16px_rgba(49,130,246,0.04)]">
+        {/* ── 카테고리 바 — overflow-x-auto로 375px 가로 스크롤 방지 ── */}
+        <div className="flex items-center gap-2 bg-white/50 backdrop-blur-md rounded-2xl p-2 border border-white/60 shadow-[0_4px_16px_rgba(49,130,246,0.04)] overflow-x-auto min-w-0">
           {/* 지역 드롭다운 */}
           <div className="relative">
             <button onClick={() => setRegionOpen(v => !v)}

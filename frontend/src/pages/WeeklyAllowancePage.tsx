@@ -130,9 +130,11 @@ export default function WeeklyAllowancePage() {
   const handleSave = async () => {
     if (!simpleResult) return
     if (!isLoggedIn) { setSaveState('login_required'); return }
+    // supabase 클라이언트가 null이면 저장 불가 (환경변수 미설정 상황 대비)
+    if (!supabase) { setSaveState('login_required'); return }
     setSaveState('saving')
     try {
-      const { data: { user } } = await supabase!.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setSaveState('login_required'); return }
       const payload: WeeklyAllowancePayload = {
         type: 'weekly_allowance',
@@ -143,7 +145,7 @@ export default function WeeklyAllowancePage() {
         weekly_allowance: simpleResult.allowance,
         is_eligible: simpleResult.eligible,
       }
-      const { error } = await supabase!.from('reports').insert({
+      const { error } = await supabase.from('reports').insert({
         user_id: user.id,
         title: '주휴수당 계산 결과',
         company_name: null,
