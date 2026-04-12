@@ -370,45 +370,57 @@ export default function ApplyFormModal({
                   )}
                 </div>
 
-                {/* 생년월일 */}
+                {/* 생년월일 — 연/월/일 라벨 + 연도 필드 넉넉하게 */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     <span className="text-red-500 mr-1">*</span>생년월일
                   </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="연도 (예: 1990)"
-                      maxLength={4}
-                      value={form.birth_year}
-                      onChange={(e) => setForm(f => ({ ...f, birth_year: e.target.value.replace(/\D/g, '') }))}
-                      className={`flex-1 px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
-                      }`}
-                    />
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="월"
-                      maxLength={2}
-                      value={form.birth_month}
-                      onChange={(e) => setForm(f => ({ ...f, birth_month: e.target.value.replace(/\D/g, '') }))}
-                      className={`w-16 text-center py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
-                      }`}
-                    />
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="일"
-                      maxLength={2}
-                      value={form.birth_day}
-                      onChange={(e) => setForm(f => ({ ...f, birth_day: e.target.value.replace(/\D/g, '') }))}
-                      className={`w-16 text-center py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
-                      }`}
-                    />
+                  <div className="flex gap-2 items-end">
+                    {/* 연도 — flex-[3] + min-w로 4자리가 충분히 표시되도록 */}
+                    <div className="flex-[3] min-w-[90px]">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="1990"
+                        maxLength={4}
+                        value={form.birth_year}
+                        onChange={(e) => setForm(f => ({ ...f, birth_year: e.target.value.replace(/\D/g, '') }))}
+                        className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                          errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                        }`}
+                      />
+                      <span className="text-[10px] text-gray-400 mt-0.5 block text-center">년</span>
+                    </div>
+                    {/* 월 */}
+                    <div className="min-w-[58px] w-[58px]">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="1"
+                        maxLength={2}
+                        value={form.birth_month}
+                        onChange={(e) => setForm(f => ({ ...f, birth_month: e.target.value.replace(/\D/g, '') }))}
+                        className={`w-full text-center py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                          errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                        }`}
+                      />
+                      <span className="text-[10px] text-gray-400 mt-0.5 block text-center">월</span>
+                    </div>
+                    {/* 일 */}
+                    <div className="min-w-[58px] w-[58px]">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="1"
+                        maxLength={2}
+                        value={form.birth_day}
+                        onChange={(e) => setForm(f => ({ ...f, birth_day: e.target.value.replace(/\D/g, '') }))}
+                        className={`w-full text-center py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                          errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                        }`}
+                      />
+                      <span className="text-[10px] text-gray-400 mt-0.5 block text-center">일</span>
+                    </div>
                   </div>
                   {errors.birth_year && (
                     <p className="text-xs text-red-500 mt-1">{errors.birth_year}</p>
