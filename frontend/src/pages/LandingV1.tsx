@@ -208,8 +208,11 @@ export default function LandingV1() {
     }
   }, [handleMouseMoveCursor])
 
-  // ── 로그인 페이지로 이동 ─────────────────────────────────────────────────
+  // ── 로그인 페이지로 이동 (히어로/CTA 버튼에서 사용) ───────────────────────
   const goLogin = () => navigate('/login')
+
+  // ── 홈 화면으로 이동 (우상단 네비 "지금 시작하기" 버튼 전용) ─────────────
+  const goHome = () => navigate('/home')
 
   // ── Smooth scroll 헬퍼 함수 ───────────────────────────────────────────────
   const scrollTo = (id: string) => {
@@ -268,8 +271,9 @@ export default function LandingV1() {
         <span className="text-[22px] font-black tracking-tight" style={{ color: '#2563eb' }}>
           CATCH
         </span>
+        {/* 우상단 "지금 시작하기" 버튼 — 로그인 없이 바로 홈으로 이동 */}
         <button
-          onClick={goLogin}
+          onClick={goHome}
           className="px-[22px] py-[10px] rounded-[12px] text-sm font-bold text-white transition-all hover:scale-[1.04] hover:-translate-y-0.5"
           style={{
             background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
