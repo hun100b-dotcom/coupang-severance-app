@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import NoticesBanner from '../components/NoticesBanner'
 import { useNotices } from '../hooks/useNotices'
+import { consumePendingSaveDone } from '../lib/pendingSave'
 
 // ── count-up hook: 0에서 target까지 부드러운 카운트업 ──
 function useCountUp(target: number, duration = 1500) {
@@ -78,6 +79,19 @@ export default function Home() {
   const [copyIdx, setCopyIdx] = useState(0)
   const [scrolled, setScrolled] = useState(false)
   const animatedCount = useCountUp(count)
+
+  // 로그인 후 게스트 계산 결과 자동 저장 완료 알림 상태
+  const [autoSaved, setAutoSaved] = useState(false)
+
+  // 홈 마운트 시 자동 저장 완료 플래그 확인 (1번만 체크)
+  useEffect(() => {
+    if (consumePendingSaveDone()) {
+      setAutoSaved(true)
+      // 4초 후 자동 숨김
+      const timer = setTimeout(() => setAutoSaved(false), 4000)
+      return () => clearTimeout(timer)
+    }
+  }, [])
 
   // 채용정보 프리뷰 (is_urgent=true 우선, 최대 3건)
   const [recentJobs, setRecentJobs] = useState<JobPosting[]>([])
@@ -186,6 +200,27 @@ export default function Home() {
 
   return (
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-8">
+
+      {/* ── 로그인 후 게스트 계산 결과 자동 저장 완료 알림 배너 ── */}
+      <AnimatePresence>
+        {autoSaved && (
+          <motion.div
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            className="fixed top-16 left-1/2 -translate-x-1/2 z-[200] w-[calc(100%-32px)] max-w-sm"
+          >
+            <div className="flex items-center gap-3 bg-emerald-500 text-white px-4 py-3 rounded-2xl shadow-lg">
+              <span className="text-lg">✅</span>
+              <div>
+                <p className="text-sm font-bold">계산결과가 저장됐어요!</p>
+                <p className="text-xs opacity-80">마이페이지에서 언제든지 다시 확인할 수 있어요</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── SEO 메타태그: 홈 페이지 ── */}
       {/* noIndex: /home은 로그인 사용자 전용 — 검색 결과에 노출되면 공고 내용이 스니펫으로 잡힘 */}
       <PageMeta

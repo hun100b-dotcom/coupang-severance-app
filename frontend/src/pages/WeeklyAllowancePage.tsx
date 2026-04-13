@@ -32,6 +32,8 @@ import {
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { WeeklyAllowancePayload } from '../types/supabase'
+import { useGuestGate } from '../components/GuestGate'
+import { storePendingSave } from '../lib/pendingSave'
 
 function formatWon(n: number) {
   return n.toLocaleString('ko-KR') + '원'
@@ -66,6 +68,8 @@ type SaveState = 'idle' | 'saving' | 'saved' | 'login_required' | 'error'
 export default function WeeklyAllowancePage() {
   const navigate = useNavigate()
   const { isLoggedIn } = useAuth()
+  // 비로그인 게스트용 로그인 유도 모달
+  const { openGuestGate, GuestGateModal } = useGuestGate()
 
   // ── 설문 상태
   const [survey, setSurvey] = useState<Survey>({
@@ -129,7 +133,30 @@ export default function WeeklyAllowancePage() {
   // ── 간편계산 결과 저장
   const handleSave = async () => {
     if (!simpleResult) return
-    if (!isLoggedIn) { setSaveState('login_required'); return }
+
+    // 비로그인(게스트) 상태: localStorage에 임시 저장 후 로그인 유도 모달 표시
+    if (!isLoggedIn) {
+      const payload: WeeklyAllowancePayload = {
+        type: 'weekly_allowance',
+        hourly_wage: wage,
+        work_days_per_week: days,
+        work_hours_per_day: hours,
+        is_full_attendance: survey.allPresent ?? false,
+        weekly_allowance: simpleResult.allowance,
+        is_eligible: simpleResult.eligible,
+      }
+      // 로그인 후 자동 저장을 위해 localStorage에 임시 보관
+      storePendingSave({
+        type: 'weekly_allowance',
+        title: '주휴수당 계산 결과',
+        company_name: null,
+        payload: payload as unknown as Record<string, unknown>,
+      })
+      // GuestGate 모달 표시
+      openGuestGate('계산결과 저장')
+      return
+    }
+
     // supabase 클라이언트가 null이면 저장 불가 (환경변수 미설정 상황 대비)
     if (!supabase) { setSaveState('login_required'); return }
     setSaveState('saving')
@@ -752,6 +779,9 @@ export default function WeeklyAllowancePage() {
           )}
 
         </AnimatePresence>
+
+        {/* 비로그인 게스트 → 저장하기 클릭 시 로그인 유도 모달 */}
+        <GuestGateModal />
       </CalcContentArea>
     </CalcPageWrapper>
   )

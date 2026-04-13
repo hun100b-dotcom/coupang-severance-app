@@ -8,6 +8,9 @@ import { fmt } from '../lib/constants'
 import { supabase } from '../lib/supabase'
 import type { UnemploymentPayload } from '../types/supabase'
 import { useKakaoShare } from '../hooks/useKakaoShare'
+import { useAuth } from '../contexts/AuthContext'
+import { useGuestGate } from '../components/GuestGate'
+import { storePendingSave } from '../lib/pendingSave'
 
 interface Props {
   result: UBResult
@@ -26,8 +29,35 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
   // 카카오톡 공유 훅 초기화
   const { shareUnemployment } = useKakaoShare()
 
+  // 로그인 상태 확인 + 게스트 게이트 모달 훅
+  const { isLoggedIn } = useAuth()
+  const { openGuestGate, GuestGateModal } = useGuestGate()
+
   // ── 계산결과 저장 핸들러
   const handleSave = async () => {
+    // 비로그인(게스트) 상태: localStorage에 임시 저장 후 로그인 유도 모달 표시
+    if (!isLoggedIn) {
+      const payload: UnemploymentPayload = {
+        type: 'unemployment',
+        eligible: eligible_180,
+        insured_days: insured_days_in_18m,
+        avg_daily_wage: Math.round(avg_daily_wage),
+        daily_benefit: Math.round(daily_benefit),
+        benefit_days: days,
+        total_estimate: Math.round(total_estimate),
+      }
+      // 로그인 후 자동 저장을 위해 localStorage에 임시 보관
+      storePendingSave({
+        type: 'unemployment',
+        title: '실업급여 계산 결과',
+        company_name: company || null,
+        payload: payload as unknown as Record<string, unknown>,
+      })
+      // GuestGate 모달 표시 (기능명 전달)
+      openGuestGate('계산결과 저장')
+      return
+    }
+
     if (!supabase) { setSaveState('login_required'); return }
     setSaveState('saving')
     try {
@@ -185,6 +215,9 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
           <SecondaryButton onClick={() => navigate('/home')}>← 홈으로</SecondaryButton>
         </div>
       </div>
+
+      {/* 비로그인 게스트 → 저장하기 클릭 시 로그인 유도 모달 */}
+      <GuestGateModal />
     </div>
   )
 }

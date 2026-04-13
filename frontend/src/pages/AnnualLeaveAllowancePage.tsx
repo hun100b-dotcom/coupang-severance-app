@@ -32,6 +32,8 @@ import {
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { AnnualLeavePayload } from '../types/supabase'
+import { useGuestGate } from '../components/GuestGate'
+import { storePendingSave } from '../lib/pendingSave'
 
 function formatWon(n: number) {
   return n.toLocaleString('ko-KR') + '원'
@@ -109,6 +111,8 @@ const PURPOSES: { value: Purpose; label: string; sub: string; icon: string }[] =
 export default function AnnualLeaveAllowancePage() {
   const navigate = useNavigate()
   const { isLoggedIn } = useAuth()
+  // 비로그인 게스트용 로그인 유도 모달
+  const { openGuestGate, GuestGateModal } = useGuestGate()
 
   const [survey, setSurvey] = useState<Survey>({
     isStillWorking: null, hireDate: '', endDate: '', purpose: null, usedDays: '0', avgDailyWage: '',
@@ -238,7 +242,30 @@ export default function AnnualLeaveAllowancePage() {
   // ── 결과 저장
   const handleSave = async () => {
     if (!simpleResult) return
-    if (!isLoggedIn) { setSaveState('login_required'); return }
+
+    // 비로그인(게스트) 상태: localStorage에 임시 저장 후 로그인 유도 모달 표시
+    if (!isLoggedIn) {
+      const payload: AnnualLeavePayload = {
+        type: 'annual_leave',
+        hire_date: survey.hireDate,
+        resign_date: survey.isStillWorking === false ? survey.endDate : undefined,
+        is_employed: survey.isStillWorking ?? true,
+        used_days: Number(survey.usedDays) || 0,
+        annual_leave_days: simpleResult.totalEntitlement,
+        annual_leave_allowance: simpleResult.unpaidAllowance ?? 0,
+      }
+      // 로그인 후 자동 저장을 위해 localStorage에 임시 보관
+      storePendingSave({
+        type: 'annual_leave',
+        title: '연차수당 계산 결과',
+        company_name: null,
+        payload: payload as unknown as Record<string, unknown>,
+      })
+      // GuestGate 모달 표시
+      openGuestGate('계산결과 저장')
+      return
+    }
+
     // supabase 클라이언트가 null이면 저장 불가 (환경변수 미설정 상황 대비)
     if (!supabase) { setSaveState('login_required'); return }
     setSaveState('saving')
@@ -893,6 +920,9 @@ export default function AnnualLeaveAllowancePage() {
           )}
 
         </AnimatePresence>
+
+        {/* 비로그인 게스트 → 저장하기 클릭 시 로그인 유도 모달 */}
+        <GuestGateModal />
       </CalcContentArea>
     </CalcPageWrapper>
   )
