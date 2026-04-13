@@ -12,7 +12,7 @@
   <!-- 랜딩 메인: 최고 우선순위 SEO 진입점 (비로그인 사용자 최초 방문 페이지) -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -20,7 +20,7 @@
   <!-- 퇴직금 계산기: 쿠팡·CFS 일용직 핵심 SEO 페이지 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/severance</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -28,7 +28,7 @@
   <!-- 실업급여 계산기: 핵심 기능 페이지 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/unemployment</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -36,7 +36,7 @@
   <!-- 퇴직금 가이드: 쿠팡 일용직 퇴직금 조건·계산법 완전 정리 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/guide/severance</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -44,7 +44,7 @@
   <!-- 실업급여 가이드: 핵심 정보 페이지 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/guide/unemployment</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -52,7 +52,7 @@
   <!-- 주휴수당 계산기 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/weekly-allowance</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -60,7 +60,7 @@
   <!-- 연차수당 계산기 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/annual-leave</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -68,7 +68,7 @@
   <!-- 가이드 허브: 노동법 정보 모음 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/guide</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -76,7 +76,7 @@
   <!-- 계산기 허브: 4개 계산기 진입점 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/calculator</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -84,7 +84,7 @@
   <!-- 채용정보: 매일 새 공고 올라오므로 daily -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/jobs</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
@@ -92,7 +92,7 @@
   <!-- 주휴수당 가이드 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/guide/weekly-allowance</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -100,7 +100,7 @@
   <!-- 연차수당 가이드 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/guide/annual-leave</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -108,7 +108,7 @@
   <!-- 랜딩 페이지: B2C 랜딩 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/landing</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -116,7 +116,7 @@
   <!-- 내 혜택 조회 페이지 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/my-benefits</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -124,7 +124,7 @@
   <!-- 공지사항 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/notices</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
