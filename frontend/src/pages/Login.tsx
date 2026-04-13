@@ -25,7 +25,7 @@ function getRedirectUrl(): string {
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const { isLoggedIn, loading, needsOnboarding } = useAuth()
+  const { isLoggedIn, loading, needsOnboarding, loginAsGuest } = useAuth()
   const [loadingProvider, setLoadingProvider] = useState<Provider | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
@@ -86,15 +86,19 @@ export default function LoginPage() {
     setErrorMsg(null)
 
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      // ── 카카오: queryParams 제거 (prompt:'login' 이 일부 환경에서 무반응 유발)
+      // ── 구글: prompt:'select_account' 유지 (계정 선택 화면 강제 표시)
+      const oauthOptions: Parameters<typeof supabase.auth.signInWithOAuth>[0] = {
         provider,
         options: {
           redirectTo: getRedirectUrl(),
-          queryParams: provider === 'google'
-            ? { prompt: 'select_account' }
-            : { prompt: 'login' },
+          ...(provider === 'google' && {
+            queryParams: { prompt: 'select_account' },
+          }),
         },
-      })
+      }
+
+      const { data, error } = await supabase.auth.signInWithOAuth(oauthOptions)
 
       if (error) {
         console.error('[로그인 오류]', provider, error)
@@ -299,11 +303,25 @@ export default function LoginPage() {
           </p>
         </div>
 
+        {/* ── 비로그인으로 진행하기 버튼 ──
+            로그인 유도가 우선이므로 소셜 로그인 아래 회색 톤으로 배치 */}
+        <button
+          type="button"
+          onClick={() => {
+            loginAsGuest() // 게스트 모드 활성화 (localStorage 저장)
+            navigate('/home')
+          }}
+          className="mt-3 w-full py-3 rounded-xl text-sm text-[#8B95A1] hover:text-[#6B7684] transition-colors flex items-center justify-center gap-1.5"
+        >
+          <span>비로그인으로 진행하기</span>
+          <span className="text-[11px] text-[#B0BAC5]">(일부 기능 제한)</span>
+        </button>
+
         {/* 홈으로 돌아가기 */}
         <button
           type="button"
-          onClick={() => navigate('/home')}
-          className="mt-4 w-full text-sm text-[#8B95A1]"
+          onClick={() => navigate('/')}
+          className="mt-1 w-full text-sm text-[#8B95A1]"
         >
           &larr; 홈으로
         </button>

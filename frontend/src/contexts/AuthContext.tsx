@@ -18,6 +18,8 @@ interface AuthContextValue {
   isLoggedIn: boolean
   loading: boolean         // 세션 확인 완료 여부 (빠르게 해제)
   needsOnboarding: boolean // 온보딩 필요 여부 (비동기 확인)
+  isGuest: boolean         // 비로그인 게스트 모드 (로그인 없이 앱 사용)
+  loginAsGuest: () => void // 게스트 모드로 앱 진입
   logout: () => Promise<void>
   refreshOnboardingStatus: () => Promise<void>
 }
@@ -44,6 +46,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
+  // 비로그인 게스트 모드 상태 — localStorage에서 복원 (새로고침 후에도 유지)
+  const [isGuest, setIsGuest] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('catch_guest_mode') === 'true'
+    } catch {
+      return false
+    }
+  })
 
   // 프로필에서 온보딩 완료 여부 확인 (타임아웃 포함, 재시도 로직)
   const checkOnboarding = useCallback(async (userId: string) => {
@@ -113,6 +123,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // 게스트 모드 진입 — localStorage에 기록 후 상태 업데이트
+  const loginAsGuest = useCallback(() => {
+    try {
+      localStorage.setItem('catch_guest_mode', 'true')
+    } catch {
+      // localStorage 쓰기 실패해도 메모리 상태는 업데이트
+    }
+    setIsGuest(true)
+  }, [])
+
   const refreshOnboardingStatus = useCallback(async () => {
     if (user) {
       await checkOnboarding(user.id)
@@ -135,6 +155,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: { session } } = await client.auth.getSession()
         if (!mounted) return
         if (session?.user) {
+          // 로그인 확인 시 게스트 모드 자동 해제
+          try { localStorage.removeItem('catch_guest_mode') } catch { /* ignore */ }
+          setIsGuest(false)
           setUser(mapSupabaseUserToAppUser(session.user))
           // loading을 먼저 해제한 후 온보딩 체크 (UI 차단 방지)
           setLoading(false)
@@ -158,6 +181,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = client.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return
       if (session?.user) {
+        // 소셜 로그인 완료 시 게스트 모드 자동 해제
+        try { localStorage.removeItem('catch_guest_mode') } catch { /* ignore */ }
+        setIsGuest(false)
         setUser(mapSupabaseUserToAppUser(session.user))
         if (loading) setLoading(false) // 아직 로딩 중이면 해제
         checkOnboarding(session.user.id)
@@ -175,6 +201,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [checkOnboarding])
 
   const logout = useCallback(async () => {
+    // 로그아웃 시 게스트 모드도 초기화
+    try { localStorage.removeItem('catch_guest_mode') } catch { /* ignore */ }
+    setIsGuest(false)
+
     if (!supabase) {
       setUser(null)
       setNeedsOnboarding(false)
@@ -193,6 +223,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoggedIn: !!user,
     loading,
     needsOnboarding,
+    isGuest,
+    loginAsGuest,
     logout,
     refreshOnboardingStatus,
   }

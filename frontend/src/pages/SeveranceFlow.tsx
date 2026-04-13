@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageMeta from '../components/PageMeta'
+import { useGuestGate } from '../components/GuestGate'
+import { useAuth } from '../contexts/AuthContext'
 
 // ── 퇴직금 계산기 — SoftwareApplication JSON-LD ──
 const SOFTWARE_SCHEMA = {
@@ -125,6 +127,10 @@ export default function SeveranceFlow() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+
+  // 로그인 여부 확인 + 비로그인 시 게이트 모달 제어
+  const { isLoggedIn } = useAuth()
+  const { openGuestGate, GuestGateModal } = useGuestGate()
 
   // 정밀계산 입력값
   const [endDate, setEndDate] = useState('')
@@ -275,6 +281,9 @@ export default function SeveranceFlow() {
         jsonLd={[SOFTWARE_SCHEMA, FAQ_SCHEMA, HOWTO_SCHEMA]}
       />
 
+      {/* 비로그인 게스트가 PDF 정밀 계산 시도 시 로그인 유도 모달 */}
+      <GuestGateModal />
+
       {/* PDF 분석 중 또는 계산 중 전체 화면 오버레이 — 배경 터치 차단 */}
       {(loading || extractLoading) && (
         <LoadingOverlay message={extractLoading ? "PDF를 분석하고 있어요.." : "퇴직금을 계산하고 있어요.."} />
@@ -397,7 +406,15 @@ export default function SeveranceFlow() {
                   <CalcModeSelector
                     accentColor="blue"
                     onSimple={() => { setS(p => ({ ...p, calcMode: 'simple' })); go(4) }}
-                    onPdf={() => { setS(p => ({ ...p, calcMode: 'precise' })); go(4) }}
+                    onPdf={() => {
+                      // 비로그인 게스트는 PDF 정밀 계산 차단 → 게이트 모달 표시
+                      if (!isLoggedIn) {
+                        openGuestGate('PDF 정밀 계산')
+                        return
+                      }
+                      setS(p => ({ ...p, calcMode: 'precise' }))
+                      go(4)
+                    }}
                     simpleLabel="쉬운 계산"
                     simpleDesc="근무일수·평균임금 직접 입력"
                     pdfLabel="정밀 계산"
