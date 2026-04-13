@@ -12,6 +12,9 @@ import {
 import { fmt } from '../lib/constants'
 import { supabase } from '../lib/supabase'
 import { useKakaoShare } from '../hooks/useKakaoShare'
+import { useAuth } from '../contexts/AuthContext'
+import { useGuestGate } from '../components/GuestGate'
+import { storePendingSave } from '../lib/pendingSave'
 
 interface Props {
   result: SeverancePreciseResult | SeveranceSimpleResult
@@ -466,6 +469,10 @@ export default function ResultSeverance({ result, resultType, company, onReset }
   // 카카오톡 공유 훅 초기화
   const { shareSeverance } = useKakaoShare()
 
+  // 로그인 상태 확인 + 게스트 게이트 모달 훅
+  const { isLoggedIn } = useAuth()
+  const { openGuestGate, GuestGateModal } = useGuestGate()
+
   const precise      = isPrecise(result)
   const severance    = result.severance
   const workDays     = result.work_days
@@ -690,24 +697,39 @@ export default function ResultSeverance({ result, resultType, company, onReset }
                 type="button"
                 disabled={saveState === 'saving'}
                 onClick={async () => {
+                  // 퇴직금 계산 결과 payload 구성
+                  const companyName = company || '계산 결과'
+                  const title = `${companyName} 퇴직금 계산 결과`
+                  const payload = {
+                    severance: result.severance,
+                    work_days: result.work_days,
+                    average_wage: result.average_wage,
+                    eligible: result.eligible ?? true,
+                    eligibility_message: result.eligibility_message ?? '',
+                    qualifying_days: precise ? (result as any).qualifying_days ?? result.work_days : result.work_days,
+                  }
+
+                  // 비로그인(게스트) 상태: localStorage에 임시 저장 후 로그인 유도
+                  if (!isLoggedIn) {
+                    storePendingSave({
+                      type: 'severance',
+                      title,
+                      company_name: companyName,
+                      payload,
+                    })
+                    openGuestGate('계산결과 저장')
+                    return
+                  }
+
                   if (!supabase) { setSaveState('login_required'); return }
                   setSaveState('saving')
                   const { data: { user } } = await supabase.auth.getUser()
                   if (!user) { setSaveState('login_required'); return }
-                  const companyName = company || '계산 결과'
-                  const title = `${companyName} 정밀계산 ${new Date().toLocaleDateString('ko-KR')}`
                   const { error } = await supabase.from('reports').insert({
                     user_id: user.id,
                     title,
                     company_name: companyName,
-                    payload: {
-                      severance: result.severance,
-                      work_days: result.work_days,
-                      average_wage: result.average_wage,
-                      eligible: result.eligible ?? true,
-                      eligibility_message: result.eligibility_message ?? '',
-                      qualifying_days: precise ? (result as any).qualifying_days ?? result.work_days : result.work_days,
-                    },
+                    payload,
                   })
                   setSaveState(error ? 'error' : 'saved')
                 }}
@@ -750,6 +772,9 @@ export default function ResultSeverance({ result, resultType, company, onReset }
           <PrimaryButton onClick={onReset}>다시 계산하기</PrimaryButton>
           <SecondaryButton onClick={() => navigate('/home')}>← 홈으로</SecondaryButton>
         </div>
+
+        {/* 비로그인 게스트 → 저장하기 클릭 시 로그인 유도 모달 */}
+        <GuestGateModal />
       </div>
     </div>
   )

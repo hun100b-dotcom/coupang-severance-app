@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { executePendingSave } from '../../lib/pendingSave'
 
 type Status = '처리 중...' | '로그인 완료, 이동 중...' | '로그인에 실패했어요' | '추가 정보 입력 페이지로 이동 중...'
 
@@ -73,6 +74,10 @@ export default function AuthCallbackPage() {
 
       // 마케팅 동의 저장 (실패해도 리다이렉트 흐름 계속)
       await saveMarketingAgreed(userId)
+
+      // 게스트가 임시 저장한 계산 결과를 Supabase에 자동 저장
+      // 실패해도 리다이렉트 흐름에 영향 없음
+      await executePendingSave(userId)
 
       // await 이후 취소 여부 재확인 (비동기 중 cleanup이 실행될 수 있음)
       if (cancelled || doneRef.current) return
