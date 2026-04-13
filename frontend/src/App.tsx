@@ -58,9 +58,9 @@ const AnnualLeaveGuide       = lazy(() => import('./pages/guide/AnnualLeaveGuide
 
 
 
-// /home 경로 가드: 비로그인 사용자는 랜딩(/)으로, 로그인 사용자는 Home으로
+// /home 경로 가드: 비로그인 + 비게스트 사용자는 랜딩(/)으로, 로그인 또는 게스트는 Home으로
 function HomeGuard() {
-  const { isLoggedIn, loading } = useAuth()
+  const { isLoggedIn, loading, isGuest } = useAuth()
   // 세션 확인 중이면 스피너 표시 (깜빡임 방지)
   if (loading) {
     return (
@@ -69,9 +69,9 @@ function HomeGuard() {
       </div>
     )
   }
-  // 비로그인 → 랜딩 페이지로
-  if (!isLoggedIn) return <Navigate to="/" replace />
-  // 로그인 → Home 컴포넌트 렌더링
+  // 비로그인이면서 게스트 모드도 아닌 경우 → 랜딩 페이지로
+  if (!isLoggedIn && !isGuest) return <Navigate to="/" replace />
+  // 로그인 또는 게스트 모드 → Home 컴포넌트 렌더링
   return <Home />
 }
 
