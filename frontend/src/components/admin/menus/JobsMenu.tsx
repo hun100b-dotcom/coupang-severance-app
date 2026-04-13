@@ -263,6 +263,28 @@ export default function JobsMenu() {
     setPageMode('edit')
   }
 
+  // ── 연락처 형식 검증 (빈 값 허용, 입력 시 전화번호 패턴 확인) ──
+  const isValidPhone = (phone: string) => {
+    if (!phone.trim()) return true // 빈 값은 허용
+    // 010-xxxx-xxxx, 01012345678, 02-123-4567 등 숫자+하이픈 패턴
+    return /^[\d]{2,4}-?[\d]{3,4}-?[\d]{4}$/.test(phone.trim())
+  }
+
+  // ── 외부 링크 형식 검증 (빈 값 허용, 입력 시 http/https URL 확인) ──
+  const isValidUrl = (url: string) => {
+    if (!url.trim()) return true // 빈 값은 허용
+    return /^https?:\/\/.+/.test(url.trim())
+  }
+
+  // ── 과거 날짜 여부 확인 (오늘 기준) ──
+  const isPastDate = (dateStr: string) => {
+    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const target = new Date(dateStr + 'T00:00:00')
+    return target < today
+  }
+
   // 저장 (생성 또는 수정)
   const handleSave = async (asDraft = false) => {
     if (!supabase || !form.company_name.trim() || !form.region.trim()) return
@@ -280,6 +302,51 @@ export default function JobsMenu() {
     if (!isValidDate(form.expires_at)) {
       setJobError('공고 마감일 형식이 올바르지 않습니다. 숫자 8자리로 입력하세요. 예: 20260531')
       return
+    }
+
+    // ── 발행 시에만 적용되는 추가 검증 (draft 저장은 건너뜀) ──
+    if (!asDraft) {
+      // 시급 또는 일급 중 하나는 0보다 커야 함
+      if (form.hourly_wage <= 0 && form.daily_wage <= 0) {
+        setJobError('시급 또는 일급 중 하나는 0보다 큰 값을 입력해야 합니다.')
+        return
+      }
+      // 모집인원 1명 이상 필수
+      if (form.headcount <= 0) {
+        setJobError('모집인원은 1명 이상이어야 합니다.')
+        return
+      }
+      // 업무 옵션 최소 1개 필수
+      if (form.task_options.length === 0) {
+        setJobError('지원자 선택 업무를 최소 1개 이상 입력해주세요.')
+        return
+      }
+      // 마감일 과거 날짜 차단 (수정 모드에서 기존 값과 동일하면 허용)
+      if (form.expires_at && isPastDate(form.expires_at)) {
+        const isUnchanged = editTarget && editTarget.expires_at === form.expires_at
+        if (!isUnchanged) {
+          setJobError('공고 마감일은 오늘 이후 날짜만 입력할 수 있습니다.')
+          return
+        }
+      }
+      // 근무 예정일 과거 날짜 차단 (수정 모드에서 기존 값과 동일하면 허용)
+      if (form.work_date && isPastDate(form.work_date)) {
+        const isUnchanged = editTarget && editTarget.work_date === form.work_date
+        if (!isUnchanged) {
+          setJobError('근무 예정일은 오늘 이후 날짜만 입력할 수 있습니다.')
+          return
+        }
+      }
+      // 연락처 형식 검증
+      if (!isValidPhone(form.contact_phone)) {
+        setJobError('연락처 형식이 올바르지 않습니다. 예: 010-1234-5678 또는 01012345678')
+        return
+      }
+      // 외부 링크 형식 검증
+      if (!isValidUrl(form.external_link)) {
+        setJobError('외부 링크는 http:// 또는 https://로 시작하는 URL이어야 합니다.')
+        return
+      }
     }
 
     setSaving(true)
@@ -665,7 +732,8 @@ export default function JobsMenu() {
                       pattern="[0-9,]*"
                       value={form.hourly_wage ? form.hourly_wage.toLocaleString('ko-KR') : ''}
                       onChange={e => {
-                        const num = parseInt(e.target.value.replace(/,/g, '')) || 0
+                        // 음수 입력 차단: Math.max(0, num)
+                        const num = Math.max(0, parseInt(e.target.value.replace(/,/g, '')) || 0)
                         setForm(f => ({ ...f, hourly_wage: num }))
                       }}
                       placeholder="예: 12,000"
@@ -680,7 +748,8 @@ export default function JobsMenu() {
                       pattern="[0-9,]*"
                       value={form.daily_wage ? form.daily_wage.toLocaleString('ko-KR') : ''}
                       onChange={e => {
-                        const num = parseInt(e.target.value.replace(/,/g, '')) || 0
+                        // 음수 입력 차단: Math.max(0, num)
+                        const num = Math.max(0, parseInt(e.target.value.replace(/,/g, '')) || 0)
                         setForm(f => ({ ...f, daily_wage: num }))
                       }}
                       placeholder="예: 130,000"
@@ -696,7 +765,8 @@ export default function JobsMenu() {
                       inputMode="numeric"
                       value={form.headcount || ''}
                       onChange={e => {
-                        const num = parseInt(e.target.value.replace(/\D/g, '')) || 0
+                        // 음수 입력 차단: Math.max(0, num)
+                        const num = Math.max(0, parseInt(e.target.value.replace(/\D/g, '')) || 0)
                         setForm(f => ({ ...f, headcount: num }))
                       }}
                       placeholder="예: 10"
@@ -1082,7 +1152,31 @@ export default function JobsMenu() {
               {/* 다음 / 발행 */}
               {formStep < 5 ? (
                 <button
-                  onClick={() => setFormStep(s => s + 1)}
+                  onClick={() => {
+                    // ── 스텝별 "다음" 버튼 검증 (스텝 인디케이터 클릭은 자유 이동 유지) ──
+                    // Step 1: 회사명 + 지역 필수
+                    if (formStep === 1 && (!form.company_name.trim() || !form.region.trim())) return
+                    // Step 2: 시급 또는 일급 > 0 필수
+                    if (formStep === 2 && form.hourly_wage <= 0 && form.daily_wage <= 0) {
+                      setJobError('시급 또는 일급 중 하나는 0보다 큰 값을 입력해야 합니다.')
+                      return
+                    }
+                    // Step 3: task_options 없으면 경고만 (차단하지 않음)
+                    if (formStep === 3 && form.task_options.length === 0) {
+                      setAdminToast({ msg: '⚠️ 업무 옵션이 비어있습니다. 발행 시 필수이니 나중에 추가해주세요.', type: 'error' })
+                    }
+                    // Step 4: 섹션 선택 + 마감일 필수
+                    if (formStep === 4 && !form.section) {
+                      setJobError('섹션을 선택해주세요.')
+                      return
+                    }
+                    if (formStep === 4 && !form.expires_at) {
+                      setJobError('공고 마감일을 입력해주세요.')
+                      return
+                    }
+                    setJobError(null)
+                    setFormStep(s => s + 1)
+                  }}
                   disabled={formStep === 1 && (!form.company_name.trim() || !form.region.trim())}
                   style={{
                     padding: '10px 28px', borderRadius: 10, border: 'none',

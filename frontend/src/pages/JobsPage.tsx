@@ -2,7 +2,7 @@
 // 히어로 로테이션 문구 + 섹션 분류 + 공식 로고 + 즐겨찾기 + 프레임카드 상세(지도 포함)
 // + 지원하기 버튼: 로그인 게이트 → 인적사항 폼 모달 → job_applications INSERT (D-NEW-5)
 import { useEffect, useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import PageMeta from '../components/PageMeta'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -15,6 +15,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { listFavorites, addFavorite, removeFavorite, isFavorited } from '../lib/jobFavorites'
 import { applyToJob, getAppliedJobIds, checkConfirmedOnDate } from '../lib/jobApplications'
+import { getCompanyLogoUrl } from '../lib/jobUtils'
 import type { JobPosting } from '../types/supabase'
 import type { JobFavorite } from '../types/supabase'
 import KakaoShareButton from '../components/KakaoShareButton'
@@ -48,18 +49,7 @@ const HERO_COPIES = [
   { text: '매일 새로 올라오는 채용 공고를 놓치지 마세요', color: 'text-violet-200' },
 ]
 
-// ── 회사명 → 로고 URL 매핑 ──
-// DB에 logo_url 컬럼이 없으므로 company_name으로 로컬 에셋을 찾음
-const COMPANY_LOGOS: Record<string, string> = {
-  '쿠팡': '/logos/coupang.svg',
-  '쿠팡풀필먼트서비스': '/logos/coupang.svg',
-  'CJ대한통운': '/logos/cj.svg',
-  'CJ': '/logos/cj.svg',
-  '컬리': '/logos/kurly.png',
-  '마켓컬리': '/logos/kurly.png',
-  'GS리테일': '/logos/gs.svg',
-  '롯데': '/logos/lotte.svg',
-}
+// 회사 로고 매핑은 lib/jobUtils.ts 에서 공유 (COMPANY_LOGOS, getCompanyLogoUrl)
 
 // ── DB JobPosting → UI JobCardData 변환 함수 ──
 // job_postings 테이블의 section + benefits 컬럼(20260410 추가)을 UI에 반영합니다.
@@ -77,8 +67,7 @@ function toCardData(job: JobPosting): JobCardData {
   }
 
   // 로고: 회사명에 키워드가 포함되면 해당 로고, 없으면 기본 아이콘
-  const logoKey = Object.keys(COMPANY_LOGOS).find(k => job.company_name.includes(k))
-  const logo_url = logoKey ? COMPANY_LOGOS[logoKey] : '/logos/default.svg'
+  const logo_url = getCompanyLogoUrl(job.company_name)
 
   // 복리후생: DB의 benefits 배열 사용 (20260410 추가). 없으면 빈 배열
   const benefits: string[] = Array.isArray(job.benefits) ? job.benefits : []
@@ -166,6 +155,9 @@ export default function JobsPage() {
   const [pendingApplyJobId, setPendingApplyJobId] = useState<string | null>(null)
   const [isApplySubmitting, setIsApplySubmitting] = useState(false)
 
+  // ── URL 쿼리파라미터: Home 프리뷰에서 ?focus=<jobId>로 진입 시 해당 공고 자동 오픈 ──
+  const [searchParams, setSearchParams] = useSearchParams()
+
   // 히어로 문구 로테이션
   useEffect(() => {
     const timer = setInterval(() => setHeroCopyIdx(i => (i + 1) % HERO_COPIES.length), 3000)
@@ -222,6 +214,19 @@ export default function JobsPage() {
 
     return () => { sb.removeChannel(channel) }
   }, [])
+
+  // ── Home 프리뷰에서 ?focus=<jobId>로 진입 시 해당 공고 상세 자동 오픈 ──
+  useEffect(() => {
+    const focusId = searchParams.get('focus')
+    if (!focusId || loading || allJobs.length === 0) return
+    const target = allJobs.find(j => j.id === focusId)
+    if (target) {
+      setSelectedJob(target)
+      // focus 파라미터 제거 (뒤로가기 시 다시 열리지 않도록)
+      searchParams.delete('focus')
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, [loading, allJobs, searchParams, setSearchParams])
 
   // 즐겨찾기 + 지원 현황 동시 로드
   useEffect(() => {

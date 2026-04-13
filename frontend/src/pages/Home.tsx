@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift, MapPin, Briefcase, BookOpen } from 'lucide-react'
 import PageMeta from '../components/PageMeta'
 import { api, registerClick } from '../lib/api'
+import { getCompanyLogoUrl } from '../lib/jobUtils'
 import type { JobPosting } from '../types/supabase'
 import { INTRO_COPIES } from '../lib/constants'
 import { useAuth } from '../contexts/AuthContext'
@@ -104,10 +105,13 @@ export default function Home() {
     setJobsLoading(true)
     setJobsError(false)
     try {
+      // 오늘 날짜 (KST 기준) — 만료된 공고 자동 제외
+      const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })
       const { data, error } = await supabase
         .from('job_postings')
         .select('*')
         .eq('status', 'active')
+        .or(`expires_at.gte.${todayStr},expires_at.is.null`)  // 마감일 지난 공고 제외
         .order('is_urgent', { ascending: false })  // 급구 공고 우선
         .order('created_at', { ascending: false })
         .limit(3)
@@ -476,48 +480,103 @@ export default function Home() {
             {/* 공고 카드 목록 */}
             {!jobsLoading && !jobsError && (
               <div className="flex flex-col gap-2">
-                {recentJobs.map(job => (
-                  <button key={job.id} onClick={() => navigate('/jobs')}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-white/60 border border-white/40
-                      hover:bg-white/80 active:scale-[0.98] transition-all text-left">
-                    <div className="flex-1 min-w-0">
-                      {/* 회사명 + 급구 뱃지 */}
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[14px] font-bold text-[#191f28] truncate">{job.company_name}</span>
-                        {job.is_urgent && (
-                          <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold shrink-0">급구</span>
+                {recentJobs.map(job => {
+                  // ── 섹션 기반 뱃지 결정 (section 컬럼 우선, is_urgent 폴백) ──
+                  const sectionBadge = job.section === 'today-urgent'
+                    ? { text: '오늘긴급', bg: 'bg-red-100', color: 'text-red-600' }
+                    : job.section === 'tomorrow-urgent'
+                      ? { text: '내일긴급', bg: 'bg-orange-100', color: 'text-orange-600' }
+                      : job.is_urgent
+                        ? { text: '급구', bg: 'bg-red-100', color: 'text-red-600' }
+                        : null
+
+                  // ── 혜택 뱃지 (최대 2개) ──
+                  const benefits: string[] = Array.isArray(job.benefits) ? job.benefits.slice(0, 2) : []
+
+                  // ── D-day 계산 (마감일까지 남은 일수) ──
+                  let dDay: string | null = null
+                  if (job.expires_at) {
+                    const today = new Date()
+                    today.setHours(0, 0, 0, 0)
+                    const exp = new Date(job.expires_at)
+                    exp.setHours(0, 0, 0, 0)
+                    const diff = Math.ceil((exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+                    if (diff === 0) dDay = 'D-Day'
+                    else if (diff > 0) dDay = `D-${diff}`
+                  }
+
+                  // ── 회사 로고 URL ──
+                  const logoUrl = getCompanyLogoUrl(job.company_name)
+
+                  return (
+                    <button key={job.id} onClick={() => navigate(`/jobs?focus=${job.id}`)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-white/60 border border-white/40
+                        hover:bg-white/80 active:scale-[0.98] transition-all text-left">
+                      {/* 회사 로고 (없으면 첫 글자 아바타) */}
+                      <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                        {logoUrl !== '/logos/default.svg' ? (
+                          <img src={logoUrl} alt={job.company_name} className="w-6 h-6 object-contain" />
+                        ) : (
+                          <span className="text-[14px] font-bold text-[#8b95a1]">{job.company_name.charAt(0)}</span>
                         )}
                       </div>
-                      {/* 센터명 */}
-                      {job.center_name && (
-                        <p className="text-[11px] text-[#8b95a1] truncate">{job.center_name}</p>
-                      )}
-                      {/* 지역 + 근무시간 */}
-                      <div className="flex items-center gap-2 mt-0.5 text-[12px] text-[#8b95a1]">
-                        <span className="flex items-center gap-0.5"><MapPin className="w-3 h-3" />{job.region}</span>
-                        {job.work_hours && <span>{job.work_hours}</span>}
+                      <div className="flex-1 min-w-0">
+                        {/* 회사명 + 섹션 뱃지 */}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[14px] font-bold text-[#191f28] truncate">{job.company_name}</span>
+                          {sectionBadge && (
+                            <span className={`px-1.5 py-0.5 rounded-full ${sectionBadge.bg} ${sectionBadge.color} text-[10px] font-bold shrink-0`}>
+                              {sectionBadge.text}
+                            </span>
+                          )}
+                          {/* D-day 표시 */}
+                          {dDay && (
+                            <span className="px-1.5 py-0.5 rounded-full bg-gray-100 text-[#4e5968] text-[10px] font-bold shrink-0">
+                              {dDay}
+                            </span>
+                          )}
+                        </div>
+                        {/* 센터명 */}
+                        {job.center_name && (
+                          <p className="text-[11px] text-[#8b95a1] truncate">{job.center_name}</p>
+                        )}
+                        {/* 지역 + 근무시간 */}
+                        <div className="flex items-center gap-2 mt-0.5 text-[12px] text-[#8b95a1]">
+                          <span className="flex items-center gap-0.5"><MapPin className="w-3 h-3" />{job.region}</span>
+                          {job.work_hours && <span>{job.work_hours}</span>}
+                        </div>
+                        {/* 혜택 뱃지 (최대 2개, 작은 칩) */}
+                        {benefits.length > 0 && (
+                          <div className="flex items-center gap-1 mt-1">
+                            {benefits.map(b => (
+                              <span key={b} className="px-1.5 py-0.5 rounded-md bg-blue-50 text-[#3182f6] text-[10px] font-medium">
+                                {b}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    {/* 일급이 있으면 일급 표시, 없으면 시급 표시 */}
-                    <div className="text-right shrink-0">
-                      {job.daily_wage > 0 ? (
-                        <>
-                          <p className="text-[10px] text-[#8b95a1] leading-tight">일급</p>
-                          <p className="text-[15px] font-black text-[#3182f6] leading-tight">
-                            {job.daily_wage.toLocaleString('ko-KR')}원
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-[10px] text-[#8b95a1] leading-tight">시급</p>
-                          <p className="text-[15px] font-black text-[#3182f6] leading-tight">
-                            {job.hourly_wage.toLocaleString('ko-KR')}원
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </button>
-                ))}
+                      {/* 일급이 있으면 일급 표시, 없으면 시급 표시 */}
+                      <div className="text-right shrink-0">
+                        {job.daily_wage > 0 ? (
+                          <>
+                            <p className="text-[10px] text-[#8b95a1] leading-tight">일급</p>
+                            <p className="text-[15px] font-black text-[#3182f6] leading-tight">
+                              {job.daily_wage.toLocaleString('ko-KR')}원
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-[10px] text-[#8b95a1] leading-tight">시급</p>
+                            <p className="text-[15px] font-black text-[#3182f6] leading-tight">
+                              {job.hourly_wage.toLocaleString('ko-KR')}원
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             )}
           </motion.div>
