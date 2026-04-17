@@ -1314,18 +1314,21 @@ export default function LandingV1() {
             viewport={{ once: true, amount: 0.12 }}
           >
             {[
-              // 실제 고용노동부 2023 통계로 교체 (허수 '800만+' 제거)
-              { num: '28만 3천', label: '임금체불 피해자\n(고용노동부 2023)', barWidth: '82%' },
-              // STATS: "수당 계산기" → "서비스 범위"로 변경 (WHY 섹션의 "4개 계산 서비스"와 중복 회피)
+              // STATS 4항목: 모두 CATCH 앱 고유 수치 (외부 통계 제거 → 앱 특성 기반으로 통일)
+              // ① 퇴직금 소멸시효 — 많은 근로자가 모르는 법적 사실, 앱의 핵심 존재 이유
+              { num: '3년', label: '퇴직금 소멸시효\n(법정 청구 가능 기간)', barWidth: '60%' },
+              // ② 서비스 범위 — 4가지 계산기 (WHY 섹션과 역할 분리: WHY=감성, STATS=수치)
               { num: '4가지', label: '서비스 범위\n(퇴직·실업·주휴·연차)', barWidth: '100%' },
-              { num: '28일', label: '블록 알고리즘\n(법정 기준 정밀계산)', barWidth: '75%' },
-              { num: '100%', label: '무료 서비스\n(광고·유료 없음)', barWidth: '100%' },
+              // ③ 28일 블록 — 법정 알고리즘 단위
+              { num: '28일', label: '역산 블록 단위\n(법정 기준 정밀계산)', barWidth: '75%' },
+              // ④ 완전 무료 — 진입장벽 없음
+              { num: '100%', label: '완전 무료\n(광고·숨겨진 비용 없음)', barWidth: '100%' },
             ].map((item) => (
               <motion.div key={item.num} variants={staggerItemUp}>
                 <div className="text-center">
-                  {/* 큰 숫자 — 모바일에서 clamp 최솟값 축소, whitespace-nowrap 제거로 줄바꿈 허용 */}
+                  {/* 큰 숫자 — whitespace-nowrap으로 줄바뀜 차단 (4항목 높이 통일) */}
                   <div
-                    className="font-black text-white mb-2"
+                    className="font-black text-white mb-2 whitespace-nowrap"
                     style={{ fontSize: 'clamp(1.4rem, 4.5vw, 4rem)', letterSpacing: '-1px' }}
                   >
                     {item.num}
