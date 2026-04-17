@@ -1279,95 +1279,17 @@ export default function LandingV1() {
             </div>
           </Reveal>
 
-          {/* SectionBridge: SCHEDULE → STATS (다크 배경용) */}
+          {/* SectionBridge: SCHEDULE → CTA (STATS 섹션 제거로 직결) */}
           <SectionBridge
-            text="숫자로 보는 CATCH"
-            subText="실적 데이터"
-            targetId="stats"
+            text="무료로 지금 시작하세요"
+            subText="준비 되셨나요?"
+            targetId="cta"
             isDark={false}
             scrollTo={scrollTo}
           />
         </div>
       </section>
 
-      {/* ⑦ STATS — 업그레이드: progress bar + 더 큰 숫자 ─────────────────────── */}
-      <section
-        id="stats"
-        className="relative z-[1] overflow-hidden"
-        style={{
-          padding: '100px 0',
-          background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-        }}
-      >
-        <div
-          className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 60% 80% at 50% 50%, rgba(255,255,255,0.08) 0%, transparent 70%)' }}
-        />
-        {/* STATS 섹션 콘텐츠 — 모바일 px-4, 데스크탑 px-6 */}
-        <div className="relative z-[1] max-w-[1100px] mx-auto px-4 sm:px-6">
-          {/* 모바일 gap-6, 데스크탑 gap-10 */}
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10"
-            variants={staggerContainerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.12 }}
-          >
-            {[
-              // STATS 4항목: 모두 CATCH 앱 고유 수치 (외부 통계 제거 → 앱 특성 기반으로 통일)
-              // ① 퇴직금 소멸시효 — 많은 근로자가 모르는 법적 사실, 앱의 핵심 존재 이유
-              { num: '3년', label: '퇴직금 소멸시효\n(법정 청구 가능 기간)', barWidth: '60%' },
-              // ② 서비스 범위 — 4가지 계산기 (WHY 섹션과 역할 분리: WHY=감성, STATS=수치)
-              { num: '4가지', label: '서비스 범위\n(퇴직·실업·주휴·연차)', barWidth: '100%' },
-              // ③ 28일 블록 — 법정 알고리즘 단위
-              { num: '28일', label: '역산 블록 단위\n(법정 기준 정밀계산)', barWidth: '75%' },
-              // ④ 완전 무료 — 진입장벽 없음
-              { num: '100%', label: '완전 무료\n(광고·숨겨진 비용 없음)', barWidth: '100%' },
-            ].map((item) => (
-              <motion.div key={item.num} variants={staggerItemUp}>
-                <div className="text-center">
-                  {/* 큰 숫자 — whitespace-nowrap으로 줄바뀜 차단 (4항목 높이 통일) */}
-                  <div
-                    className="font-black text-white mb-2 whitespace-nowrap"
-                    style={{ fontSize: 'clamp(1.4rem, 4.5vw, 4rem)', letterSpacing: '-1px' }}
-                  >
-                    {item.num}
-                  </div>
-                  <div className="text-[14px] leading-[1.5] whitespace-pre-line mb-4" style={{ color: 'rgba(255,255,255,0.75)' }}>
-                    {item.label}
-                  </div>
-                  {/* progress bar */}
-                  <div
-                    style={{
-                      height: 4,
-                      background: 'rgba(255,255,255,0.3)',
-                      borderRadius: 2,
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: '100%',
-                        background: 'white',
-                        borderRadius: 2,
-                        width: item.barWidth,
-                      }}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* SectionBridge: STATS → CTA (다크 배경용) */}
-          <SectionBridge
-            text="무료로 지금 시작하세요"
-            subText="준비 되셨나요?"
-            targetId="cta"
-            isDark={true}
-            scrollTo={scrollTo}
-          />
-        </div>
-      </section>
 
       {/* ⑦ CTA — 업그레이드: 헤드라인 + 서브 + 버튼 + 안심 문구 ─────────────── */}
       <section
