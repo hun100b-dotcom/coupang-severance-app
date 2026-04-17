@@ -27,6 +27,13 @@ description: "reviewer 에이전트가 참조하는 TIER별 검증 항목 체크
 - 3개월(90일) 세그먼트 분리 로직 변경 여부
 - 위 항목 중 하나라도 변경 → ❌ FAIL (CLAUDE.md 금지 규칙)
 
+### T1-5. 모바일 기본 반응형 (375px)
+# TIER 2 Playwright 테스트 전에 코드 수준에서 먼저 잡아내기 위해 TIER 1에도 포함
+- git diff로 변경된 컴포넌트의 Tailwind 클래스 확인
+- 텍스트 오버플로우 처리 누락 확인: `truncate`, `overflow-hidden`, `break-words` 등 없으면 ⚠️
+- `whitespace-nowrap` + 고정 너비 조합 → 375px에서 넘침 위험 → ❌
+- 한국어 긴 단어(`퇴직금`, `실업급여`, `주휴수당` 등) 포함 텍스트에 `word-break` 처리 여부 확인
+
 ---
 
 ## TIER 2 (중대 변경: TIER 1 전체 + 아래 추가)

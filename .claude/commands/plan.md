@@ -1,3 +1,8 @@
+---
+# 기획 작업은 Sonnet으로 충분 (빠른 분석 + 구조화)
+model: sonnet
+---
+
 # Plan — 기능 기획서 작성
 
 $ARGUMENTS 에 구현할 기능을 설명하세요.
