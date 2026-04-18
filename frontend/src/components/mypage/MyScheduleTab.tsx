@@ -11,7 +11,7 @@ import {
   MonthStats,
   ViewSwitcher,
   ListView,
-  WeekViewPlaceholder,
+  WeekView,
 } from './schedule'
 import type { ViewKey } from './schedule'
 
@@ -57,7 +57,7 @@ export default function MyScheduleTab({ userId }: Props) {
           onNextMonth={nextMonth}
         />
       )}
-      {view === 'week' && <WeekViewPlaceholder />}
+      {view === 'week' && <WeekView applications={applications} />}
       {view === 'list' && <ListView applications={applications} />}
 
       {/* 이번 달 통계 (모든 뷰 공통 하단) */}

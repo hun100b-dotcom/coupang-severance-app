@@ -2,13 +2,14 @@
 // MyScheduleTab에서 한 줄로 import 하기 위한 re-export
 export { useScheduleData } from './hooks/useScheduleData'
 export { useMonthNavigation } from './hooks/useMonthNavigation'
+export { useWeekNavigation } from './hooks/useWeekNavigation'
 export { default as TotalStatsStrip } from './stats/TotalStatsStrip'
 export { default as MonthStats } from './stats/MonthStats'
 export { default as MonthCell } from './cells/MonthCell'
 export { default as MonthView } from './views/MonthView'
 
-// 뷰 스위처 + 뷰별 컴포넌트 (Phase 1 step 2 추가)
+// 뷰 스위처 + 뷰별 컴포넌트 (Phase 1 step 2~3)
 export { default as ViewSwitcher } from './ViewSwitcher'
 export type { ViewKey } from './ViewSwitcher'
 export { default as ListView } from './views/ListView'
-export { default as WeekViewPlaceholder } from './views/WeekViewPlaceholder'
+export { default as WeekView } from './views/WeekView'
