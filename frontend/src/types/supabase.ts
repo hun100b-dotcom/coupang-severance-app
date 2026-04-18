@@ -115,6 +115,8 @@ export interface JobPosting {
   work_date: string | null
   expires_at: string | null
   status: 'active' | 'draft' | 'expired' | 'deleted'
+  // 조회수 — 2026-04-18 DB 컬럼 추가 (DEFAULT 0)
+  view_count?: number
   created_by: string | null
   created_at: string
   updated_at: string
@@ -136,8 +138,9 @@ export interface JobApplication {
   id: string
   user_id: string
   job_posting_id: string
-  // 지원 상태: applied(지원완료) | confirmed(출근확정) | completed(출근완료) | cancelled(취소) | rejected(거절)
-  status: 'applied' | 'confirmed' | 'completed' | 'cancelled' | 'rejected'
+  // 지원 상태: applied(지원완료) | reviewing(검토중) | confirmed(출근확정) | completed(출근완료) | cancelled(취소) | rejected(거절)
+  // reviewing 은 2026-04-18 DB CHECK 제약에 추가됨
+  status: 'applied' | 'reviewing' | 'confirmed' | 'completed' | 'cancelled' | 'rejected'
   applied_at: string
   work_date: string | null          // 출근 예정일 (YYYY-MM-DD)
   work_confirmed_at: string | null  // 출근 확정 시각

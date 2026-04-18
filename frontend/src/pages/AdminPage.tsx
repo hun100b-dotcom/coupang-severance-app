@@ -1,4 +1,4 @@
-// Admin OS — 전문 관리자 대시보드
+// Admin OS — 전문 관리자 대시보드 (아코디언 사이드바 + 확장 라우팅)
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
@@ -14,43 +14,66 @@ import AuditLogsMenu from '../components/admin/menus/AuditLogsMenu'
 import NoticesMenu from '../components/admin/menus/NoticesMenu'
 import MembersMenu from '../components/admin/menus/MembersMenu'
 import AccountsMenu from '../components/admin/menus/AccountsMenu'
-import JobsMenu from '../components/admin/menus/JobsMenu'
-
-// target은 대시보드 [타겟 분석] 서브탭으로 통합되어 제거됨
-const ALL_MENUS: { key: AdminMenu; icon: string; label: string }[] = [
-  { key: 'dashboard',  icon: '🏠', label: 'Dashboard'   },
-  { key: 'jobs',       icon: '💼', label: '채용공고'      },
-  { key: 'inquiries',  icon: '💬', label: 'Inquiries'    },
-  { key: 'notices',    icon: '📢', label: '공지사항'      },
-  { key: 'members',    icon: '👥', label: '회원 관리'     },
-  { key: 'accounts',   icon: '🔑', label: '관리자 계정'   },
-  { key: 'settings',   icon: '⚙️', label: 'Settings'     },
-  { key: 'audit_logs', icon: '🔍', label: 'Audit Logs'  },
-  { key: 'server_logs',icon: '🖥️', label: 'Server Logs' },
-]
+// 채용 관련 신규 분리 메뉴 (Phase B~D)
+import JobPostingsMenu from '../components/admin/menus/JobPostingsMenu'
+import ApplicantsMenu from '../components/admin/menus/ApplicantsMenu'
+import ConfirmedMenu from '../components/admin/menus/ConfirmedMenu'
+import RecruitSummaryMenu from '../components/admin/menus/RecruitSummaryMenu'
 
 interface PermLevel { label: string; color: string; permissions: Record<string, boolean> }
 
-// 기본 권한 폴백
+// 기본 권한 폴백 (DB 로드 실패 시)
 const DEFAULT_PERMS: Record<string, PermLevel> = {
   super_admin: {
     label: '슈퍼 관리자', color: '#f04040',
-    permissions: { dashboard:true, target:true, jobs:true, inquiries:true, notices:true, members:true, accounts:true, settings:true, audit_logs:true, server_logs:true },
+    permissions: {
+      dashboard: true, target: true,
+      job_postings: true, applicants: true, confirmed: true, recruit_summary: true,
+      inquiries: true, notices: true, members: true, accounts: true,
+      settings: true, audit_logs: true, server_logs: true,
+    },
   },
   admin: {
     label: '관리자', color: '#3182f6',
-    permissions: { dashboard:true, target:true, jobs:true, inquiries:true, notices:true, members:true, accounts:false, settings:false, audit_logs:false, server_logs:false },
+    permissions: {
+      dashboard: true, target: true,
+      job_postings: true, applicants: true, confirmed: true, recruit_summary: true,
+      inquiries: true, notices: true, members: true, accounts: false,
+      settings: false, audit_logs: false, server_logs: false,
+    },
   },
   viewer: {
     label: '뷰어', color: '#8b95a1',
-    permissions: { dashboard:true, target:false, jobs:false, inquiries:true, notices:false, members:false, accounts:false, settings:false, audit_logs:false, server_logs:false },
+    permissions: {
+      dashboard: true, target: false,
+      job_postings: false, applicants: false, confirmed: false, recruit_summary: false,
+      inquiries: true, notices: false, members: false, accounts: false,
+      settings: false, audit_logs: false, server_logs: false,
+    },
   },
 }
+
+// 모바일 드롭다운용 평탄화 메뉴 목록
+const FLAT_MENUS: { key: AdminMenu; label: string }[] = [
+  { key: 'dashboard',       label: '📊 대시보드' },
+  { key: 'job_postings',    label: '💼 채용공고' },
+  { key: 'applicants',      label: '📋 지원자 관리' },
+  { key: 'confirmed',       label: '✅ 확정인원' },
+  { key: 'recruit_summary', label: '📈 채용 Summary' },
+  { key: 'notices',         label: '📢 공지사항' },
+  { key: 'inquiries',       label: '💬 문의' },
+  { key: 'members',         label: '👥 회원 관리' },
+  { key: 'accounts',        label: '🔑 관리자 계정' },
+  { key: 'settings',        label: '⚙️ 설정' },
+  { key: 'audit_logs',      label: '🔍 Audit Logs' },
+  { key: 'server_logs',     label: '🖥️ 서버 로그' },
+]
 
 export default function AdminPage() {
   const { user, isLoggedIn, loading, logout } = useAuth()
   const navigate = useNavigate()
 
+  // 기본 활성 메뉴: job_postings (채용공고 바로 진입)
   const [activeMenu, setActiveMenu] = useState<AdminMenu>('dashboard')
   const [permLevels, setPermLevels] = useState<Record<string, PermLevel>>(DEFAULT_PERMS)
   const [adminRole, setAdminRole] = useState<string | null>(null)
@@ -62,14 +85,14 @@ export default function AdminPage() {
     if (loading || !isLoggedIn || !user?.email) return
     const email = user.email
 
-    // 슈퍼 관리자 이메일은 항상 허용
+    // 슈퍼 관리자 이메일 하드코딩 (환경변수 없이도 작동)
     if (email === SUPER_ADMIN_EMAIL) {
       setAdminRole('super_admin')
       setAdminChecked(true)
       return
     }
 
-    // VITE_ADMIN_EMAIL 환경변수 체크 (하위 호환)
+    // VITE_ADMIN_EMAIL 환경변수 하위 호환
     const envAdminEmail = import.meta.env.VITE_ADMIN_EMAIL ?? ''
     if (envAdminEmail && email === envAdminEmail) {
       setAdminRole('super_admin')
@@ -86,9 +109,7 @@ export default function AdminPage() {
           .select('role, is_active')
           .eq('email', email)
           .single()
-        if (data?.is_active) {
-          setAdminRole(data.role)
-        }
+        if (data?.is_active) setAdminRole(data.role)
       } catch { /* 관리자 아님 */ }
       setAdminChecked(true)
     })()
@@ -135,35 +156,41 @@ export default function AdminPage() {
   const currentRoleLabel = permLevels[currentRole]?.label ?? '관리자'
   const currentRoleColor = permLevels[currentRole]?.color ?? '#3182f6'
 
-  // 모든 메뉴 표시 (권한 체크는 renderMenu()에서 수행)
-  const visibleMenus = ALL_MENUS
-
   const handleMenuChange = (menu: AdminMenu) => {
-    // 탭 클릭은 항상 허용 (접근 제한은 renderMenu에서 처리)
     setActiveMenu(menu)
   }
 
+  // 권한 체크 + 컴포넌트 렌더링
   const renderMenu = () => {
-    // 권한 없는 메뉴 접근 시 차단
     if (currentPerms[activeMenu] === false) {
-      return <AccessDenied label={`'${ALL_MENUS.find(m=>m.key===activeMenu)?.label}' 메뉴에 접근할 권한이 없습니다.`} />
+      return (
+        <AccessDenied
+          label={`'${FLAT_MENUS.find(m => m.key === activeMenu)?.label}' 메뉴에 접근할 권한이 없습니다.`}
+        />
+      )
     }
     switch (activeMenu) {
-      case 'dashboard':   return <DashboardMenu />
-      case 'target':      return <TargetMenu />
-      case 'jobs':        return <JobsMenu />
-      case 'inquiries':   return <InquiriesMenu />
-      case 'notices':     return <NoticesMenu />
-      case 'members':     return <MembersMenu isSuperAdmin={isSuperAdmin} />
-      case 'accounts':    return <AccountsMenu isSuperAdmin={isSuperAdmin} />
-      case 'settings':    return <SettingsMenu isSuperAdmin={isSuperAdmin} />
-      case 'audit_logs':  return <AuditLogsMenu />
-      case 'server_logs': return <ServerLogsMenu />
+      case 'dashboard':       return <DashboardMenu />
+      case 'target':          return <TargetMenu />
+      // ── 채용 및 인원 관리 (Phase B~D 신규 분리) ──
+      case 'job_postings':    return <JobPostingsMenu />
+      case 'applicants':      return <ApplicantsMenu />
+      case 'confirmed':       return <ConfirmedMenu />
+      case 'recruit_summary': return <RecruitSummaryMenu />
+      // ── 콘텐츠 관리 ──
+      case 'inquiries':       return <InquiriesMenu />
+      case 'notices':         return <NoticesMenu />
+      // ── 시스템 ──
+      case 'members':         return <MembersMenu isSuperAdmin={isSuperAdmin} />
+      case 'accounts':        return <AccountsMenu isSuperAdmin={isSuperAdmin} />
+      case 'settings':        return <SettingsMenu isSuperAdmin={isSuperAdmin} />
+      case 'audit_logs':      return <AuditLogsMenu />
+      case 'server_logs':     return <ServerLogsMenu />
       default: return null
     }
   }
 
-  const activeMenuInfo = ALL_MENUS.find(m => m.key === activeMenu)
+  const activeMenuInfo = FLAT_MENUS.find(m => m.key === activeMenu)
 
   return (
     <div style={{
@@ -172,7 +199,7 @@ export default function AdminPage() {
       color: '#fff', position: 'fixed', inset: 0,
       zIndex: 100, overflow: 'auto',
     }}>
-      {/* 모바일 상단 탭 네비 */}
+      {/* 모바일 상단 select 드롭다운 */}
       <div
         className="md:hidden"
         style={{
@@ -193,9 +220,9 @@ export default function AdminPage() {
             fontSize: '0.9rem', fontWeight: 600, outline: 'none', cursor: 'pointer',
           }}
         >
-          {visibleMenus.map(m => (
+          {FLAT_MENUS.map(m => (
             <option key={m.key} value={m.key} style={{ background: '#16162a', color: '#fff' }}>
-              {m.icon} {m.label}
+              {m.label}
             </option>
           ))}
         </select>
@@ -220,7 +247,7 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {/* 데스크탑: 사이드바 + 메인 */}
+      {/* 데스크탑: 사이드바(아코디언) + 메인 콘텐츠 */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <div className="hidden md:block" style={{ flexShrink: 0 }}>
           <AdminSidebar
@@ -236,12 +263,13 @@ export default function AdminPage() {
           flex: 1, overflow: 'auto', minHeight: 0,
           background: 'linear-gradient(135deg, #0d0d1a 0%, #111125 100%)',
         }}>
+          {/* 모바일 현재 메뉴 표시 */}
           <div className="md:hidden" style={{
             padding: '12px 16px 0',
             fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)',
-            fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase',
+            fontWeight: 600, letterSpacing: '0.04em',
           }}>
-            {activeMenuInfo?.icon} {activeMenuInfo?.label}
+            {activeMenuInfo?.label}
           </div>
           {renderMenu()}
         </main>

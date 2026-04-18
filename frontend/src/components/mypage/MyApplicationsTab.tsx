@@ -46,6 +46,12 @@ const STATUS_CONFIG = {
     badgeText: 'text-red-700',
     dot: 'bg-red-500',
   },
+  reviewing: {
+    label: '검토중',
+    badgeBg: 'bg-amber-100',
+    badgeText: 'text-amber-700',
+    dot: 'bg-amber-400',
+  },
 } as const
 
 // 상태 필터 탭 목록 (전체 포함)

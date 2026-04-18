@@ -1,0 +1,646 @@
+// 어드민 — 지원자 관리 전용 메뉴 (Phase C)
+// JobsMenu.tsx에서 지원자 관리 로직만 분리
+// 기능: 지원자 목록, 상태변경(applied→reviewing→confirmed/rejected), 대량 처리, 사업장 필터, CSV 내보내기
+import { useEffect, useState, useCallback } from 'react'
+import { supabase } from '../../../lib/supabase'
+
+// ── 지원자 한 행의 타입 ──
+interface ApplicationRow {
+  id: string
+  user_id: string
+  job_posting_id: string
+  status: 'applied' | 'reviewing' | 'confirmed' | 'completed' | 'cancelled' | 'rejected'
+  applied_at: string
+  work_date: string | null
+  applicant_name: string | null
+  applicant_birth: string | null
+  applicant_gender: 'male' | 'female' | null
+  applicant_phone: string | null
+  consent_collect: boolean | null
+  consent_third_party: boolean | null
+  job_postings?: { company_name: string; center_name: string } | null
+  profiles?: { full_name: string | null; email: string | null } | null
+}
+
+// 상태별 한국어 레이블
+const STATUS_LABEL: Record<string, string> = {
+  applied:   '지원완료',
+  reviewing: '검토중',
+  confirmed: '출근확정',
+  completed: '출근완료',
+  cancelled: '취소',
+  rejected:  '지원거절',
+}
+
+// 상태별 색상
+const statusColor = (status: string) => {
+  if (status === 'confirmed') return { bg: 'rgba(49,200,100,0.18)', color: '#3fc878' }
+  if (status === 'reviewing') return { bg: 'rgba(255,180,0,0.18)',  color: '#ffb400' }
+  if (status === 'completed') return { bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }
+  if (status === 'cancelled') return { bg: 'rgba(240,68,82,0.18)',  color: '#f04452' }
+  if (status === 'rejected')  return { bg: 'rgba(240,68,82,0.25)',  color: '#ff4d4d' }
+  return { bg: 'rgba(49,130,246,0.18)', color: '#3182f6' }  // applied
+}
+
+// 휴대폰 번호 마스킹
+function maskPhone(phone: string): string {
+  const nums = phone.replace(/\D/g, '')
+  if (nums.length < 10) return phone
+  return `${nums.slice(0, 3)}-****-${nums.slice(-4)}`
+}
+
+export default function ApplicantsMenu() {
+  // 지원자 목록 상태
+  const [applicants, setApplicants] = useState<ApplicationRow[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // 필터 상태
+  const [companyFilter, setCompanyFilter] = useState<string>('all')
+  const [jobFilter, setJobFilter] = useState<string>('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+
+  // 대량 선택 상태
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  // 상태 변경 진행 중 ID
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [bulkUpdating, setBulkUpdating] = useState(false)
+
+  // 토스트 알림
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 3000)
+    return () => clearTimeout(t)
+  }, [toast])
+
+  // 공고 목록 (필터 드롭다운용)
+  const [jobs, setJobs] = useState<{ id: string; company_name: string; center_name: string }[]>([])
+  const [companies, setCompanies] = useState<string[]>([])
+
+  // 공고 목록 로드
+  useEffect(() => {
+    if (!supabase) return
+    ;(async () => {
+      const { data } = await supabase
+        .from('job_postings')
+        .select('id, company_name, center_name')
+        .neq('status', 'deleted')
+        .order('created_at', { ascending: false })
+      const list = (data ?? []) as { id: string; company_name: string; center_name: string }[]
+      setJobs(list)
+      const uniqueCompanies = [...new Set(list.map(j => j.company_name).filter(Boolean))]
+      setCompanies(uniqueCompanies)
+    })()
+  }, [])
+
+  // 지원자 목록 로드
+  const fetchApplicants = useCallback(async () => {
+    if (!supabase) return
+    setLoading(true)
+    setError(null)
+    try {
+      let query = supabase
+        .from('job_applications')
+        .select('*, job_postings(company_name, center_name)')
+        .order('applied_at', { ascending: false })
+
+      // 사업장 필터 — job_postings.company_name 기반
+      if (companyFilter !== 'all') {
+        // 해당 사업장 공고 ID 목록으로 필터
+        const companyJobIds = jobs
+          .filter(j => j.company_name === companyFilter)
+          .map(j => j.id)
+        if (companyJobIds.length > 0) {
+          query = query.in('job_posting_id', companyJobIds)
+        }
+      }
+
+      // 공고별 필터
+      if (jobFilter) query = query.eq('job_posting_id', jobFilter)
+
+      // 상태 필터
+      if (statusFilter !== 'all') query = query.eq('status', statusFilter)
+
+      const { data, error } = await query
+      if (error) throw error
+
+      const rows = (data ?? []) as ApplicationRow[]
+
+      // profiles 별도 조회 + 병합 (RLS 분리)
+      const userIds = [...new Set(rows.map(r => r.user_id))]
+      if (userIds.length > 0 && supabase) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', userIds)
+        const profileMap = Object.fromEntries(
+          (profileData ?? []).map((p: { id: string; full_name: string | null; email: string | null }) => [p.id, p])
+        )
+        rows.forEach(r => { r.profiles = profileMap[r.user_id] ?? null })
+      }
+      setApplicants(rows)
+      // 선택 초기화
+      setSelectedIds(new Set())
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '지원자 목록을 불러오지 못했습니다.')
+    } finally {
+      setLoading(false)
+    }
+  }, [companyFilter, jobFilter, statusFilter, jobs])
+
+  useEffect(() => {
+    if (jobs.length > 0 || companyFilter === 'all') {
+      fetchApplicants()
+    }
+  }, [fetchApplicants, jobs.length, companyFilter])
+
+  // 단건 상태 변경
+  const handleUpdateStatus = async (
+    appId: string,
+    newStatus: 'reviewing' | 'confirmed' | 'completed' | 'cancelled' | 'rejected',
+    workDate?: string
+  ) => {
+    if (!supabase || updatingId) return
+    setUpdatingId(appId)
+    try {
+      const payload: Record<string, unknown> = { status: newStatus }
+      if (newStatus === 'confirmed' && workDate) payload.work_date = workDate
+
+      const { error } = await supabase
+        .from('job_applications')
+        .update(payload)
+        .eq('id', appId)
+      if (error) throw error
+
+      // 출근확정 / 거절 시 사용자에게 알림 발송
+      if (newStatus === 'confirmed' || newStatus === 'rejected') {
+        const app = applicants.find(a => a.id === appId)
+        if (app?.user_id && supabase) {
+          await supabase.from('notifications').insert({
+            user_id: app.user_id,
+            type:    newStatus === 'confirmed' ? 'application_confirmed' : 'application_rejected',
+            title:   newStatus === 'confirmed' ? '출근이 확정됐어요! 🎉' : '지원이 거절됐습니다',
+            body:    newStatus === 'confirmed'
+              ? `출근 예정일: ${workDate ?? '미정'} — 준비물을 챙기고 건강하게 출근하세요!`
+              : '아쉽지만 이번 공고는 어렵게 됐습니다. 다른 공고를 확인해보세요.',
+            metadata: { application_id: appId, job_posting_id: app.job_posting_id },
+          })
+        }
+      }
+
+      await fetchApplicants()
+      const msgs: Record<string, string> = {
+        reviewing: '🔍 검토중으로 변경됐습니다.',
+        confirmed: '✅ 출근 확정 처리됐습니다.',
+        completed: '✅ 출근 완료로 변경됐습니다.',
+        cancelled: '✅ 취소 처리됐습니다.',
+        rejected:  '❌ 지원 거절 처리됐습니다.',
+      }
+      setToast({ msg: msgs[newStatus] ?? '✅ 상태 변경됐습니다.', type: 'success' })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '상태 변경에 실패했습니다.'
+      setToast({ msg: '❌ ' + msg, type: 'error' })
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  // 대량 상태 변경 (체크박스 선택 기반)
+  const handleBulkUpdate = async (newStatus: 'reviewing' | 'confirmed' | 'rejected') => {
+    if (!supabase || selectedIds.size === 0 || bulkUpdating) return
+    if (!window.confirm(`선택된 ${selectedIds.size}명을 "${STATUS_LABEL[newStatus]}"로 변경할까요?`)) return
+
+    setBulkUpdating(true)
+    try {
+      const ids = [...selectedIds]
+      const { error } = await supabase
+        .from('job_applications')
+        .update({ status: newStatus })
+        .in('id', ids)
+      if (error) throw error
+
+      // 확정/거절 시 알림 일괄 발송
+      if (newStatus === 'confirmed' || newStatus === 'rejected') {
+        const targets = applicants.filter(a => selectedIds.has(a.id))
+        const notifications = targets
+          .filter(a => a.user_id)
+          .map(a => ({
+            user_id:  a.user_id,
+            type:     newStatus === 'confirmed' ? 'application_confirmed' : 'application_rejected',
+            title:    newStatus === 'confirmed' ? '출근이 확정됐어요! 🎉' : '지원이 거절됐습니다',
+            body:     newStatus === 'confirmed'
+              ? '출근 일정을 확인하고 준비하세요!'
+              : '아쉽지만 이번 공고는 어렵게 됐습니다.',
+            metadata: { job_posting_id: a.job_posting_id },
+          }))
+        if (notifications.length > 0 && supabase) {
+          await supabase.from('notifications').insert(notifications)
+        }
+      }
+
+      await fetchApplicants()
+      setToast({ msg: `✅ ${ids.length}명 ${STATUS_LABEL[newStatus]} 처리됐습니다.`, type: 'success' })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '대량 처리에 실패했습니다.'
+      setToast({ msg: '❌ ' + msg, type: 'error' })
+    } finally {
+      setBulkUpdating(false)
+    }
+  }
+
+  // 체크박스 전체 선택/해제
+  const toggleSelectAll = () => {
+    if (selectedIds.size === applicants.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(applicants.map(a => a.id)))
+    }
+  }
+
+  // CSV 내보내기 (제3자 동의 + 인적사항 입력 건)
+  const handleExportCsv = () => {
+    const filtered = applicants.filter(a => a.consent_third_party === true && a.applicant_name)
+    if (filtered.length === 0) {
+      alert('다운로드 가능한 지원자가 없습니다.\n(제3자 제공 동의 + 인적사항 입력 건만 포함됩니다)')
+      return
+    }
+    const BOM = '\uFEFF'
+    const header = ['이름', '생년월일', '성별', '휴대폰', '공고', '센터', '지원일시', '상태']
+    const rows = filtered.map(a => [
+      a.applicant_name ?? '',
+      a.applicant_birth ?? '',
+      a.applicant_gender === 'male' ? '남' : a.applicant_gender === 'female' ? '여' : '',
+      a.applicant_phone ? maskPhone(a.applicant_phone) : '',
+      a.job_postings?.company_name ?? '',
+      a.job_postings?.center_name ?? '',
+      a.applied_at ? new Date(a.applied_at).toLocaleString('ko-KR') : '',
+      STATUS_LABEL[a.status] ?? a.status,
+    ])
+    const csv = BOM + [header, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `지원자_${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  // 테이블 스타일 상수
+  const cellStyle: React.CSSProperties = {
+    padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)',
+    fontSize: '0.83rem', color: 'rgba(255,255,255,0.75)', verticalAlign: 'middle',
+  }
+  const thStyle: React.CSSProperties = {
+    ...cellStyle, color: 'rgba(255,255,255,0.4)', fontWeight: 600,
+    fontSize: '0.75rem', textTransform: 'uppercase' as const, letterSpacing: '0.05em',
+  }
+
+  return (
+    <div style={{ padding: 'clamp(16px,4vw,32px)', position: 'relative' }}>
+      {toast && (
+        <div style={{
+          position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 9999, minWidth: 280, maxWidth: 420, padding: '12px 20px', borderRadius: 12,
+          background: toast.type === 'success' ? 'rgba(49,200,100,0.95)' : 'rgba(240,68,82,0.95)',
+          color: '#fff', fontWeight: 700, fontSize: '0.9rem',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)',
+          textAlign: 'center', pointerEvents: 'none',
+        }}>
+          {toast.msg}
+        </div>
+      )}
+
+      {/* 헤더 */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
+        <div>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px' }}>👥 지원자 관리</h2>
+          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+            지원자 상태를 검토중 → 출근확정 순으로 처리하세요. 총 {applicants.length}명
+          </p>
+        </div>
+        <button onClick={handleExportCsv}
+          style={{
+            padding: '7px 16px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.15)',
+            background: 'rgba(49,200,100,0.1)', color: '#3fc878',
+            fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+          }}>
+          📥 CSV 다운로드
+        </button>
+      </div>
+
+      {/* 필터 바 */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+        {/* 사업장 필터 */}
+        <select value={companyFilter} onChange={e => { setCompanyFilter(e.target.value); setJobFilter('') }}
+          style={{
+            padding: '6px 12px', borderRadius: 8,
+            border: '1px solid rgba(255,255,255,0.12)',
+            background: 'rgba(255,255,255,0.05)', color: '#fff',
+            fontSize: '0.82rem', cursor: 'pointer', outline: 'none',
+          }}>
+          <option value="all">전체 사업장</option>
+          {companies.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+
+        {/* 공고별 필터 */}
+        <select value={jobFilter} onChange={e => setJobFilter(e.target.value)}
+          style={{
+            padding: '6px 12px', borderRadius: 8,
+            border: '1px solid rgba(255,255,255,0.12)',
+            background: 'rgba(255,255,255,0.05)', color: '#fff',
+            fontSize: '0.82rem', cursor: 'pointer', outline: 'none',
+          }}>
+          <option value="">전체 공고</option>
+          {(companyFilter === 'all'
+            ? jobs
+            : jobs.filter(j => j.company_name === companyFilter)
+          ).map(job => (
+            <option key={job.id} value={job.id}>
+              {job.company_name} {job.center_name}
+            </option>
+          ))}
+        </select>
+
+        {/* 상태 필터 */}
+        {(['all', 'applied', 'reviewing', 'confirmed', 'completed', 'cancelled', 'rejected'] as const).map(s => (
+          <button key={s} onClick={() => setStatusFilter(s)}
+            style={{
+              padding: '5px 14px', borderRadius: 999, border: 'none',
+              background: statusFilter === s ? '#3182f6' : 'rgba(255,255,255,0.08)',
+              color: statusFilter === s ? '#fff' : 'rgba(255,255,255,0.5)',
+              fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+            }}>
+            {s === 'all' ? '전체' : STATUS_LABEL[s]}
+          </button>
+        ))}
+      </div>
+
+      {/* 대량 처리 바 (1명 이상 선택 시 표시) */}
+      {selectedIds.size > 0 && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16,
+          padding: '12px 16px', borderRadius: 12,
+          background: 'rgba(49,130,246,0.12)', border: '1px solid rgba(49,130,246,0.25)',
+          flexWrap: 'wrap',
+        }}>
+          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#3182f6' }}>
+            {selectedIds.size}명 선택됨
+          </span>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => handleBulkUpdate('reviewing')} disabled={bulkUpdating}
+              style={{
+                padding: '6px 16px', borderRadius: 8, border: 'none',
+                background: 'rgba(255,180,0,0.15)', color: '#ffb400',
+                fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+                opacity: bulkUpdating ? 0.5 : 1,
+              }}>
+              🔍 일괄 검토중
+            </button>
+            <button onClick={() => handleBulkUpdate('confirmed')} disabled={bulkUpdating}
+              style={{
+                padding: '6px 16px', borderRadius: 8, border: 'none',
+                background: 'rgba(49,200,100,0.15)', color: '#3fc878',
+                fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+                opacity: bulkUpdating ? 0.5 : 1,
+              }}>
+              ✅ 일괄 확정
+            </button>
+            <button onClick={() => handleBulkUpdate('rejected')} disabled={bulkUpdating}
+              style={{
+                padding: '6px 16px', borderRadius: 8, border: 'none',
+                background: 'rgba(240,68,82,0.15)', color: '#f04452',
+                fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+                opacity: bulkUpdating ? 0.5 : 1,
+              }}>
+              ✕ 일괄 거절
+            </button>
+          </div>
+          <button onClick={() => setSelectedIds(new Set())}
+            style={{
+              marginLeft: 'auto', padding: '4px 10px', borderRadius: 6, border: 'none',
+              background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)',
+              fontSize: '0.75rem', cursor: 'pointer',
+            }}>
+            선택 해제
+          </button>
+        </div>
+      )}
+
+      {/* 에러 */}
+      {error && (
+        <div style={{
+          background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
+          borderRadius: 10, padding: '12px 16px', marginBottom: 12,
+          color: '#ff6b6b', fontSize: '0.82rem',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <span>⚠️ {error}</span>
+          <button onClick={() => { setError(null); fetchApplicants() }}
+            style={{ background: 'none', border: 'none', color: '#ff6b6b', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}>
+            다시 시도 ↻
+          </button>
+        </div>
+      )}
+
+      {/* 지원자 테이블 */}
+      {loading ? (
+        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>불러오는 중...</p>
+      ) : (
+        <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 820 }}>
+              <thead>
+                <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
+                  {/* 전체 선택 체크박스 */}
+                  <th style={{ ...thStyle, width: 40, textAlign: 'center' }}>
+                    <input
+                      type="checkbox"
+                      checked={applicants.length > 0 && selectedIds.size === applicants.length}
+                      onChange={toggleSelectAll}
+                      style={{ cursor: 'pointer', width: 16, height: 16 }}
+                    />
+                  </th>
+                  <th style={thStyle}>지원자 정보</th>
+                  <th style={thStyle}>인적사항</th>
+                  <th style={thStyle}>공고</th>
+                  <th style={{ ...thStyle, width: 80 }}>지원일</th>
+                  <th style={{ ...thStyle, width: 90 }}>상태</th>
+                  <th style={{ ...thStyle, width: 240 }}>상태 변경</th>
+                </tr>
+              </thead>
+              <tbody>
+                {applicants.length === 0 && (
+                  <tr>
+                    <td colSpan={7} style={{ ...cellStyle, textAlign: 'center', color: 'rgba(255,255,255,0.3)' }}>
+                      지원자가 없습니다.
+                    </td>
+                  </tr>
+                )}
+                {applicants.map(app => {
+                  const sc = statusColor(app.status)
+                  const isUpdating = updatingId === app.id
+                  const isSelected = selectedIds.has(app.id)
+                  return (
+                    <tr key={app.id} style={{ background: isSelected ? 'rgba(49,130,246,0.06)' : undefined }}>
+                      {/* 체크박스 */}
+                      <td style={{ ...cellStyle, textAlign: 'center' }}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {
+                            setSelectedIds(prev => {
+                              const next = new Set(prev)
+                              if (next.has(app.id)) next.delete(app.id)
+                              else next.add(app.id)
+                              return next
+                            })
+                          }}
+                          style={{ cursor: 'pointer', width: 16, height: 16 }}
+                        />
+                      </td>
+
+                      {/* 지원자 계정 정보 */}
+                      <td style={cellStyle}>
+                        <div style={{ fontWeight: 600, fontSize: '0.82rem' }}>
+                          {app.profiles?.full_name ?? '이름 없음'}
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>
+                          {app.profiles?.email ?? '-'}
+                        </div>
+                      </td>
+
+                      {/* 인적사항 (지원 폼에서 입력한 실제 정보) */}
+                      <td style={cellStyle}>
+                        {app.applicant_name ? (
+                          <>
+                            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#fff' }}>
+                              {app.applicant_name}
+                              <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginLeft: 4 }}>
+                                {app.applicant_gender === 'male' ? '남' : app.applicant_gender === 'female' ? '여' : ''}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginTop: 1 }}>
+                              {app.applicant_birth ? app.applicant_birth.slice(0, 10) : '-'}
+                              {' · '}
+                              {app.applicant_phone ? maskPhone(app.applicant_phone) : '-'}
+                            </div>
+                          </>
+                        ) : (
+                          <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.2)' }}>미입력</span>
+                        )}
+                      </td>
+
+                      {/* 공고 정보 */}
+                      <td style={cellStyle}>
+                        <div style={{ fontWeight: 600 }}>{app.job_postings?.company_name ?? '-'}</div>
+                        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>
+                          {app.job_postings?.center_name ?? ''}
+                        </div>
+                      </td>
+
+                      {/* 지원일 */}
+                      <td style={cellStyle}>
+                        {new Date(app.applied_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                      </td>
+
+                      {/* 현재 상태 */}
+                      <td style={{ ...cellStyle, textAlign: 'center' }}>
+                        <span style={{
+                          padding: '2px 8px', borderRadius: 999,
+                          fontSize: '0.72rem', fontWeight: 700,
+                          background: sc.bg, color: sc.color,
+                        }}>
+                          {STATUS_LABEL[app.status] ?? app.status}
+                        </span>
+                        {/* 출근 예정일 표시 (확정 이후) */}
+                        {app.work_date && (app.status === 'confirmed' || app.status === 'completed') && (
+                          <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>
+                            {app.work_date}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* 상태 변경 버튼 */}
+                      <td style={{ ...cellStyle, textAlign: 'center' }}>
+                        <div style={{ display: 'flex', gap: 5, justifyContent: 'center', flexWrap: 'wrap' }}>
+
+                          {/* applied → reviewing 또는 confirmed/rejected */}
+                          {app.status === 'applied' && (
+                            <>
+                              <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'reviewing')}
+                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(255,180,0,0.15)', color: '#ffb400', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                🔍 검토
+                              </button>
+                              <button disabled={isUpdating}
+                                onClick={() => {
+                                  const today = new Date().toISOString().slice(0, 10)
+                                  const workDate = window.prompt('출근 예정일 (YYYY-MM-DD)', today)
+                                  if (workDate !== null) handleUpdateStatus(app.id, 'confirmed', workDate)
+                                }}
+                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(49,200,100,0.15)', color: '#3fc878', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                ✓ 확정
+                              </button>
+                              <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'rejected')}
+                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(240,68,82,0.15)', color: '#f04452', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                ✕ 거절
+                              </button>
+                            </>
+                          )}
+
+                          {/* reviewing → confirmed/rejected */}
+                          {app.status === 'reviewing' && (
+                            <>
+                              <button disabled={isUpdating}
+                                onClick={() => {
+                                  const today = new Date().toISOString().slice(0, 10)
+                                  const workDate = window.prompt('출근 예정일 (YYYY-MM-DD)', today)
+                                  if (workDate !== null) handleUpdateStatus(app.id, 'confirmed', workDate)
+                                }}
+                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(49,200,100,0.15)', color: '#3fc878', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                ✓ 확정
+                              </button>
+                              <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'rejected')}
+                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(240,68,82,0.15)', color: '#f04452', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                ✕ 거절
+                              </button>
+                            </>
+                          )}
+
+                          {/* confirmed → completed */}
+                          {app.status === 'confirmed' && (
+                            <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'completed')}
+                              style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                              출근완료
+                            </button>
+                          )}
+
+                          {/* confirmed/reviewing → cancelled */}
+                          {(app.status === 'confirmed' || app.status === 'reviewing') && (
+                            <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'cancelled')}
+                              style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                              취소
+                            </button>
+                          )}
+
+                          {/* 최종 처리된 상태 표시 */}
+                          {(app.status === 'completed' || app.status === 'cancelled' || app.status === 'rejected') && (
+                            <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.25)' }}>처리완료</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

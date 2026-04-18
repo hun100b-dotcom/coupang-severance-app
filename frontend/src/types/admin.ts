@@ -1,5 +1,12 @@
 // Admin OS — 공통 타입 정의
 
+// ── 어드민 메뉴 ID 유니온 타입 (AdminSidebar.tsx에도 동일하게 정의됨) ──
+export type AdminMenu =
+  | 'dashboard' | 'target'
+  | 'job_postings' | 'applicants' | 'confirmed' | 'recruit_summary'
+  | 'inquiries' | 'notices' | 'members' | 'accounts'
+  | 'settings' | 'audit_logs' | 'server_logs'
+
 // ── 대시보드 ────────────────────────────────────────────
 export interface AdminStats {
   users: {
