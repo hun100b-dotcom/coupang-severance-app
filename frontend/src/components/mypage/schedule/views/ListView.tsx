@@ -8,6 +8,8 @@ import type { JobApplication } from '../../../../types/supabase'
 
 interface Props {
   applications: JobApplication[]
+  // 카드 클릭 시 상세 시트 열기 (step 5 — 선택)
+  onApplicationClick?: (app: JobApplication) => void
 }
 
 // ── 상태별 한글 라벨 + 뱃지 색상 ──
@@ -69,7 +71,7 @@ function buildGroupLabel(ymd: string): string {
   return `📅 ${main} (${suffix})`
 }
 
-export default function ListView({ applications }: Props) {
+export default function ListView({ applications, onApplicationClick }: Props) {
   // ── 날짜별 그룹 정렬 로직 ──
   // 1) work_date 가 있는 건만 대상 (null 이면 날짜 그룹을 만들 수 없음)
   // 2) work_date 기준 그룹핑
@@ -143,13 +145,18 @@ export default function ListView({ applications }: Props) {
             const style = STATUS_STYLE[app.status] ?? STATUS_STYLE.applied
             const job = app.job_postings
             return (
-              <div
+              <button
+                type="button"
                 key={app.id}
+                onClick={() => onApplicationClick?.(app)}
                 className={`
+                  text-left w-full
                   bg-white
                   rounded-[20px] border border-slate-100
                   shadow-[0_4px_16px_rgba(49,130,246,0.04)]
                   p-4
+                  hover:border-blue-200 hover:shadow-[0_6px_20px_rgba(49,130,246,0.08)]
+                  transition-all
                   ${style.strike ? 'opacity-70' : ''}
                 `}
               >
@@ -215,7 +222,7 @@ export default function ListView({ applications }: Props) {
                     </span>
                   </div>
                 )}
-              </div>
+              </button>
             )
           })}
         </section>

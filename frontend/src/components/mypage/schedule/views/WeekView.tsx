@@ -60,9 +60,11 @@ interface TimeBlock {
 interface Props {
   applications: JobApplication[]
   initialDate?: Date
+  // TimeBlock 클릭 시 상세 시트 열기 (step 5 — 선택)
+  onApplicationClick?: (app: JobApplication) => void
 }
 
-export default function WeekView({ applications, initialDate }: Props) {
+export default function WeekView({ applications, initialDate, onApplicationClick }: Props) {
   const { weekStart, weekEnd, weekDays, prevWeek, nextWeek, thisWeek } =
     useWeekNavigation(initialDate)
 
@@ -301,11 +303,14 @@ export default function WeekView({ applications, initialDate }: Props) {
                 const style = STATUS_STYLE[b.app.status] ?? STATUS_STYLE.applied
 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={b.id}
+                    onClick={() => onApplicationClick?.(b.app)}
                     className={`
                       absolute rounded-xl border px-2 py-1
-                      text-[11px] font-bold overflow-hidden
+                      text-[11px] font-bold overflow-hidden text-left
+                      hover:brightness-95 transition
                       ${style}
                     `}
                     style={{
@@ -325,7 +330,7 @@ export default function WeekView({ applications, initialDate }: Props) {
                     <p className="text-[10px] font-medium opacity-80 mt-0.5">
                       {String(DEFAULT_START_HOUR).padStart(2, '0')}:00~{String(DEFAULT_END_HOUR).padStart(2, '0')}:00
                     </p>
-                  </div>
+                  </button>
                 )
               })}
 

@@ -13,3 +13,6 @@ export { default as ViewSwitcher } from './ViewSwitcher'
 export type { ViewKey } from './ViewSwitcher'
 export { default as ListView } from './views/ListView'
 export { default as WeekView } from './views/WeekView'
+
+// 상세/편집 BottomSheet (Phase 1 step 5)
+export { default as ScheduleDetailSheet } from './sheets/ScheduleDetailSheet'

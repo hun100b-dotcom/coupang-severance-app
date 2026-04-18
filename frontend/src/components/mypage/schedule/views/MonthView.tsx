@@ -15,6 +15,8 @@ interface Props {
   month: number // 0-indexed
   onPrevMonth: () => void
   onNextMonth: () => void
+  // 지원 건 카드 클릭 시 상세 시트 열기 (step 5 — 선택)
+  onApplicationClick?: (app: JobApplication) => void
 }
 
 export default function MonthView({
@@ -23,6 +25,7 @@ export default function MonthView({
   month,
   onPrevMonth,
   onNextMonth,
+  onApplicationClick,
 }: Props) {
   // 선택한 날짜 (클릭 시 하단 상세 표시)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
@@ -156,8 +159,12 @@ export default function MonthView({
           ) : (
             <div className="flex flex-col gap-2">
               {selectedDayApps.map(app => (
-                <div key={app.id}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-slate-50">
+                <button
+                  type="button"
+                  key={app.id}
+                  onClick={() => onApplicationClick?.(app)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors text-left w-full"
+                >
                   <div className="flex-1 min-w-0">
                     <p className="text-[14px] font-bold text-[#191f28]">
                       {app.job_postings?.company_name ?? '공고 정보 없음'}
@@ -174,7 +181,7 @@ export default function MonthView({
                       {app.job_postings!.daily_wage.toLocaleString('ko-KR')}원
                     </span>
                   )}
-                </div>
+                </button>
               ))}
             </div>
           )}
