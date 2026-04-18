@@ -12,15 +12,15 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { exportXlsx } from '../../../lib/exportXlsx'
 
-// job_postings 테이블 타입
+// job_postings 테이블 실제 컬럼 기준
 interface JobPosting {
   id: string
-  title: string
-  company: string
-  section: string | null
+  company_name: string   // 실제 컬럼명 (title, company 아님)
+  center_name: string    // 실제 컬럼명
+  section: string | null // 값: 'today-urgent' | 'tomorrow-urgent' | 'always' (하이픈)
   is_urgent: boolean
   status: string
-  apply_count: number | null
+  view_count: number | null
   created_at: string
 }
 
@@ -46,10 +46,11 @@ export default function RecruitTab() {
       if (!supabase) throw new Error('Supabase 클라이언트 없음')
 
       // 공고 + 지원자 통계 병렬 조회
+      // apply_count 컬럼 없으므로 job_applications 별도 집계
       const [postingsRes, appsRes] = await Promise.all([
         supabase
           .from('job_postings')
-          .select('id, title, company, section, is_urgent, status, apply_count, created_at')
+          .select('id, company_name, center_name, section, is_urgent, status, view_count, created_at')
           .order('created_at', { ascending: false })
           .limit(200),
         supabase
@@ -84,22 +85,23 @@ export default function RecruitTab() {
   // ── 집계 계산 ──────────────────────────────────────────────
   const activePostings = postings.filter(p => p.status === 'active')
   const urgentPostings = postings.filter(p => p.is_urgent && p.status === 'active')
+  // section 값은 하이픈 포맷: 'today-urgent' | 'tomorrow-urgent' | 'always'
   const sectionCounts = {
-    '오늘긴급': postings.filter(p => p.section === 'today_urgent').length,
-    '내일긴급': postings.filter(p => p.section === 'tomorrow_urgent').length,
-    '상시': postings.filter(p => p.section === 'always' || !p.section).length,
+    '오늘긴급': postings.filter(p => p.section === 'today-urgent').length,
+    '내일긴급': postings.filter(p => p.section === 'tomorrow-urgent').length,
+    '상시':     postings.filter(p => p.section === 'always' || !p.section).length,
   }
 
   // 엑셀 다운로드
   const handleDownload = () => {
     const data = postings.map(p => ({
-      등록일: p.created_at.slice(0, 10),
-      공고명: p.title,
-      회사: p.company,
-      섹션: p.section ?? '상시',
+      등록일:   p.created_at.slice(0, 10),
+      회사명:   p.company_name,
+      센터명:   p.center_name,
+      섹션:     p.section === 'today-urgent' ? '오늘긴급' : p.section === 'tomorrow-urgent' ? '내일긴급' : '상시',
       긴급여부: p.is_urgent ? '긴급' : '일반',
-      상태: p.status,
-      지원자수: p.apply_count ?? 0,
+      상태:     p.status,
+      조회수:   p.view_count ?? 0,
     }))
     exportXlsx(data, `recruit_${new Date().toISOString().slice(0, 10)}`)
   }
@@ -224,7 +226,7 @@ export default function RecruitTab() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
             <thead>
               <tr>
-                {['등록일', '공고명', '회사', '섹션', '상태', '지원자'].map(h => (
+                {['등록일', '회사명', '센터명', '섹션', '상태', '조회수'].map(h => (
                   <th key={h} style={{
                     padding: '8px 10px', textAlign: 'left',
                     color: 'rgba(255,255,255,0.35)', fontWeight: 600,
@@ -237,24 +239,31 @@ export default function RecruitTab() {
               {postings.slice(0, 30).map((p, i) => (
                 <tr key={p.id} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
                   <td style={{ padding: '7px 10px', color: 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap' }}>{p.created_at.slice(0, 10)}</td>
-                  <td style={{ padding: '7px 10px', color: 'rgba(255,255,255,0.8)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <td style={{ padding: '7px 10px', color: 'rgba(255,255,255,0.8)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {p.is_urgent && <span style={{ fontSize: '0.6rem', background: 'rgba(240,140,0,0.2)', color: '#f08c00', padding: '1px 4px', borderRadius: 4, marginRight: 4 }}>긴급</span>}
-                    {p.title}
+                    {p.company_name}
                   </td>
-                  <td style={{ padding: '7px 10px', color: 'rgba(255,255,255,0.55)' }}>{p.company}</td>
+                  <td style={{ padding: '7px 10px', color: 'rgba(255,255,255,0.55)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.center_name}</td>
                   <td style={{ padding: '7px 10px', color: 'rgba(255,255,255,0.45)' }}>
-                    {p.section === 'today_urgent' ? '오늘긴급' : p.section === 'tomorrow_urgent' ? '내일긴급' : '상시'}
+                    {p.section === 'today-urgent' ? '오늘긴급' : p.section === 'tomorrow-urgent' ? '내일긴급' : '상시'}
                   </td>
                   <td style={{ padding: '7px 10px' }}>
                     <span style={{
                       fontSize: '0.62rem', padding: '2px 7px', borderRadius: 6, fontWeight: 700,
                       background: p.status === 'active' ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)',
                       color: p.status === 'active' ? '#22c55e' : 'rgba(255,255,255,0.3)',
-                    }}>{p.status === 'active' ? '활성' : '비활성'}</span>
+                    }}>{p.status === 'active' ? '활성' : p.status === 'draft' ? '임시저장' : p.status === 'expired' ? '만료' : '비활성'}</span>
                   </td>
-                  <td style={{ padding: '7px 10px', color: '#3182f6', fontWeight: 700 }}>{p.apply_count ?? 0}</td>
+                  <td style={{ padding: '7px 10px', color: '#3182f6', fontWeight: 700 }}>{p.view_count ?? 0}</td>
                 </tr>
               ))}
+              {postings.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ padding: '24px 10px', textAlign: 'center', color: 'rgba(255,255,255,0.25)' }}>
+                    공고 데이터가 없습니다.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

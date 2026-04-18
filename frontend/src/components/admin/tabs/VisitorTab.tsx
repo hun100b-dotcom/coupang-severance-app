@@ -1,11 +1,15 @@
 // ============================================================
 // VisitorTab: 어드민 대시보드 [방문자 분석] 탭
 // visitor_logs 테이블에서 데이터를 조회해 아래 항목을 표시합니다.
+//
+// visitor_logs 실제 컬럼:
+//   id, user_id, session_id, page_path, referrer, user_agent, created_at
+//
 // - 날짜 범위 필터 (7일/30일/90일)
 // - KPI: 총 방문 수, 순 방문자(세션), 오늘 방문
 // - 인기 페이지 TOP 10
 // - 유입 경로(referrer) 분포
-// - 최근 방문 기록 테이블
+// - 최근 방문 기록 테이블 (로그인 사용자 이름/이메일 표시)
 // - 엑셀 다운로드 버튼
 // ============================================================
 
@@ -21,6 +25,18 @@ interface VisitorLog {
   referrer: string | null
   created_at: string
   user_id: string | null
+}
+
+// profiles 조회 결과 (방문자 이름/이메일 식별용)
+interface UserProfile {
+  id: string
+  full_name: string | null
+  email: string | null
+}
+
+// visitor_logs + profiles 병합 타입
+interface VisitorLogEnriched extends VisitorLog {
+  profile?: UserProfile | null
 }
 
 // 인기 페이지 집계 타입
@@ -47,15 +63,11 @@ function formatReferrer(ref: string | null): string {
   if (!ref) return '직접 방문'
   try {
     const url = new URL(ref)
-    // Google 검색 유입
     if (url.hostname.includes('google')) return 'Google 검색'
-    // Naver 검색 유입
     if (url.hostname.includes('naver')) return 'Naver 검색'
-    // Kakao 유입
     if (url.hostname.includes('kakao')) return 'Kakao'
-    // 앱 내부 이동 (catch-daily-worker.vercel.app)
-    if (url.hostname.includes('catch-daily-worker') || url.hostname === 'localhost') return '앱 내부'
-    // 기타: 호스트명만 표시
+    // 앱 내부 이동 (같은 도메인에서의 이동은 referrer가 설정되기도 함)
+    if (url.hostname.includes('catch-daily-worker') || url.hostname === 'localhost') return '앱 내 이동'
     return url.hostname
   } catch {
     return '알 수 없음'
@@ -63,7 +75,7 @@ function formatReferrer(ref: string | null): string {
 }
 
 export default function VisitorTab() {
-  const [logs, setLogs] = useState<VisitorLog[]>([])
+  const [logs, setLogs] = useState<VisitorLogEnriched[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [range, setRange] = useState(30)
@@ -85,7 +97,29 @@ export default function VisitorTab() {
         .limit(1000)
 
       if (err) throw err
-      setLogs(data ?? [])
+
+      const rawLogs = (data ?? []) as VisitorLog[]
+
+      // 로그인 유저의 profiles 별도 조회 (RLS 분리)
+      const userIds = [...new Set(rawLogs.filter(l => l.user_id).map(l => l.user_id as string))]
+      let profileMap: Record<string, UserProfile> = {}
+      if (userIds.length > 0 && supabase) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', userIds)
+        profileMap = Object.fromEntries(
+          (profileData ?? []).map((p: UserProfile) => [p.id, p])
+        )
+      }
+
+      // 병합: log + profile
+      const enriched: VisitorLogEnriched[] = rawLogs.map(l => ({
+        ...l,
+        profile: l.user_id ? (profileMap[l.user_id] ?? null) : null,
+      }))
+
+      setLogs(enriched)
       setLastUpdated(new Date())
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '데이터 로드 실패')
@@ -103,6 +137,9 @@ export default function VisitorTab() {
 
   // 순 방문자 (session_id 중복 제거)
   const uniqueSessions = new Set(logs.map(l => l.session_id)).size
+
+  // 로그인 방문자 수
+  const loggedInCount = logs.filter(l => l.user_id).length
 
   // 인기 페이지 집계
   const pageMap = new Map<string, number>()
@@ -131,11 +168,13 @@ export default function VisitorTab() {
   // ── 엑셀 다운로드 ─────────────────────────────────────────
   const handleDownload = () => {
     const data = logs.map(l => ({
-      방문시각: l.created_at.replace('T', ' ').slice(0, 19),
-      페이지: l.page_path,
-      세션ID: l.session_id.slice(0, 8) + '...',
-      유입경로: formatReferrer(l.referrer),
-      로그인여부: l.user_id ? '로그인' : '비로그인',
+      방문시각:    l.created_at.replace('T', ' ').slice(0, 19),
+      페이지:      l.page_path,
+      세션ID:      l.session_id.slice(0, 8) + '...',
+      유입경로:    formatReferrer(l.referrer),
+      로그인여부:  l.user_id ? '로그인' : '비로그인',
+      사용자이름:  l.profile?.full_name ?? '-',
+      이메일:      l.profile?.email ?? '-',
     }))
     exportXlsx(data, `visitor_logs_${range}일_${todayStr}`)
   }
@@ -199,12 +238,13 @@ export default function VisitorTab() {
         </div>
       </div>
 
-      {/* ── KPI 3개 ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      {/* ── KPI 4개 ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         {[
-          { label: '총 페이지뷰', value: logs.length.toLocaleString(), color: '#3182f6', icon: '👁️' },
+          { label: '총 페이지뷰', value: logs.length.toLocaleString(), color: '#3182f6', icon: '👁️', sub: '' },
           { label: '순 방문자', value: uniqueSessions.toLocaleString(), color: '#00c48c', icon: '👤', sub: '세션 기준' },
-          { label: '오늘 방문', value: todayCount.toLocaleString(), color: '#f08c00', icon: '📅' },
+          { label: '오늘 방문', value: todayCount.toLocaleString(), color: '#f08c00', icon: '📅', sub: '' },
+          { label: '로그인 방문', value: loggedInCount.toLocaleString(), color: '#8b5cf6', icon: '🔐', sub: '회원 방문 수' },
         ].map(k => (
           <div key={k.label} style={{
             background: `linear-gradient(145deg, ${k.color}14 0%, ${k.color}05 100%)`,
@@ -267,7 +307,7 @@ export default function VisitorTab() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
             <thead>
               <tr>
-                {['방문시각', '페이지', '유입경로', '로그인'].map(h => (
+                {['방문시각', '페이지', '방문자', '유입경로', '상태'].map(h => (
                   <th key={h} style={{
                     padding: '8px 10px', textAlign: 'left',
                     color: 'rgba(255,255,255,0.35)', fontWeight: 600,
@@ -282,8 +322,25 @@ export default function VisitorTab() {
                   <td style={{ padding: '7px 10px', color: 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap' }}>
                     {l.created_at.replace('T', ' ').slice(0, 16)}
                   </td>
-                  <td style={{ padding: '7px 10px', color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>
+                  <td style={{ padding: '7px 10px', color: 'rgba(255,255,255,0.75)', fontWeight: 500, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {l.page_path}
+                  </td>
+                  {/* 로그인 사용자: 이름+이메일 / 비로그인: 세션ID 앞 8자 */}
+                  <td style={{ padding: '7px 10px' }}>
+                    {l.profile ? (
+                      <div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#60a5fa' }}>
+                          {l.profile.full_name ?? '이름없음'}
+                        </div>
+                        <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>
+                          {l.profile.email ?? '-'}
+                        </div>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>
+                        {l.session_id.slice(0, 8)}…
+                      </span>
+                    )}
                   </td>
                   <td style={{ padding: '7px 10px', color: 'rgba(255,255,255,0.45)' }}>
                     {formatReferrer(l.referrer)}
@@ -297,6 +354,13 @@ export default function VisitorTab() {
                   </td>
                 </tr>
               ))}
+              {logs.length === 0 && (
+                <tr>
+                  <td colSpan={5} style={{ padding: '24px 10px', textAlign: 'center', color: 'rgba(255,255,255,0.25)' }}>
+                    방문 기록이 없습니다.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
           {logs.length > 50 && (
