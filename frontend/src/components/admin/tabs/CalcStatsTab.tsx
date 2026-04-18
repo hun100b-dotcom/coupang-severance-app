@@ -1,11 +1,17 @@
 // ============================================================
 // CalcStatsTab: 어드민 대시보드 [계산기 통계] 탭
 // reports 테이블 기반으로 서비스별 사용량을 분석합니다.
-// - 서비스별(퇴직금/실업급여/주휴수당/연차수당) 사용 건수 KPI
-// - 적격률 및 평균 퇴직금 KPI
-// - 일별 계산 트렌드 (최근 30일)
-// - 퇴직금 구간별 분포
-// - 엑셀 다운로드
+//
+// reports 테이블 실제 구조:
+//   id, user_id, title, company_name, created_at, payload(jsonb)
+//
+// payload 안에 type 필드로 계산기 종류 구분:
+//   퇴직금:   payload.type === 'severance' 또는 없음
+//   주휴수당: payload.type === 'weekly_allowance'
+//   연차수당: payload.type === 'annual_leave'
+//   실업급여: payload.type === 'unemployment'
+//
+// 퇴직금 payload 예: { severance, qualifying_days, eligible, ... }
 // ============================================================
 
 import React, { useEffect, useState } from 'react'
@@ -16,19 +22,39 @@ import {
 import { supabase } from '../../../lib/supabase'
 import { exportXlsx } from '../../../lib/exportXlsx'
 
-// reports 테이블 조회 결과 타입
+// reports 테이블 조회 결과 타입 (실제 컬럼 기준)
 interface Report {
   id: string
-  service_type: string | null
-  qualifying_days: number | null
-  severance_amount: number | null
+  title: string
   created_at: string
+  payload: Record<string, unknown> | null  // jsonb 파싱 결과
 }
 
 // 일별 집계 타입
 interface DailyCount {
   date: string
   count: number
+}
+
+// payload에서 계산기 종류 추출
+function getServiceType(r: Report): string {
+  const type = r.payload?.type as string | undefined
+  if (type === 'weekly_allowance') return 'weekly_allowance'
+  if (type === 'annual_leave') return 'annual_leave'
+  if (type === 'unemployment') return 'unemployment'
+  return 'severance'  // type 없거나 'severance' → 퇴직금
+}
+
+// payload에서 근무일수(qualifying_days) 추출
+function getQualifyingDays(r: Report): number {
+  const days = r.payload?.qualifying_days
+  return typeof days === 'number' ? days : 0
+}
+
+// payload에서 퇴직금액(severance) 추출
+function getSeveranceAmount(r: Report): number {
+  const amt = r.payload?.severance
+  return typeof amt === 'number' ? amt : 0
 }
 
 // ── 금액 포맷 헬퍼 ─────────────────────────────────────────
@@ -71,14 +97,16 @@ export default function CalcStatsTab() {
     setError(null)
     try {
       if (!supabase) throw new Error('Supabase 클라이언트 없음')
+      // 실제 컬럼: id, title, created_at, payload (jsonb)
+      // service_type/qualifying_days/severance_amount 컬럼 없음 — payload 안에 있음
       const { data, error: err } = await supabase
         .from('reports')
-        .select('id, service_type, qualifying_days, severance_amount, created_at')
+        .select('id, title, created_at, payload')
         .gte('created_at', getFromDate(range))
         .order('created_at', { ascending: false })
         .limit(2000)
       if (err) throw err
-      setReports(data ?? [])
+      setReports((data ?? []) as Report[])
       setLastUpdated(new Date())
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '데이터 로드 실패')
@@ -90,23 +118,23 @@ export default function CalcStatsTab() {
   useEffect(() => { load() }, [range]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── 집계 계산 ──────────────────────────────────────────────
-  // 서비스별 분류 (service_type이 null이면 퇴직금으로 가정)
+  // 서비스별 분류 (payload.type 기반)
   const byService = {
-    severance: reports.filter(r => !r.service_type || r.service_type === 'severance').length,
-    unemployment: reports.filter(r => r.service_type === 'unemployment').length,
-    weekly: reports.filter(r => r.service_type === 'weekly_allowance').length,
-    annual: reports.filter(r => r.service_type === 'annual_leave').length,
+    severance:    reports.filter(r => getServiceType(r) === 'severance').length,
+    unemployment: reports.filter(r => getServiceType(r) === 'unemployment').length,
+    weekly:       reports.filter(r => getServiceType(r) === 'weekly_allowance').length,
+    annual:       reports.filter(r => getServiceType(r) === 'annual_leave').length,
   }
 
   // 퇴직금 서비스 기준 적격/비적격
-  const severanceReports = reports.filter(r => !r.service_type || r.service_type === 'severance')
-  const eligible = severanceReports.filter(r => (r.qualifying_days ?? 0) >= 365).length
+  const severanceReports = reports.filter(r => getServiceType(r) === 'severance')
+  const eligible = severanceReports.filter(r => getQualifyingDays(r) >= 365).length
   const eligibleRate = severanceReports.length > 0 ? Math.round(eligible / severanceReports.length * 100) : 0
 
   // 평균 퇴직금 (적격자 기준)
   const eligibleAmounts = severanceReports
-    .filter(r => (r.qualifying_days ?? 0) >= 365 && (r.severance_amount ?? 0) > 0)
-    .map(r => r.severance_amount ?? 0)
+    .filter(r => getQualifyingDays(r) >= 365 && getSeveranceAmount(r) > 0)
+    .map(r => getSeveranceAmount(r))
   const avgSeverance = eligibleAmounts.length > 0
     ? Math.round(eligibleAmounts.reduce((a, b) => a + b, 0) / eligibleAmounts.length) : 0
 
@@ -123,8 +151,8 @@ export default function CalcStatsTab() {
   // 퇴직금 구간 분포
   const rangeData = SEVERANCE_RANGES.map(rng => ({
     label: rng.label,
-    count: reports.filter(r => {
-      const amt = r.severance_amount ?? 0
+    count: severanceReports.filter(r => {
+      const amt = getSeveranceAmount(r)
       return amt >= rng.min && amt < rng.max
     }).length,
     color: rng.color,
@@ -134,10 +162,11 @@ export default function CalcStatsTab() {
   const handleDownload = () => {
     const data = reports.map(r => ({
       생성일시: r.created_at.replace('T', ' ').slice(0, 19),
-      서비스: r.service_type ?? '퇴직금',
-      근무일수: r.qualifying_days ?? 0,
-      퇴직금액: r.severance_amount ?? 0,
-      적격여부: (r.qualifying_days ?? 0) >= 365 ? '적격' : '비적격',
+      제목:     r.title ?? '',
+      서비스:   getServiceType(r),
+      근무일수: getQualifyingDays(r),
+      퇴직금액: getSeveranceAmount(r),
+      적격여부: getQualifyingDays(r) >= 365 ? '적격' : '비적격',
     }))
     exportXlsx(data, `calc_stats_${range}일_${new Date().toISOString().slice(0, 10)}`)
   }
@@ -265,17 +294,23 @@ export default function CalcStatsTab() {
       {/* ── 퇴직금 구간 분포 ──────────────────────────────── */}
       <div style={CARD}>
         <p style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 14 }}>퇴직금 구간 분포</p>
-        <ResponsiveContainer width="100%" height={160}>
-          <BarChart data={rangeData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="label" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.35)' }} />
-            <YAxis tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} />
-            <Tooltip contentStyle={TT} formatter={(v: number) => [`${v}건`, '계산 건수']} />
-            <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-              {rangeData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        {severanceReports.length === 0 ? (
+          <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem', textAlign: 'center', padding: '20px 0' }}>
+            퇴직금 계산 데이터가 없습니다.
+          </p>
+        ) : (
+          <ResponsiveContainer width="100%" height={160}>
+            <BarChart data={rangeData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+              <XAxis dataKey="label" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.35)' }} />
+              <YAxis tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} />
+              <Tooltip contentStyle={TT} formatter={(v: number) => [`${v}건`, '계산 건수']} />
+              <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                {rangeData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   )

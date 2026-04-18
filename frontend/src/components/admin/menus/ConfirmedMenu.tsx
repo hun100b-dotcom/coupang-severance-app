@@ -282,11 +282,11 @@ export default function ConfirmedMenu() {
           style={{
             padding: '6px 12px', borderRadius: 8,
             border: '1px solid rgba(255,255,255,0.12)',
-            background: 'rgba(255,255,255,0.05)', color: '#fff',
+            background: '#1a1a2e', color: '#fff', /* 불투명 배경: option 텍스트 가시성 확보 */
             fontSize: '0.82rem', cursor: 'pointer', outline: 'none',
           }}>
-          <option value="all">전체 사업장</option>
-          {companies.map(c => <option key={c} value={c}>{c}</option>)}
+          <option value="all" style={{ background: '#1a1a2e', color: '#fff' }}>전체 사업장</option>
+          {companies.map(c => <option key={c} value={c} style={{ background: '#1a1a2e', color: '#fff' }}>{c}</option>)}
         </select>
 
         {/* 상태 필터 */}
