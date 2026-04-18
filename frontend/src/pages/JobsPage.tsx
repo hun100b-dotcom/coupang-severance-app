@@ -79,7 +79,7 @@ function toCardData(job: JobPosting): JobCardData {
     apply_methods.push({ type: 'sms', label: '문자 지원', value: job.contact_phone })
   }
   if (job.external_link) {
-    apply_methods.push({ type: 'landing', label: '원본 공고 바로가기 →', value: job.external_link })
+    apply_methods.push({ type: 'landing', label: '회사 정보 보기', value: job.external_link })
   }
 
   return {
@@ -552,23 +552,21 @@ export default function JobsPage() {
                         ${isFav ? 'border-yellow-400 shadow-[0_8px_32px_rgba(250,204,21,0.15)]' : 'border-white/60'}`}
                     >
                       <div className="p-4">
-                        {/* 로고 + 회사명 + 즐겨찾기 */}
-                        <div className="flex items-start gap-3 mb-3">
-                          {/* 회사 공식 로고 */}
+                        {/* 상단: 로고 + 회사명/센터명 + 긴급배지 + 즐겨찾기 */}
+                        <div className="flex items-start gap-3 mb-3.5">
                           <img src={job.logo_url} alt={job.company_name}
-                            className="w-11 h-11 rounded-xl object-contain bg-white p-1 shadow-sm border border-gray-100 shrink-0" />
+                            className="w-12 h-12 rounded-xl object-contain bg-white p-1 shadow-sm border border-gray-100 shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              {job.recruit_type !== 'regular' && (
-                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                                  job.recruit_type === 'urgent_today' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'
-                                }`}>
-                                  {job.recruit_type === 'urgent_today' ? '오늘' : '내일'}
-                                </span>
-                              )}
-                              <span className="text-[15px] font-extrabold text-[#191f28] truncate">{job.company_name}</span>
-                            </div>
-                            <p className="text-[13px] text-[#6b7280]">{job.center_name}</p>
+                            {/* 긴급 배지 — 카드 상단에 크게 표시 */}
+                            {job.recruit_type !== 'regular' && (
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold mb-1 ${
+                                job.recruit_type === 'urgent_today' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'
+                              }`}>
+                                {job.recruit_type === 'urgent_today' ? '🔥 오늘 긴급' : '⚡ 내일 긴급'}
+                              </span>
+                            )}
+                            <p className="text-[15px] font-extrabold text-[#191f28] leading-tight truncate">{job.company_name}</p>
+                            <p className="text-[12px] text-[#8b95a1] leading-tight truncate">{job.center_name}</p>
                           </div>
                           <button onClick={(e) => { e.stopPropagation(); toggleFav('center', centerKey) }}
                             className="p-1.5 -mt-0.5 rounded-xl hover:bg-yellow-50 transition-colors shrink-0">
@@ -576,52 +574,71 @@ export default function JobsPage() {
                           </button>
                         </div>
 
-                        {/* 위치 + 시간 */}
-                        <div className="flex items-center gap-3 text-[12px] text-[#6b7280] mb-3">
-                          <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-[#3182f6]" />{job.address_detail}</span>
-                          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-[#8b95a1]" />{job.work_hours}</span>
-                        </div>
-
-                        {/* 시급/일급 2열 */}
-                        <div className="grid grid-cols-2 gap-2 mb-3">
-                          <div className="bg-gradient-to-br from-blue-50 to-sky-50 rounded-2xl px-3 py-2.5 text-center">
-                            <p className="text-[10px] text-[#8b95a1] mb-0.5">시급</p>
-                            <p className="text-[19px] font-black text-[#3182f6] tracking-tight">{fmtWage(job.hourly_wage)}<span className="text-[11px] font-bold">원</span></p>
-                          </div>
-                          <div className="bg-slate-50 rounded-2xl px-3 py-2.5 text-center">
-                            <p className="text-[10px] text-[#8b95a1] mb-0.5">일급</p>
-                            <p className="text-[19px] font-black text-[#191f28] tracking-tight">{fmtWage(job.daily_wage)}<span className="text-[11px] font-bold">원</span></p>
+                        {/* 시급 히어로 카드 — 지원 동기의 핵심 정보. 시급 크게, 일급 보조 */}
+                        <div className="bg-gradient-to-r from-blue-50 via-sky-50 to-indigo-50 rounded-2xl px-4 py-3 mb-3">
+                          <div className="flex items-baseline justify-between">
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-[10px] text-[#8b95a1] font-medium">시급</span>
+                              <span className="text-[26px] font-black text-[#3182f6] tracking-tight leading-none">{fmtWage(job.hourly_wage)}</span>
+                              <span className="text-[13px] font-bold text-[#3182f6]">원</span>
+                            </div>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-[10px] text-[#8b95a1] font-medium">일급</span>
+                              <span className="text-[16px] font-black text-[#4e5968] tracking-tight">{fmtWage(job.daily_wage)}</span>
+                              <span className="text-[11px] font-semibold text-[#8b95a1]">원</span>
+                            </div>
                           </div>
                         </div>
 
-                        {/* 혜택 뱃지 */}
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {job.benefits.map(b => (
-                            <span key={b} className="px-2.5 py-1 rounded-lg bg-gray-50 border border-gray-100 text-[11px] font-semibold text-[#6b7280]">{b}</span>
-                          ))}
+                        {/* 위치·시간·모집인원·마감 한 줄 — 작은 점(·)으로 구분해 콤팩트하게 */}
+                        <div className="flex items-center gap-1.5 text-[12px] text-[#6b7280] mb-2.5 flex-wrap">
+                          <span className="flex items-center gap-1 shrink-0">
+                            <MapPin className="w-3.5 h-3.5 text-[#3182f6] shrink-0" />
+                            <span className="truncate max-w-[90px]">{job.address_detail}</span>
+                          </span>
+                          <span className="text-[#c8cdd2] shrink-0">·</span>
+                          <span className="flex items-center gap-1 shrink-0">
+                            <Clock className="w-3.5 h-3.5 text-[#8b95a1] shrink-0" />{job.work_hours}
+                          </span>
+                          <span className="text-[#c8cdd2] shrink-0">·</span>
+                          <span className="flex items-center gap-1 shrink-0 font-medium">
+                            <Users className="w-3.5 h-3.5 text-[#8b95a1] shrink-0" />{job.headcount}명
+                          </span>
+                          {job.expires_at && (
+                            <>
+                              <span className="text-[#c8cdd2] shrink-0">·</span>
+                              <span className="shrink-0 text-[#ef4444] font-semibold">~{fmtDate(job.expires_at)}</span>
+                            </>
+                          )}
                         </div>
 
-                        {/* 인원 + 마감 */}
-                        <div className="flex items-center justify-between text-[12px] text-[#8b95a1] mb-3">
-                          <span className="flex items-center gap-1 font-medium"><Users className="w-3.5 h-3.5" />{job.headcount}명 모집</span>
-                          {job.expires_at && <span className="font-medium">~{fmtDate(job.expires_at)} 마감</span>}
-                        </div>
+                        {/* 혜택 뱃지 — 최대 3개 + 초과 카운트. 이모지 강조 */}
+                        {job.benefits.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                            {job.benefits.slice(0, 3).map(b => (
+                              <span key={b} className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 border border-emerald-100 text-[11px] font-semibold text-emerald-700">
+                                <span className="text-[10px]">{getBenefitEmoji(b)}</span>{b}
+                              </span>
+                            ))}
+                            {job.benefits.length > 3 && (
+                              <span className="text-[11px] text-[#8b95a1] font-medium">+{job.benefits.length - 3}개 더</span>
+                            )}
+                          </div>
+                        )}
 
-                        {/* 하단 버튼 영역: 상세보기 + 지원하기 */}
-                        <div className="flex gap-2">
-                          {/* 상세보기 버튼 — 기존 CATCH 하기와 동일한 동작 */}
+                        {/* 하단 버튼: 상세보기(라인) + 지원하기(강조) */}
+                        <div className="flex gap-2 mt-1">
                           <button
                             onClick={() => setSelectedJob(job)}
-                            className="flex-1 py-3 rounded-2xl border border-[#3182f6] text-[#3182f6]
+                            className="flex-1 py-3 rounded-2xl border border-[#e5e8eb] text-[#4e5968]
                               font-bold text-[13px] flex items-center justify-center gap-1
-                              active:scale-[0.98] transition-transform hover:bg-blue-50"
+                              active:scale-[0.98] transition-transform hover:bg-gray-50"
                           >
                             상세보기
                           </button>
 
                           {/* 지원하기 버튼 — 이미 지원했으면 비활성화 */}
                           {appliedMap[job.id] ? (
-                            // 지원 완료 상태 (비활성)
                             <button
                               disabled
                               className="flex-1 py-3 rounded-2xl bg-emerald-100 text-emerald-700
@@ -632,11 +649,10 @@ export default function JobsPage() {
                               지원완료
                             </button>
                           ) : (
-                            // 지원하기 버튼 (활성)
                             <button
                               onClick={(e) => handleApply(e, job.id)}
                               disabled={isApplySubmitting && pendingApplyJobId === job.id}
-                              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#3182F6] to-[#2563eb]
+                              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#3182F6] to-[#6366f1]
                                 text-white font-bold text-[13px] flex items-center justify-center gap-1
                                 shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-transform
                                 disabled:opacity-70 disabled:cursor-not-allowed"
@@ -675,10 +691,11 @@ export default function JobsPage() {
               exit={{ y: 500 }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
               className="w-full max-w-[460px] bg-white rounded-t-[28px]
-                shadow-[0_-12px_48px_rgba(0,0,0,0.12)] max-h-[92vh] overflow-y-auto"
-              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)' }}
+                shadow-[0_-12px_48px_rgba(0,0,0,0.12)] max-h-[92vh] flex flex-col"
               onClick={e => e.stopPropagation()}
             >
+              {/* 스크롤 가능 콘텐츠 영역 — sticky CTA와 분리 */}
+              <div className="flex-1 overflow-y-auto">
               <div className="p-6">
                 <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
                 <button onClick={() => setSelectedJob(null)}
@@ -737,15 +754,19 @@ export default function JobsPage() {
                   </div>
                 </div>
 
-                {/* Frame 4: 복리후생 */}
-                <div className="rounded-2xl bg-gray-50 p-4 mb-4">
-                  <p className="text-[12px] font-bold text-[#8b95a1] mb-2.5">복리후생</p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedJob.benefits.map(b => (
-                      <span key={b} className="px-3 py-1.5 rounded-xl bg-white border border-gray-100 text-[13px] font-semibold text-[#4e5968] shadow-sm">{b}</span>
-                    ))}
+                {/* Frame 4: 혜택 & 복리후생 — 이모지 매핑으로 시각적 매력 강화 */}
+                {selectedJob.benefits.length > 0 && (
+                  <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 p-4 mb-4">
+                    <p className="text-[12px] font-bold text-emerald-700 mb-3">🎁 혜택 &amp; 복리후생</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedJob.benefits.map(b => (
+                        <span key={b} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-emerald-100 text-[13px] font-semibold text-[#4e5968] shadow-sm">
+                          <span>{getBenefitEmoji(b)}</span>{b}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Frame 5: 상세 내용 */}
                 {selectedJob.description && (
@@ -798,10 +819,44 @@ export default function JobsPage() {
                     })}
                     {/* 원본 공고 링크 없는 경우 명시 — 직업안정법 면책 대응 */}
                     {!selectedJob.external_link && (
-                      <p className="text-center text-[13px] text-gray-400 py-1">원본 공고 링크 없음</p>
+                      <p className="text-center text-[13px] text-gray-400 py-1">회사 정보 링크 없음</p>
                     )}
                   </div>
                 </div>
+
+                {/* 비슷한 공고 더보기 — 같은 회사 또는 같은 지역 공고 최대 3건 */}
+                {(() => {
+                  const similar = allJobs.filter(j =>
+                    j.id !== selectedJob.id &&
+                    (j.company_name === selectedJob.company_name || j.region === selectedJob.region)
+                  ).slice(0, 3)
+                  if (similar.length === 0) return null
+                  return (
+                    <div className="rounded-2xl bg-gray-50 p-4 mb-4">
+                      <p className="text-[12px] font-bold text-[#8b95a1] mb-3">📋 비슷한 공고 더보기</p>
+                      <div className="flex flex-col gap-2">
+                        {similar.map(j => (
+                          <button
+                            key={j.id}
+                            onClick={() => setSelectedJob(j)}
+                            className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 text-left hover:border-blue-200 transition-colors active:scale-[0.98]"
+                          >
+                            <img src={j.logo_url} alt={j.company_name}
+                              className="w-9 h-9 rounded-lg object-contain bg-white p-0.5 border border-gray-100 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[13px] font-bold text-[#191f28] truncate">{j.company_name}</p>
+                              <p className="text-[11px] text-[#8b95a1] truncate">{j.center_name} · {j.region}</p>
+                            </div>
+                            <div className="shrink-0 text-right">
+                              <p className="text-[14px] font-black text-[#3182f6]">{fmtWage(j.hourly_wage)}<span className="text-[10px] font-semibold">원</span></p>
+                              <p className="text-[10px] text-[#8b95a1]">시급</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
 
                 {/* 카카오톡 공유 버튼 — 채용공고를 지인에게 공유 */}
                 <div className="mt-1">
@@ -821,6 +876,39 @@ export default function JobsPage() {
                     label="카카오톡으로 공유하기"
                   />
                 </div>
+              </div>
+              </div>
+              {/* ── 하단 고정 CTA — 지원하기 버튼을 항상 눈에 보이게 sticky 배치 ── */}
+              <div
+                className="bg-white border-t border-gray-100 px-5 py-4 shrink-0"
+                style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
+              >
+                {appliedMap[selectedJob.id] ? (
+                  // 이미 지원 완료 상태
+                  <button
+                    disabled
+                    className="w-full py-4 rounded-2xl bg-emerald-50 border border-emerald-200
+                      text-emerald-700 font-black text-[15px] flex items-center justify-center gap-2 cursor-default"
+                  >
+                    <CheckCircle2 className="w-5 h-5" />지원 완료
+                  </button>
+                ) : (
+                  // 지원하기 버튼 — 팝업에서 바로 지원 가능
+                  <button
+                    onClick={(e) => handleApply(e, selectedJob.id)}
+                    disabled={isApplySubmitting && pendingApplyJobId === selectedJob.id}
+                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#3182F6] to-[#6366f1]
+                      text-white font-black text-[15px] flex items-center justify-center gap-2
+                      shadow-xl shadow-blue-500/30 active:scale-[0.98] transition-transform
+                      disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {isApplySubmitting && pendingApplyJobId === selectedJob.id ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>지원하기 <ChevronRight className="w-5 h-5" /></>
+                    )}
+                  </button>
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -917,6 +1005,32 @@ export default function JobsPage() {
       </AnimatePresence>
     </div>
   )
+}
+
+// 복리후생 키워드 → 이모지 매핑 테이블 (부분 문자열 매칭)
+// ⚠️ 주의: 긴 키워드를 짧은 키워드보다 반드시 앞에 등록해야 올바르게 매칭됨
+// 예) '야간수당'이 '야간'보다 앞에, '4대 보험'이 '보험'보다 앞에 있어야 함
+const BENEFIT_EMOJI_MAP: [string, string][] = [
+  ['식사', '🍱'], ['밥', '🍱'], ['도시락', '🍱'],
+  ['셔틀', '🚌'], ['통근버스', '🚌'], ['버스', '🚌'],
+  ['주차', '🅿️'],
+  ['당일 지급', '💵'], ['일당', '💵'], ['즉시', '💵'],
+  ['4대보험', '🛡️'], ['4대 보험', '🛡️'], ['보험', '🛡️'],
+  ['안전화', '👢'],
+  ['유니폼', '👕'], ['작업복', '👕'],
+  ['야간수당', '🌙'], ['야간 수당', '🌙'], ['야간', '🌙'],
+  ['주휴', '📅'], ['연차', '📅'],
+  ['경력 우대', '⭐'], ['경력', '⭐'],
+  ['신입 환영', '🙌'], ['신입', '🙌'],
+  ['주말', '📆'],
+]
+
+// 혜택 텍스트에서 이모지를 찾아 반환. 매칭 없으면 ✓
+function getBenefitEmoji(benefit: string): string {
+  for (const [keyword, emoji] of BENEFIT_EMOJI_MAP) {
+    if (benefit.includes(keyword)) return emoji
+  }
+  return '✓'
 }
 
 function FrameRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
