@@ -141,3 +141,49 @@ export async function getAppliedJobIds(
   }
   return map
 }
+
+// ─────────────────────────────────────────────────────────────
+// 스케줄 상세 관리 (Phase 1 step 4 — 20260419 추가)
+// 근무 시간, 차감 항목, 지급 추적, 사용자 메모를 한 번에 수정
+// ─────────────────────────────────────────────────────────────
+
+/** 스케줄 상세 수정 입력 타입 — 모두 옵셔널 (부분 업데이트 지원) */
+export interface ScheduleDetailUpdate {
+  work_start_time?: string | null       // "HH:mm" 또는 "HH:mm:ss" (Postgres time 자동 파싱)
+  work_end_time?: string | null
+  transport_cost?: number | null        // 원
+  meal_cost?: number | null
+  other_deduction?: number | null
+  payment_expected_date?: string | null // "YYYY-MM-DD"
+  payment_received_at?: string | null   // ISO timestamp
+  user_memo?: string | null
+}
+
+// ── 스케줄 상세 수정 (근무시간/차감/메모/지급) ──
+// 주간뷰 타임라인이나 상세 팝업에서 사용
+export async function updateScheduleDetail(
+  applicationId: string,
+  detail: ScheduleDetailUpdate,
+): Promise<boolean> {
+  if (!supabase) return false
+  const { error } = await supabase
+    .from('job_applications')
+    .update(detail)
+    .eq('id', applicationId)
+  if (error) {
+    console.error('[스케줄 상세 수정 오류]', error)
+    return false
+  }
+  return true
+}
+
+// ── 실수령액 계산 헬퍼 (일급 - 차감 합계) ──
+// 일급은 job_postings JOIN 데이터에서 가져옴 (listApplications 결과에 포함됨)
+export function calculateNetIncome(app: JobApplication): number {
+  const gross = app.job_postings?.daily_wage ?? 0
+  const deduction =
+    (app.transport_cost ?? 0) +
+    (app.meal_cost ?? 0) +
+    (app.other_deduction ?? 0)
+  return Math.max(0, gross - deduction)
+}

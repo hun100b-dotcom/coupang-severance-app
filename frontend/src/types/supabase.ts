@@ -162,6 +162,15 @@ export interface JobApplication {
   shoe_size: string | null                  // 안전화 사이즈 (mm)
   notes: string | null                      // 특이사항/건강상 이슈
   emergency_contact: string | null          // 비상 연락처
+  // 스케줄 상세 관리 — 20260419 추가 (기획서 tasks/schedule-manager-plan.md §3-1)
+  work_start_time?: string | null           // 출근 시각 "HH:mm:ss" — 주간뷰 타임라인 배치 기준
+  work_end_time?: string | null             // 퇴근 시각 "HH:mm:ss" — 야간근무도 저장 가능
+  transport_cost?: number | null            // 교통비 (원) — 실수령액 차감
+  meal_cost?: number | null                 // 식비 (원) — 실수령액 차감
+  other_deduction?: number | null           // 기타 차감 (원)
+  payment_expected_date?: string | null     // 지급 예상일 "YYYY-MM-DD"
+  payment_received_at?: string | null       // 실제 지급 확인 시각 (ISO timestamp)
+  user_memo?: string | null                 // 사용자 본인 메모 (어드민용 note와 분리)
   // Supabase JOIN 시 포함되는 공고 상세 (선택)
   job_postings?: Pick<JobPosting, 'company_name' | 'center_name' | 'region' | 'hourly_wage' | 'daily_wage' | 'work_hours'> | null
 }
