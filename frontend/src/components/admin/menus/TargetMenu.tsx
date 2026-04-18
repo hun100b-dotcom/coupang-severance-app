@@ -343,7 +343,7 @@ export default function TargetMenu() {
             {/* Rows */}
             {segments.duration_labels.flatMap((rl, ri) => [
               <div key={`rl-${ri}`} style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.42)', display: 'flex', alignItems: 'center', fontWeight: 600 }}>{rl}</div>,
-              ...segments.heatmap[ri].map((val, ci) => {
+              ...(segments.heatmap[ri] ?? []).map((val, ci) => {
                 const intensity = val / maxHeat
                 return (
                   <div key={`c-${ri}-${ci}`} style={{

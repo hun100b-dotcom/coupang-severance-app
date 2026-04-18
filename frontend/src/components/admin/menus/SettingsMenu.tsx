@@ -332,7 +332,7 @@ export default function SettingsMenu({ isSuperAdmin }: Props) {
                 <div style={{ width: 3, height: 16, background: '#f04040', borderRadius: 2 }} />
                 <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#f04040' }}>최고관리자 전용 설정</span>
               </div>
-              <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)' }}>catchmarsterdmin@gmail.com 계정에서만 표시됩니다.</p>
+              <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)' }}>catchmasterdmin@gmail.com 계정에서만 표시됩니다.</p>
             </div>
             <MaskingKeySection />
             <PermissionLevelsSection onSaved={() => {}} />
