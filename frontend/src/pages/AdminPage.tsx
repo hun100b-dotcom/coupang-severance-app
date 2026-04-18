@@ -16,9 +16,9 @@ import MembersMenu from '../components/admin/menus/MembersMenu'
 import AccountsMenu from '../components/admin/menus/AccountsMenu'
 import JobsMenu from '../components/admin/menus/JobsMenu'
 
+// target은 대시보드 [타겟 분석] 서브탭으로 통합되어 제거됨
 const ALL_MENUS: { key: AdminMenu; icon: string; label: string }[] = [
   { key: 'dashboard',  icon: '🏠', label: 'Dashboard'   },
-  { key: 'target',     icon: '🎯', label: 'Target'       },
   { key: 'jobs',       icon: '💼', label: '채용공고'      },
   { key: 'inquiries',  icon: '💬', label: 'Inquiries'    },
   { key: 'notices',    icon: '📢', label: '공지사항'      },

@@ -13,6 +13,7 @@ import ProtectedRoute from './components/ProtectedRoute' // 로그인 필요 페
 import OnboardingGuard from './components/OnboardingGuard' // 온보딩 미완료 사용자 리다이렉트 가드
 import LoadingOverlay from './components/LoadingOverlay' // lazy 로딩 중 보여줄 스피너 컴포넌트
 import SplashScreen from './components/SplashScreen'   // 앱 최초 접속 시 스플래시 화면
+import { useVisitorTracking } from './hooks/useVisitorTracking' // 페이지 방문 기록 훅
 
 // ── 즉시 로딩 페이지 (앱 시작 시 항상 필요한 페이지) ────────────────────────
 // 아래 4개 페이지는 사용자가 앱을 열자마자 마주칠 수 있으므로 번들에 포함합니다.
@@ -57,6 +58,14 @@ const WeeklyAllowanceGuide   = lazy(() => import('./pages/guide/WeeklyAllowanceG
 const AnnualLeaveGuide       = lazy(() => import('./pages/guide/AnnualLeaveGuide'))       // 연차수당 가이드
 
 
+
+// ── 방문자 추적 컴포넌트 ──────────────────────────────────────────────────────
+// useVisitorTracking 훅은 useLocation이 필요하므로 BrowserRouter 내부에 위치해야 합니다.
+// 빈 컴포넌트 형태로 삽입해 Routes와 동급에서 실행합니다.
+function VisitorTracker() {
+  useVisitorTracking()
+  return null // 화면에 아무것도 렌더링하지 않습니다.
+}
 
 // /home 경로 가드: 비로그인 + 비게스트 사용자는 랜딩(/)으로, 로그인 또는 게스트는 Home으로
 function HomeGuard() {
@@ -116,6 +125,9 @@ export default function App() {
         {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
 
         <AnimatedBackground /> {/* 모든 페이지 뒤에 공통으로 깔릴 배경 애니메이션입니다. */}
+
+        {/* 방문자 추적: 페이지 이동마다 visitor_logs에 기록합니다 (fire-and-forget) */}
+        <VisitorTracker />
 
         {/* Suspense: lazy 컴포넌트가 아직 로딩 중일 때 LoadingOverlay를 보여줍니다.
             lazy 컴포넌트는 반드시 Suspense 안에 있어야 합니다. */}
