@@ -16,3 +16,9 @@ export { default as WeekView } from './views/WeekView'
 
 // 상세/편집 BottomSheet (Phase 1 step 5)
 export { default as ScheduleDetailSheet } from './sheets/ScheduleDetailSheet'
+
+// 필터 바 + 필터 훅 (Phase 1 step 6)
+export { default as FilterBar, DEFAULT_FILTERS, isFilterActive } from './FilterBar'
+export type { ScheduleFilters } from './FilterBar'
+export { useScheduleFilter } from './hooks/useScheduleFilter'
+export { useScheduleFilterState } from './hooks/useScheduleFilterState'

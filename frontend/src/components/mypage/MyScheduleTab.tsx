@@ -1,5 +1,5 @@
 // 📅 스케줄 탭 — 출근 일정 (월간 / 주간 / 리스트 3가지 뷰)
-// 훅으로 데이터/월 이동을 관리하고, 상단 스위처 선택에 따라 하위 뷰를 바꿔 렌더한다.
+// 훅으로 데이터/월 이동/필터 상태를 관리하고, 상단 스위처+필터바 선택에 따라 하위 뷰를 바꿔 렌더한다.
 // UI 세부 구현은 schedule/ 폴더로 분리되어 있으며, 이 파일은 조립만 담당한다.
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
@@ -13,6 +13,9 @@ import {
   ListView,
   WeekView,
   ScheduleDetailSheet,
+  FilterBar,
+  useScheduleFilter,
+  useScheduleFilterState,
 } from './schedule'
 import type { ViewKey } from './schedule'
 import type { JobApplication } from '../../types/supabase'
@@ -32,6 +35,14 @@ export default function MyScheduleTab({ userId }: Props) {
   // 기본값 'month' (기존 동작 유지). 스위처를 통해 week/list 로 전환.
   const [view, setView] = useState<ViewKey>('month')
 
+  // ── 필터 상태 (URL 쿼리파라미터 동기화) ──
+  // filters: 현재 적용된 필터 / setFilters: 변경 / resetFilters: 초기화
+  const { filters, setFilters, resetFilters } = useScheduleFilterState()
+
+  // ── 필터 적용된 지원 내역 ──
+  // 원본 applications 대신 이 배열을 하위 뷰/통계에 전달한다 (사용자 멘탈 모델 일관성 — 숫자가 같이 움직임)
+  const filteredApplications = useScheduleFilter(applications, filters)
+
   // ── 상세 시트로 표시할 지원 건 (null = 시트 닫힘) ──
   // 3개 뷰가 공유하는 상태 — 각 뷰는 onApplicationClick 으로 이 값을 set
   const [selectedApp, setSelectedApp] = useState<JobApplication | null>(null)
@@ -47,16 +58,24 @@ export default function MyScheduleTab({ userId }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* 누적 통계 카드 3개 (모든 뷰 공통 상단) */}
-      <TotalStatsStrip applications={applications} />
+      {/* 누적 통계 카드 3개 (모든 뷰 공통 상단) — 필터 적용분 기준 */}
+      <TotalStatsStrip applications={filteredApplications} />
+
+      {/* 필터 바 (검색 + 드롭다운 필터) — ViewSwitcher 바로 위 */}
+      <FilterBar
+        filters={filters}
+        onChange={setFilters}
+        onReset={resetFilters}
+        filteredCount={filteredApplications.length}
+      />
 
       {/* 뷰 스위처: 월간 / 주간 / 리스트 */}
       <ViewSwitcher value={view} onChange={setView} />
 
-      {/* 선택한 뷰 렌더링 — 모든 뷰에 onApplicationClick 전달 */}
+      {/* 선택한 뷰 렌더링 — 모든 뷰에 onApplicationClick 전달 + 필터 적용된 데이터 전달 */}
       {view === 'month' && (
         <MonthView
-          applications={applications}
+          applications={filteredApplications}
           year={year}
           month={month}
           onPrevMonth={prevMonth}
@@ -66,19 +85,19 @@ export default function MyScheduleTab({ userId }: Props) {
       )}
       {view === 'week' && (
         <WeekView
-          applications={applications}
+          applications={filteredApplications}
           onApplicationClick={setSelectedApp}
         />
       )}
       {view === 'list' && (
         <ListView
-          applications={applications}
+          applications={filteredApplications}
           onApplicationClick={setSelectedApp}
         />
       )}
 
-      {/* 이번 달 통계 (모든 뷰 공통 하단) */}
-      <MonthStats applications={applications} year={year} month={month} />
+      {/* 이번 달 통계 (모든 뷰 공통 하단) — 필터 적용분 기준 */}
+      <MonthStats applications={filteredApplications} year={year} month={month} />
 
       {/* ── 상세/편집 BottomSheet ── */}
       {/* 저장 성공 시 applyLocalUpdate 로 로컬 배열에 반영 (DB 재조회 불필요) */}
