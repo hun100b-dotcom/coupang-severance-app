@@ -3,6 +3,7 @@
 
 import { supabase } from './supabase'
 
+// 감사 로그에 기록할 수 있는 모든 액션 타입 목록
 type AdminAction =
   | 'admin.login'          // 관리자 페이지 접근
   | 'admin.view_dashboard' // 대시보드 조회
@@ -22,16 +23,29 @@ type AdminAction =
   | 'create_notice'        // 공지사항 생성
   | 'update_notice'        // 공지사항 수정
   | 'delete_notice'        // 공지사항 삭제
+  // 채용공고 관련 액션 (Phase 1)
+  | 'job_create'           // 채용공고 등록
+  | 'job_update'           // 채용공고 수정
+  | 'job_delete'           // 채용공고 삭제 (soft delete)
+  | 'job_section_change'   // 채용공고 섹션 변경 (오늘추가/내일긴급/상시)
+  | 'application_status_change' // 지원자 상태 변경 (확정/완료/취소/거절)
 
 /**
  * 관리자 행동 감사 로그 기록
  * audit_logs 테이블에 직접 INSERT (RLS: is_admin() 필수)
+ *
+ * @param action    - 수행한 액션 타입 (AdminAction)
+ * @param targetType - 대상 리소스 종류 (예: 'job_posting', 'inquiry')
+ * @param targetId  - 대상 리소스 ID
+ * @param afterVal  - 변경 후 값 (after_val 컬럼) — 등록/수정 시 새 데이터
+ * @param beforeVal - 변경 전 값 (before_val 컬럼) — 수정/삭제 시 기존 데이터
  */
 export async function logAdminAction(
   action: AdminAction,
   targetType?: string,
   targetId?: string,
-  details?: Record<string, unknown>
+  afterVal?: Record<string, unknown>,
+  beforeVal?: Record<string, unknown>
 ): Promise<void> {
   if (!supabase) return
 
@@ -42,13 +56,13 @@ export async function logAdminAction(
     await supabase.from('audit_logs').insert({
       admin_email: user.email,
       action,
-      target_type: targetType || null,
-      target_id: targetId || null,
-      before_val: null,
-      after_val: details || null,
-      ip_address: null,
+      target_type: targetType ?? null,
+      target_id:   targetId  ?? null,
+      before_val:  beforeVal ?? null, // 변경 전 스냅샷 (없으면 null)
+      after_val:   afterVal  ?? null, // 변경 후 스냅샷 또는 상세 정보
+      ip_address:  null,              // 보안 정책상 현재 미수집 (향후 백엔드로 이동 예정)
     })
   } catch {
-    // 로그 기록 실패는 관리자 작업을 방해하지 않음
+    // 로그 기록 실패는 관리자 작업을 방해하지 않도록 조용히 처리
   }
 }

@@ -57,6 +57,8 @@ export default function ServerLogsMenu() {
   const [sysLoading, setSysLoading] = useState(false)
   const [newLogIds, setNewLogIds] = useState<Set<string>>(new Set())
   const [isLive, setIsLive] = useState(true)
+  // 아코디언 열림/닫힘 상태 (로그 id를 key로 관리)
+  const [expandedSys, setExpandedSys] = useState<Record<string, boolean>>({})
 
   // ── Audit Logs
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([])
@@ -267,22 +269,33 @@ export default function ServerLogsMenu() {
             ) : sysLogs.map(log => {
               const meta = TYPE_META[log.type] ?? TYPE_META.INFO
               const isNew = newLogIds.has(log.id)
+              const isExpanded = expandedSys[log.id] ?? false
               const source = log.created_by
               const sourceLabel = source?.startsWith('trigger:') ? source.replace('trigger:', '') + ' 트리거' :
                                   source === 'auto-detect' ? '자동감지' :
                                   source === 'system' ? '' : source
 
+              // detail 중 desc 제외한 추가 필드가 있으면 아코디언 버튼 표시
+              const extraDetail = log.detail
+                ? Object.fromEntries(Object.entries(log.detail).filter(([k]) => k !== 'desc'))
+                : null
+              const hasExtra = extraDetail && Object.keys(extraDetail).length > 0
+
+              // 아코디언 토글 핸들러
+              const toggleExpand = () => setExpandedSys(prev => ({ ...prev, [log.id]: !prev[log.id] }))
+
               return (
                 <div key={log.id}>
                   {/* PC 행 */}
                   <div className="hidden md:grid" style={{
-                    gridTemplateColumns: '80px 1fr 80px 140px',
+                    gridTemplateColumns: '80px 1fr 80px 100px 40px',
                     gap: 8, padding: '10px 16px',
-                    borderBottom: '1px solid rgba(255,255,255,0.04)',
+                    borderBottom: isExpanded ? 'none' : '1px solid rgba(255,255,255,0.04)',
                     alignItems: 'start',
                     background: isNew ? 'rgba(34,197,94,0.06)' : 'transparent',
                     transition: 'background 0.5s',
-                  }}>
+                    cursor: hasExtra ? 'pointer' : 'default',
+                  }} onClick={hasExtra ? toggleExpand : undefined}>
                     <span style={{
                       padding: '3px 8px', borderRadius: 6,
                       fontSize: '0.65rem', fontWeight: 700,
@@ -321,7 +334,41 @@ export default function ServerLogsMenu() {
                       title={fmtDate(log.created_at)}>
                       {fmtRelative(log.created_at)}
                     </span>
+                    {/* 아코디언 펼침 버튼 — detail 추가 필드가 있을 때만 표시 */}
+                    {hasExtra ? (
+                      <span style={{
+                        fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)',
+                        userSelect: 'none', textAlign: 'center', paddingTop: 2,
+                      }}>
+                        {isExpanded ? '▲' : '▼'}
+                      </span>
+                    ) : (
+                      <span />
+                    )}
                   </div>
+
+                  {/* PC 아코디언 — detail JSON 펼침 */}
+                  {isExpanded && hasExtra && (
+                    <div className="hidden md:block" style={{
+                      padding: '8px 16px 12px',
+                      borderBottom: '1px solid rgba(255,255,255,0.04)',
+                      background: 'rgba(49,130,246,0.04)',
+                    }}>
+                      <div style={{ fontSize: '0.68rem', color: '#60a5fa', fontWeight: 700, marginBottom: 4 }}>
+                        DETAIL
+                      </div>
+                      <pre style={{
+                        fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)',
+                        fontFamily: 'JetBrains Mono, monospace',
+                        whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+                        margin: 0,
+                        background: 'rgba(255,255,255,0.03)',
+                        borderRadius: 8, padding: '8px 10px',
+                      }}>
+                        {JSON.stringify(extraDetail, null, 2)}
+                      </pre>
+                    </div>
+                  )}
 
                   {/* 모바일 카드 */}
                   <div className="md:hidden" style={{
@@ -349,6 +396,27 @@ export default function ServerLogsMenu() {
                     )}
                     {log.app_version && (
                       <span style={{ fontSize: '0.68rem', color: '#60a5fa', marginTop: 2, display: 'inline-block' }}>{log.app_version}</span>
+                    )}
+                    {/* 모바일 아코디언 버튼 */}
+                    {hasExtra && (
+                      <>
+                        <button onClick={toggleExpand} style={{
+                          ...outlineBtn, padding: '3px 8px', fontSize: '0.7rem', marginTop: 6,
+                        }}>
+                          상세 {isExpanded ? '접기 ▲' : '보기 ▼'}
+                        </button>
+                        {isExpanded && (
+                          <pre style={{
+                            marginTop: 6, fontSize: '0.68rem',
+                            color: 'rgba(255,255,255,0.55)',
+                            fontFamily: 'JetBrains Mono, monospace',
+                            whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+                            background: 'rgba(49,130,246,0.05)', borderRadius: 8, padding: 8,
+                          }}>
+                            {JSON.stringify(extraDetail, null, 2)}
+                          </pre>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

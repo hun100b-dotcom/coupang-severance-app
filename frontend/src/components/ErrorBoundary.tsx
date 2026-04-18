@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { AlertTriangle } from 'lucide-react'
+import { logClientError } from '../lib/systemLog' // 클라이언트 에러 → system_logs 기록
 
 interface Props {
   children: ReactNode
@@ -20,6 +21,8 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary:', error, errorInfo)
+    // system_logs 테이블에 에러 기록 (관리자 서버로그 탭에서 확인 가능)
+    logClientError(error.message, errorInfo.componentStack ?? undefined)
   }
 
   render() {

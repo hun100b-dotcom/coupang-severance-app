@@ -6,6 +6,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../contexts/AuthContext'
+import { logAdminAction } from '../../../lib/adminAuditLog' // 관리자 감사 로그
 import type { JobPosting } from '../../../types/supabase'
 
 // ── 공고 등록/수정 폼 타입 ──
@@ -373,9 +374,38 @@ export default function JobsMenu() {
       if (editTarget) {
         const { error } = await supabase.from('job_postings').update(payload).eq('id', editTarget.id)
         if (error) throw error
+        // 수정 감사 로그: before=기존 데이터, after=변경된 payload
+        await logAdminAction(
+          'job_update',
+          'job_posting',
+          editTarget.id,
+          payload as Record<string, unknown>,
+          {
+            company_name: editTarget.company_name,
+            center_name:  editTarget.center_name,
+            status:       editTarget.status,
+            section:      editTarget.section,
+          }
+        )
       } else {
-        const { error } = await supabase.from('job_postings').insert({ ...payload, created_by: user?.id ?? null })
+        const { data: inserted, error } = await supabase
+          .from('job_postings')
+          .insert({ ...payload, created_by: user?.id ?? null })
+          .select('id')
+          .single()
         if (error) throw error
+        // 등록 감사 로그: after=새 공고 데이터 요약
+        await logAdminAction(
+          'job_create',
+          'job_posting',
+          inserted?.id ?? undefined,
+          {
+            company_name: payload.company_name,
+            center_name:  payload.center_name,
+            section:      payload.section,
+            status:       payload.status,
+          }
+        )
       }
       setPageMode(null)
       fetchJobs()
@@ -406,17 +436,25 @@ export default function JobsMenu() {
     if (error) {
       setAdminToast({ msg: '❌ 섹션 변경 실패', type: 'error' })
     } else {
+      // 섹션 변경 감사 로그
+      await logAdminAction(
+        'job_section_change',
+        'job_posting',
+        job.id,
+        { section: newSection, is_urgent: isUrgent },           // after: 변경 후
+        { section: job.section, is_urgent: job.is_urgent }       // before: 변경 전
+      )
       fetchJobs()
       const labels: Record<string, string> = {
-        'today-urgent': '🔥 오늘 추가모집으로 변경됨',
+        'today-urgent':    '🔥 오늘 추가모집으로 변경됨',
         'tomorrow-urgent': '⚡ 내일 긴급모집으로 변경됨',
-        'always': '📌 상시모집으로 변경됨',
+        'always':          '📌 상시모집으로 변경됨',
       }
       setAdminToast({ msg: labels[newSection] ?? '✅ 섹션 변경됨', type: 'success' })
     }
   }
 
-  // 삭제 (soft delete)
+  // 삭제 (soft delete — status='deleted'로 변경, 실제 행은 남겨둠)
   const handleDelete = async (job: JobPosting) => {
     if (!window.confirm(`"${job.company_name} ${job.center_name}" 공고를 삭제할까요?`)) return
     if (!supabase) return
@@ -426,6 +464,19 @@ export default function JobsMenu() {
     if (error) {
       setAdminToast({ msg: '❌ 삭제 실패: ' + error.message, type: 'error' })
     } else {
+      // 삭제 감사 로그: before=삭제 전 공고 정보
+      await logAdminAction(
+        'job_delete',
+        'job_posting',
+        job.id,
+        { status: 'deleted' },                                      // after: soft-delete 처리
+        {
+          company_name: job.company_name,
+          center_name:  job.center_name,
+          section:      job.section,
+          status:       job.status,
+        }
+      )
       fetchJobs()
       setAdminToast({ msg: '🗑️ 공고가 삭제됐습니다.', type: 'success' })
     }

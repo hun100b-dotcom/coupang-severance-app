@@ -2,6 +2,114 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../../lib/supabase'
 
+/**
+ * before/after 두 JSON 객체를 비교해서 변경된 키를 찾아 하이라이트
+ * - 추가된 키: 초록색
+ * - 삭제된 키: 빨간색
+ * - 변경된 키: 노란색
+ * - 그대로인 키: 흰색(기본)
+ */
+function DiffView({
+  before,
+  after,
+}: {
+  before: Record<string, unknown> | null
+  after:  Record<string, unknown> | null
+}) {
+  // before, after 모두 없으면 렌더링 안 함
+  if (!before && !after) return null
+
+  const beforeObj = before ?? {}
+  const afterObj  = after  ?? {}
+
+  // 양쪽 합산 키 목록
+  const allKeys = Array.from(new Set([...Object.keys(beforeObj), ...Object.keys(afterObj)]))
+
+  // 각 키의 변경 상태 결정
+  function getStatus(key: string): 'added' | 'removed' | 'changed' | 'same' {
+    const inBefore = key in beforeObj
+    const inAfter  = key in afterObj
+    if (!inBefore) return 'added'
+    if (!inAfter)  return 'removed'
+    if (JSON.stringify(beforeObj[key]) !== JSON.stringify(afterObj[key])) return 'changed'
+    return 'same'
+  }
+
+  // 상태별 색상
+  const STATUS_COLOR: Record<string, string> = {
+    added:   '#22c55e',
+    removed: '#ef4444',
+    changed: '#fbbf24',
+    same:    'rgba(255,255,255,0.45)',
+  }
+  const STATUS_LABEL: Record<string, string> = {
+    added:   '+ 추가',
+    removed: '- 삭제',
+    changed: '~ 변경',
+    same:    '',
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+      {/* BEFORE 패널 */}
+      {before && (
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <div style={{ fontSize: '0.68rem', color: '#ef4444', fontWeight: 700, marginBottom: 4 }}>BEFORE</div>
+          <div style={{
+            background: 'rgba(239,68,68,0.05)',
+            borderRadius: 8, padding: '8px 10px',
+          }}>
+            {allKeys.map(key => {
+              const status = getStatus(key)
+              const val = beforeObj[key]
+              if (status === 'added') return null // before에 없는 키는 before 패널에서 표시 안 함
+              return (
+                <div key={key} style={{ marginBottom: 3, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: '0.68rem', color: STATUS_COLOR[status], fontWeight: 600, minWidth: 40, flexShrink: 0 }}>
+                    {STATUS_LABEL[status]}
+                  </span>
+                  <span style={{ fontSize: '0.7rem', color: STATUS_COLOR[status], fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                    <strong style={{ color: STATUS_COLOR[status] }}>{key}:</strong>{' '}
+                    {JSON.stringify(val)}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* AFTER 패널 */}
+      {after && (
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <div style={{ fontSize: '0.68rem', color: '#22c55e', fontWeight: 700, marginBottom: 4 }}>AFTER</div>
+          <div style={{
+            background: 'rgba(34,197,94,0.05)',
+            borderRadius: 8, padding: '8px 10px',
+          }}>
+            {allKeys.map(key => {
+              const status = getStatus(key)
+              const val = afterObj[key]
+              if (status === 'removed') return null // after에 없는 키는 after 패널에서 표시 안 함
+              return (
+                <div key={key} style={{ marginBottom: 3, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: '0.68rem', color: STATUS_COLOR[status], fontWeight: 600, minWidth: 40, flexShrink: 0 }}>
+                    {STATUS_LABEL[status]}
+                  </span>
+                  <span style={{ fontSize: '0.7rem', color: STATUS_COLOR[status], fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                    <strong style={{ color: STATUS_COLOR[status] }}>{key}:</strong>{' '}
+                    {JSON.stringify(val)}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface AuditLogRow {
   id: string
   admin_email: string
@@ -238,29 +346,14 @@ export default function AuditMenu() {
                     )}
                   </div>
 
-                  {/* PC 상세 */}
+                  {/* PC 상세 — before/after diff 하이라이트 */}
                   {expanded[log.id] && hasDetail && (
-                    <div className="hidden md:flex" style={{
-                      padding: '8px 16px 12px', gap: 16,
+                    <div className="hidden md:block" style={{
+                      padding: '8px 16px 12px',
                       borderBottom: '1px solid rgba(255,255,255,0.04)',
                       background: 'rgba(49,130,246,0.04)',
                     }}>
-                      {log.before_val && (
-                        <div style={{ flex: 1 }}>
-                          <span style={{ fontSize: '0.68rem', color: '#ef4444', fontWeight: 700 }}>BEFORE</span>
-                          <pre style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all', margin: '4px 0 0' }}>
-                            {JSON.stringify(log.before_val, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                      {log.after_val && (
-                        <div style={{ flex: 1 }}>
-                          <span style={{ fontSize: '0.68rem', color: '#22c55e', fontWeight: 700 }}>AFTER</span>
-                          <pre style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all', margin: '4px 0 0' }}>
-                            {JSON.stringify(log.after_val, null, 2)}
-                          </pre>
-                        </div>
-                      )}
+                      <DiffView before={log.before_val} after={log.after_val} />
                     </div>
                   )}
 
@@ -284,14 +377,11 @@ export default function AuditMenu() {
                         상세 {expanded[log.id] ? '접기' : '보기'}
                       </button>
                     )}
+                    {/* 모바일 diff 보기 */}
                     {expanded[log.id] && hasDetail && (
-                      <pre style={{
-                        marginTop: 8, fontSize: '0.68rem', color: 'rgba(255,255,255,0.5)',
-                        fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
-                        background: 'rgba(49,130,246,0.05)', borderRadius: 8, padding: 8,
-                      }}>
-                        {JSON.stringify({ before: log.before_val, after: log.after_val }, null, 2)}
-                      </pre>
+                      <div style={{ marginTop: 8 }}>
+                        <DiffView before={log.before_val} after={log.after_val} />
+                      </div>
                     )}
                   </div>
                 </div>
