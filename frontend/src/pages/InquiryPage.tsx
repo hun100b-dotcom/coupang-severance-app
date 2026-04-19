@@ -10,6 +10,7 @@ import { ArrowLeft, Send, CheckCircle, Search, ChevronDown, ChevronUp } from 'lu
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { notifyNewInquiry } from '../lib/api'
 
 // 문의 유형 목록
 const CATEGORIES = ['일반 문의', '채용 관련', '기술 문제', '기타'] as const
@@ -99,17 +100,26 @@ export default function InquiryPage() {
 
     setSubmitting(true)
     try {
-      // inquiries 테이블에 INSERT
+      // inquiries 테이블에 INSERT (id 반환 받아 Discord 알람에 사용)
       // user_id가 있으면 로그인 사용자, 없으면 비회원 문의
-      const { error: dbError } = await supabase.from('inquiries').insert({
+      const { data: newInquiry, error: dbError } = await supabase.from('inquiries').insert({
         user_id: user?.raw.id ?? null, // 비회원도 문의 가능
         category: category,
         title: title.trim(),
         content: content.trim(),
         status: 'waiting', // 접수됨 상태로 시작
-      })
+      }).select('id').single()
 
       if (dbError) throw dbError
+
+      // Discord 알람: 문의 저장 성공 후 비동기 알림 발송 (실패해도 문의 저장은 유지)
+      if (newInquiry?.id) {
+        notifyNewInquiry({
+          inquiryId: newInquiry.id,
+          category: category,
+          userId: user?.raw.id,
+        })
+      }
 
       // 성공 토스트 표시
       setShowSuccess(true)
