@@ -100,9 +100,12 @@ export default function DiscordSettings({ settings, onRefresh }: Props) {
         </button>
       </div>
       {/* 설정 안내 메시지 */}
-      <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', marginTop: 10, lineHeight: 1.6 }}>
-        저장된 URL은 문의 접수 시 자동으로 사용됩니다. Supabase Edge Function 환경변수
-        (DISCORD_WEBHOOK_URL)가 설정되어 있으면 그쪽이 폴백으로 사용됩니다.
+      <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', marginTop: 10, lineHeight: 1.7 }}>
+        저장된 URL은 <strong style={{ color: 'rgba(255,255,255,0.5)' }}>문의 접수 시 실제 알림</strong>에 사용됩니다.
+        (백엔드 FastAPI + Supabase Edge Function 양쪽 모두 이 값을 우선 조회)<br />
+        📡 테스트 버튼은 Edge Function 경로로 즉시 발송합니다.<br />
+        Render 환경변수 <code style={{ color: '#a78bfa' }}>DISCORD_WEBHOOK_URL</code>이 설정된 경우
+        이 값이 없을 때 폴백으로 사용됩니다.
       </p>
       {msg && (
         <p style={{
