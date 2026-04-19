@@ -290,9 +290,10 @@ export default function ApplicantsMenu() {
     }
   }
 
-  // CSV 내보내기 (제3자 동의 + 인적사항 입력 건)
+  // CSV 내보내기 (현재 필터 적용 목록 기준 + 제3자 동의 + 인적사항 입력 건)
   const handleExportCsv = () => {
-    const filtered = applicants.filter(a => a.consent_third_party === true && a.applicant_name)
+    // displayApplicants: LMS 필터(교대/업무/사용자명 등) 적용된 현재 화면 목록
+    const filtered = displayApplicants.filter(a => a.consent_third_party === true && a.applicant_name)
     if (filtered.length === 0) {
       alert('다운로드 가능한 지원자가 없습니다.\n(제3자 제공 동의 + 인적사항 입력 건만 포함됩니다)')
       return

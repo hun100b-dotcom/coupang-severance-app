@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { SystemSettings } from '../../../types/admin'
 import { patchSetting } from '../../../lib/api'
+import { supabase } from '../../../lib/supabase'
 
 interface Props {
   settings: SystemSettings
@@ -11,6 +12,7 @@ export default function DiscordSettings({ settings, onRefresh }: Props) {
   const [url, setUrl] = useState(settings['discord_webhook_url'] ?? '')
   const [enabled, setEnabled] = useState(settings['discord_notify_enabled'] === 'true')
   const [saving, setSaving] = useState(false)
+  const [testing, setTesting] = useState(false)
   const [msg, setMsg] = useState('')
 
   const save = async () => {
@@ -18,12 +20,38 @@ export default function DiscordSettings({ settings, onRefresh }: Props) {
     try {
       await patchSetting('discord_webhook_url', url.trim())
       await patchSetting('discord_notify_enabled', String(enabled))
-      setMsg('저장되었습니다.')
+      setMsg('✅ 저장되었습니다. 문의 접수 시 Discord로 알림이 발송됩니다.')
       onRefresh()
     } catch {
-      setMsg('저장 실패.')
+      setMsg('❌ 저장 실패.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  // 웹훅 테스트: 저장된 URL로 테스트 메시지 발송
+  const testWebhook = async () => {
+    if (!url.trim()) {
+      setMsg('⚠️ Webhook URL을 먼저 입력하세요.')
+      return
+    }
+    setTesting(true); setMsg('')
+    try {
+      // notify-inquiry 엣지 함수에 테스트 메시지 발송 요청
+      const { error } = await supabase!.functions.invoke('notify-inquiry', {
+        body: {
+          message:   '이것은 CATCH 어드민에서 보낸 테스트 알림입니다.',
+          category:  '테스트',
+          userEmail: 'admin-test@catch.kr',
+          createdAt: new Date().toISOString(),
+        },
+      })
+      if (error) throw error
+      setMsg('✅ 테스트 알림을 발송했습니다. Discord 채널을 확인하세요.')
+    } catch (e) {
+      setMsg(`❌ 테스트 실패: ${e instanceof Error ? e.message : String(e)}`)
+    } finally {
+      setTesting(false)
     }
   }
 
@@ -58,10 +86,31 @@ export default function DiscordSettings({ settings, onRefresh }: Props) {
           </span>
         </label>
       </div>
-      <button onClick={save} disabled={saving} style={btnStyle}>
-        {saving ? '저장 중...' : '설정 저장'}
-      </button>
-      {msg && <p style={{ fontSize: '0.78rem', color: '#00c48c', marginTop: 8 }}>{msg}</p>}
+      {/* 저장 + 테스트 버튼 나란히 */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <button onClick={save} disabled={saving} style={btnStyle}>
+          {saving ? '저장 중...' : '설정 저장'}
+        </button>
+        <button onClick={testWebhook} disabled={testing || !url.trim()} style={{
+          ...btnStyle,
+          background: url.trim() ? '#5865F2' : 'rgba(255,255,255,0.1)',  // 디스코드 보라색
+          opacity: url.trim() ? 1 : 0.5,
+        }}>
+          {testing ? '발송 중...' : '📡 테스트 알림'}
+        </button>
+      </div>
+      {/* 설정 안내 메시지 */}
+      <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', marginTop: 10, lineHeight: 1.6 }}>
+        저장된 URL은 문의 접수 시 자동으로 사용됩니다. Supabase Edge Function 환경변수
+        (DISCORD_WEBHOOK_URL)가 설정되어 있으면 그쪽이 폴백으로 사용됩니다.
+      </p>
+      {msg && (
+        <p style={{
+          fontSize: '0.78rem',
+          color: msg.startsWith('✅') ? '#4ade80' : msg.startsWith('⚠️') ? '#fbbf24' : '#f87171',
+          marginTop: 8,
+        }}>{msg}</p>
+      )}
     </div>
   )
 }

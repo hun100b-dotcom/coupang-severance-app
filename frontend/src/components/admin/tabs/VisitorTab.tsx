@@ -104,10 +104,14 @@ export default function VisitorTab() {
       const userIds = [...new Set(rawLogs.filter(l => l.user_id).map(l => l.user_id as string))]
       let profileMap: Record<string, UserProfile> = {}
       if (userIds.length > 0 && supabase) {
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileErr } = await supabase
           .from('profiles')
           .select('id, full_name, email')
           .in('id', userIds)
+        if (profileErr) {
+          // profiles 조회 실패 시 콘솔에만 로그 (방문자 표시 계속 진행)
+          console.warn('[VisitorTab] profiles 조회 실패:', profileErr.message)
+        }
         profileMap = Object.fromEntries(
           (profileData ?? []).map((p: UserProfile) => [p.id, p])
         )
@@ -325,9 +329,10 @@ export default function VisitorTab() {
                   <td style={{ padding: '7px 10px', color: 'rgba(255,255,255,0.75)', fontWeight: 500, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {l.page_path}
                   </td>
-                  {/* 로그인 사용자: 이름+이메일 / 비로그인: 세션ID 앞 8자 */}
+                  {/* 로그인: 이름+이메일 / 로그인이나 프로필 없음: user_id 앞8자 / 비회원: 세션ID 앞8자 */}
                   <td style={{ padding: '7px 10px' }}>
                     {l.profile ? (
+                      // 프로필 조회 성공: 이름 + 이메일 표시
                       <div>
                         <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#60a5fa' }}>
                           {l.profile.full_name ?? '이름없음'}
@@ -336,10 +341,26 @@ export default function VisitorTab() {
                           {l.profile.email ?? '-'}
                         </div>
                       </div>
+                    ) : l.user_id ? (
+                      // 로그인 사용자인데 프로필 미존재: user_id 앞8자 표시
+                      <div>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#a78bfa' }}>
+                          회원 (프로필 없음)
+                        </div>
+                        <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace', marginTop: 1 }}>
+                          {l.user_id.slice(0, 8)}…
+                        </div>
+                      </div>
                     ) : (
-                      <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>
-                        {l.session_id.slice(0, 8)}…
-                      </span>
+                      // 비로그인: 세션ID 앞8자 + "비회원" 레이블
+                      <div>
+                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>
+                          비회원
+                        </div>
+                        <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.2)', fontFamily: 'monospace', marginTop: 1 }}>
+                          ({l.session_id.slice(0, 8)}…)
+                        </div>
+                      </div>
                     )}
                   </td>
                   <td style={{ padding: '7px 10px', color: 'rgba(255,255,255,0.45)' }}>
