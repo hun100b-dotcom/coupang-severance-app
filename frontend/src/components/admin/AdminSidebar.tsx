@@ -47,7 +47,7 @@ const MENU_TREE: MenuGroup[] = [
     children: [
       { key: 'job_postings',    icon: '💼', label: '채용공고' },
       { key: 'applicants',      icon: '📋', label: '지원자' },
-      { key: 'confirmed',       icon: '✅', label: '확정인원' },
+      { key: 'confirmed',       icon: '📈', label: '채용현황' },
       { key: 'recruit_summary', icon: '📊', label: 'Summary' },
     ],
   },
