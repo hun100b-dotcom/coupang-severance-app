@@ -1,6 +1,5 @@
 // 어드민 — 지원자 관리 전용 메뉴 (Phase C)
-// JobsMenu.tsx에서 지원자 관리 로직만 분리
-// 기능: 지원자 목록, 상태변경(applied→reviewing→confirmed/rejected), 대량 처리, 사업장 필터, CSV 내보내기
+// 기능: LMS형 필터(사업장/공고/근무일자/업무/사용자ID/사용자명), 상태변경, 대량 처리, CSV 내보내기
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../../../lib/supabase'
 
@@ -18,6 +17,8 @@ interface ApplicationRow {
   applicant_phone: string | null
   consent_collect: boolean | null
   consent_third_party: boolean | null
+  preferred_shift: string | null  // 교대 구분: morning|afternoon|night|any
+  applied_task: string | null     // 지원 업무 (단일 텍스트)
   job_postings?: { company_name: string; center_name: string } | null
   profiles?: { full_name: string | null; email: string | null } | null
 }
@@ -49,16 +50,37 @@ function maskPhone(phone: string): string {
   return `${nums.slice(0, 3)}-****-${nums.slice(-4)}`
 }
 
+// 공통 셀렉트/인풋 스타일 (불투명 배경으로 흰칸 버그 방지)
+const filterSelectStyle: React.CSSProperties = {
+  padding: '6px 10px', borderRadius: 8,
+  border: '1px solid rgba(255,255,255,0.12)',
+  background: '#1a1a2e', color: '#fff',
+  fontSize: '0.82rem', cursor: 'pointer', outline: 'none',
+}
+const filterInputStyle: React.CSSProperties = {
+  padding: '6px 10px', borderRadius: 8,
+  border: '1px solid rgba(255,255,255,0.12)',
+  background: '#1a1a2e', color: '#fff',
+  fontSize: '0.82rem', outline: 'none',
+  minWidth: 110,
+}
+
 export default function ApplicantsMenu() {
   // 지원자 목록 상태
   const [applicants, setApplicants] = useState<ApplicationRow[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // 필터 상태
+  // ── 서버사이드 필터 상태 ──
   const [companyFilter, setCompanyFilter] = useState<string>('all')
   const [jobFilter, setJobFilter] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+
+  // ── LMS형 클라이언트사이드 필터 상태 ──
+  const [shiftFilter, setShiftFilter] = useState('')   // 교대근무 (preferred_shift: morning|오전 등) 검색
+  const [taskFilter,  setTaskFilter]  = useState('')   // 업무 (applied_task 단일 텍스트) 검색
+  const [phoneFilter, setPhoneFilter] = useState('')   // 사용자ID (휴대폰번호) 검색
+  const [nameFilter,  setNameFilter]  = useState('')   // 사용자명 (성명) 검색
 
   // 대량 선택 상태
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -95,7 +117,7 @@ export default function ApplicantsMenu() {
     })()
   }, [])
 
-  // 지원자 목록 로드
+  // 지원자 목록 로드 (서버사이드 필터만 적용)
   const fetchApplicants = useCallback(async () => {
     if (!supabase) return
     setLoading(true)
@@ -106,9 +128,8 @@ export default function ApplicantsMenu() {
         .select('*, job_postings(company_name, center_name)')
         .order('applied_at', { ascending: false })
 
-      // 사업장 필터 — job_postings.company_name 기반
+      // 사업장 필터 — 해당 사업장 공고 ID 목록으로 필터
       if (companyFilter !== 'all') {
-        // 해당 사업장 공고 ID 목록으로 필터
         const companyJobIds = jobs
           .filter(j => j.company_name === companyFilter)
           .map(j => j.id)
@@ -141,7 +162,6 @@ export default function ApplicantsMenu() {
         rows.forEach(r => { r.profiles = profileMap[r.user_id] ?? null })
       }
       setApplicants(rows)
-      // 선택 초기화
       setSelectedIds(new Set())
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : '지원자 목록을 불러오지 못했습니다.')
@@ -155,6 +175,17 @@ export default function ApplicantsMenu() {
       fetchApplicants()
     }
   }, [fetchApplicants, jobs.length, companyFilter])
+
+  // 클라이언트사이드 필터 적용 (서버필터 후 추가 정제)
+  const displayApplicants = applicants.filter(app => {
+    // preferred_shift는 영문 enum (morning|afternoon|night|any) — 부분 일치 검색
+    if (shiftFilter && !app.preferred_shift?.toLowerCase().includes(shiftFilter.toLowerCase())) return false
+    // applied_task는 단일 텍스트 컬럼
+    if (taskFilter  && !app.applied_task?.toLowerCase().includes(taskFilter.toLowerCase())) return false
+    if (phoneFilter && !app.applicant_phone?.includes(phoneFilter)) return false
+    if (nameFilter  && !app.applicant_name?.toLowerCase().includes(nameFilter.toLowerCase())) return false
+    return true
+  })
 
   // 단건 상태 변경
   const handleUpdateStatus = async (
@@ -250,12 +281,12 @@ export default function ApplicantsMenu() {
     }
   }
 
-  // 체크박스 전체 선택/해제
+  // 체크박스 전체 선택/해제 (현재 표시된 행 기준)
   const toggleSelectAll = () => {
-    if (selectedIds.size === applicants.length) {
+    if (selectedIds.size === displayApplicants.length) {
       setSelectedIds(new Set())
     } else {
-      setSelectedIds(new Set(applicants.map(a => a.id)))
+      setSelectedIds(new Set(displayApplicants.map(a => a.id)))
     }
   }
 
@@ -318,9 +349,10 @@ export default function ApplicantsMenu() {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px' }}>👥 지원자 관리</h2>
+          {/* 흰색 타이틀 */}
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px', color: '#fff' }}>👥 지원자 관리</h2>
           <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-            지원자 상태를 검토중 → 출근확정 순으로 처리하세요. 총 {applicants.length}명
+            지원자 상태를 검토중 → 출근확정 순으로 처리하세요. 총 {displayApplicants.length}명
           </p>
         </div>
         <button onClick={handleExportCsv}
@@ -333,44 +365,99 @@ export default function ApplicantsMenu() {
         </button>
       </div>
 
-      {/* 필터 바 */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-        {/* 사업장 필터 */}
-        <select value={companyFilter} onChange={e => { setCompanyFilter(e.target.value); setJobFilter('') }}
-          style={{
-            padding: '6px 12px', borderRadius: 8,
-            border: '1px solid rgba(255,255,255,0.12)',
-            background: '#1a1a2e', color: '#fff', /* 불투명 배경: option 텍스트 가시성 확보 */
-            fontSize: '0.82rem', cursor: 'pointer', outline: 'none',
-          }}>
-          <option value="all" style={{ background: '#1a1a2e', color: '#fff' }}>전체 사업장</option>
-          {companies.map(c => <option key={c} value={c} style={{ background: '#1a1a2e', color: '#fff' }}>{c}</option>)}
+      {/* ── LMS형 필터 한 줄 나열 ── */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+
+        {/* 사업장 선택 (job_postings DISTINCT company_name) */}
+        <select
+          value={companyFilter}
+          onChange={e => { setCompanyFilter(e.target.value); setJobFilter('') }}
+          style={filterSelectStyle}
+        >
+          <option value="all" style={{ background: '#1a1a2e' }}>사업장 전체</option>
+          {companies.map(c => (
+            <option key={c} value={c} style={{ background: '#1a1a2e' }}>{c}</option>
+          ))}
         </select>
 
-        {/* 공고별 필터 */}
-        <select value={jobFilter} onChange={e => setJobFilter(e.target.value)}
-          style={{
-            padding: '6px 12px', borderRadius: 8,
-            border: '1px solid rgba(255,255,255,0.12)',
-            background: '#1a1a2e', color: '#fff', /* 불투명 배경: option 텍스트 가시성 확보 */
-            fontSize: '0.82rem', cursor: 'pointer', outline: 'none',
-          }}>
-          <option value="" style={{ background: '#1a1a2e', color: '#fff' }}>전체 공고</option>
+        {/* 공고 선택 (선택한 사업장의 공고 목록) */}
+        <select
+          value={jobFilter}
+          onChange={e => setJobFilter(e.target.value)}
+          style={filterSelectStyle}
+        >
+          <option value="" style={{ background: '#1a1a2e' }}>공고 전체</option>
           {(companyFilter === 'all'
             ? jobs
             : jobs.filter(j => j.company_name === companyFilter)
           ).map(job => (
-            <option key={job.id} value={job.id} style={{ background: '#1a1a2e', color: '#fff' }}>
+            <option key={job.id} value={job.id} style={{ background: '#1a1a2e' }}>
               {job.company_name} {job.center_name}
             </option>
           ))}
         </select>
 
-        {/* 상태 필터 */}
+        {/* 교대근무 — preferred_shift enum(morning/afternoon/night/any) select */}
+        <select
+          value={shiftFilter}
+          onChange={e => setShiftFilter(e.target.value)}
+          style={filterSelectStyle}
+        >
+          <option value="" style={{ background: '#1a1a2e' }}>교대 전체</option>
+          <option value="morning"   style={{ background: '#1a1a2e' }}>오전(morning)</option>
+          <option value="afternoon" style={{ background: '#1a1a2e' }}>오후(afternoon)</option>
+          <option value="night"     style={{ background: '#1a1a2e' }}>야간(night)</option>
+          <option value="any"       style={{ background: '#1a1a2e' }}>무관(any)</option>
+        </select>
+
+        {/* 업무 — preferred_tasks 배열 내 텍스트 검색 */}
+        <input
+          type="text"
+          value={taskFilter}
+          onChange={e => setTaskFilter(e.target.value)}
+          placeholder="업무"
+          style={filterInputStyle}
+        />
+
+        {/* 사용자ID — 휴대폰번호 검색 */}
+        <input
+          type="text"
+          value={phoneFilter}
+          onChange={e => setPhoneFilter(e.target.value)}
+          placeholder="사용자ID(휴대폰)"
+          style={{ ...filterInputStyle, minWidth: 130 }}
+        />
+
+        {/* 사용자명 — 성명 검색 */}
+        <input
+          type="text"
+          value={nameFilter}
+          onChange={e => setNameFilter(e.target.value)}
+          placeholder="사용자명"
+          style={filterInputStyle}
+        />
+
+        {/* 클라이언트 필터 초기화 버튼 */}
+        {(shiftFilter || taskFilter || phoneFilter || nameFilter) && (
+          <button
+            onClick={() => { setShiftFilter(''); setTaskFilter(''); setPhoneFilter(''); setNameFilter('') }}
+            style={{
+              padding: '5px 10px', borderRadius: 8, border: 'none',
+              background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)',
+              fontSize: '0.75rem', cursor: 'pointer',
+            }}
+          >
+            ✕ 초기화
+          </button>
+        )}
+      </div>
+
+      {/* 상태 필터 (pill 버튼 — 2번째 줄) */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
         {(['all', 'applied', 'reviewing', 'confirmed', 'completed', 'cancelled', 'rejected'] as const).map(s => (
           <button key={s} onClick={() => setStatusFilter(s)}
             style={{
-              padding: '5px 14px', borderRadius: 999, border: 'none',
+              padding: '4px 12px', borderRadius: 999, border: 'none',
               background: statusFilter === s ? '#3182f6' : 'rgba(255,255,255,0.08)',
               color: statusFilter === s ? '#fff' : 'rgba(255,255,255,0.5)',
               fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
@@ -460,7 +547,7 @@ export default function ApplicantsMenu() {
                   <th style={{ ...thStyle, width: 40, textAlign: 'center' }}>
                     <input
                       type="checkbox"
-                      checked={applicants.length > 0 && selectedIds.size === applicants.length}
+                      checked={displayApplicants.length > 0 && selectedIds.size === displayApplicants.length}
                       onChange={toggleSelectAll}
                       style={{ cursor: 'pointer', width: 16, height: 16 }}
                     />
@@ -474,14 +561,14 @@ export default function ApplicantsMenu() {
                 </tr>
               </thead>
               <tbody>
-                {applicants.length === 0 && (
+                {displayApplicants.length === 0 && (
                   <tr>
                     <td colSpan={7} style={{ ...cellStyle, textAlign: 'center', color: 'rgba(255,255,255,0.3)' }}>
                       지원자가 없습니다.
                     </td>
                   </tr>
                 )}
-                {applicants.map(app => {
+                {displayApplicants.map(app => {
                   const sc = statusColor(app.status)
                   const isUpdating = updatingId === app.id
                   const isSelected = selectedIds.has(app.id)
