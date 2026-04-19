@@ -6,3 +6,4 @@
 | 2026-03-30 | TIER 1/2 자동 결정 방식 채택 | 경량 변경에 불필요한 E2E 테스트 실행 방지 (토큰+시간 절약) |
 | 2026-03-30 | /plan → /sprint → /review 3단계 워크플로우 | CLAUDE.md 규칙 "plan 없이 기능 구현 금지" 자동 강제 |
 | 2026-03-30 | reviewer-checklist.md 분리 | reviewer.md 본체의 토큰 절약 + 체크리스트 독립 업데이트 가능 |
+| 2026-04-19 | 하네스 강제 적용 | /plan 없이 /sprint 금지를 CLAUDE.md + sprint.md에 명문화. 예외: 1~2파일 버그수정/텍스트변경만. Cowork/Dispatch 환경에서도 동일 적용. |
