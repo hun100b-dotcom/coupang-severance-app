@@ -365,14 +365,20 @@ export default function ApplicantsMenu() {
         </button>
       </div>
 
-      {/* ── LMS형 필터 한 줄 나열 ── */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+      {/* ── LMS형 필터 2행×3열 그리드 ── */}
+      {/* 1행: [사업장][공고][교대] / 2행: [업무][사용자ID][사용자명] */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '12px',
+        marginBottom: 8,
+      }}>
 
-        {/* 사업장 선택 (job_postings DISTINCT company_name) */}
+        {/* 1행 1열: 사업장 선택 (job_postings DISTINCT company_name) */}
         <select
           value={companyFilter}
           onChange={e => { setCompanyFilter(e.target.value); setJobFilter('') }}
-          style={filterSelectStyle}
+          style={{ ...filterSelectStyle, width: '100%' }}
         >
           <option value="all" style={{ background: '#1a1a2e' }}>사업장 전체</option>
           {companies.map(c => (
@@ -380,11 +386,11 @@ export default function ApplicantsMenu() {
           ))}
         </select>
 
-        {/* 공고 선택 (선택한 사업장의 공고 목록) */}
+        {/* 1행 2열: 공고 선택 (선택한 사업장의 공고 목록) */}
         <select
           value={jobFilter}
           onChange={e => setJobFilter(e.target.value)}
-          style={filterSelectStyle}
+          style={{ ...filterSelectStyle, width: '100%' }}
         >
           <option value="" style={{ background: '#1a1a2e' }}>공고 전체</option>
           {(companyFilter === 'all'
@@ -397,11 +403,11 @@ export default function ApplicantsMenu() {
           ))}
         </select>
 
-        {/* 교대근무 — preferred_shift enum(morning/afternoon/night/any) select */}
+        {/* 1행 3열: 교대근무 — preferred_shift enum(morning/afternoon/night/any) select */}
         <select
           value={shiftFilter}
           onChange={e => setShiftFilter(e.target.value)}
-          style={filterSelectStyle}
+          style={{ ...filterSelectStyle, width: '100%' }}
         >
           <option value="" style={{ background: '#1a1a2e' }}>교대 전체</option>
           <option value="morning"   style={{ background: '#1a1a2e' }}>오전(morning)</option>
@@ -410,35 +416,37 @@ export default function ApplicantsMenu() {
           <option value="any"       style={{ background: '#1a1a2e' }}>무관(any)</option>
         </select>
 
-        {/* 업무 — preferred_tasks 배열 내 텍스트 검색 */}
+        {/* 2행 1열: 업무 — applied_task 단일 텍스트 검색 */}
         <input
           type="text"
           value={taskFilter}
           onChange={e => setTaskFilter(e.target.value)}
           placeholder="업무"
-          style={filterInputStyle}
+          style={{ ...filterInputStyle, width: '100%', minWidth: 'unset' }}
         />
 
-        {/* 사용자ID — 휴대폰번호 검색 */}
+        {/* 2행 2열: 사용자ID — 휴대폰번호 검색 */}
         <input
           type="text"
           value={phoneFilter}
           onChange={e => setPhoneFilter(e.target.value)}
           placeholder="사용자ID(휴대폰)"
-          style={{ ...filterInputStyle, minWidth: 130 }}
+          style={{ ...filterInputStyle, width: '100%', minWidth: 'unset' }}
         />
 
-        {/* 사용자명 — 성명 검색 */}
+        {/* 2행 3열: 사용자명 — 성명 검색 */}
         <input
           type="text"
           value={nameFilter}
           onChange={e => setNameFilter(e.target.value)}
           placeholder="사용자명"
-          style={filterInputStyle}
+          style={{ ...filterInputStyle, width: '100%', minWidth: 'unset' }}
         />
+      </div>
 
-        {/* 클라이언트 필터 초기화 버튼 */}
-        {(shiftFilter || taskFilter || phoneFilter || nameFilter) && (
+      {/* 클라이언트 필터 초기화 버튼 (하단 배치) */}
+      {(shiftFilter || taskFilter || phoneFilter || nameFilter) && (
+        <div style={{ marginBottom: 8 }}>
           <button
             onClick={() => { setShiftFilter(''); setTaskFilter(''); setPhoneFilter(''); setNameFilter('') }}
             style={{
@@ -449,8 +457,8 @@ export default function ApplicantsMenu() {
           >
             ✕ 초기화
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* 상태 필터 (pill 버튼 — 2번째 줄) */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
