@@ -117,6 +117,14 @@ export interface JobPosting {
   status: 'active' | 'draft' | 'expired' | 'deleted'
   // 조회수 — 2026-04-18 DB 컬럼 추가 (DEFAULT 0)
   view_count?: number
+  // 근무일자 타입 — 20260419 추가 (always: 상시모집 / date: 일자지정)
+  work_type?: 'always' | 'date'
+  // 근무 예정일 복수 배열 — 20260419 추가 (일자지정 시 사용)
+  work_dates?: string[]
+  // 근무조별 시급/일급 — 20260419 추가 { morning: { hourly, daily }, night: { hourly, daily } }
+  shift_wages?: Record<string, { hourly: number; daily: number }>
+  // 업무별 시급 — 20260419 추가 { 피킹: 10030, 패킹: 10500 }
+  task_wages?: Record<string, number>
   created_by: string | null
   created_at: string
   updated_at: string
