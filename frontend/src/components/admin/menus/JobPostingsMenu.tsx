@@ -27,6 +27,12 @@ interface JobForm {
   work_date: string
   expires_at: string
   status: 'active' | 'draft' | 'expired' | 'deleted'
+  // ── 20260419 추가 필드 ──
+  work_type: 'always' | 'date'                            // 상시모집 / 일자지정
+  work_dates: string[]                                     // 일자지정 시 날짜 배열
+  shift_wages: Record<string, { hourly: number; daily: number }> // 근무조별 시급/일급
+  task_wages: Record<string, number>                       // 업무별 시급
+  use_task_wages: boolean                                  // UI 전용: 업무별 금액 차등 토글
 }
 
 const defaultForm: JobForm = {
@@ -39,6 +45,12 @@ const defaultForm: JobForm = {
   work_date: '',
   expires_at: '',
   status: 'active',
+  // 20260419 추가 기본값
+  work_type: 'always',
+  work_dates: [],
+  shift_wages: {},
+  task_wages: {},
+  use_task_wages: false,
 }
 
 // 스텝퍼 정의
@@ -161,6 +173,12 @@ export default function JobPostingsMenu() {
       work_date: job.work_date ?? '',
       expires_at: job.expires_at ?? '',
       status: (job.status as 'active' | 'draft' | 'expired' | 'deleted') ?? 'active',
+      // 20260419 추가 필드 prefill
+      work_type: (job.work_type as 'always' | 'date') ?? 'always',
+      work_dates: Array.isArray(job.work_dates) ? job.work_dates : [],
+      shift_wages: (job.shift_wages as Record<string, { hourly: number; daily: number }>) ?? {},
+      task_wages: (job.task_wages as Record<string, number>) ?? {},
+      use_task_wages: Object.keys((job.task_wages as Record<string, number>) ?? {}).length > 0,
     })
     setPageMode('edit')
   }
@@ -266,6 +284,11 @@ export default function JobPostingsMenu() {
         work_date:      form.work_date || null,
         expires_at:     form.expires_at || null,
         status:         saveStatus,
+        // 20260419 추가 필드
+        work_type:      form.work_type,
+        work_dates:     form.work_type === 'date' ? form.work_dates : [],
+        shift_wages:    form.shift_wages,
+        task_wages:     form.use_task_wages ? form.task_wages : {},
       }
 
       if (editTarget) {
@@ -516,6 +539,40 @@ export default function JobPostingsMenu() {
             {/* STEP 2: 근무 조건 */}
             {formStep === 2 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+
+                {/* 근무일자 타입 — 상시모집 / 일자지정 */}
+                <div>
+                  <span style={labelSpan}>근무일자</span>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    {([
+                      { value: 'always' as const, label: '📅 상시 모집', desc: '날짜 미정' },
+                      { value: 'date'   as const, label: '🗓️ 일자 지정', desc: '특정 날짜' },
+                    ]).map(opt => (
+                      <button key={opt.value} type="button"
+                        onClick={() => setForm(f => ({ ...f, work_type: opt.value, work_dates: [] }))}
+                        style={{
+                          flex: 1, padding: '10px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                          fontWeight: 700, fontSize: '0.82rem',
+                          background: form.work_type === opt.value ? 'rgba(49,130,246,0.2)' : 'rgba(255,255,255,0.05)',
+                          color: form.work_type === opt.value ? '#3182f6' : 'rgba(255,255,255,0.45)',
+                          outline: form.work_type === opt.value ? '2px solid #3182f6' : '2px solid transparent',
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                        }}>
+                        <span>{opt.label}</span>
+                        <span style={{ fontSize: '0.68rem', opacity: 0.7, fontWeight: 400 }}>{opt.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {/* 일자 지정 시 날짜 칩 입력 */}
+                  {form.work_type === 'date' && (
+                    <WorkDatesInput
+                      dates={form.work_dates}
+                      onChange={dates => setForm(f => ({ ...f, work_dates: dates }))}
+                      inputStyle={inputStyle}
+                    />
+                  )}
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                   <label>
                     <span style={labelSpan}>시급 (원)</span>
@@ -551,14 +608,20 @@ export default function JobPostingsMenu() {
                   <span style={labelSpan}>모집 근무조</span>
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 6 }}>
                     {(['morning', 'afternoon', 'night'] as const).map(v => {
-                      const labels = { morning: '오전', afternoon: '오후', night: '야간' }
+                      const shiftLabels = { morning: '오전', afternoon: '오후', night: '야간' }
                       const checked = form.shift_options.includes(v)
                       return (
                         <button key={v} type="button"
-                          onClick={() => setForm(f => ({
-                            ...f,
-                            shift_options: checked ? f.shift_options.filter(x => x !== v) : [...f.shift_options, v],
-                          }))}
+                          onClick={() => setForm(f => {
+                            // 조 해제 시 shift_wages에서도 해당 조 제거
+                            const newShiftWages = { ...f.shift_wages }
+                            if (checked) delete newShiftWages[v]
+                            return {
+                              ...f,
+                              shift_options: checked ? f.shift_options.filter(x => x !== v) : [...f.shift_options, v],
+                              shift_wages: newShiftWages,
+                            }
+                          })}
                           style={{
                             padding: '8px 20px', borderRadius: 999,
                             border: checked ? '2px solid #3182f6' : '2px solid rgba(255,255,255,0.15)',
@@ -567,12 +630,62 @@ export default function JobPostingsMenu() {
                             fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
                           }}
                         >
-                          {labels[v]}
+                          {shiftLabels[v]}
                         </button>
                       )
                     })}
                   </div>
                 </div>
+
+                {/* 근무조별 상세 금액 — 근무조 선택 시만 표시 */}
+                {form.shift_options.length > 0 && (
+                  <div>
+                    <span style={labelSpan}>근무조별 금액</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {form.shift_options.map(shift => {
+                        const shiftNameMap: Record<string, string> = { morning: '오전', afternoon: '오후', night: '야간' }
+                        const shiftLabel = shiftNameMap[shift] ?? shift
+                        const wages = form.shift_wages[shift] ?? { hourly: 0, daily: 0 }
+                        return (
+                          <div key={shift} style={{
+                            background: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: '14px 16px',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                          }}>
+                            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 10 }}>
+                              {shiftLabel} 근무조
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                              <label>
+                                <span style={labelSpan}>{shiftLabel} 시급 (원)</span>
+                                <input type="text" inputMode="numeric" pattern="[0-9,]*"
+                                  value={wages.hourly ? wages.hourly.toLocaleString('ko-KR') : ''}
+                                  onChange={e => {
+                                    const v = Math.max(0, parseInt(e.target.value.replace(/,/g, '')) || 0)
+                                    setForm(f => ({ ...f, shift_wages: { ...f.shift_wages, [shift]: { ...wages, hourly: v } } }))
+                                  }}
+                                  placeholder="예: 10,030" style={inputStyle} />
+                              </label>
+                              <label>
+                                <span style={labelSpan}>{shiftLabel} 일급 (원)</span>
+                                <input type="text" inputMode="numeric" pattern="[0-9,]*"
+                                  value={wages.daily ? wages.daily.toLocaleString('ko-KR') : ''}
+                                  onChange={e => {
+                                    const v = Math.max(0, parseInt(e.target.value.replace(/,/g, '')) || 0)
+                                    setForm(f => ({ ...f, shift_wages: { ...f.shift_wages, [shift]: { ...wages, daily: v } } }))
+                                  }}
+                                  placeholder="예: 95,285" style={inputStyle} />
+                              </label>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', margin: '8px 0 0' }}>
+                      조별 금액이 없으면 통합 시급/일급이 사용됩니다.
+                    </p>
+                  </div>
+                )}
+
                 {/* 근무 예정일 */}
                 <label>
                   <span style={labelSpan}>근무 예정일</span>
@@ -606,7 +719,7 @@ export default function JobPostingsMenu() {
                       placeholder="010-1234-5678" style={inputStyle} />
                   </label>
                   <label>
-                    <span style={labelSpan}>원본 공고 URL</span>
+                    <span style={labelSpan}>회사 정보 URL</span>
                     <input value={form.external_link} onChange={e => setForm(f => ({ ...f, external_link: e.target.value }))}
                       placeholder="https://..." style={inputStyle} />
                   </label>
@@ -650,7 +763,12 @@ export default function JobPostingsMenu() {
                       }}>
                         {task}
                         <button type="button"
-                          onClick={() => setForm(f => ({ ...f, task_options: f.task_options.filter(t => t !== task) }))}
+                          onClick={() => setForm(f => ({
+                            ...f,
+                            task_options: f.task_options.filter(t => t !== task),
+                            // 삭제된 업무의 task_wages도 함께 정리
+                            task_wages: Object.fromEntries(Object.entries(f.task_wages).filter(([k]) => k !== task)),
+                          }))}
                           style={{ background: 'none', border: 'none', color: '#3182f6', cursor: 'pointer', padding: 0, fontSize: '1rem' }}>
                           ×
                         </button>
@@ -658,6 +776,49 @@ export default function JobPostingsMenu() {
                     ))}
                   </div>
                   <TaskOptionsInput taskOptions={form.task_options} onChange={opts => setForm(f => ({ ...f, task_options: opts }))} inputStyle={inputStyle} />
+                </div>
+
+                {/* 업무별 금액 차등 적용 토글 */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={labelSpan}>업무별 금액 차등 적용</span>
+                    {/* 토글 스위치 */}
+                    <button type="button"
+                      onClick={() => setForm(f => ({ ...f, use_task_wages: !f.use_task_wages, task_wages: {} }))}
+                      style={{
+                        width: 44, height: 24, borderRadius: 999, border: 'none', cursor: 'pointer',
+                        background: form.use_task_wages ? '#3182f6' : 'rgba(255,255,255,0.15)',
+                        position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+                      }}>
+                      <div style={{
+                        position: 'absolute', top: 3, left: form.use_task_wages ? 22 : 2, width: 18, height: 18,
+                        borderRadius: '50%', background: '#fff', transition: 'left 0.2s',
+                      }} />
+                    </button>
+                  </div>
+                  {/* 업무별 시급 입력 — 토글 ON 시만 표시 */}
+                  {form.use_task_wages && form.task_options.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>
+                      {form.task_options.map(task => (
+                        <div key={task} style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: 10, alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{task}</span>
+                          <div style={{ position: 'relative' }}>
+                            <input type="text" inputMode="numeric" pattern="[0-9,]*"
+                              value={form.task_wages[task] ? form.task_wages[task].toLocaleString('ko-KR') : ''}
+                              onChange={e => {
+                                const v = Math.max(0, parseInt(e.target.value.replace(/,/g, '')) || 0)
+                                setForm(f => ({ ...f, task_wages: { ...f.task_wages, [task]: v } }))
+                              }}
+                              placeholder="시급 (원)" style={{ ...inputStyle, paddingRight: 32 }} />
+                            <span style={{
+                              position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                              fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)',
+                            }}>원</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1187,6 +1348,64 @@ function TaskOptionsInput({
         placeholder="업무 입력 후 Enter (예: 상차, 하차)" style={{ ...inputStyle, flex: 1 }} />
       <button type="button" onClick={addTag}
         style={{ padding: '8px 14px', borderRadius: 10, border: 'none', background: '#3182f6', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>추가</button>
+    </div>
+  )
+}
+
+// ── 근무 날짜 복수 입력 컴포넌트 (일자지정 시 사용) ──
+function WorkDatesInput({
+  dates, onChange, inputStyle,
+}: { dates: string[]; onChange: (d: string[]) => void; inputStyle: React.CSSProperties }) {
+  const [draft, setDraft] = useState('')
+
+  // 날짜 추가 — YYYY-MM-DD 형식만 허용, 중복 방지
+  const addDate = () => {
+    const d = draft.trim()
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d) && !dates.includes(d)) {
+      onChange([...dates, d].sort()) // 날짜순 정렬
+    }
+    setDraft('')
+  }
+
+  // 숫자 입력 시 자동으로 YYYY-MM-DD 형식 변환
+  const handleChange = (raw: string) => {
+    const digits = raw.replace(/\D/g, '').slice(0, 8)
+    let fmt = digits
+    if (digits.length > 6) fmt = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`
+    else if (digits.length > 4) fmt = `${digits.slice(0, 4)}-${digits.slice(4)}`
+    setDraft(fmt)
+  }
+
+  return (
+    <div style={{ marginTop: 12 }}>
+      {/* 입력된 날짜 칩 목록 */}
+      {dates.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+          {dates.map(d => (
+            <span key={d} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              padding: '5px 12px', borderRadius: 999, fontSize: '0.78rem', fontWeight: 600,
+              background: 'rgba(49,130,246,0.18)', color: '#3182f6', border: '1px solid rgba(49,130,246,0.3)',
+            }}>
+              {d}
+              <button type="button" onClick={() => onChange(dates.filter(x => x !== d))}
+                style={{ background: 'none', border: 'none', color: '#3182f6', cursor: 'pointer', padding: 0, fontSize: '1rem' }}>×</button>
+            </span>
+          ))}
+        </div>
+      )}
+      {/* 날짜 직접 입력 */}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input value={draft} onChange={e => handleChange(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDate() } }}
+          placeholder="날짜 입력 (예: 20260420) 후 Enter"
+          maxLength={10} style={{ ...inputStyle, flex: 1 }} />
+        <button type="button" onClick={addDate}
+          style={{ padding: '8px 14px', borderRadius: 10, border: 'none', background: '#3182f6', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>추가</button>
+      </div>
+      <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', margin: '6px 0 0' }}>
+        근무 예정일을 복수로 입력하세요. (예: 주 3회 근무)
+      </p>
     </div>
   )
 }
