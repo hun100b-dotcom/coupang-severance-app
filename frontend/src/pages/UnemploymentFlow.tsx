@@ -176,8 +176,20 @@ export default function UnemploymentFlow() {
       setPdfCompanies(companies)
       if (companies.length === 1) setSelectedPdfCompany(companies[0])
       if (companies.length === 0) setError('PDF에서 사업장을 찾지 못했어요.')
-    } catch {
-      setError('PDF 분석에 실패했어요. 다시 시도해 주세요.')
+    } catch (err: unknown) {
+      // HTTP 상태 코드별 사용자 친화적 메시지 분기
+      const axErr = err as { response?: { status?: number; data?: { detail?: string } }; message?: string }
+      const status = axErr?.response?.status
+      if (!status || axErr?.message === 'Network Error') {
+        setError('서버에 연결할 수 없어요. 잠시 후 다시 시도하거나 "쉬운 계산"을 이용해 주세요.')
+      } else if (status === 504 || (axErr?.message ?? '').includes('timeout')) {
+        setError('서버 응답이 느려요 (첫 요청 시 30초 내외 소요될 수 있어요). 잠시 후 다시 시도해 주세요.')
+      } else if (status === 422) {
+        const detail = axErr?.response?.data?.detail
+        setError(typeof detail === 'string' ? detail : 'PDF 형식을 인식하지 못했어요. 근로복지공단 일용근로·노무제공내역서인지 확인해 주세요.')
+      } else {
+        setError('PDF 분석에 실패했어요. 다시 시도해 주세요.')
+      }
       setPdfCompanies([])
     } finally {
       setExtractLoading(false)
@@ -188,6 +200,11 @@ export default function UnemploymentFlow() {
   async function runPrecise() {
     if (!file) { setError('PDF 파일을 업로드해 주세요.'); return }
     if (pdfCompanies.length > 0 && !selectedPdfCompany) { setError('계산할 사업장을 선택해 주세요.'); return }
+    // PDF 추출 실패(사업장 목록이 비어있는데 선택도 없음) → 계산 진행 불가
+    if (pdfCompanies.length === 0 && !selectedPdfCompany) {
+      setError('사업장 정보를 추출하지 못했어요. PDF를 다시 업로드하거나 "쉬운 계산"을 이용해 주세요.')
+      return
+    }
     setError(''); setLoading(true)
     const fd = new FormData()
     fd.append('file', file)
@@ -460,7 +477,7 @@ export default function UnemploymentFlow() {
               {error && <CalcErrorMsg message={error} />}
 
               <CalcNextButton
-                disabled={!file || extractLoading || (pdfCompanies.length > 0 && !selectedPdfCompany)}
+                disabled={!file || extractLoading || (pdfCompanies.length > 0 && !selectedPdfCompany) || (pdfCompanies.length === 0 && !extractLoading && !!file)}
                 accentColor="sky"
                 onClick={runPrecise}
               >
