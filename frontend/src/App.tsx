@@ -50,6 +50,11 @@ const LandingV3              = lazy(() => import('./pages/LandingV3'))       // 
 const LandingV4              = lazy(() => import('./pages/LandingV4'))       // 비교 버전 4: 볼드/임팩트 (오렌지)
 const LandingV5              = lazy(() => import('./pages/LandingV5'))       // 비교 버전 5: 매거진/뉴스레터 (크림+레드)
 
+// ── SEO 키워드 전용 랜딩 페이지 (검색 유입 최적화) ─────────────────────────
+const CoupangSeveranceLanding    = lazy(() => import('./pages/landing/CoupangSeveranceLanding'))    // 쿠팡 퇴직금 계산기
+const CoupangUnemploymentLanding = lazy(() => import('./pages/landing/CoupangUnemploymentLanding')) // 쿠팡 일용직 실업급여
+const DayWorkerSeveranceGuide    = lazy(() => import('./pages/landing/DayWorkerSeveranceGuide'))    // 일용직 퇴직금 가이드
+
 // ── SEO 콘텐츠 가이드 페이지 (검색엔진 유입용) ──────────────────────────────
 const GuideHub               = lazy(() => import('./pages/guide/GuideHub'))               // 가이드 허브 (/guide)
 const SeveranceGuide         = lazy(() => import('./pages/guide/SeveranceGuide'))         // 퇴직금 가이드
@@ -165,6 +170,14 @@ export default function App() {
           <Route path="/v3" element={<LandingV3 />} />
           <Route path="/v4" element={<LandingV4 />} />
           <Route path="/v5" element={<LandingV5 />} />
+
+          {/* ── SEO 키워드 전용 랜딩 페이지 — 네비바 없는 독립 UI ── */}
+          {/* 쿠팡 퇴직금 계산기: 검색어 "쿠팡 퇴직금 계산기", "쿠팡 CFS 퇴직금" */}
+          <Route path="/coupang-severance-calculator" element={<CoupangSeveranceLanding />} />
+          {/* 쿠팡 실업급여: 검색어 "쿠팡 일용직 실업급여", "쿠팡 CFS 실업급여" */}
+          <Route path="/coupang-unemployment-calculator" element={<CoupangUnemploymentLanding />} />
+          {/* 일용직 가이드: 정보성 long-tail "일용직 퇴직금 가이드", "일용직 근로자 권리" */}
+          <Route path="/day-worker-severance-guide" element={<DayWorkerSeveranceGuide />} />
 
           {/* ── 네비바(TopNav + BottomNav)가 있는 일반 페이지 ──
               Layout 컴포넌트가 Outlet을 통해 중첩 라우트를 렌더링합니다. */}
