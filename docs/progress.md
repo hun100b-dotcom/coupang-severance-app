@@ -5,7 +5,7 @@
 
 ---
 
-## 최종 업데이트: 2026-04-10
+## 최종 업데이트: 2026-05-20
 
 ---
 
@@ -105,10 +105,29 @@ coupang-severance-app/
 - [x] Render 콜드스타트 방지 (GitHub Actions 크론)
 - [x] 카카오 공유 버튼
 
+**추가 완료 항목 (4/11~5/10)**
+- [x] 지원서 폼 전면 개편 (업무선택/경험/안전화/동의 + 성별 prefill)
+- [x] DB 확장 — applications(task_options/work_date) + profiles(gender/consent_at) 마이그레이션
+- [x] 어드민 공고 등록 5단계 스텝퍼 + 미리보기
+- [x] 어드민 대시보드 5탭 구조 전면 재구성 (audit_logs + system_logs 연동)
+- [x] 모바일 반응형 전역 수정 (375px 기준) + E2E 테스트 3종
+- [x] 카카오 로그인 버그 수정 + 비로그인 게스트 모드 (GuestGate 모달 + 자동 저장)
+- [x] 홈 채용 프리뷰 고도화 (만료 필터링, 로고, D-day, 섹션뱃지, 개별 상세팝업)
+- [x] 관리자 채용공고 데이터 관리 검증 (필수값/과거날짜/연락처/URL 검증)
+- [x] IndexNow API 키 추가 + sitemap lastmod 갱신
+- [x] 지원자 관리 LMS형 필터 그리드 (ApplicantsMenu 전면 재구성)
+- [x] 채용현황 대시보드 전면 개편 (ConfirmedMenu: 기간필터+차트+KPI)
+- [x] 마이페이지 지원현황 — 5탭 언더라인 + 취소 바텀시트 + D-day 배지
+- [x] 마이페이지 스케줄 — 달력 제거 → 타임라인 리스트 + 수입 통계
+- [x] Discord 알림 연동 (문의 제출 시 Webhook + system_settings 우선 조회)
+- [x] 방문자 식별 개선 (비회원 세션ID 표시)
+- [x] SEO 키워드 랜딩 3개 (쿠팡 퇴직금/실업급여/일용직 퇴직금 가이드)
+- [x] 블로그 초안 5편 + 마케팅킷 (카페/지식인/카카오 템플릿)
+- [x] PDF 추출 실패 시 버튼 비활성화 + 에러 메시지 세분화
+
 **미완료 항목**
 - [ ] 실제 채용팀 연락 → 공고 데이터 수집 시작
-- [ ] 홈 채용 프리뷰 고도화
-- [ ] 관리자 채용공고 데이터 관리 검증
+- [ ] GSC URL 색인 수동 요청 (9개 — GSC 직접 접속 필요)
 
 ### 📋 Phase 2 — 다음 (B2C 랜딩 + SEO 고도화)
 ### 📋 Phase 3 — B2B 랜딩 + 유료화
@@ -175,62 +194,64 @@ Login.tsx (카카오/Google 버튼)
 ## 7. 최근 작업 로그 (git log --oneline -20)
 
 ```
-183cb92  merge: SEO 강화 — react-helmet-async 동적 메타태그 + JSON-LD 구조화 데이터
-547e8a2  feat: SEO 강화 — react-helmet-async 동적 메타태그 + JSON-LD 구조화 데이터
-b5c4299  feat: 추천인 시스템 구축 (referral_code + user_referrals)
-c60ac51  merge: Render 콜드스타트 방지 기능 main 반영
-18b6611  feat: Render 콜드스타트 방지 — GitHub Actions 크론 + App 워밍업
-fd162ed  feat: 카카오 공유 버튼 구현
-97dd13e  docs: 작업 일지(progress.md) 리뉴얼 + CLAUDE.md 세션 시작 루틴 강화
-3288194  feat(seo): 네이버 서치어드바이저 소유권 인증 메타태그 추가
-ce86fe8  feat: Home 페이지에 노동법 가이드 진입 배너 추가
-aeb531d  feat: SEO 가이드 페이지를 Layout 안으로 이동 (TopNav + BottomNav)
-b991b32  fix: 미사용 변수 hoverTextColor 제거 (Vercel 빌드 에러 수정)
-784937b  feat: 랜딩페이지 UX 개선 - 인용문 강조, 소멸시효 오류, 긴급모집 카드
-b2f3c7c  feat: Google OAuth UX 개선 + SEO 콘텐츠 가이드 페이지 5종
-e844a8d  fix: STATS '28만 3천' 줄바꿈 제거 — nowrap + fontSize 조정
-46988d0  fix: landing page 6 issues - spacing, title, google auth, nav, popup, mobile
-e37d2f4  fix: revert Intro to original design + redirect to /landing after intro
-5f15623  fix: resolve Vercel build errors
-c7469cf  Merge branch 'claude/focused-goldberg'
-7c01dd0  fix: SplashScreen redesign with dark gradient + text visibility fix
-463bd94  feat: 앱 접속 시 스플래시 로딩 화면 추가
+c44990b  fix(calc): PDF 추출 실패 시 버튼 비활성화 + 상태별 에러 메시지 개선   ← 최신
+9adf9e9  feat(marketing): SEO 키워드 랜딩 3개 + 블로그 초안 5편 + 마케팅킷
+bd13f01  docs(claude): 세션 시작 자동 처리 규칙 강화 (레포 경로/cowork/푸시 기본값)
+8fb950c  merge: Discord 알림 경로 일원화 머지
+6e0a884  fix: 방문자 식별 개선 + Discord 알람 연동 + CSV 필터 수정
+82b8b53  chore: 하네스 워크플로우 강제 적용 — CLAUDE.md + sprint.md + memory 업데이트
+eff6fd4  merge: 지원자관리 필터 그리드 + 채용현황 대시보드 개편 머지
+047a166  feat(mypage): 지원현황 LMS형 필터 + 스케줄 타임라인 뷰 전면 재작성
+a589fe1  feat(admin): 채용공고 등록 고도화 — 근무일자/조별금액/업무별금액 입력
+41354ab  fix(admin): 어드민 대시보드 버그 4개 수정
+f0de8ee  feat(jobs): 채용 피드 카드 + 상세팝업 UI/UX 전면 개선
+62d8044  feat(admin): 어드민 채용관리 전면 재구성 — 아코디언 사이드바 + 4개 전용 메뉴
+b43244a  feat(admin): 어드민 대시보드 전면 재구성 — 5개 서브탭 구조
+921afe8  feat(phase1): 홈 채용 프리뷰 고도화 + 관리자 검증 강화
+5e5237c  merge: 비로그인 저장하기 GuestGate 모달 + 로그인 후 자동 저장
+20094ab  feat: 카카오 로그인 버그 수정 + 비로그인 게스트 모드 구현
+7cacae5  fix(pdf): 저장된 PDF 인식 오류 수정
+c7f0189  fix(mobile)+test(e2e): CalcLayout/ApplyFormModal 반응형 + E2E 3종
+2f67fee  fix(mobile): 전역 모바일 반응형 수정 (375px 기준)
+326f5ad  feat(apply): 지원서 폼 전면 개편 (업무/경험/교통/안전화/동의 단일)
 ```
 
 ---
 
-## 8. 현재 진행 중인 작업 (Phase 1)
+## 8. 현재 진행 중인 작업 (Phase 1 마무리 + Phase 2 준비)
 
-**상태**: Phase 1 UI/DB 구축은 완료. 실제 데이터(채용공고) 수집 단계 남음.
+**상태**: Phase 1 코드 구현 완료. 실제 채용공고 데이터 수집(운영) 단계 남음. SEO 랜딩 3개 추가(5/10). Phase 2(B2C 랜딩 고도화) 준비 중.
 
-**SEO 현황**
+**SEO 현황 (2026-05-20 기준)**
 | 항목 | 상태 |
 |------|------|
 | Google Search Console | ✅ 등록 완료 |
 | Naver 서치어드바이저 | ✅ 등록 완료 |
-| sitemap.xml | ✅ Google + Naver 제출 완료 |
-| Google 색인 | 🔄 /home 요청 완료, 나머지 9개 대기 |
-| Naver 색인 | 🔄 수집 요청 후 2~4주 소요 |
+| sitemap.xml | ✅ 15개 URL 포함 (SEO 랜딩 3개 포함) |
+| Google 색인 | 🔄 /home 이후 추가 요청 필요 (수동) |
+| Naver 색인 | 🔄 진행 중 (수집 후 2~4주 소요) |
+| SEO 키워드 랜딩 | ✅ 3개 추가 (/coupang-severance-calculator, /coupang-unemployment-calculator, /day-worker-severance-guide) |
+| IndexNow | ✅ API 키 등록 완료 |
 
 **인프라 상태**
-- 프로덕션: ✅ https://catch-daily-worker.vercel.app
+- 프로덕션: ✅ https://catch-daily-worker.vercel.app (최신 커밋 c44990b 반영)
 - API: ✅ https://coupang-severance-api.onrender.com
 - 콜드스타트 방지: ✅ GitHub Actions 크론 (15분 주기 핑)
 - OG 메타태그: ✅ 카카오/슬랙 공유 대응
-- JSON-LD 구조화 데이터: ✅ WebApplication 스키마
+- JSON-LD 구조화 데이터: ✅ WebApplication + FAQ/HowTo 스키마
+- Discord 알림: ✅ 문의 제출 시 자동 Webhook (system_settings 우선)
 
 ---
 
 ## 9. 다음 작업 (P0/P1/P2)
 
-| 우선순위 | 작업 | 상세 |
-|---------|------|------|
-| **P0** | GSC URL 색인 요청 (나머지 9개) | 하루 2~3개씩. `/landing`, `/guide`, `/guide/severance`, `/guide/unemployment`, `/guide/weekly-allowance`, `/guide/annual-leave`, `/severance`, `/unemployment`, `/calculator` |
-| **P1** | 채용팀 연락 → 공고 데이터 수집 | 실제 쿠팡/컬리/CJ 채용담당자에게 연락 |
-| **P1** | 홈 채용 프리뷰 고도화 | 현재 간단한 카드 → 동적 로딩 개선 |
-| **P1** | 관리자 채용공고 데이터 관리 검증 | RLS 정책 실제 동작 확인 |
-| **P2** | Phase 2 B2C 랜딩 + SEO 고도화 | 검색 노출 모니터링 (1~4주 소요 후) |
-| **P3** | PWA → 앱스토어 출시 | Capacitor 또는 TWA 래핑 검토 |
+| 우선순위 | 작업 | 상세 | 진행 여부 |
+|---------|------|------|----------|
+| **P0** | GSC URL 색인 수동 요청 | `/coupang-severance-calculator`, `/coupang-unemployment-calculator`, `/day-worker-severance-guide` 등 | 🔄 수동 클릭 필요 |
+| **P1** | SEO 랜딩 3개 실측 검증 | 프로덕션 URL HTTP 200 확인 + OG 메타태그 점검 | 미착수 |
+| **P1** | 채용팀 연락 → 공고 데이터 수집 | 쿠팡/컬리/CJ 채용담당자 연락 | 미착수 (운영) |
+| **P2** | Phase 2 B2C 랜딩 + SEO 고도화 | 검색 노출 모니터링 (1~4주 후) | 대기 |
+| **P3** | PWA → 앱스토어 출시 | Capacitor 또는 TWA 래핑 검토 | 미착수 |
 
 ---
 
