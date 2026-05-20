@@ -10,10 +10,10 @@
 
 | 우선순위 | 작업 | 상세 |
 |---------|------|------|
-| **P0** | GSC 나머지 URL 색인 요청 | 하루 2~3개씩. `/landing`, `/guide`, `/guide/severance`, `/guide/unemployment`, `/guide/weekly-allowance`, `/guide/annual-leave`, `/severance`, `/unemployment`, `/calculator` (GSC 상단 검색바에 URL 입력 → "색인 생성 요청" 클릭) |
-| **P1** | Phase 1 잔여 작업 | 실제 채용팀 연락→공고 수집, 홈 채용 프리뷰 고도화, 관리자 채용공고 데이터 관리 검증 |
-| **P2** | Phase 2 B2C 랜딩 + SEO 고도화 | 랜딩 페이지 추가 개선, 검색 노출 모니터링(1~4주 소요) |
-| **P3** | 앱스토어/플레이스토어 출시 | PWA → 네이티브 앱 래핑(Capacitor/TWA) 검토 필요 |
+| **P0** | GSC 수동 색인 요청 | 종훈님이 GSC(search.google.com/search-console) 접속 → 각 URL 검색바 입력 → "색인 생성 요청" 클릭. 9개 URL: `/landing`, `/guide`, `/guide/severance`, `/guide/unemployment`, `/guide/weekly-allowance`, `/guide/annual-leave`, `/severance`, `/unemployment`, `/calculator` + 랜딩 3개 |
+| **P1** | 채용팀 연락 → 공고 데이터 수집 | 쿠팡/컬리/CJ 채용담당자 연락 (코드 작업 아님) |
+| **P2** | Phase 2 B2C 랜딩 고도화 | 검색 노출 모니터링 (1~4주 소요) |
+| **P3** | 앱스토어/플레이스토어 출시 | PWA → 네이티브 앱 래핑(Capacitor/TWA) 검토 |
 | **P4** | Phase 3 B2B 랜딩 + 유료화 | - |
 
 ---
@@ -62,7 +62,35 @@
 - `bfb0585`: feat(realtime): C-4 빨간 점 배지
 - `00f9df3`: fix(security): 4자리 연도 강제 검증
 
-**push 상태**: 미완료 (아래 참고)
+**push 상태**: ✅ 완료 (이후 세션에서 확인됨, main 동기화 완료)
+
+### 세션 7 — 2026-05-20 (현재 세션 — distracted-almeida)
+
+**현황 파악 + 문서 동기화 + SEO 제출**
+
+**작업 1 — docs/progress.md 동기화** (`94f34c6`)
+- 4/10~5/10 누락 18건 작업 이력 추가 (지원서폼/어드민대시보드/마이페이지타임라인/Discord/SEO랜딩3개 등)
+- 최종업데이트 날짜 2026-04-10 → 2026-05-20
+- Phase 1 미완료 항목 → 모두 완료로 체크
+
+**작업 2 — SEO 랜딩 3개 라우팅 실측 검증** (코드 변경 없음)
+- `/coupang-severance-calculator`, `/coupang-unemployment-calculator`, `/day-worker-severance-guide` 모두 HTTP 200 ✅
+- App.tsx 라우팅 3개 모두 등록 확인 ✅
+- PageMeta 컴포넌트로 OG/Twitter/JSON-LD 자동 처리 확인 ✅
+
+**작업 3 — 홈 채용 프리뷰** (이미 완료 확인)
+- `921afe8` (2026-04-14)에 이미 완전 구현 확인
+- supabase.from('job_postings') 실시간 연동, 로딩/에러 상태, 만료 필터링 모두 있음
+
+**작업 4 — sitemap.xml + IndexNow** (`b5066cd`)
+- 모든 URL lastmod 2026-04-14 → 2026-05-20 갱신
+- IndexNow API 16개 URL 제출 완료 (HTTP 200) — Bing/Yandex 크롤러에 자동 알림
+
+**세션 7 커밋 목록**
+- `94f34c6`: docs(progress): 4/10~5/10 작업 18건 동기화
+- `b5066cd`: chore(seo): sitemap lastmod 갱신 + IndexNow 16개 제출
+
+**남은 것**: GSC 수동 색인 클릭 (종훈님이 GSC 직접 접속 필요)
 
 ### 세션 5 — 2026-04-10
 
