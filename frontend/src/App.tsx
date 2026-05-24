@@ -54,6 +54,9 @@ const LandingV5              = lazy(() => import('./pages/LandingV5'))       // 
 const CoupangSeveranceLanding    = lazy(() => import('./pages/landing/CoupangSeveranceLanding'))    // 쿠팡 퇴직금 계산기
 const CoupangUnemploymentLanding = lazy(() => import('./pages/landing/CoupangUnemploymentLanding')) // 쿠팡 일용직 실업급여
 const DayWorkerSeveranceGuide    = lazy(() => import('./pages/landing/DayWorkerSeveranceGuide'))    // 일용직 퇴직금 가이드
+const CoupangPartTimeSeverance   = lazy(() => import('./pages/landing/CoupangPartTimeSeverance'))   // 쿠팡 알바 퇴직금 받는 법
+const DailyWorker28Days          = lazy(() => import('./pages/landing/DailyWorker28Days'))          // 일용직 퇴직금 28일 계산
+const CoupangCfsSeverance        = lazy(() => import('./pages/landing/CoupangCfsSeverance'))        // 쿠팡 CFS 퇴직금 계산
 
 // ── SEO 콘텐츠 가이드 페이지 (검색엔진 유입용) ──────────────────────────────
 const GuideHub               = lazy(() => import('./pages/guide/GuideHub'))               // 가이드 허브 (/guide)
@@ -178,6 +181,12 @@ export default function App() {
           <Route path="/coupang-unemployment-calculator" element={<CoupangUnemploymentLanding />} />
           {/* 일용직 가이드: 정보성 long-tail "일용직 퇴직금 가이드", "일용직 근로자 권리" */}
           <Route path="/day-worker-severance-guide" element={<DayWorkerSeveranceGuide />} />
+          {/* 쿠팡 알바 퇴직금 받는 법: "쿠팡 알바 퇴직금", "쿠팡 파트타임 퇴직금" */}
+          <Route path="/coupang-part-time-severance-method" element={<CoupangPartTimeSeverance />} />
+          {/* 일용직 퇴직금 28일 계산: "일용직 퇴직금 28일", "쿠팡 28일 블록" */}
+          <Route path="/daily-worker-severance-28days" element={<DailyWorker28Days />} />
+          {/* 쿠팡 CFS 퇴직금 계산 방법: "쿠팡 CFS 퇴직금", "쿠팡 풀필먼트 퇴직금" */}
+          <Route path="/coupang-cfs-severance-calculation" element={<CoupangCfsSeverance />} />
 
           {/* ── 네비바(TopNav + BottomNav)가 있는 일반 페이지 ──
               Layout 컴포넌트가 Outlet을 통해 중첩 라우트를 렌더링합니다. */}

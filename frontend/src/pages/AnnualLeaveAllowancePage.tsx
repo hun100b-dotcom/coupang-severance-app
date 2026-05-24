@@ -16,6 +16,62 @@ const SOFTWARE_SCHEMA = {
   description: '일용직·정규직 미사용 연차수당 무료 자동 계산기. 근무 기간과 급여를 입력하면 즉시 계산.',
   url: 'https://catch-daily-worker.vercel.app/annual-leave',
 }
+
+// ── 연차수당 계산기 — FAQPage JSON-LD (구글 FAQ 리치 스니펫용) ──
+const FAQ_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: '연차수당이란 무엇인가요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '연차수당은 1년간 발생한 연차유급휴가를 사용하지 않고 남겨뒀을 때 받는 금전 보상입니다. 근로기준법 제60조에 따라 1년 이상 근무하면 15개의 유급휴가가 발생하며, 이를 사용하지 않으면 연차수당으로 청구할 수 있습니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '1년 미만 근무해도 연차수당을 받을 수 있나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '네, 받을 수 있습니다. 1년 미만 근무 시 매월 개근하면 1개씩 연차가 발생합니다(최대 11개). 이를 사용하지 않고 퇴직하면 연차수당으로 청구할 수 있습니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '연차수당 계산 공식이 어떻게 되나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '연차수당 = 미사용 연차일수 × 1일 통상임금. 1일 통상임금은 월 통상임금 ÷ 209시간 × 8시간으로 계산합니다. CATCH 연차수당 계산기에 근무 기간과 시급을 입력하면 즉시 자동 계산됩니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '쿠팡 일용직도 연차수당을 받을 수 있나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '네, 조건이 맞으면 받을 수 있습니다. 쿠팡·CFS 일용직이라도 1주 15시간 이상, 80% 이상 출근하면 연차가 발생합니다. 단, 일용직의 연차 계산은 복잡하므로 CATCH 계산기를 활용하거나 전문가 상담을 권장합니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '연차수당 소멸시효는 언제까지인가요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '연차수당 청구권의 소멸시효는 3년입니다(근로기준법 제49조). 연차 발생일 또는 퇴직일로부터 3년이 지나면 청구할 수 없으니 빠르게 확인하세요.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '회사가 연차수당을 안 줬을 때 어떻게 하나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '고용노동부 민원마당(moel.go.kr)에 진정을 제기하거나 관할 고용노동지청에 신고할 수 있습니다. 연차수당을 지급하지 않은 사용자는 근로기준법 제109조에 따라 처벌받을 수 있습니다.',
+      },
+    },
+  ],
+}
 import {
   Calendar, AlertCircle, CheckCircle2, Info,
   FileText, Calculator, ChevronRight, Loader2, Save, User, Clock,
@@ -360,7 +416,7 @@ export default function AnnualLeaveAllowancePage() {
         title="연차수당 계산기 — 일용직 미사용 연차수당 무료 자동 계산 | CATCH"
         description="미사용 연차수당을 자동 계산합니다. 근무 기간, 시급, 미사용 연차 일수를 입력하면 즉시 계산."
         canonical="https://catch-daily-worker.vercel.app/annual-leave"
-        jsonLd={SOFTWARE_SCHEMA}
+        jsonLd={[SOFTWARE_SCHEMA, FAQ_SCHEMA]}
       />
 
       {/* 통일 헤더 */}

@@ -16,6 +16,62 @@ const SOFTWARE_SCHEMA = {
   description: '알바·일용직 주휴수당 무료 자동 계산기. 시급과 근무시간을 입력하면 즉시 계산.',
   url: 'https://catch-daily-worker.vercel.app/weekly-allowance',
 }
+
+// ── 주휴수당 계산기 — FAQPage JSON-LD (구글 FAQ 리치 스니펫용) ──
+const FAQ_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: '주휴수당이란 무엇인가요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '주휴수당은 1주일에 15시간 이상 근무한 근로자에게 유급 주휴일(쉬는 날)에 지급하는 수당입니다. 근로기준법 제55조에 보장된 권리로, 알바·일용직·파트타임 모두 해당됩니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '쿠팡 일용직도 주휴수당을 받을 수 있나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '네, 받을 수 있습니다. 쿠팡·CFS 일용직이라도 1주일(일~토)에 소정근로시간이 15시간 이상이면 주휴수당 지급 대상입니다. 단, 주 15시간 미만이면 적용 제외입니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '주휴수당 계산 공식이 어떻게 되나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '주휴수당 = (1주 소정근로시간 ÷ 40시간) × 8시간 × 시급. 예: 주 40시간 근무, 시급 10,030원 → 주휴수당 약 80,240원/주. CATCH 계산기에 시급과 근무시간을 입력하면 즉시 계산됩니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '주휴수당을 안 줬을 때 어떻게 하나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '고용노동부 민원마당(moel.go.kr)에 진정을 제기하거나 관할 고용노동지청에 신고할 수 있습니다. 주휴수당 청구권 소멸시효는 3년입니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '주 15시간 미만 근무자는 주휴수당을 받을 수 없나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '맞습니다. 근로기준법 제18조에 따라 1주 소정근로시간이 15시간 미만인 초단시간 근로자는 주휴수당이 적용되지 않습니다. 단, 여러 사업장에서 동시에 근무한다면 합산 여부를 전문가에게 확인하는 것이 좋습니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '주휴수당과 퇴직금은 어떤 관계인가요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '주휴수당은 퇴직금 계산의 평균임금에 포함될 수 있습니다. 즉, 주휴수당을 정확히 받아야 퇴직금도 정확히 계산됩니다. CATCH는 퇴직금·주휴수당·실업급여·연차수당을 모두 한 번에 계산할 수 있습니다.',
+      },
+    },
+  ],
+}
 import {
   Calendar, AlertCircle, CheckCircle2, Info,
   FileText, Calculator, ChevronRight, Loader2, Save, Clock,
@@ -236,7 +292,7 @@ export default function WeeklyAllowancePage() {
         title="주휴수당 계산기 — 알바·일용직 주휴수당 무료 자동 계산 | CATCH"
         description="주 15시간 이상 근무 시 받을 수 있는 주휴수당을 자동 계산합니다. 시급과 근무시간 입력, 즉시 계산."
         canonical="https://catch-daily-worker.vercel.app/weekly-allowance"
-        jsonLd={SOFTWARE_SCHEMA}
+        jsonLd={[SOFTWARE_SCHEMA, FAQ_SCHEMA]}
       />
 
       {/* 통일 헤더 */}

@@ -108,7 +108,7 @@
   <!-- 쿠팡 퇴직금 계산기 전용 랜딩: 키워드 "쿠팡 퇴직금 계산기" 타깃 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/coupang-severance-calculator</loc>
-    <lastmod>2026-05-10</lastmod>
+    <lastmod>2026-05-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -116,7 +116,7 @@
   <!-- 쿠팡 일용직 실업급여 전용 랜딩: 키워드 "쿠팡 일용직 실업급여" 타깃 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/coupang-unemployment-calculator</loc>
-    <lastmod>2026-05-10</lastmod>
+    <lastmod>2026-05-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -124,7 +124,31 @@
   <!-- 일용직 퇴직금 가이드 전용 랜딩: long-tail 정보성 키워드 타깃 -->
   <url>
     <loc>https://catch-daily-worker.vercel.app/day-worker-severance-guide</loc>
-    <lastmod>2026-05-10</lastmod>
+    <lastmod>2026-05-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 쿠팡 알바 퇴직금 받는 법: 키워드 "쿠팡 알바 퇴직금", "쿠팡 파트타임 퇴직금 받는 법" -->
+  <url>
+    <loc>https://catch-daily-worker.vercel.app/coupang-part-time-severance-method</loc>
+    <lastmod>2026-05-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 일용직 퇴직금 28일 계산: 키워드 "일용직 퇴직금 28일 계산", "쿠팡 28일 블록" -->
+  <url>
+    <loc>https://catch-daily-worker.vercel.app/daily-worker-severance-28days</loc>
+    <lastmod>2026-05-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 쿠팡 CFS 퇴직금 계산 방법: 키워드 "쿠팡 CFS 퇴직금 계산", "쿠팡 풀필먼트 퇴직금" -->
+  <url>
+    <loc>https://catch-daily-worker.vercel.app/coupang-cfs-severance-calculation</loc>
+    <lastmod>2026-05-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
