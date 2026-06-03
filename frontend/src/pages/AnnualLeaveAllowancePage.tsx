@@ -80,6 +80,7 @@ import {
   CalcHeader, CalcPageWrapper, CalcContentArea,
 } from '../components/calc/CalcLayout'
 import PdfSourceSelector from '../components/calc/PdfSourceSelector'
+import PdfGuide from '../components/PdfGuide'
 import {
   calcAnnualLeavePrecise,
   extractAnnualLeaveCompanies,
@@ -186,6 +187,7 @@ export default function AnnualLeaveAllowancePage() {
   const [pdfLoading, setPdfLoading]     = useState(false)
   const [pdfResult, setPdfResult]       = useState<AnnualLeavePreciseResult | null>(null)
   const [pdfError, setPdfError]         = useState('')
+  const [pdfGuideOpen, setPdfGuideOpen] = useState(false)
 
   const wage = Number(survey.avgDailyWage.replace(/,/g, ''))
 
@@ -361,8 +363,20 @@ export default function AnnualLeaveAllowancePage() {
         setPdfCompanies(data.companies)
         setPdfCompany(data.companies[0])
       }
-    } catch {
-      setPdfError('PDF 업로드 중 오류가 발생했습니다.')
+    } catch (err: unknown) {
+      // HTTP 상태 코드별 사용자 친화 메시지 분기 (SeveranceFlow 패턴 동일 적용)
+      const axErr = err as { response?: { status?: number; data?: { detail?: string } }; message?: string }
+      const status = axErr?.response?.status
+      if (!status || axErr?.message === 'Network Error') {
+        setPdfError('서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.')
+      } else if (status === 504 || (axErr?.message ?? '').includes('timeout')) {
+        setPdfError('서버 응답이 느려요 (첫 요청 시 30초 내외). 잠시 후 다시 시도해 주세요.')
+      } else if (status === 422) {
+        const detail = axErr?.response?.data?.detail
+        setPdfError(typeof detail === 'string' ? detail : 'PDF 형식을 인식하지 못했어요. 근로복지공단 일용근로내역서인지 확인해 주세요.')
+      } else {
+        setPdfError('PDF 업로드 중 오류가 발생했습니다.')
+      }
     } finally {
       setPdfLoading(false)
     }
@@ -375,16 +389,28 @@ export default function AnnualLeaveAllowancePage() {
     try {
       const fd = new FormData()
       fd.append('file', pdfFile)
-      fd.append('company', pdfCompany)
-      fd.append('company_other', pdfCompany === '기타' ? pdfOther : '')
+      // 사업장 필터: 항상 company='기타', company_other=실제사업장명 패턴 (퇴직금·실업급여와 동일)
+      fd.append('company', '기타')
+      fd.append('company_other', pdfCompany === '기타' ? pdfOther : pdfCompany)
       fd.append('hire_date_str', survey.hireDate)
       fd.append('end_date_str', survey.endDate || '')
       fd.append('used_days', survey.usedDays || '0')
       fd.append('avg_daily_wage', String(wage))
       const result = await calcAnnualLeavePrecise(fd)
       if (result.error) { setPdfError(result.error) } else { setPdfResult(result) }
-    } catch {
-      setPdfError('계산 중 오류가 발생했습니다.')
+    } catch (err: unknown) {
+      const axErr = err as { response?: { status?: number; data?: { detail?: string } }; message?: string }
+      const status = axErr?.response?.status
+      if (!status || axErr?.message === 'Network Error') {
+        setPdfError('서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.')
+      } else if (status === 504 || (axErr?.message ?? '').includes('timeout')) {
+        setPdfError('서버 응답이 느려요 (첫 요청 시 30초 내외). 잠시 후 다시 시도해 주세요.')
+      } else if (status === 422) {
+        const detail = axErr?.response?.data?.detail
+        setPdfError(typeof detail === 'string' ? detail : 'PDF 형식을 인식하지 못했어요. 근로복지공단 일용근로내역서인지 확인해 주세요.')
+      } else {
+        setPdfError('계산 중 오류가 발생했습니다.')
+      }
     } finally {
       setPdfLoading(false)
     }
@@ -845,6 +871,12 @@ export default function AnnualLeaveAllowancePage() {
                     currentFile={pdfFile}
                   />
 
+                  {/* PDF 발급 가이드 버튼 */}
+                  <button type="button" onClick={() => setPdfGuideOpen(true)}
+                    className="text-[13px] text-[#8b95a1] underline underline-offset-2 hover:text-amber-500 transition-colors">
+                    ❓ 근로내역서 PDF는 어디서 받나요?
+                  </button>
+
                   {pdfLoading && (
                     <div className="flex items-center justify-center gap-2 py-2">
                       <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
@@ -979,6 +1011,8 @@ export default function AnnualLeaveAllowancePage() {
 
         {/* 비로그인 게스트 → 저장하기 클릭 시 로그인 유도 모달 */}
         <GuestGateModal />
+        {/* 근로내역서 PDF 발급 가이드 모달 */}
+        {pdfGuideOpen && <PdfGuide onClose={() => setPdfGuideOpen(false)} />}
       </CalcContentArea>
     </CalcPageWrapper>
   )

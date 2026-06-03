@@ -8,8 +8,8 @@ interface Props {
 }
 
 const VARS = [
-  { key: 'minimum_wage_hourly', label: '법정 최저 시급 (원)', placeholder: '10030' },
-  { key: 'minimum_wage_daily',  label: '법정 최저 일급 (원, 8시간 기준)', placeholder: '80240' },
+  { key: 'minimum_wage_hourly', label: '법정 최저 시급 (원) — 2026년: 10,320원', placeholder: '10320' },
+  { key: 'minimum_wage_daily',  label: '법정 최저 일급 (원, 8시간 기준) — 2026년: 82,560원', placeholder: '82560' },
 ]
 
 export default function LegalVariables({ settings, onRefresh }: Props) {
