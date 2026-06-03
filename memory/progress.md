@@ -10,7 +10,8 @@
 
 | 우선순위 | 작업 | 상세 |
 |---------|------|------|
-| **P0** | GSC 수동 색인 요청 | 종훈님이 GSC(search.google.com/search-console) 접속 → 각 URL 검색바 입력 → "색인 생성 요청" 클릭. 9개 URL: `/landing`, `/guide`, `/guide/severance`, `/guide/unemployment`, `/guide/weekly-allowance`, `/guide/annual-leave`, `/severance`, `/unemployment`, `/calculator` + 랜딩 3개 |
+| **P0** | legal_variables 마이그레이션 DB 적용 | Supabase 대시보드 → SQL Editor → `supabase/migrations/20260603_legal_variables.sql` 붙여넣기 실행. MCP 재연결 후 자동 적용 가능 |
+| **P0** | GSC 수동 색인 요청 | 종훈님이 GSC 접속 → 각 URL 검색바 입력 → "색인 생성 요청" 클릭 |
 | **P1** | 채용팀 연락 → 공고 데이터 수집 | 쿠팡/컬리/CJ 채용담당자 연락 (코드 작업 아님) |
 | **P2** | Phase 2 B2C 랜딩 고도화 | 검색 노출 모니터링 (1~4주 소요) |
 | **P3** | 앱스토어/플레이스토어 출시 | PWA → 네이티브 앱 래핑(Capacitor/TWA) 검토 |
@@ -19,6 +20,40 @@
 ---
 
 ## ✅ 완료 작업 이력
+
+### 세션 9 — 2026-06-03 (P0~P2 일괄 수정)
+
+**진단 보고서(commit 5ee46b83) 기반 8개 작업 일괄 완료 (커밋 3개)**
+
+**P0 — 버그 수정**
+- WeeklyAllowancePage + AnnualLeaveAllowancePage: `fd.append('company', '기타')` 패턴으로 수정 (사업장 필터 버그)
+- 최저시급 2025(10,030)→2026(10,320) 전면 업데이트
+- `supabase/migrations/20260603_legal_variables.sql`: legal_variables 테이블 + 초기 데이터 (DB 적용 대기)
+- `frontend/src/lib/legalVariables.ts`: Supabase fetch + 5분 캐시 + fallback 10,320
+
+**P1 — 기능 개선**
+- WeeklyAllowancePage + AnnualLeaveAllowancePage: PDF 에러 메시지 고도화 (Network/504/422 분기)
+- WeeklyAllowancePage + AnnualLeaveAllowancePage: PdfGuide 발급 가이드 버튼 추가
+- UnemploymentFlow: PDF 정밀계산 비로그인 → GuestGate 모달 (SeveranceFlow 패턴)
+
+**P2 — 품질 개선**
+- UnemploymentFlow: runPrecise catch 강화 (Network/504/detail 분기)
+- 실업급여 2026 상한액 66,000→**68,100원** 정정 (7년 만에 인상, 하한액 66,048원)
+  수정 파일: UnemploymentFlow.tsx, UnemploymentGuide.tsx, CoupangUnemploymentLanding.tsx
+
+**작업 7 (TargetTab lazy load)**: 이미 DashboardMenu.tsx에 구현돼 있음 — skip
+
+**커밋 목록**
+- `e0938c8`: fix(P0): 사업장 필터 버그 + 최저시급 2026 + PDF 가이드 + 에러 고도화
+- `eb315af`: feat(P1/P2): 실업급여 GuestGate + runPrecise 에러 처리 강화
+- `d7d9296`: fix(P2): 실업급여 상한액 66,000→68,100원 정정
+
+**push**: ✅ origin main 완료 (Vercel 자동 배포 시작)
+
+**미완료**
+- legal_variables 테이블 DB 적용: Supabase 대시보드에서 SQL 직접 실행 필요 (MCP 없어서 자동 적용 불가)
+
+---
 
 ### 세션 6 — 2026-04-10 (하네스 v2 — sharp-hodgkin)
 
@@ -64,7 +99,32 @@
 
 **push 상태**: ✅ 완료 (이후 세션에서 확인됨, main 동기화 완료)
 
-### 세션 7 — 2026-05-20 (현재 세션 — distracted-almeida)
+### 세션 8 — 2026-05-24 (현재 세션)
+
+**SEO P0 3-Phase 전체 완료 (커밋 138ced6)**
+
+**Phase 1 — 색인 점검 + 사이트맵 재정비**
+- sitemap.xml: 신규 랜딩 3개 URL 추가 + 전체 lastmod 2026-05-24 갱신 (총 22개 URL)
+- index.html 확인: `robots=index,follow` 정상, 정적 FAQPage(8Q) + HowTo JSON-LD 이미 존재
+- robots.txt: 이상 없음. SPA prerender 없으나 index.html 정적 콘텐츠로 기본 크롤링 가능
+- IndexNow 재제출: 13개 URL HTTP 202 (신규 3개 + 수정 10개) 접수 완료
+
+**Phase 2 — FAQ JSON-LD 계산기 4개 페이지**
+- WeeklyAllowancePage.tsx: FAQPage JSON-LD 6쌍 추가 (주휴수당 조건·공식·소멸시효)
+- AnnualLeaveAllowancePage.tsx: FAQPage JSON-LD 6쌍 추가 (연차 발생·계산법·소멸시효)
+- SeveranceFlow.tsx / UnemploymentFlow.tsx: 기존 FAQ 이미 있었음 — 변경 없음
+
+**Phase 3 — 롱테일 키워드 랜딩 3종 신설**
+- `/coupang-part-time-severance-method`: "쿠팡 알바 퇴직금 받는 법" (FAQPage 7쌍)
+- `/daily-worker-severance-28days`: "일용직 퇴직금 28일 계산" (FAQPage 7쌍 + 블록 예시 표)
+- `/coupang-cfs-severance-calculation`: "쿠팡 CFS 퇴직금 계산 방법" (FAQPage 7쌍 + 재판 안내)
+- App.tsx 라우터 등록 + sitemap.xml 추가 + IndexNow 제출
+- TypeScript 빌드 PASS, Vercel 자동 배포 시작
+
+**커밋**: `138ced6` feat(seo): P0 SEO 3-Phase (7파일, +1,080줄)
+**push**: ✅ origin main 완료
+
+### 세션 7 — 2026-05-20 (distracted-almeida)
 
 **현황 파악 + 문서 동기화 + SEO 제출**
 
