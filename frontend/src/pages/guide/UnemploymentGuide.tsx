@@ -93,7 +93,7 @@ const FAQ_SCHEMA = {
       name: '2026년 실업급여 상한액은 얼마인가요?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '2026년 실업급여 1일 상한액은 66,000원입니다. 실제 수급액이 상한액을 초과하면 66,000원으로 제한됩니다. 하한액은 2026년 최저임금(시간당 10,030원)의 80% 기준으로 산정됩니다.',
+        text: '2026년 실업급여 1일 상한액은 68,100원입니다 (2019년 이후 7년 만에 인상). 실제 수급액이 상한액을 초과하면 68,100원으로 제한됩니다. 하한액은 2026년 최저임금(10,320원) × 80% × 8시간 = 66,048원/일입니다.',
       },
     },
     {
@@ -267,7 +267,7 @@ export default function UnemploymentGuide() {
       {/* ── SEO 메타태그: title, description, canonical, JSON-LD 구조화 데이터 ── */}
       <PageMeta
         title="쿠팡 일용직 실업급여 계산기 | 2026년 최신 기준 완전정복 | CATCH"
-        description="쿠팡·CFS 일용직 실업급여 수급 조건(180일), 2026년 상한액 66,000원/일, 신청 절차까지 단계별로 완전 정리. 퇴직 후 12개월 이내 신청 필수."
+        description="쿠팡·CFS 일용직 실업급여 수급 조건(180일), 2026년 상한액 68,100원/일, 신청 절차까지 단계별로 완전 정리. 퇴직 후 12개월 이내 신청 필수."
         canonical="https://catch-daily-worker.vercel.app/guide/unemployment"
         jsonLd={[ARTICLE_SCHEMA, HOW_TO_SCHEMA, FAQ_SCHEMA, BREADCRUMB_SCHEMA]}
       />
@@ -287,7 +287,7 @@ export default function UnemploymentGuide() {
           <p className="text-cyan-100 text-sm mb-3">2026년 최신 기준 완전정복</p>
           <div className="flex gap-2 flex-wrap text-xs">
             <span className="bg-white/20 rounded-full px-2.5 py-1 font-bold">최대 270일</span>
-            <span className="bg-white/20 rounded-full px-2.5 py-1 font-bold">1일 상한 66,000원</span>
+            <span className="bg-white/20 rounded-full px-2.5 py-1 font-bold">1일 상한 68,100원</span>
             <span className="bg-white/20 rounded-full px-2.5 py-1 font-bold">신청기한 12개월</span>
           </div>
           <p className="text-cyan-200 text-[11px] mt-3">마지막 업데이트: 2026-04-10</p>
@@ -393,8 +393,8 @@ export default function UnemploymentGuide() {
 
           <InfoBox title="1일 구직급여액 = 이직 전 평균임금 × 60%" variant="default">
             <div className="space-y-2 text-xs">
-              <p><span className="font-semibold">2026년 상한액</span>: <span className="text-cyan-700 font-bold">66,000원/일</span></p>
-              <p><span className="font-semibold">2026년 하한액</span>: 최저임금(10,030원) × 80% × 8시간 = 약 <span className="font-bold">64,192원/일</span> (고용노동부 공식 확인 권장)</p>
+              <p><span className="font-semibold">2026년 상한액</span>: <span className="text-cyan-700 font-bold">68,100원/일</span> (2026년 인상)</p>
+              <p><span className="font-semibold">2026년 하한액</span>: 최저임금(10,320원) × 80% × 8시간 = <span className="font-bold">66,048원/일</span></p>
             </div>
           </InfoBox>
 
@@ -404,7 +404,7 @@ export default function UnemploymentGuide() {
             <p>• 1일 평균임금: 200만원 ÷ 30일 ≈ 66,667원</p>
             <p>• 60% 적용: 66,667원 × 60% = 40,000원</p>
             <p className="font-bold text-cyan-700 pt-1.5 border-t border-cyan-200">
-              → 40,000원/일 수급 (상한액 66,000원 미만이므로 그대로 적용)
+              → 40,000원/일 수급 (상한액 68,100원 미만이므로 그대로 적용)
             </p>
           </div>
 
@@ -414,7 +414,7 @@ export default function UnemploymentGuide() {
             <p>• 1일 평균임금: 350만원 ÷ 30일 ≈ 116,667원</p>
             <p>• 60% 적용: 116,667원 × 60% = 70,000원</p>
             <p className="font-bold text-cyan-700 pt-1.5 border-t border-cyan-200">
-              → 상한액 66,000원 초과 → <span className="font-bold">66,000원/일</span> 적용
+              → 상한액 68,100원 초과 → <span className="font-bold">68,100원/일</span> 적용
             </p>
           </div>
         </motion.section>
@@ -609,7 +609,7 @@ export default function UnemploymentGuide() {
             {[
               { q: '일용직도 실업급여를 받을 수 있나요?', a: '네, 최근 18개월 중 180일 이상 고용보험 가입 + 비자발적 이직 조건을 충족하면 받을 수 있습니다.' },
               { q: '180일을 어떻게 확인하나요?', a: '고용센터 방문 또는 고용24(work24.go.kr)에서 본인 피보험이력을 조회할 수 있습니다.' },
-              { q: '2026년 1일 상한액은 얼마인가요?', a: '2026년 기준 1일 상한액은 66,000원입니다 (고용노동부 공식 사이트에서 최신 수치 확인 권장).' },
+              { q: '2026년 1일 상한액은 얼마인가요?', a: '2026년 기준 1일 상한액은 68,100원입니다 (2019년 이후 7년 만에 인상). 하한액은 최저임금(10,320원) × 80% × 8시간 = 66,048원/일입니다.' },
               { q: '자발적으로 그만뒀는데 받을 수 있나요?', a: '원칙적으로 불가하지만 임금 체불, 직장 내 괴롭힘, 근로조건 불이익 변경 등 정당한 사유가 있으면 예외 인정됩니다.' },
               { q: '최종이직일 전 1개월 10일 미만 조건이란?', a: '일용직은 마지막으로 퇴직하기 1개월 전 한 달 동안 근무일수가 10일 미만이어야 합니다. 이 조건 미충족 시 수급이 제한됩니다.' },
               { q: '이직확인서를 회사가 안 주면?', a: '고용보험법 제62조 위반으로 과태료 처분 대상입니다. 고용센터에 이직확인서 발급 요청을 대신해 달라고 신청하세요.' },

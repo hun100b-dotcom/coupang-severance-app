@@ -25,7 +25,7 @@ const FAQ_SCHEMA = {
       name: '쿠팡 일용직 실업급여 얼마나 받을 수 있나요?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '일용직 실업급여는 기초일액(평균임금 × 60%) × 수급일수로 계산합니다. 2026년 상한액은 하루 66,000원, 하한액은 최저임금의 80%입니다. 수급 기간은 피보험기간과 나이에 따라 120~270일입니다.',
+        text: '일용직 실업급여는 기초일액(평균임금 × 60%) × 수급일수로 계산합니다. 2026년 상한액은 하루 68,100원, 하한액은 66,048원/일(최저임금 10,320원 × 80% × 8h)입니다. 수급 기간은 피보험기간과 나이에 따라 120~270일입니다.',
       },
     },
     {
@@ -214,7 +214,7 @@ export default function CoupangUnemploymentLanding() {
               <p className="text-xs font-bold text-[#8B95A1] uppercase tracking-wide">2026년 기준</p>
               <div className="flex justify-between items-center py-2 border-b border-[#F2F4F6]">
                 <span className="text-sm text-[#333D4B]">1일 상한액</span>
-                <span className="text-sm font-bold text-[#191F28]">66,000원</span>
+                <span className="text-sm font-bold text-[#191F28]">68,100원</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-[#F2F4F6]">
                 <span className="text-sm text-[#333D4B]">최대 수급 기간</span>

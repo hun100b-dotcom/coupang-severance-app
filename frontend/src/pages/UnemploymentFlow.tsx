@@ -34,7 +34,7 @@ const FAQ_SCHEMA = {
       name: '일용직 실업급여 하루에 얼마나 받나요?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '일용직 실업급여 1일 수급액 = 이직 전 평균임금의 60%. 2026년 기준 상한액은 66,000원/일, 하한액은 최저임금의 80%입니다. 수급 기간은 고용보험 가입 기간에 따라 120~270일입니다.',
+        text: '일용직 실업급여 1일 수급액 = 이직 전 평균임금의 60%. 2026년 기준 상한액은 68,100원/일, 하한액은 66,048원/일(최저임금 10,320원 × 80% × 8시간)입니다. 수급 기간은 고용보험 가입 기간에 따라 120~270일입니다.',
       },
     },
     {
@@ -267,7 +267,7 @@ export default function UnemploymentFlow() {
       {/* ── SEO 메타태그: 실업급여 계산기 + SoftwareApplication 구조화 데이터 ── */}
       <PageMeta
         title="쿠팡·CFS 일용직 실업급여 계산기 무료 | CATCH — 수급액 3분 확인"
-        description="쿠팡·CFS·마켓컬리 일용직 실업급여 수급액과 기간을 3분 만에 자동 계산. PDF 업로드 지원, 2026년 상한액 66,000원/일 반영."
+        description="쿠팡·CFS·마켓컬리 일용직 실업급여 수급액과 기간을 3분 만에 자동 계산. PDF 업로드 지원, 2026년 상한액 68,100원/일 반영."
         canonical="https://catch-daily-worker.vercel.app/unemployment"
         jsonLd={[SOFTWARE_SCHEMA, FAQ_SCHEMA]}
       />
