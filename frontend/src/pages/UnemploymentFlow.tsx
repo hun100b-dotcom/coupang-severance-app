@@ -62,6 +62,8 @@ import {
 } from '../components/calc/CalcLayout'
 import LoadingOverlay from '../components/LoadingOverlay'
 import PdfGuide from '../components/PdfGuide'
+import { useAuth } from '../contexts/AuthContext'
+import { useGuestGate } from '../components/GuestGate'
 import ResultUnemployment from './ResultUnemployment'
 import { calcUBPrecise, calcUBSimple, extractUnemploymentCompanies, UBResult } from '../lib/api'
 import { COMPANIES, Company } from '../lib/constants'
@@ -97,6 +99,9 @@ export default function UnemploymentFlow() {
     // PageMeta 컴포넌트가 title을 관리하므로 document.title 직접 설정 제거
     return () => {}
   }, [])
+
+  const { isLoggedIn } = useAuth()
+  const { openGuestGate, GuestGateModal } = useGuestGate()
 
   const [s, setS] = useState<State>(INIT)
   const [loading, setLoading] = useState(false)
@@ -220,7 +225,14 @@ export default function UnemploymentFlow() {
     if (res.status === 'fulfilled') {
       setS(p => ({ ...p, result: res.value, displayCompany: selectedPdfCompany || undefined }))
     } else {
-      const msg = (res.reason as { response?: { data?: { detail?: string } } })?.response?.data?.detail || '계산 중 오류가 발생했어요.'
+      // SeveranceFlow 패턴 — Network/504/422/detail 분기
+      const err = res.reason as { response?: { status?: number; data?: { detail?: string } }; message?: string }
+      const detail = err?.response?.data?.detail
+      let msg: string
+      if (typeof detail === 'string') { msg = detail }
+      else if (err?.message === 'Network Error') { msg = '서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.' }
+      else if (err?.response?.status === 504 || (err?.message ?? '').includes('timeout')) { msg = '요청 시간이 초과됐어요. 잠시 후 다시 시도해 주세요.' }
+      else { msg = `계산 중 오류가 발생했어요.${err?.response?.status ? ` (HTTP ${err.response.status})` : ''}` }
       setError(msg)
     }
   }
@@ -380,7 +392,11 @@ export default function UnemploymentFlow() {
                   <CalcModeSelector
                     accentColor="sky"
                     onSimple={() => { setS(p => ({ ...p, calcMode: 'simple' })); go(4) }}
-                    onPdf={() => { setS(p => ({ ...p, calcMode: 'precise' })); go(4) }}
+                    onPdf={() => {
+                      // 비로그인 시 GuestGate 표시 (SeveranceFlow 패턴 동일)
+                      if (!isLoggedIn) { openGuestGate('PDF 정밀 계산'); return }
+                      setS(p => ({ ...p, calcMode: 'precise' })); go(4)
+                    }}
                     simpleLabel="쉬운 계산"
                     simpleDesc="가입일수·평균임금 직접 입력"
                     pdfLabel="정밀 계산"
@@ -547,6 +563,8 @@ export default function UnemploymentFlow() {
           )}
 
         </AnimatePresence>
+        {/* 비로그인 PDF 클릭 시 로그인 유도 모달 */}
+        <GuestGateModal />
       </CalcContentArea>
     </CalcPageWrapper>
   )
