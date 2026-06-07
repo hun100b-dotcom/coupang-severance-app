@@ -156,63 +156,52 @@ export default function LandingV1() {
 
   // ── 커스텀 마우스 커서 & 글로우 오브 ────────────────────────────────────────
   const orbRef = useRef<HTMLDivElement>(null)
-  const cursorRef = useRef<HTMLDivElement>(null)
-  const rafRef = useRef<number | null>(null)
-  // 마우스 목표 위치 (mousemove에서 즉시 업데이트)
-  const targetPos = useRef({ x: -9999, y: -9999 })
-  // 현재 보간 위치 (RAF 루프에서 lerp로 조금씩 이동)
-  const cursorPos = useRef({ x: -9999, y: -9999 })
-  const orbPos = useRef({ x: -9999, y: -9999 })
-  // 커서 scale 보간값 (hover 시 부드럽게 커짐)
-  const cursorScale = useRef(1)
-  const isHovered = useRef(false)
+  // 위치 전용 wrapper (translate3d, transition 없음 → 1:1 즉시 추적)
+  const cursorPosRef = useRef<HTMLDivElement>(null)
+  // scale·색상 전용 inner (CSS transition으로 호버 애니메이션)
+  const cursorDotRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // 터치 기기(스마트폰·태블릿)에서는 커서 효과 비활성
     if (!window.matchMedia('(pointer: fine)').matches) return
 
-    // passive: true — 스크롤 차단 없이 빠르게 이벤트 수신
+    let rafId: number | null = null
+    let pendingX = 0, pendingY = 0
+
+    // mousemove마다 RAF 한 건만 예약 → 같은 프레임 내 중복 DOM 업데이트 방지
     const handleMove = (e: MouseEvent) => {
-      targetPos.current.x = e.clientX
-      targetPos.current.y = e.clientY
+      pendingX = e.clientX
+      pendingY = e.clientY
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          // 커서 위치: lerp 없이 마우스 좌표 그대로 (중심 정렬: 크기 절반 5px 빼기)
+          if (cursorPosRef.current) {
+            cursorPosRef.current.style.transform = `translate3d(${pendingX - 5}px, ${pendingY - 5}px, 0)`
+          }
+          // 오브 위치: 마우스 위치와 동일하게 즉시 추적 (중심 정렬: 250px 빼기)
+          if (orbRef.current) {
+            orbRef.current.style.transform = `translate3d(${pendingX - 250}px, ${pendingY - 250}px, 0)`
+          }
+          rafId = null
+        })
+      }
     }
 
-    // RAF 루프 — 매 프레임 lerp(선형 보간) 계산 후 transform으로 위치 적용
-    // transform: translate3d → GPU 컴포지트 레이어, layout reflow 없음
-    const tick = () => {
-      // lerp 공식: 현재값 += (목표값 - 현재값) × 속도
-      cursorPos.current.x += (targetPos.current.x - cursorPos.current.x) * 0.18
-      cursorPos.current.y += (targetPos.current.y - cursorPos.current.y) * 0.18
-      // 오브는 더 천천히 따라옴 (무거운 느낌)
-      orbPos.current.x += (targetPos.current.x - orbPos.current.x) * 0.07
-      orbPos.current.y += (targetPos.current.y - orbPos.current.y) * 0.07
-      // scale도 lerp로 부드럽게
-      cursorScale.current += ((isHovered.current ? 2.5 : 1) - cursorScale.current) * 0.2
-
-      if (cursorRef.current) {
-        // 커서 중심 정렬: 크기 절반(5px) 빼기
-        cursorRef.current.style.transform = `translate3d(${cursorPos.current.x - 5}px, ${cursorPos.current.y - 5}px, 0) scale(${cursorScale.current.toFixed(3)})`
+    // 링크·버튼 호버 시 커서 scale + 색상 변경 (CSS transition 0.15s로 부드럽게)
+    const handleEnter = () => {
+      if (cursorDotRef.current) {
+        cursorDotRef.current.style.transform = 'scale(2.5)'
+        cursorDotRef.current.style.background = 'rgba(37,99,235,0.4)'
       }
-      if (orbRef.current) {
-        // 오브 중심 정렬: 크기 절반(250px) 빼기
-        orbRef.current.style.transform = `translate3d(${orbPos.current.x - 250}px, ${orbPos.current.y - 250}px, 0)`
+    }
+    const handleLeave = () => {
+      if (cursorDotRef.current) {
+        cursorDotRef.current.style.transform = 'scale(1)'
+        cursorDotRef.current.style.background = '#2563eb'
       }
-
-      rafRef.current = requestAnimationFrame(tick)
     }
 
     document.addEventListener('mousemove', handleMove, { passive: true })
-    rafRef.current = requestAnimationFrame(tick)
-
-    // 링크·버튼 호버 시 커서 색상 + scale 변경
-    const handleEnter = () => {
-      isHovered.current = true
-      if (cursorRef.current) cursorRef.current.style.background = 'rgba(37,99,235,0.4)'
-    }
-    const handleLeave = () => {
-      isHovered.current = false
-      if (cursorRef.current) cursorRef.current.style.background = '#2563eb'
-    }
 
     const interactiveEls = document.querySelectorAll('a, button')
     interactiveEls.forEach((el) => {
@@ -222,7 +211,7 @@ export default function LandingV1() {
 
     return () => {
       document.removeEventListener('mousemove', handleMove)
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      if (rafId !== null) cancelAnimationFrame(rafId)
       interactiveEls.forEach((el) => {
         el.removeEventListener('mouseenter', handleEnter)
         el.removeEventListener('mouseleave', handleLeave)
@@ -268,21 +257,31 @@ export default function LandingV1() {
           willChange: 'transform',
         }}
       />
-      {/* ── 커스텀 커서 도트 — top/left 0 고정, translate3d로만 위치 제어 (GPU 가속) ── */}
+      {/* ── 커스텀 커서 — wrapper(위치 전용)·inner(scale·색상 전용) 분리 ── */}
+      {/* wrapper: translate3d로 위치만 제어, transition 없음 → 1:1 즉시 추적 */}
       <div
-        ref={cursorRef}
-        className="fixed pointer-events-none z-[9999] rounded-full"
+        ref={cursorPosRef}
+        className="fixed pointer-events-none z-[9999]"
         style={{
-          width: 10,
-          height: 10,
           top: 0,
           left: 0,
-          background: '#2563eb',
           transform: 'translate3d(-9999px, -9999px, 0)',
           willChange: 'transform',
-          transition: 'background 0.15s ease', // 색상만 transition (위치·scale은 lerp로)
         }}
-      />
+      >
+        {/* inner: scale·background만 CSS transition → 호버 시 부드럽게 확대 */}
+        <div
+          ref={cursorDotRef}
+          className="rounded-full"
+          style={{
+            width: 10,
+            height: 10,
+            background: '#2563eb',
+            transform: 'scale(1)',
+            transition: 'transform 0.15s ease, background 0.15s ease',
+          }}
+        />
+      </div>
 
       {/* ── NAV — 스크롤 전: 투명, 스크롤 후: 흰 블러 배경 ──────────────────── */}
       <nav
