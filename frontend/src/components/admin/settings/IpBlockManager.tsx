@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import type { BlockedIp } from '../../../types/admin'
 import { blockIp, unblockIp } from '../../../lib/api'
 
@@ -51,13 +51,13 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
             <button onClick={handleBlock} disabled={saving} style={{ ...btnStyle, background: '#cc2233' }}>
               {saving ? '처리 중...' : '차단 적용'}
             </button>
-            <button onClick={() => setShowForm(false)} style={{ ...btnStyle, background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>취소</button>
+            <button onClick={() => setShowForm(false)} style={{ ...btnStyle, background: '#f1f5f9', color: '#64748b' }}>취소</button>
           </div>
         </div>
       )}
 
       {ips.length === 0 && !showForm && (
-        <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '16px 0' }}>
+        <p style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', padding: '16px 0' }}>
           차단된 IP가 없습니다.
         </p>
       )}
@@ -66,9 +66,9 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
         {ips.map(ip => (
           <div key={ip.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(240,68,82,0.05)', borderRadius: 8, border: '1px solid rgba(240,68,82,0.1)' }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#cc2233', flex: 1 }}>{ip.ip_address}</span>
-            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{ip.reason ?? '사유 없음'}</span>
-            <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)' }}>~{fmt(ip.expires_at)}</span>
-            <button onClick={() => handleUnblock(ip.id)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.82rem' }}>
+            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{ip.reason ?? '사유 없음'}</span>
+            <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>~{fmt(ip.expires_at)}</span>
+            <button onClick={() => handleUnblock(ip.id)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '0.82rem' }}>
               해제
             </button>
           </div>
@@ -79,16 +79,16 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.08)',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0',
   borderRadius: 14, padding: '20px', marginBottom: 16,
 }
 const titleStyle: React.CSSProperties = {
-  fontSize: '0.88rem', fontWeight: 700, color: 'rgba(255,255,255,0.7)',
+  fontSize: '0.88rem', fontWeight: 700, color: '#475569',
 }
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)',
+  width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0',
+  borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: '#0f172a',
   outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
 }
 const btnStyle: React.CSSProperties = {

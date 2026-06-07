@@ -40,7 +40,7 @@ function DiffView({
     added:   '#22c55e',
     removed: '#ef4444',
     changed: '#fbbf24',
-    same:    'rgba(255,255,255,0.45)',
+    same:    '#64748b',
   }
   const STATUS_LABEL: Record<string, string> = {
     added:   '+ 추가',
@@ -242,10 +242,10 @@ export default function AuditMenu() {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
             Audit Logs
           </h2>
-          <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>
+          <p style={{ fontSize: '0.78rem', color: '#64748b', marginTop: 2 }}>
             관리자 행동 감사 기록 (총 {total.toLocaleString()}건)
           </p>
         </div>
@@ -256,7 +256,7 @@ export default function AuditMenu() {
       <div style={{
         display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16,
         padding: '14px', borderRadius: 12,
-        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+        background: '#fff', border: '1px solid #e2e8f0',
       }}>
         <input
           type="text" placeholder="관리자 이메일 검색..."
@@ -285,20 +285,20 @@ export default function AuditMenu() {
 
       {/* 로그 목록 */}
       <div style={{
-        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+        background: '#fff', border: '1px solid #e2e8f0',
         borderRadius: 14, overflow: 'hidden',
       }}>
         {loading ? (
-          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '32px 0' }}>로딩 중...</p>
+          <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0' }}>로딩 중...</p>
         ) : logs.length === 0 ? (
-          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '32px 0' }}>조회된 로그가 없습니다.</p>
+          <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0' }}>조회된 로그가 없습니다.</p>
         ) : (
           <>
             {/* PC 테이블 헤더 */}
             <div className="hidden md:grid" style={{
               gridTemplateColumns: '140px 1fr 130px 100px 100px 50px',
-              padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)',
-              fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)',
+              padding: '10px 16px', borderBottom: '1px solid #f1f5f9',
+              fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8',
               textTransform: 'uppercase', letterSpacing: '0.05em',
             }}>
               <span>시간</span><span>관리자</span><span>액션</span><span>대상</span><span>IP</span><span>상세</span>
@@ -312,14 +312,14 @@ export default function AuditMenu() {
                   {/* PC 행 */}
                   <div className="hidden md:grid" style={{
                     gridTemplateColumns: '140px 1fr 130px 100px 100px 50px',
-                    padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)',
+                    padding: '10px 16px', borderBottom: '1px solid #f1f5f9',
                     alignItems: 'center', fontSize: '0.82rem',
                   }}>
-                    <span style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace', fontSize: '0.73rem' }}
+                    <span style={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.73rem' }}
                       title={fmtDateTime(log.created_at)}>
                       {fmtRelative(log.created_at)}
                     </span>
-                    <span style={{ color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {log.admin_email}
                     </span>
                     <span style={{
@@ -329,11 +329,11 @@ export default function AuditMenu() {
                     }}>
                       {actionLabel(log.action)}
                     </span>
-                    <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.73rem' }}>
+                    <span style={{ color: '#64748b', fontSize: '0.73rem' }}>
                       {log.target_type ?? '-'}
                       {log.target_id ? ` #${log.target_id.length > 8 ? log.target_id.slice(0, 8) : log.target_id}` : ''}
                     </span>
-                    <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.73rem', fontFamily: 'monospace' }}>
+                    <span style={{ color: '#94a3b8', fontSize: '0.73rem', fontFamily: 'monospace' }}>
                       {log.ip_address ?? '-'}
                     </span>
                     {hasDetail ? (
@@ -342,7 +342,7 @@ export default function AuditMenu() {
                         {expanded[log.id] ? '▲' : '▼'}
                       </button>
                     ) : (
-                      <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '0.72rem' }}>-</span>
+                      <span style={{ color: '#cbd5e1', fontSize: '0.72rem' }}>-</span>
                     )}
                   </div>
 
@@ -350,7 +350,7 @@ export default function AuditMenu() {
                   {expanded[log.id] && hasDetail && (
                     <div className="hidden md:block" style={{
                       padding: '8px 16px 12px',
-                      borderBottom: '1px solid rgba(255,255,255,0.04)',
+                      borderBottom: '1px solid #f1f5f9',
                       background: 'rgba(49,130,246,0.04)',
                     }}>
                       <DiffView before={log.before_val} after={log.after_val} />
@@ -358,16 +358,16 @@ export default function AuditMenu() {
                   )}
 
                   {/* 모바일 카드 */}
-                  <div className="md:hidden" style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <div className="md:hidden" style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                       <span style={{ fontSize: '0.7rem', fontWeight: 700, color, background: `${color}18`, padding: '2px 7px', borderRadius: 999 }}>
                         {actionLabel(log.action)}
                       </span>
-                      <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>{fmtRelative(log.created_at)}</span>
+                      <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{fmtRelative(log.created_at)}</span>
                     </div>
-                    <div style={{ fontSize: '0.82rem', color: '#fff', marginBottom: 2, wordBreak: 'break-all' }}>{log.admin_email}</div>
+                    <div style={{ fontSize: '0.82rem', color: '#0f172a', marginBottom: 2, wordBreak: 'break-all' }}>{log.admin_email}</div>
                     {log.target_type && (
-                      <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>
+                      <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
                         대상: {log.target_type} {log.target_id ? `· #${log.target_id.slice(0, 8)}` : ''}
                       </div>
                     )}
@@ -396,7 +396,7 @@ export default function AuditMenu() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
             style={{ ...outlineBtn, opacity: page === 1 ? 0.4 : 1 }}>← 이전</button>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem', padding: '7px 12px' }}>
+          <span style={{ color: '#64748b', fontSize: '0.82rem', padding: '7px 12px' }}>
             {page} / {totalPages}
           </span>
           <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
@@ -408,8 +408,8 @@ export default function AuditMenu() {
 }
 
 const outlineBtn: React.CSSProperties = {
-  padding: '7px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)',
-  background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)',
+  padding: '7px 14px', borderRadius: 8, border: '1px solid #e2e8f0',
+  background: '#f8fafc', color: '#475569',
   fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600,
 }
 const primaryBtn: React.CSSProperties = {
@@ -417,6 +417,6 @@ const primaryBtn: React.CSSProperties = {
   background: '#3182f6', color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700,
 }
 const filterInput: React.CSSProperties = {
-  padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)',
-  background: 'rgba(255,255,255,0.06)', color: '#fff', fontSize: '0.82rem', outline: 'none',
+  padding: '8px 12px', borderRadius: 8, border: '1px solid #e2e8f0',
+  background: '#fff', color: '#0f172a', fontSize: '0.82rem', outline: 'none',
 }

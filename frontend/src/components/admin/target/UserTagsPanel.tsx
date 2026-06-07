@@ -1,4 +1,4 @@
-import type { TagItem } from '../../../types/admin'
+﻿import type { TagItem } from '../../../types/admin'
 
 interface Props {
   tags: TagItem[]
@@ -15,21 +15,21 @@ const TAG_COLORS: Record<string, string> = {
 export default function UserTagsPanel({ tags, usersWithTags }: Props) {
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.08)',
-      border: '1px solid rgba(255,255,255,0.14)',
+      background: '#f1f5f9',
+      border: '1px solid #e2e8f0',
       borderRadius: 12,
       padding: 'clamp(12px,3vw,20px)',
     }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 16 }}>
-        <p style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>
+        <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>
           자동 태그 분포
         </p>
-        <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>
+        <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
           태그 보유 유저 {usersWithTags}명
         </span>
       </div>
       {tags.length === 0 && (
-        <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '16px 0' }}>
+        <p style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', padding: '16px 0' }}>
           태그 데이터 없음
         </p>
       )}

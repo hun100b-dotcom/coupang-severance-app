@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CATCH 마이그레이션 실행 가이드</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .step {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border-left: 4px solid #3B82F6;
+        }
+        .step h2 {
+            color: #1e293b;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: #3B82F6;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .sql-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Cascadia Code', 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background: #2563EB;
+            transform: translateY(-2px);
+        }
+        .copy-btn.copied {
+            background: #10B981;
+        }
+        .open-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        .open-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);
+        }
+        .warning {
+            background: #FEF3C7;
+            border-left-color: #F59E0B;
+            border: 1px solid #FCD34D;
+        }
+        .success {
+            background: #D1FAE5;
+            border-left-color: #10B981;
+            border: 1px solid #6EE7B7;
+        }
+        .verify-query {
+            background: #EDE9FE;
+            border-left-color: #8B5CF6;
+            margin-top: 1rem;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Cascadia Code', monospace;
+            font-size: 0.9em;
+            color: #3B82F6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 CATCH 법적 준수 마이그레이션</h1>
+            <p>마케팅 동의 분리 + 접근 로그 시스템 구축</p>
+        </div>
+
+        <div class="content">
+            <!-- Step 1 -->
+            <div class="step">
+                <h2><span class="step-number">1</span> Supabase SQL Editor 열기</h2>
+                <p style="margin-bottom: 1rem;">아래 버튼을 클릭하여 Supabase SQL Editor를 새 탭으로 엽니다.</p>
+                <a href="https://supabase.com/dashboard/project/hmjxrqhcwjyfkvlcejfc/sql/new" target="_blank" class="open-btn">
+                    📝 SQL Editor 열기
+                </a>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step warning">
+                <h2><span class="step-number">2</span> 마이그레이션 007 실행</h2>
+                <p><strong>정보통신망법 제50조 준수: 마케팅 수신 동의 분리</strong></p>
+                <p style="margin: 0.5rem 0;">marketing_agreement → marketing_sms, marketing_email, marketing_phone 분리</p>
+
+                <div class="sql-block">
+                    <button class="copy-btn" onclick="copySQL('sql007')">복사</button>
+                    <pre id="sql007">-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- 007_marketing_consent_separation.sql
+-- 정보통신망법 제50조 준수: 마케팅 수신 동의 구분 (전화/SMS/이메일 각각 별도)
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+-- 1. 기존 marketing_agreement 컬럼 제거하고 개별 컬럼으로 분리
+ALTER TABLE public.profiles
+  DROP COLUMN IF EXISTS marketing_agreement,
+  ADD COLUMN IF NOT EXISTS marketing_sms boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS marketing_email boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS marketing_phone boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS marketing_agreed_at timestamptz;
+
+-- 2. 인덱스 추가 (마케팅 대상자 조회 성능 향상)
+CREATE INDEX IF NOT EXISTS idx_profiles_marketing_sms ON public.profiles(marketing_sms) WHERE marketing_sms = true;
+CREATE INDEX IF NOT EXISTS idx_profiles_marketing_email ON public.profiles(marketing_email) WHERE marketing_email = true;
+CREATE INDEX IF NOT EXISTS idx_profiles_marketing_phone ON public.profiles(marketing_phone) WHERE marketing_phone = true;
+
+-- 3. 코멘트 추가
+COMMENT ON COLUMN public.profiles.marketing_sms IS '정보통신망법 제50조: SMS/문자 마케팅 수신 동의';
+COMMENT ON COLUMN public.profiles.marketing_email IS '정보통신망법 제50조: 이메일 마케팅 수신 동의';
+COMMENT ON COLUMN public.profiles.marketing_phone IS '정보통신망법 제50조: 전화(음성) 마케팅 수신 동의';
+COMMENT ON COLUMN public.profiles.marketing_agreed_at IS '마케팅 동의 일시 (최초 동의 시각)';</pre>
+                </div>
+
+                <p style="margin-top: 1rem; color: #D97706; font-weight: 600;">
+                    ⚠️ SQL Editor에 붙여넣고 <strong>RUN</strong> 버튼 클릭
+                </p>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step warning">
+                <h2><span class="step-number">3</span> 마이그레이션 008 실행</h2>
+                <p><strong>개인정보의 안전성 확보조치 기준 제7조: 접속 기록 보관</strong></p>
+                <p style="margin: 0.5rem 0;">user_access_logs 테이블 생성 + RLS 정책</p>
+
+                <div class="sql-block">
+                    <button class="copy-btn" onclick="copySQL('sql008')">복사</button>
+                    <pre id="sql008">-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- 008_user_access_logs.sql
+-- 개인정보의 안전성 확보조치 기준 제7조: 접속 기록의 보관
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+-- 1. 사용자 접근 로그 테이블 생성
+CREATE TABLE IF NOT EXISTS public.user_access_logs (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  action text NOT NULL,  -- 'view_profile', 'update_profile', 'view_report', 'create_inquiry', 'delete_account'
+  target_id uuid,         -- 조회한 리소스 ID (reports.id, inquiries.id 등)
+  ip_address inet,        -- IP 주소 (Supabase에서 수집 제한적)
+  user_agent text,        -- User-Agent 헤더
+  created_at timestamptz DEFAULT now() NOT NULL
+);
+
+-- 2. 인덱스 추가 (조회 성능 향상)
+CREATE INDEX IF NOT EXISTS idx_user_access_logs_user ON public.user_access_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_access_logs_created ON public.user_access_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_user_access_logs_action ON public.user_access_logs(action);
+
+-- 3. RLS 정책 (본인 로그만 조회 가능, 관리자는 모든 로그 조회 가능)
+ALTER TABLE public.user_access_logs ENABLE ROW LEVEL SECURITY;
+
+-- 본인 로그 조회
+CREATE POLICY "Users can view their own access logs"
+  ON public.user_access_logs
+  FOR SELECT
+  USING (auth.uid() = user_id);
+
+-- 관리자는 모든 로그 조회
+CREATE POLICY "Admins can view all access logs"
+  ON public.user_access_logs
+  FOR SELECT
+  USING (public.is_admin());
+
+-- 로그 삽입은 인증된 사용자 누구나 가능 (본인 로그만)
+CREATE POLICY "Users can insert their own access logs"
+  ON public.user_access_logs
+  FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+-- 4. 코멘트 추가
+COMMENT ON TABLE public.user_access_logs IS '개인정보의 안전성 확보조치 기준 제7조: 사용자 접근 로그';
+COMMENT ON COLUMN public.user_access_logs.action IS '행동 종류: view_profile, update_profile, view_report, create_inquiry, delete_account';
+COMMENT ON COLUMN public.user_access_logs.target_id IS '조회한 리소스 ID (reports.id, inquiries.id 등)';
+COMMENT ON COLUMN public.user_access_logs.ip_address IS 'IP 주소 (Supabase 제한으로 수집 어려움)';</pre>
+                </div>
+
+                <p style="margin-top: 1rem; color: #D97706; font-weight: 600;">
+                    ⚠️ SQL Editor에 붙여넣고 <strong>RUN</strong> 버튼 클릭
+                </p>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step verify-query">
+                <h2><span class="step-number">4</span> 검증 쿼리 실행</h2>
+                <p style="margin-bottom: 1rem;">마이그레이션이 정상적으로 완료되었는지 확인합니다.</p>
+
+                <div class="sql-block">
+                    <button class="copy-btn" onclick="copySQL('verify')">복사</button>
+                    <pre id="verify">-- profiles 테이블에 marketing 컬럼 확인
+SELECT column_name, data_type, is_nullable
+FROM information_schema.columns
+WHERE table_name = 'profiles' AND column_name LIKE 'marketing%'
+ORDER BY column_name;
+
+-- user_access_logs 테이블 존재 확인
+SELECT EXISTS (
+  SELECT FROM information_schema.tables
+  WHERE table_schema = 'public'
+  AND table_name = 'user_access_logs'
+) as table_exists;
+
+-- user_access_logs 테이블 구조 확인
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'user_access_logs'
+ORDER BY ordinal_position;</pre>
+                </div>
+
+                <p style="margin-top: 1rem; color: #7C3AED; font-weight: 600;">
+                    ✅ 예상 결과: marketing_sms, marketing_email, marketing_phone, marketing_agreed_at + user_access_logs 테이블 존재
+                </p>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="step success">
+                <h2><span class="step-number">5</span> 완료 확인</h2>
+                <p style="margin-bottom: 0.5rem;">모든 마이그레이션이 성공적으로 완료되었다면:</p>
+                <ul style="margin-left: 1.5rem; line-height: 1.8;">
+                    <li>✅ <code>profiles</code> 테이블에 4개의 마케팅 컬럼 추가됨</li>
+                    <li>✅ <code>user_access_logs</code> 테이블 생성됨 (RLS 정책 포함)</li>
+                    <li>✅ 인덱스 및 코멘트 추가됨</li>
+                </ul>
+
+                <p style="margin-top: 1rem; padding: 1rem; background: white; border-radius: 8px; border: 2px solid #10B981;">
+                    <strong>🎉 이제 프론트엔드 코드 수정 및 커밋 단계로 진행합니다!</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copySQL(id) {
+            const element = document.getElementById(id);
+            const text = element.textContent;
+
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = element.previousElementSibling;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ 복사됨!';
+                btn.classList.add('copied');
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

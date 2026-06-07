@@ -108,15 +108,15 @@ export default function NoticesMenu() {
   // ── 공통 셀 스타일 (어두운 테마) ──────────────────────────────────────────
   const cellStyle: React.CSSProperties = {
     padding: '10px 12px',
-    borderBottom: '1px solid rgba(255,255,255,0.06)',
+    borderBottom: '1px solid #f1f5f9',
     fontSize: '0.83rem',
-    color: 'rgba(255,255,255,0.75)',
+    color: '#334155',
     verticalAlign: 'middle',
   }
 
   const thStyle: React.CSSProperties = {
     ...cellStyle,
-    color: 'rgba(255,255,255,0.4)',
+    color: '#64748b',
     fontWeight: 600,
     fontSize: '0.75rem',
     textTransform: 'uppercase' as const,
@@ -128,9 +128,9 @@ export default function NoticesMenu() {
     width: '100%',
     padding: '10px 12px',
     borderRadius: 10,
-    border: '1px solid rgba(255,255,255,0.12)',
-    background: 'rgba(255,255,255,0.05)',
-    color: '#fff',
+    border: '1px solid #e2e8f0',
+    background: '#f8fafc',
+    color: '#0f172a',
     fontSize: '0.88rem',
     boxSizing: 'border-box',
     outline: 'none',
@@ -142,7 +142,7 @@ export default function NoticesMenu() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
         <div>
           <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0 }}>📢 공지사항 관리</h2>
-          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: '4px 0 0' }}>
+          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '4px 0 0' }}>
             홈 화면 배너에 표시되는 공지를 관리합니다. 제목은 배너에, 본문은 상세 페이지에 표시됩니다.
           </p>
         </div>
@@ -153,7 +153,7 @@ export default function NoticesMenu() {
             borderRadius: 10,
             border: 'none',
             background: '#3182f6',
-            color: '#fff',
+            color: '#0f172a',
             fontWeight: 700,
             fontSize: '0.85rem',
             cursor: 'pointer',
@@ -165,13 +165,13 @@ export default function NoticesMenu() {
 
       {/* ── 공지 목록 테이블 ─────────────────────────────────────────────────── */}
       {loading ? (
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>불러오는 중...</p>
+        <p style={{ color: '#64748b', fontSize: '0.85rem' }}>불러오는 중...</p>
       ) : (
-        <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
           <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 500 }}>
             <thead>
-              <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
+              <tr style={{ background: '#f8fafc' }}>
                 <th style={{ ...thStyle, width: 60 }}>우선순위</th>
                 {/* 제목 + 본문 미리보기 분리 표시 */}
                 <th style={thStyle}>제목</th>
@@ -183,7 +183,7 @@ export default function NoticesMenu() {
             <tbody>
               {notices.length === 0 && (
                 <tr>
-                  <td colSpan={5} style={{ ...cellStyle, textAlign: 'center', color: 'rgba(255,255,255,0.3)' }}>
+                  <td colSpan={5} style={{ ...cellStyle, textAlign: 'center', color: '#94a3b8' }}>
                     공지사항이 없습니다.
                   </td>
                 </tr>
@@ -195,10 +195,10 @@ export default function NoticesMenu() {
                     {n.priority}
                   </td>
                   {/* 제목 — 비어있으면 "(제목 없음)" 표시 */}
-                  <td style={{ ...cellStyle, fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>
+                  <td style={{ ...cellStyle, fontWeight: 600, color: '#0f172a' }}>
                     {n.title
                       ? (n.title.length > 24 ? n.title.slice(0, 24) + '…' : n.title)
-                      : <span style={{ color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>(제목 없음)</span>
+                      : <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>(제목 없음)</span>
                     }
                   </td>
                   {/* 본문 미리보기 */}
@@ -213,8 +213,8 @@ export default function NoticesMenu() {
                         padding: '3px 10px',
                         borderRadius: 999,
                         border: 'none',
-                        background: n.is_active ? 'rgba(49,200,100,0.18)' : 'rgba(255,255,255,0.08)',
-                        color: n.is_active ? '#3fc878' : 'rgba(255,255,255,0.35)',
+                        background: n.is_active ? 'rgba(49,200,100,0.18)' : '#f1f5f9',
+                        color: n.is_active ? '#3fc878' : '#64748b',
                         fontSize: '0.75rem',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -278,8 +278,8 @@ export default function NoticesMenu() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: '#16162a',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: '#fff',
+              border: '1px solid #e2e8f0',
               borderRadius: 16,
               padding: 28,
               width: '100%',
@@ -292,9 +292,9 @@ export default function NoticesMenu() {
 
             {/* ── 제목 입력 (배너에 표시되는 짧은 텍스트) ── */}
             <label style={{ display: 'block', marginBottom: 14 }}>
-              <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 6 }}>
+              <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', marginBottom: 6 }}>
                 제목 <span style={{ color: 'rgba(255,100,100,0.7)' }}>*</span>
-                <span style={{ color: 'rgba(255,255,255,0.25)', marginLeft: 6 }}>홈 화면 배너에 표시됩니다</span>
+                <span style={{ color: '#94a3b8', marginLeft: 6 }}>홈 화면 배너에 표시됩니다</span>
               </span>
               <input
                 type="text"
@@ -305,16 +305,16 @@ export default function NoticesMenu() {
                 style={inputStyle}
               />
               {/* 글자 수 카운터 */}
-              <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block', textAlign: 'right' }}>
+              <span style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: 4, display: 'block', textAlign: 'right' }}>
                 {form.title.length}/60
               </span>
             </label>
 
             {/* ── 본문 입력 (상세 페이지에서 표시) ── */}
             <label style={{ display: 'block', marginBottom: 14 }}>
-              <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 6 }}>
+              <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', marginBottom: 6 }}>
                 본문 <span style={{ color: 'rgba(255,100,100,0.7)' }}>*</span>
-                <span style={{ color: 'rgba(255,255,255,0.25)', marginLeft: 6 }}>공지사항 상세 페이지에 표시됩니다</span>
+                <span style={{ color: '#94a3b8', marginLeft: 6 }}>공지사항 상세 페이지에 표시됩니다</span>
               </span>
               <textarea
                 value={form.content}
@@ -328,7 +328,7 @@ export default function NoticesMenu() {
             {/* ── 우선순위 + 활성 토글 ── */}
             <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
               <label style={{ flex: 1 }}>
-                <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 6 }}>
+                <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', marginBottom: 6 }}>
                   우선순위 (높을수록 먼저 표시)
                 </span>
                 <input
@@ -341,7 +341,7 @@ export default function NoticesMenu() {
 
               {/* 활성 토글 스위치 */}
               <label style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 6 }}>
+                <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', marginBottom: 6 }}>
                   활성
                 </span>
                 <div
@@ -350,7 +350,7 @@ export default function NoticesMenu() {
                     width: 44,
                     height: 26,
                     borderRadius: 999,
-                    background: form.is_active ? '#3182f6' : 'rgba(255,255,255,0.12)',
+                    background: form.is_active ? '#3182f6' : '#e2e8f0',
                     cursor: 'pointer',
                     position: 'relative',
                     transition: 'background 0.2s',
@@ -376,9 +376,9 @@ export default function NoticesMenu() {
                 onClick={() => setModalOpen(false)}
                 style={{
                   padding: '9px 20px', borderRadius: 10,
-                  border: '1px solid rgba(255,255,255,0.12)',
+                  border: '1px solid #e2e8f0',
                   background: 'transparent',
-                  color: 'rgba(255,255,255,0.6)',
+                  color: '#475569',
                   fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
                 }}
               >
@@ -394,7 +394,7 @@ export default function NoticesMenu() {
                   background: (saving || !form.title.trim() || !form.content.trim())
                     ? 'rgba(49,130,246,0.3)'
                     : '#3182f6',
-                  color: '#fff',
+                  color: '#0f172a',
                   fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
                 }}
               >

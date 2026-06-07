@@ -43,8 +43,8 @@ const SHIFT_LABEL: Record<string, string> = {
 // 공통 셀렉트 스타일 (어두운 배경)
 const filterSelectStyle: React.CSSProperties = {
   padding: '8px 14px', borderRadius: 10,
-  border: '1px solid rgba(255,255,255,0.12)',
-  background: '#1a1a2e', color: '#fff',
+  border: '1px solid #e2e8f0',
+  background: '#fff', color: '#0f172a',
   fontSize: '0.85rem', cursor: 'pointer', outline: 'none',
   flex: 1, minWidth: 160,
 }
@@ -195,8 +195,8 @@ export default function ConfirmedMenu() {
 
   // ── 공통 카드 스타일 ──
   const baseCard: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.07)',
+    background: '#fff',
+    border: '1px solid #e2e8f0',
     borderRadius: 14, padding: '18px 16px',
   }
 
@@ -209,10 +209,10 @@ export default function ConfirmedMenu() {
         marginBottom: 20, gap: 12, flexWrap: 'wrap',
       }}>
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px', color: '#fff' }}>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px', color: '#0f172a' }}>
             📈 채용현황
           </h2>
-          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
             지원 현황을 사업장·센터별로 분석합니다. 총 {total}명
           </p>
         </div>
@@ -220,7 +220,7 @@ export default function ConfirmedMenu() {
           onClick={fetchData}
           style={{
             padding: '7px 16px', borderRadius: 10,
-            border: '1px solid rgba(255,255,255,0.15)',
+            border: '1px solid #e2e8f0',
             background: 'rgba(49,130,246,0.1)', color: '#3182f6',
             fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
           }}
@@ -237,9 +237,9 @@ export default function ConfirmedMenu() {
           onChange={e => { setCompanyFilter(e.target.value); setCenterFilter('all') }}
           style={filterSelectStyle}
         >
-          <option value="all" style={{ background: '#1a1a2e' }}>전체 사업장</option>
+          <option value="all" style={{ background: '#fff' }}>전체 사업장</option>
           {companies.map(c => (
-            <option key={c} value={c} style={{ background: '#1a1a2e' }}>{c}</option>
+            <option key={c} value={c} style={{ background: '#fff' }}>{c}</option>
           ))}
         </select>
 
@@ -250,9 +250,9 @@ export default function ConfirmedMenu() {
           disabled={companyFilter === 'all'}
           style={{ ...filterSelectStyle, opacity: companyFilter === 'all' ? 0.5 : 1 }}
         >
-          <option value="all" style={{ background: '#1a1a2e' }}>센터 전체</option>
+          <option value="all" style={{ background: '#fff' }}>센터 전체</option>
           {centers.map(c => (
-            <option key={c} value={c} style={{ background: '#1a1a2e' }}>{c}</option>
+            <option key={c} value={c} style={{ background: '#fff' }}>{c}</option>
           ))}
         </select>
       </div>
@@ -274,7 +274,7 @@ export default function ConfirmedMenu() {
       )}
 
       {loading ? (
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>불러오는 중...</p>
+        <p style={{ color: '#64748b', fontSize: '0.85rem' }}>불러오는 중...</p>
       ) : (
         <>
           {/* ── 2×2 메인 KPI 카드 ── */}
@@ -299,7 +299,7 @@ export default function ConfirmedMenu() {
                 <div style={{ fontSize: '2rem', fontWeight: 900, color: card.color, lineHeight: 1 }}>
                   {card.value}
                 </div>
-                <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', marginTop: 6, fontWeight: 600 }}>
+                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 6, fontWeight: 600 }}>
                   {card.label}
                 </div>
               </div>
@@ -318,11 +318,11 @@ export default function ConfirmedMenu() {
               <div key={pill.label} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '6px 14px', borderRadius: 999,
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
               }}>
-                <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>{pill.label}</span>
-                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff' }}>{pill.value}</span>
+                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{pill.label}</span>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>{pill.value}</span>
               </div>
             ))}
           </div>
@@ -331,7 +331,7 @@ export default function ConfirmedMenu() {
           <div style={{ ...baseCard, marginBottom: 20 }}>
             <div style={{
               fontSize: '0.72rem', fontWeight: 700,
-              color: 'rgba(255,255,255,0.4)',
+              color: '#64748b',
               marginBottom: 14, letterSpacing: '0.06em',
               textTransform: 'uppercase' as const,
             }}>
@@ -342,36 +342,36 @@ export default function ConfirmedMenu() {
             <div style={{ display: 'flex', gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <div style={{ width: 12, height: 12, borderRadius: 3, background: '#3182f6' }} />
-                <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>일별 지원자</span>
+                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>일별 지원자</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <div style={{ width: 16, height: 2, background: '#10b981', borderRadius: 1 }} />
-                <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>일별 확정자</span>
+                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>일별 확정자</span>
               </div>
             </div>
 
             <ResponsiveContainer width="100%" height={220}>
               <ComposedChart data={dailyData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis
                   dataKey="date"
-                  tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }}
+                  tick={{ fill: '#64748b', fontSize: 10 }}
                   tickLine={false}
                   axisLine={false}
                   interval={4}
                 />
                 <YAxis
-                  tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }}
+                  tick={{ fill: '#64748b', fontSize: 10 }}
                   tickLine={false}
                   axisLine={false}
                   allowDecimals={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: '#1a1a2e',
-                    border: '1px solid rgba(255,255,255,0.12)',
+                    background: '#fff',
+                    border: '1px solid #e2e8f0',
                     borderRadius: 10,
-                    color: '#fff',
+                    color: '#0f172a',
                     fontSize: '0.78rem',
                   }}
                   formatter={(value: number, name: string) => {
@@ -379,7 +379,7 @@ export default function ConfirmedMenu() {
                     if (name === 'applied') return [`${value}명`, '지원자']
                     return [`${value}명`, '확정자']
                   }}
-                  labelStyle={{ color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}
+                  labelStyle={{ color: '#64748b', marginBottom: 4 }}
                 />
                 {/* Bar: 일별 지원자 수 (파랑) */}
                 <Bar dataKey="applied" fill="#3182f6" radius={[3, 3, 0, 0]} maxBarSize={20} />
@@ -406,7 +406,7 @@ export default function ConfirmedMenu() {
             <div style={baseCard}>
               <div style={{
                 fontSize: '0.72rem', fontWeight: 700,
-                color: 'rgba(255,255,255,0.4)',
+                color: '#64748b',
                 marginBottom: 14, letterSpacing: '0.06em',
                 textTransform: 'uppercase' as const,
               }}>
@@ -414,19 +414,19 @@ export default function ConfirmedMenu() {
               </div>
 
               {shiftDist.length === 0 ? (
-                <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.25)', margin: 0 }}>데이터 없음</p>
+                <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0 }}>데이터 없음</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {shiftDist.map(item => (
                     <div key={item.label}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)' }}>{item.label}</span>
-                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff' }}>
+                        <span style={{ fontSize: '0.78rem', color: '#475569' }}>{item.label}</span>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0f172a' }}>
                           {item.count}명 ({item.pct}%)
                         </span>
                       </div>
                       {/* 프로그레스 바 */}
-                      <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 999 }}>
+                      <div style={{ height: 6, background: '#f1f5f9', borderRadius: 999 }}>
                         <div style={{
                           height: '100%',
                           width: `${item.pct}%`,
@@ -445,7 +445,7 @@ export default function ConfirmedMenu() {
             <div style={baseCard}>
               <div style={{
                 fontSize: '0.72rem', fontWeight: 700,
-                color: 'rgba(255,255,255,0.4)',
+                color: '#64748b',
                 marginBottom: 14, letterSpacing: '0.06em',
                 textTransform: 'uppercase' as const,
               }}>
@@ -453,7 +453,7 @@ export default function ConfirmedMenu() {
               </div>
 
               {taskDist.length === 0 ? (
-                <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.25)', margin: 0 }}>데이터 없음</p>
+                <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0 }}>데이터 없음</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {taskDist.map(item => (
@@ -461,16 +461,16 @@ export default function ConfirmedMenu() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, gap: 8 }}>
                         {/* 긴 업무명은 말줄임 처리 */}
                         <span style={{
-                          fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)',
+                          fontSize: '0.78rem', color: '#475569',
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                           maxWidth: '60%',
                         }}>{item.label}</span>
-                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0f172a', flexShrink: 0 }}>
                           {item.count}명 ({item.pct}%)
                         </span>
                       </div>
                       {/* 프로그레스 바 */}
-                      <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 999 }}>
+                      <div style={{ height: 6, background: '#f1f5f9', borderRadius: 999 }}>
                         <div style={{
                           height: '100%',
                           width: `${item.pct}%`,
@@ -488,7 +488,7 @@ export default function ConfirmedMenu() {
 
           {/* 데이터 없음 */}
           {total === 0 && (
-            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.85rem', textAlign: 'center', padding: '48px 0' }}>
+            <p style={{ color: '#94a3b8', fontSize: '0.85rem', textAlign: 'center', padding: '48px 0' }}>
               데이터가 없습니다.
             </p>
           )}

@@ -36,13 +36,13 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
 
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.04)',
-      border: '1px solid rgba(255,255,255,0.08)',
+      background: '#f8fafc',
+      border: '1px solid #e2e8f0',
       borderRadius: 14,
       padding: '20px',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-        <p style={{ fontSize: '0.88rem', fontWeight: 700, color: 'rgba(255,255,255,0.7)', flex: 1 }}>
+        <p style={{ fontSize: '0.88rem', fontWeight: 700, color: '#475569', flex: 1 }}>
           답변 템플릿 ({templates.length}개)
         </p>
         <button
@@ -52,7 +52,7 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
             borderRadius: 8,
             border: 'none',
             background: '#3182f6',
-            color: '#fff',
+            color: '#0f172a',
             fontSize: '0.78rem',
             fontWeight: 700,
             cursor: 'pointer',
@@ -94,7 +94,7 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
       )}
 
       {templates.length === 0 && !showForm && (
-        <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '16px 0' }}>
+        <p style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', padding: '16px 0' }}>
           등록된 템플릿이 없습니다.
         </p>
       )}
@@ -111,7 +111,7 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
           }}>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(255,255,255,0.8)' }}>{t.title}</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a' }}>{t.title}</span>
                 <span style={{
                   fontSize: '0.68rem',
                   background: 'rgba(49,130,246,0.15)',
@@ -121,11 +121,11 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
                 }}>
                   {t.category}
                 </span>
-                <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>
+                <span style={{ fontSize: '0.68rem', color: '#94a3b8', marginLeft: 'auto' }}>
                   사용 {t.use_count}회
                 </span>
               </div>
-              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <p style={{ fontSize: '0.78rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {t.content}
               </p>
             </div>
@@ -142,12 +142,12 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  background: 'rgba(255,255,255,0.06)',
-  border: '1px solid rgba(255,255,255,0.1)',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0',
   borderRadius: 8,
   padding: '8px 12px',
   fontSize: '0.85rem',
-  color: 'rgba(255,255,255,0.85)',
+  color: '#0f172a',
   outline: 'none',
   fontFamily: 'inherit',
   boxSizing: 'border-box',
@@ -158,7 +158,7 @@ const btnPrimaryStyle: React.CSSProperties = {
   borderRadius: 8,
   border: 'none',
   background: '#3182f6',
-  color: '#fff',
+  color: '#0f172a',
   fontSize: '0.82rem',
   fontWeight: 700,
   cursor: 'pointer',
@@ -168,8 +168,8 @@ const btnSecondaryStyle: React.CSSProperties = {
   padding: '7px 16px',
   borderRadius: 8,
   border: 'none',
-  background: 'rgba(255,255,255,0.08)',
-  color: 'rgba(255,255,255,0.5)',
+  background: '#f1f5f9',
+  color: '#64748b',
   fontSize: '0.82rem',
   fontWeight: 700,
   cursor: 'pointer',

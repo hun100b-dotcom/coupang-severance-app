@@ -52,18 +52,18 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
       top: 0, right: 0,
       width: 420,
       height: '100vh',
-      background: 'rgba(16,16,26,0.98)',
-      borderLeft: '1px solid rgba(255,255,255,0.1)',
+      background: '#fff',
+      borderLeft: '1px solid #e2e8f0',
       display: 'flex',
       flexDirection: 'column',
       zIndex: 100,
       boxShadow: '-8px 0 32px rgba(0,0,0,0.4)',
     }}>
       {/* 헤더 */}
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
-        <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'rgba(255,255,255,0.8)' }}>문의 상세</span>
-        <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>{fmt(inquiry.created_at)}</span>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+        <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>문의 상세</span>
+        <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: '#64748b' }}>{fmt(inquiry.created_at)}</span>
       </div>
 
       <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
@@ -72,14 +72,14 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
           <span style={{ fontSize: '0.75rem', fontWeight: 700, background: 'rgba(49,130,246,0.15)', color: '#3182f6', padding: '2px 8px', borderRadius: 999 }}>
             {inquiry.category}
           </span>
-          <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>
+          <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
             {inquiry.user_email ?? `UID: ${String(inquiry.user_id).slice(0, 12)}…`}
           </span>
         </div>
 
         {/* 제목 */}
         {inquiry.title && (
-          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: 'rgba(255,255,255,0.9)', marginBottom: 10 }}>
+          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a', marginBottom: 10 }}>
             {inquiry.title}
           </p>
         )}
@@ -90,7 +90,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
           borderRadius: 10,
           padding: '14px',
           fontSize: '0.85rem',
-          color: 'rgba(255,255,255,0.75)',
+          color: '#334155',
           lineHeight: 1.7,
           whiteSpace: 'pre-wrap',
           marginBottom: 16,
@@ -100,7 +100,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
 
         {/* 상태 변경 */}
         <div style={{ marginBottom: 16 }}>
-          <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>상태 변경</p>
+          <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: 8 }}>상태 변경</p>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {STATUSES.map(s => (
               <button
@@ -113,8 +113,8 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
                   fontSize: '0.75rem',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  background: inquiry.status === s ? '#3182f6' : 'rgba(255,255,255,0.08)',
-                  color: inquiry.status === s ? '#fff' : 'rgba(255,255,255,0.5)',
+                  background: inquiry.status === s ? '#3182f6' : '#f1f5f9',
+                  color: inquiry.status === s ? '#fff' : '#64748b',
                   transition: 'all 0.15s',
                 }}
               >
@@ -127,7 +127,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
         {/* 템플릿 선택 */}
         {templates.length > 0 && (
           <div style={{ marginBottom: 12 }}>
-            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>답변 템플릿</p>
+            <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: 8 }}>답변 템플릿</p>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {templates.map(t => (
                 <button
@@ -136,9 +136,9 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
                   style={{
                     padding: '4px 10px',
                     borderRadius: 999,
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    background: 'rgba(255,255,255,0.05)',
-                    color: 'rgba(255,255,255,0.6)',
+                    border: '1px solid #e2e8f0',
+                    background: '#f8fafc',
+                    color: '#475569',
                     fontSize: '0.72rem',
                     cursor: 'pointer',
                   }}
@@ -160,7 +160,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
             marginBottom: 12,
           }}>
             <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#00a876', marginBottom: 6 }}>✓ 등록된 답변</p>
-            <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.75)', whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>{inquiry.answer}</p>
+            <p style={{ fontSize: '0.83rem', color: '#334155', whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>{inquiry.answer}</p>
           </div>
         )}
 
@@ -172,12 +172,12 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
           rows={5}
           style={{
             width: '100%',
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
             borderRadius: 10,
             padding: '12px',
             fontSize: '0.85rem',
-            color: 'rgba(255,255,255,0.85)',
+            color: '#0f172a',
             resize: 'vertical',
             outline: 'none',
             fontFamily: 'inherit',
@@ -194,7 +194,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
             width: '100%',
             padding: '12px',
             background: saving ? 'rgba(49,130,246,0.4)' : '#3182f6',
-            color: '#fff',
+            color: '#0f172a',
             border: 'none',
             borderRadius: 10,
             fontSize: '0.88rem',

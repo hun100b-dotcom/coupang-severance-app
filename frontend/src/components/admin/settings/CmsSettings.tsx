@@ -46,7 +46,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
   const Toggle = ({ on, onToggle }: { on: boolean; onToggle: () => void }) => (
     <div onClick={onToggle} style={{
       width: 36, height: 20, borderRadius: 10,
-      background: on ? '#3182f6' : 'rgba(255,255,255,0.15)',
+      background: on ? '#3182f6' : '#cbd5e1',
       position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0,
     }}>
       <div style={{
@@ -60,7 +60,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
   return (
     <div style={cardStyle}>
       <p style={titleStyle}>공지/배너 CMS</p>
-      <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginBottom: 16, marginTop: -8 }}>
+      <p style={{ fontSize: '0.72rem', color: '#64748b', marginBottom: 16, marginTop: -8 }}>
         저장 즉시 홈 화면에 반영 (Supabase 직접 연동)
       </p>
 
@@ -69,7 +69,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <span style={labelStyle}>긴급 공지 배너 (홈 상단 노란 띠)</span>
           <Toggle on={annoEnabled} onToggle={() => setAnnoEnabled(e => !e)} />
-          <span style={{ fontSize: '0.72rem', color: annoEnabled ? '#3182f6' : 'rgba(255,255,255,0.3)' }}>
+          <span style={{ fontSize: '0.72rem', color: annoEnabled ? '#3182f6' : '#94a3b8' }}>
             {annoEnabled ? 'ON' : 'OFF'}
           </span>
         </div>
@@ -87,7 +87,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <span style={labelStyle}>팝업 배너 (진입 시 모달 팝업)</span>
           <Toggle on={bannerEnabled} onToggle={() => setBannerEnabled(e => !e)} />
-          <span style={{ fontSize: '0.72rem', color: bannerEnabled ? '#3182f6' : 'rgba(255,255,255,0.3)' }}>
+          <span style={{ fontSize: '0.72rem', color: bannerEnabled ? '#3182f6' : '#94a3b8' }}>
             {bannerEnabled ? 'ON' : 'OFF'}
           </span>
         </div>
@@ -98,7 +98,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
           rows={3}
           style={{ ...inputStyle, resize: 'vertical' }}
         />
-        <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.28)', marginTop: 5 }}>
+        <p style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: 5 }}>
           * 사용자가 "오늘 하루 보지 않기" 클릭 시 24시간 비표시
         </p>
       </div>
@@ -118,22 +118,22 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.08)',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0',
   borderRadius: 14, padding: '20px', marginBottom: 16,
 }
 const titleStyle: React.CSSProperties = {
-  fontSize: '0.88rem', fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginBottom: 6,
+  fontSize: '0.88rem', fontWeight: 700, color: '#475569', marginBottom: 6,
 }
 const labelStyle: React.CSSProperties = {
-  fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', flex: 1,
+  fontSize: '0.75rem', color: '#64748b', flex: 1,
 }
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)',
+  width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0',
+  borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: '#0f172a',
   outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
 }
 const btnStyle: React.CSSProperties = {
   padding: '8px 20px', borderRadius: 8, border: 'none', background: '#3182f6',
-  color: '#fff', fontSize: '0.85rem', fontWeight: 700,
+  color: '#0f172a', fontSize: '0.85rem', fontWeight: 700,
 }

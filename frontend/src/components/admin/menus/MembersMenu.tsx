@@ -184,8 +184,8 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fff', margin: 0 }}>회원 관리</h2>
-          <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>회원 관리</h2>
+          <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 2 }}>
             profiles 테이블 · 총 {total.toLocaleString()}명 로그인 회원
           </p>
         </div>
@@ -233,7 +233,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
           fontSize: '0.78rem', color: 'rgba(255,220,50,0.8)', lineHeight: 1.5,
         }}>
           🔒 개인정보 보호를 위해 이메일/ID가 마스킹 처리됩니다. 보안키 입력 시 전체 정보를 확인할 수 있습니다.
-          {isSuperAdmin && <span style={{ color: 'rgba(255,255,255,0.5)', marginLeft: 6 }}>· 보안키는 Settings → 개인정보 보안키에서 설정</span>}
+          {isSuperAdmin && <span style={{ color: '#64748b', marginLeft: 6 }}>· 보안키는 Settings → 개인정보 보안키에서 설정</span>}
         </div>
       )}
 
@@ -241,7 +241,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
       <div style={{
         display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14,
         padding: '12px', borderRadius: 12,
-        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+        background: '#fff', border: '1px solid #e2e8f0',
       }}>
         <input
           type="text" placeholder="이메일 검색..."
@@ -265,14 +265,14 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
 
       {/* 회원 목록 */}
       <div style={{
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: '#fff',
+        border: '1px solid #e2e8f0',
         borderRadius: 14, overflow: 'hidden',
       }}>
         {loading ? (
-          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '32px 0' }}>로딩 중...</p>
+          <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0' }}>로딩 중...</p>
         ) : members.length === 0 ? (
-          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '32px 0', fontSize: '0.85rem' }}>
+          <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0', fontSize: '0.85rem' }}>
             조회된 회원이 없습니다.
           </p>
         ) : (
@@ -281,9 +281,9 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
             <div className="hidden md:grid" style={{
               gridTemplateColumns: '1.5fr 90px 90px 110px 80px 80px 80px 80px',
               padding: '10px 16px',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid #f1f5f9',
               fontSize: '0.7rem', fontWeight: 700,
-              color: 'rgba(255,255,255,0.3)',
+              color: '#94a3b8',
               textTransform: 'uppercase', letterSpacing: '0.05em',
             }}>
               <span>이메일 / ID</span>
@@ -309,38 +309,38 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                   <div className="hidden md:grid" style={{
                     gridTemplateColumns: '1.5fr 90px 90px 110px 80px 80px 80px 80px',
                     padding: '11px 16px',
-                    borderBottom: '1px solid rgba(255,255,255,0.04)',
+                    borderBottom: '1px solid #f1f5f9',
                     alignItems: 'center',
                   }}>
                     <div>
-                      <div style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 600 }}>
+                      <div style={{ fontSize: '0.85rem', color: '#0f172a', fontWeight: 600 }}>
                         {emailDisplay}
                       </div>
                       <div style={{
-                        fontSize: '0.68rem', color: 'rgba(255,255,255,0.28)',
+                        fontSize: '0.68rem', color: '#94a3b8',
                         fontFamily: 'monospace', marginTop: 1,
                       }}>
                         {idDisplay}
                       </div>
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>
+                    <div style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 600 }}>
                       {nameDisplay}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
                       {birthdateDisplay}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
                       {phoneDisplay}
                     </div>
                     <div>{providerBadge(member.provider)}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
                       {formatDate(member.created_at)}
                     </div>
                     <div>
                       <span style={{
                         fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', borderRadius: 6,
-                        background: member.onboarding_completed ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.05)',
-                        color: member.onboarding_completed ? '#22c55e' : 'rgba(255,255,255,0.3)',
+                        background: member.onboarding_completed ? 'rgba(34,197,94,0.12)' : '#f8fafc',
+                        color: member.onboarding_completed ? '#22c55e' : '#94a3b8',
                       }}>
                         {member.onboarding_completed ? '완료' : '미완'}
                       </span>
@@ -351,7 +351,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                         return (
                           <span style={{
                             fontSize: '0.7rem', fontWeight: 700,
-                            color: hasMarketing ? '#22c55e' : 'rgba(255,255,255,0.25)',
+                            color: hasMarketing ? '#22c55e' : '#94a3b8',
                           }}>
                             {hasMarketing ? '● ' : '○ '}
                           </span>
@@ -362,35 +362,35 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
 
                   {/* 모바일 카드 */}
                   <div className="md:hidden" style={{
-                    padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.04)',
+                    padding: '12px 14px', borderBottom: '1px solid #f1f5f9',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <div style={{
-                        fontSize: '0.83rem', color: '#fff', fontWeight: 600,
+                        fontSize: '0.83rem', color: '#0f172a', fontWeight: 600,
                         flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>
                         {emailDisplay}
                       </div>
                       {member.provider && <div style={{ flexShrink: 0 }}>{providerBadge(member.provider)}</div>}
                     </div>
-                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace', marginBottom: 6 }}>
+                    <div style={{ fontSize: '0.68rem', color: '#94a3b8', fontFamily: 'monospace', marginBottom: 6 }}>
                       {idDisplay}
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: '0.72rem', color: '#64748b' }}>
                       <span>👤 {nameDisplay}</span>
                       <span>🎂 {birthdateDisplay}</span>
                       <span>📱 {phoneDisplay}</span>
                     </div>
-                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: 6 }}>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: '0.72rem', color: '#64748b', marginTop: 6 }}>
                       <span>가입: {formatDate(member.created_at)}</span>
                       <span style={{
-                        color: member.onboarding_completed ? '#22c55e' : 'rgba(255,255,255,0.25)',
+                        color: member.onboarding_completed ? '#22c55e' : '#94a3b8',
                       }}>
                         온보딩 {member.onboarding_completed ? '완료' : '미완'}
                       </span>
                       <span style={{
                         color: (member.marketing_sms || member.marketing_email || member.marketing_phone)
-                          ? '#22c55e' : 'rgba(255,255,255,0.25)',
+                          ? '#22c55e' : '#94a3b8',
                       }}>
                         마케팅 {(member.marketing_sms || member.marketing_email || member.marketing_phone) ? '동의' : '미동의'}
                       </span>
@@ -407,7 +407,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
       {totalPages > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ ...outlineBtn, opacity: page === 1 ? 0.4 : 1 }}>← 이전</button>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem', padding: '7px 12px' }}>{page} / {totalPages}</span>
+          <span style={{ color: '#64748b', fontSize: '0.82rem', padding: '7px 12px' }}>{page} / {totalPages}</span>
           <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ ...outlineBtn, opacity: page === totalPages ? 0.4 : 1 }}>다음 →</button>
         </div>
       )}
@@ -416,8 +416,8 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
       {showUnlockDialog && (
         <div style={overlayStyle} onClick={() => setShowUnlockDialog(false)}>
           <div style={modalStyle} onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff', marginBottom: 6 }}>🔐 개인정보 마스킹 해제</div>
-            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: 16, lineHeight: 1.5 }}>
+            <div style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', marginBottom: 6 }}>🔐 개인정보 마스킹 해제</div>
+            <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: 16, lineHeight: 1.5 }}>
               슈퍼 관리자가 설정한 보안키를 입력하면 회원 이메일과 ID 전체를 확인할 수 있습니다.
             </p>
             <input
@@ -429,8 +429,8 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
               autoFocus
               style={{
                 width: '100%', padding: '10px 12px', borderRadius: 10,
-                border: unlockError ? '1px solid #f04052' : '1px solid rgba(255,255,255,0.15)',
-                background: 'rgba(255,255,255,0.07)', color: '#fff',
+                border: unlockError ? '1px solid #f04052' : '1px solid #e2e8f0',
+                background: '#fff', color: '#0f172a',
                 fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
                 marginBottom: unlockError ? 6 : 16,
               }}
@@ -453,8 +453,8 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
 
 const outlineBtn: React.CSSProperties = {
   padding: '7px 14px', borderRadius: 8,
-  border: '1px solid rgba(255,255,255,0.12)',
-  background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)',
+  border: '1px solid #e2e8f0',
+  background: '#f8fafc', color: '#475569',
   fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600,
 }
 const btnPrimary: React.CSSProperties = {
@@ -464,8 +464,8 @@ const btnPrimary: React.CSSProperties = {
 }
 const filterInput: React.CSSProperties = {
   padding: '8px 12px', borderRadius: 8,
-  border: '1px solid rgba(255,255,255,0.1)',
-  background: 'rgba(255,255,255,0.06)', color: '#fff',
+  border: '1px solid #e2e8f0',
+  background: '#fff', color: '#0f172a',
   fontSize: '0.82rem', outline: 'none',
 }
 const overlayStyle: React.CSSProperties = {
@@ -474,7 +474,7 @@ const overlayStyle: React.CSSProperties = {
   zIndex: 300, padding: 16,
 }
 const modalStyle: React.CSSProperties = {
-  background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.12)',
+  background: '#fff', border: '1px solid #e2e8f0',
   borderRadius: 20, padding: '28px 24px',
   width: '100%', maxWidth: 400,
 }

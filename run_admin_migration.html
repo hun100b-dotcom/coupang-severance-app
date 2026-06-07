@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supabase SQL Editor - Admin Accounts 마이그레이션</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 800px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #333;
+      margin: 0 0 10px 0;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: #666;
+      margin: 0 0 30px 0;
+      font-size: 14px;
+    }
+    .step {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border-left: 4px solid #667eea;
+    }
+    .step-number {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 28px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    .step-title {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .step-content {
+      color: #555;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 14px 28px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102,126,234,0.4);
+    }
+    .btn-secondary {
+      background: #6c757d;
+    }
+    .code {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      margin: 15px 0;
+      line-height: 1.5;
+    }
+    .warning {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      color: #856404;
+    }
+    .success {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      color: #155724;
+    }
+    .button-group {
+      margin-top: 30px;
+      display: flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Admin Accounts 마이그레이션</h1>
+    <p class="subtitle">CATCH 어드민 페이지 탭 정상화를 위한 DB 설정</p>
+
+    <div class="warning">
+      <strong>⚠️ 현재 상태:</strong> admin_accounts 테이블이 비어있어 어드민 페이지의 일부 탭이 정상적으로 표시되지 않습니다.
+    </div>
+
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">1</span>
+        Supabase SQL Editor 열기
+      </div>
+      <div class="step-content">
+        아래 버튼을 클릭하여 Supabase SQL Editor를 새 탭에서 엽니다.
+        <div style="margin-top: 12px;">
+          <a href="https://supabase.com/dashboard/project/hmjxrqhcwjyfkvlcejfc/sql/new" target="_blank" class="btn">
+            🚀 Supabase SQL Editor 열기
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">2</span>
+        마이그레이션 SQL 복사
+      </div>
+      <div class="step-content">
+        아래 SQL을 복사합니다. (코드 블록 클릭 시 자동 복사됩니다)
+        <div class="code" id="sqlCode" onclick="copySQL()" style="cursor: pointer;" title="클릭하여 복사">-- 005_super_admin_setup.sql
+-- 슈퍼 관리자 초기 설정 및 권한 강화
+
+-- ── 1. is_super_admin 함수 업데이트 ──
+CREATE OR REPLACE FUNCTION public.is_super_admin()
+RETURNS boolean LANGUAGE sql SECURITY DEFINER STABLE AS $$
+  SELECT
+    auth.email() = 'catchmasterdmin@gmail.com'
+    OR EXISTS (
+      SELECT 1
+      FROM public.admin_accounts
+      WHERE email = auth.email()
+        AND role = 'super_admin'
+        AND is_active = true
+    );
+$$;
+
+-- ── 2. admin_accounts role 제약 완화 ──
+ALTER TABLE public.admin_accounts
+  DROP CONSTRAINT IF EXISTS admin_accounts_role_check;
+ALTER TABLE public.admin_accounts
+  ADD CONSTRAINT admin_accounts_role_notempty CHECK (char_length(trim(role)) > 0);
+
+-- ── 3. system_settings에 신규 키 추가 ──
+INSERT INTO public.system_settings (key, value, description) VALUES
+  (
+    'permission_levels',
+    '{"super_admin":{"label":"슈퍼 관리자","color":"#f04040","permissions":{"dashboard":true,"target":true,"inquiries":true,"notices":true,"members":true,"accounts":true,"settings":true,"audit_logs":true,"server_logs":true}},"admin":{"label":"관리자","color":"#3182f6","permissions":{"dashboard":true,"target":true,"inquiries":true,"notices":true,"members":true,"accounts":false,"settings":false,"audit_logs":false,"server_logs":false}},"viewer":{"label":"뷰어","color":"#6b7280","permissions":{"dashboard":true,"target":false,"inquiries":true,"notices":false,"members":false,"accounts":false,"settings":false,"audit_logs":false,"server_logs":false}}}',
+    '관리자 권한 레벨 정의 (JSON)'
+  ),
+  (
+    'member_unmask_key',
+    '',
+    '회원 개인정보 마스킹 해제 보안키'
+  )
+ON CONFLICT (key) DO NOTHING;
+
+-- ── 4. system_settings anon 읽기 허용 ──
+ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "system_settings_select_public" ON public.system_settings;
+CREATE POLICY "system_settings_select_public"
+  ON public.system_settings FOR SELECT
+  USING (true);
+
+DROP POLICY IF EXISTS "system_settings_write_admin" ON public.system_settings;
+CREATE POLICY "system_settings_write_admin"
+  ON public.system_settings FOR ALL
+  TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- ── 5. 최초 슈퍼 관리자 등록 ──
+INSERT INTO public.admin_accounts (email, role, display_name, is_active)
+VALUES ('catchmasterdmin@gmail.com', 'super_admin', '최고 관리자', true)
+ON CONFLICT (email) DO NOTHING;
+
+-- ── 완료 메시지 ──
+DO $$
+BEGIN
+  RAISE NOTICE '✅ 005_super_admin_setup.sql 마이그레이션 완료';
+END $$;</div>
+        <div id="copyStatus" style="color: #28a745; font-weight: 600; margin-top: 10px; display: none;">
+          ✅ SQL이 클립보드에 복사되었습니다!
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">3</span>
+        SQL Editor에 붙여넣기 후 실행
+      </div>
+      <div class="step-content">
+        1단계에서 연 Supabase SQL Editor에 복사한 SQL을 붙여넣고 <strong>RUN</strong> 버튼을 클릭합니다.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">4</span>
+        어드민 페이지 새로고침
+      </div>
+      <div class="step-content">
+        마이그레이션이 완료되면 어드민 페이지(<code>https://catch-daily-worker.vercel.app/admin</code>)를 새로고침합니다.
+        <br><br>
+        <strong>catchmasterdmin@gmail.com</strong> 계정으로 로그인하면 모든 탭이 정상적으로 표시됩니다:
+        <ul style="margin: 10px 0; padding-left: 20px;">
+          <li>Dashboard</li>
+          <li>Target</li>
+          <li>Inquiries</li>
+          <li>공지사항 (Notices)</li>
+          <li>회원 관리 (Members)</li>
+          <li>관리자 계정 (Accounts) ← 슈퍼어드민 전용</li>
+          <li>Settings ← 슈퍼어드민 전용</li>
+          <li>Audit Logs ← 슈퍼어드민 전용</li>
+          <li>Server Logs ← 슈퍼어드민 전용</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="success">
+      <strong>✅ 기대 효과:</strong><br>
+      • 슈퍼어드민 계정 등록으로 모든 관리자 메뉴 접근 가능<br>
+      • 권한 레벨 시스템 활성화 (슈퍼어드민/관리자/뷰어)<br>
+      • 회원 개인정보 마스킹 기능 활성화<br>
+      • 커스텀 권한 역할 지원
+    </div>
+
+    <div class="button-group">
+      <a href="https://catch-daily-worker.vercel.app/admin" target="_blank" class="btn btn-secondary">
+        🔍 어드민 페이지 열기
+      </a>
+      <button onclick="copySQL()" class="btn">
+        📋 SQL 복사
+      </button>
+    </div>
+  </div>
+
+  <script>
+    async function copySQL() {
+      const sql = document.getElementById('sqlCode').textContent;
+      try {
+        await navigator.clipboard.writeText(sql);
+        const status = document.getElementById('copyStatus');
+        status.style.display = 'block';
+        setTimeout(() => {
+          status.style.display = 'none';
+        }, 3000);
+      } catch (err) {
+        alert('복사 실패. 수동으로 선택하여 복사해주세요.');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import type { SystemSettings } from '../../../types/admin'
 import { patchSetting } from '../../../lib/api'
 
@@ -56,19 +56,19 @@ export default function LegalVariables({ settings, onRefresh }: Props) {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.08)',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0',
   borderRadius: 14, padding: '20px', marginBottom: 16,
 }
 const titleStyle: React.CSSProperties = {
-  fontSize: '0.88rem', fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginBottom: 14,
+  fontSize: '0.88rem', fontWeight: 700, color: '#475569', marginBottom: 14,
 }
 const labelStyle: React.CSSProperties = {
-  fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 6,
+  fontSize: '0.75rem', color: '#64748b', display: 'block', marginBottom: 6,
 }
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)',
+  width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0',
+  borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: '#0f172a',
   outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
 }
 const btnStyle: React.CSSProperties = {

@@ -154,8 +154,8 @@ export default function ServerLogsMenu() {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 18, gap: 10, flexWrap: 'wrap' }}>
         <div>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fff', margin: 0 }}>Server Logs</h2>
-          <p style={{ fontSize: '0.73rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Server Logs</h2>
+          <p style={{ fontSize: '0.73rem', color: '#64748b', marginTop: 2 }}>
             배포 이력 · 시스템 이벤트 · 관리자 작업 로그
           </p>
         </div>
@@ -166,14 +166,14 @@ export default function ServerLogsMenu() {
             style={{
               padding: '5px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
               fontSize: '0.73rem', fontWeight: 700,
-              background: isLive ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)',
-              color: isLive ? '#22c55e' : 'rgba(255,255,255,0.4)',
+              background: isLive ? 'rgba(34,197,94,0.15)' : '#f8fafc',
+              color: isLive ? '#22c55e' : '#94a3b8',
               transition: 'all 0.15s',
             }}
           >
             <span style={{
               display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
-              background: isLive ? '#22c55e' : 'rgba(255,255,255,0.3)',
+              background: isLive ? '#22c55e' : '#94a3b8',
               marginRight: 5, verticalAlign: 'middle',
               animation: isLive ? 'pulse 1.5s ease-in-out infinite' : 'none',
             }} />
@@ -190,7 +190,7 @@ export default function ServerLogsMenu() {
       </div>
 
       {/* 탭 */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: 4, width: 'fit-content' }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: '#f8fafc', borderRadius: 10, padding: 4, width: 'fit-content' }}>
         {[
           { key: 'system', label: '시스템 / 배포 로그', icon: '🔧' },
           { key: 'audit',  label: '관리자 작업 로그',   icon: '📋' },
@@ -198,7 +198,7 @@ export default function ServerLogsMenu() {
           <button key={tab.key} onClick={() => setActiveTab(tab.key as 'system' | 'audit')} style={{
             padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
             background: activeTab === tab.key ? '#3182f6' : 'transparent',
-            color: activeTab === tab.key ? '#fff' : 'rgba(255,255,255,0.5)',
+            color: activeTab === tab.key ? '#fff' : '#64748b',
             fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.15s',
           }}>
             {tab.icon} {tab.label}
@@ -231,24 +231,24 @@ export default function ServerLogsMenu() {
                   </span>
                 )
               })}
-              <span style={{ fontSize: '0.73rem', color: 'rgba(255,255,255,0.3)' }}>
+              <span style={{ fontSize: '0.73rem', color: '#94a3b8' }}>
                 총 {sysTotal}건
               </span>
             </div>
           </div>
 
           <div style={{
-            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+            background: '#fff', border: '1px solid #e2e8f0',
             borderRadius: 12, overflow: 'hidden',
           }}>
             {/* 컬럼 헤더 */}
             <div className="hidden md:grid" style={{
               gridTemplateColumns: '80px 1fr 80px 140px',
               gap: 8, padding: '8px 16px',
-              background: 'rgba(255,255,255,0.03)',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              background: '#fff',
+              borderBottom: '1px solid #f1f5f9',
               fontSize: '0.68rem', fontWeight: 700,
-              color: 'rgba(255,255,255,0.3)',
+              color: '#94a3b8',
               textTransform: 'uppercase', letterSpacing: '0.04em',
             }}>
               <span>타입</span><span>내용</span><span>버전</span><span>일시</span>
@@ -257,15 +257,15 @@ export default function ServerLogsMenu() {
             {sysLoading ? (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
                 <div style={{
-                  width: 24, height: 24, border: '2px solid rgba(255,255,255,0.1)',
+                  width: 24, height: 24, border: '2px solid #e2e8f0',
                   borderTopColor: '#3182f6', borderRadius: '50%',
                   animation: 'spin 0.8s linear infinite', margin: '0 auto 12px',
                 }} />
                 <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-                <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem' }}>로딩 중...</p>
+                <p style={{ color: '#94a3b8', fontSize: '0.82rem' }}>로딩 중...</p>
               </div>
             ) : sysLogs.length === 0 ? (
-              <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '32px 0', fontSize: '0.85rem' }}>로그 없음</p>
+              <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0', fontSize: '0.85rem' }}>로그 없음</p>
             ) : sysLogs.map(log => {
               const meta = TYPE_META[log.type] ?? TYPE_META.INFO
               const isNew = newLogIds.has(log.id)
@@ -290,7 +290,7 @@ export default function ServerLogsMenu() {
                   <div className="hidden md:grid" style={{
                     gridTemplateColumns: '80px 1fr 80px 100px 40px',
                     gap: 8, padding: '10px 16px',
-                    borderBottom: isExpanded ? 'none' : '1px solid rgba(255,255,255,0.04)',
+                    borderBottom: isExpanded ? 'none' : '1px solid #f1f5f9',
                     alignItems: 'start',
                     background: isNew ? 'rgba(34,197,94,0.06)' : 'transparent',
                     transition: 'background 0.5s',
@@ -307,7 +307,7 @@ export default function ServerLogsMenu() {
                     </span>
                     <div>
                       <div style={{
-                        fontSize: '0.82rem', color: 'rgba(255,255,255,0.85)',
+                        fontSize: '0.82rem', color: '#0f172a',
                         fontWeight: 500, lineHeight: 1.4,
                         display: 'flex', alignItems: 'center', gap: 6,
                       }}>
@@ -321,23 +321,23 @@ export default function ServerLogsMenu() {
                         )}
                       </div>
                       {log.detail?.desc && (
-                        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{log.detail.desc}</div>
+                        <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 2 }}>{log.detail.desc}</div>
                       )}
                       {sourceLabel && (
-                        <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)', marginTop: 1 }}>via {sourceLabel}</div>
+                        <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: 1 }}>via {sourceLabel}</div>
                       )}
                     </div>
-                    <span style={{ fontSize: '0.72rem', color: log.app_version ? '#60a5fa' : 'rgba(255,255,255,0.2)' }}>
+                    <span style={{ fontSize: '0.72rem', color: log.app_version ? '#60a5fa' : '#94a3b8' }}>
                       {log.app_version ?? '—'}
                     </span>
-                    <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}
+                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}
                       title={fmtDate(log.created_at)}>
                       {fmtRelative(log.created_at)}
                     </span>
                     {/* 아코디언 펼침 버튼 — detail 추가 필드가 있을 때만 표시 */}
                     {hasExtra ? (
                       <span style={{
-                        fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)',
+                        fontSize: '0.7rem', color: '#64748b',
                         userSelect: 'none', textAlign: 'center', paddingTop: 2,
                       }}>
                         {isExpanded ? '▲' : '▼'}
@@ -351,18 +351,18 @@ export default function ServerLogsMenu() {
                   {isExpanded && hasExtra && (
                     <div className="hidden md:block" style={{
                       padding: '8px 16px 12px',
-                      borderBottom: '1px solid rgba(255,255,255,0.04)',
+                      borderBottom: '1px solid #f1f5f9',
                       background: 'rgba(49,130,246,0.04)',
                     }}>
                       <div style={{ fontSize: '0.68rem', color: '#60a5fa', fontWeight: 700, marginBottom: 4 }}>
                         DETAIL
                       </div>
                       <pre style={{
-                        fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)',
+                        fontSize: '0.72rem', color: '#475569',
                         fontFamily: 'JetBrains Mono, monospace',
                         whiteSpace: 'pre-wrap', wordBreak: 'break-all',
                         margin: 0,
-                        background: 'rgba(255,255,255,0.03)',
+                        background: '#fff',
                         borderRadius: 8, padding: '8px 10px',
                       }}>
                         {JSON.stringify(extraDetail, null, 2)}
@@ -373,7 +373,7 @@ export default function ServerLogsMenu() {
                   {/* 모바일 카드 */}
                   <div className="md:hidden" style={{
                     padding: '12px 16px',
-                    borderBottom: '1px solid rgba(255,255,255,0.04)',
+                    borderBottom: '1px solid #f1f5f9',
                     background: isNew ? 'rgba(34,197,94,0.06)' : 'transparent',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -385,14 +385,14 @@ export default function ServerLogsMenu() {
                       }}>
                         {meta.icon} {meta.label}
                       </span>
-                      <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)' }}>{fmtRelative(log.created_at)}</span>
+                      <span style={{ fontSize: '0.68rem', color: '#64748b' }}>{fmtRelative(log.created_at)}</span>
                     </div>
-                    <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.85)', fontWeight: 500, lineHeight: 1.4 }}>
+                    <div style={{ fontSize: '0.82rem', color: '#0f172a', fontWeight: 500, lineHeight: 1.4 }}>
                       {log.title}
                       {isNew && <span style={{ fontSize: '0.58rem', fontWeight: 800, color: '#22c55e', marginLeft: 6 }}>NEW</span>}
                     </div>
                     {log.detail?.desc && (
-                      <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{log.detail.desc}</div>
+                      <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 2 }}>{log.detail.desc}</div>
                     )}
                     {log.app_version && (
                       <span style={{ fontSize: '0.68rem', color: '#60a5fa', marginTop: 2, display: 'inline-block' }}>{log.app_version}</span>
@@ -408,7 +408,7 @@ export default function ServerLogsMenu() {
                         {isExpanded && (
                           <pre style={{
                             marginTop: 6, fontSize: '0.68rem',
-                            color: 'rgba(255,255,255,0.55)',
+                            color: '#64748b',
                             fontFamily: 'JetBrains Mono, monospace',
                             whiteSpace: 'pre-wrap', wordBreak: 'break-all',
                             background: 'rgba(49,130,246,0.05)', borderRadius: 8, padding: 8,
@@ -428,7 +428,7 @@ export default function ServerLogsMenu() {
           {totalSysPages > 1 && (
             <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 12 }}>
               <button onClick={() => setSysPage(p => Math.max(1, p - 1))} disabled={sysPage === 1} style={outlineBtn}>‹</button>
-              <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', alignSelf: 'center' }}>{sysPage} / {totalSysPages}</span>
+              <span style={{ fontSize: '0.8rem', color: '#64748b', alignSelf: 'center' }}>{sysPage} / {totalSysPages}</span>
               <button onClick={() => setSysPage(p => Math.min(totalSysPages, p + 1))} disabled={sysPage === totalSysPages} style={outlineBtn}>›</button>
             </div>
           )}
@@ -447,9 +447,9 @@ export default function ServerLogsMenu() {
             <button onClick={() => { setAuditAction(''); setAuditStart(''); setAuditEnd(''); setAuditPage(1) }} style={outlineBtn}>초기화</button>
           </div>
 
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 14, overflow: 'hidden' }}>
+          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14, overflow: 'hidden' }}>
             {auditLoading ? (
-              <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '32px 0', fontSize: '0.85rem' }}>로딩 중...</p>
+              <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0', fontSize: '0.85rem' }}>로딩 중...</p>
             ) : (
               <AuditLogTable logs={auditLogs} total={auditTotal} page={auditPage} onPageChange={setAuditPage} />
             )}
@@ -462,14 +462,14 @@ export default function ServerLogsMenu() {
 
 const outlineBtn: React.CSSProperties = {
   padding: '6px 12px', borderRadius: 8,
-  border: '1px solid rgba(255,255,255,0.12)',
-  background: 'rgba(255,255,255,0.05)',
-  color: 'rgba(255,255,255,0.6)', fontSize: '0.78rem', cursor: 'pointer',
+  border: '1px solid #e2e8f0',
+  background: '#f8fafc',
+  color: '#475569', fontSize: '0.78rem', cursor: 'pointer',
 }
 const selectSt: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.06)',
-  border: '1px solid rgba(255,255,255,0.1)',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0',
   borderRadius: 8, padding: '6px 10px',
-  fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)',
+  fontSize: '0.82rem', color: '#475569',
   outline: 'none', cursor: 'pointer',
 }

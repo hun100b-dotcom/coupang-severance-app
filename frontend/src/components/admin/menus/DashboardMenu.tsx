@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // DashboardMenu: 어드민 대시보드 진입점
 // 5개 서브탭(개요/방문자/계산기/채용/타겟) 중 하나를 선택해 콘텐츠를 렌더링합니다.
 // 이전 단일 스크롤 구조에서 서브탭 구조로 전면 재구성되었습니다.
@@ -20,14 +20,14 @@ function TabLoading() {
     <div style={{ padding: '60px 40px', textAlign: 'center' }}>
       <div style={{
         width: 32, height: 32,
-        border: '3px solid rgba(255,255,255,0.1)',
+        border: '3px solid #e2e8f0',
         borderTopColor: '#3182f6',
         borderRadius: '50%',
         animation: 'spin 0.8s linear infinite',
         margin: '0 auto 16px',
       }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>탭 로딩 중...</p>
+      <p style={{ color: '#64748b', fontSize: '0.85rem' }}>탭 로딩 중...</p>
     </div>
   )
 }

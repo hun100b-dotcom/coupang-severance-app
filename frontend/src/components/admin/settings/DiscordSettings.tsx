@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import type { SystemSettings } from '../../../types/admin'
 import { patchSetting } from '../../../lib/api'
 import { supabase } from '../../../lib/supabase'
@@ -71,7 +71,7 @@ export default function DiscordSettings({ settings, onRefresh }: Props) {
             onClick={() => setEnabled(e => !e)}
             style={{
               width: 40, height: 22, borderRadius: 11,
-              background: enabled ? '#3182f6' : 'rgba(255,255,255,0.15)',
+              background: enabled ? '#3182f6' : '#cbd5e1',
               position: 'relative', cursor: 'pointer', transition: 'background 0.2s',
             }}
           >
@@ -81,7 +81,7 @@ export default function DiscordSettings({ settings, onRefresh }: Props) {
               background: '#fff', transition: 'left 0.2s',
             }} />
           </div>
-          <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>
+          <span style={{ fontSize: '0.85rem', color: '#475569' }}>
             Discord 알림 {enabled ? '활성화' : '비활성화'}
           </span>
         </label>
@@ -93,15 +93,15 @@ export default function DiscordSettings({ settings, onRefresh }: Props) {
         </button>
         <button onClick={testWebhook} disabled={testing || !url.trim()} style={{
           ...btnStyle,
-          background: url.trim() ? '#5865F2' : 'rgba(255,255,255,0.1)',  // 디스코드 보라색
+          background: url.trim() ? '#5865F2' : '#f1f5f9',  // 디스코드 보라색
           opacity: url.trim() ? 1 : 0.5,
         }}>
           {testing ? '발송 중...' : '📡 테스트 알림'}
         </button>
       </div>
       {/* 설정 안내 메시지 */}
-      <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', marginTop: 10, lineHeight: 1.7 }}>
-        저장된 URL은 <strong style={{ color: 'rgba(255,255,255,0.5)' }}>문의 접수 시 실제 알림</strong>에 사용됩니다.
+      <p style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: 10, lineHeight: 1.7 }}>
+        저장된 URL은 <strong style={{ color: '#64748b' }}>문의 접수 시 실제 알림</strong>에 사용됩니다.
         (백엔드 FastAPI + Supabase Edge Function 양쪽 모두 이 값을 우선 조회)<br />
         📡 테스트 버튼은 Edge Function 경로로 즉시 발송합니다.<br />
         Render 환경변수 <code style={{ color: '#a78bfa' }}>DISCORD_WEBHOOK_URL</code>이 설정된 경우
@@ -119,21 +119,21 @@ export default function DiscordSettings({ settings, onRefresh }: Props) {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.08)',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0',
   borderRadius: 14,
   padding: '20px',
   marginBottom: 16,
 }
 const titleStyle: React.CSSProperties = {
-  fontSize: '0.88rem', fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginBottom: 14,
+  fontSize: '0.88rem', fontWeight: 700, color: '#475569', marginBottom: 14,
 }
 const labelStyle: React.CSSProperties = {
-  fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 6,
+  fontSize: '0.75rem', color: '#64748b', display: 'block', marginBottom: 6,
 }
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)',
+  width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0',
+  borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: '#0f172a',
   outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
 }
 const btnStyle: React.CSSProperties = {

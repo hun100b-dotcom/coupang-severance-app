@@ -1,0 +1,44 @@
+{
+  "description": "GSC 색인 요청 상태 추적 파일. Claude가 GSC 관련 작업 시 반드시 이 파일을 먼저 읽고, 작업 후 업데이트해야 합니다.",
+  "last_updated": "2026-04-14",
+  "sitemap_total": 15,
+  "gsc_recognized": 14,
+  "indexed_count": 2,
+  "not_indexed_count": 12,
+  "manual_request_count": 2,
+
+  "urls": [
+    { "path": "/",                     "priority": 1.0, "requested": null,         "status": "unknown",      "note": "색인 완료 2개 중 하나일 가능성. GSC에서 확인 필요" },
+    { "path": "/severance",            "priority": 0.9, "requested": "2026-04-14", "status": "requested",    "note": "" },
+    { "path": "/unemployment",         "priority": 0.9, "requested": null,         "status": "not_indexed",  "note": "04-14 할당량 초과로 실패. 최우선 요청 대상" },
+    { "path": "/guide/severance",      "priority": 0.9, "requested": null,         "status": "not_indexed",  "note": "" },
+    { "path": "/guide/unemployment",   "priority": 0.9, "requested": null,         "status": "not_indexed",  "note": "" },
+    { "path": "/weekly-allowance",     "priority": 0.8, "requested": null,         "status": "not_indexed",  "note": "" },
+    { "path": "/annual-leave",         "priority": 0.8, "requested": null,         "status": "not_indexed",  "note": "" },
+    { "path": "/guide",                "priority": 0.8, "requested": null,         "status": "not_indexed",  "note": "" },
+    { "path": "/calculator",           "priority": 0.8, "requested": null,         "status": "unknown",      "note": "미색인 12개 목록에 없음. GSC에서 확인 필요" },
+    { "path": "/jobs",                 "priority": 0.8, "requested": null,         "status": "not_indexed",  "note": "" },
+    { "path": "/guide/weekly-allowance","priority": 0.8, "requested": null,        "status": "not_indexed",  "note": "" },
+    { "path": "/guide/annual-leave",   "priority": 0.8, "requested": null,         "status": "not_indexed",  "note": "" },
+    { "path": "/landing",              "priority": 0.7, "requested": null,         "status": "unknown",      "note": "미색인 12개 목록에 없음. GSC에서 확인 필요" },
+    { "path": "/my-benefits",          "priority": 0.7, "requested": null,         "status": "not_indexed",  "note": "" },
+    { "path": "/notices",              "priority": 0.6, "requested": null,         "status": "not_indexed",  "note": "" }
+  ],
+
+  "extra_requests": [
+    { "path": "/home", "requested": "2026-04-09", "note": "sitemap.xml에 없는 URL. 앱 내부 경로. 효과 불명" }
+  ],
+
+  "next_priority": [
+    "/unemployment",
+    "/guide/severance",
+    "/guide/unemployment",
+    "/weekly-allowance",
+    "/annual-leave"
+  ],
+
+  "log": [
+    { "date": "2026-04-09", "action": "GSC 속성 추가 + sitemap 제출 + /home 색인 요청" },
+    { "date": "2026-04-14", "action": "색인 현황 확인 (완료2/미완료12). /severance 요청 완료. /unemployment 할당량 초과" }
+  ]
+}

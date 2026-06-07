@@ -32,19 +32,19 @@ function fmtW(n: number) {
 }
 
 const CARD: React.CSSProperties = {
-  background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-  border: '1px solid rgba(255,255,255,0.08)',
+  background: '#fff',
+  border: '1px solid #e2e8f0',
   borderRadius: 16,
   padding: 'clamp(16px, 3vw, 24px)',
 }
 
 const TT: React.CSSProperties = {
-  background: '#12122a', border: '1px solid rgba(255,255,255,0.12)',
+  background: '#12122a', border: '1px solid #e2e8f0',
   borderRadius: 10, fontSize: 11,
 }
 
 const Empty = () => (
-  <div style={{ textAlign: 'center', padding: '28px 0', color: 'rgba(255,255,255,0.2)', fontSize: '0.82rem' }}>
+  <div style={{ textAlign: 'center', padding: '28px 0', color: '#94a3b8', fontSize: '0.82rem' }}>
     데이터 없음
   </div>
 )
@@ -74,12 +74,12 @@ export default function TargetMenu() {
   if (loading) return (
     <div style={{ padding: '60px 20px', textAlign: 'center' }}>
       <div style={{
-        width: 36, height: 36, border: '3px solid rgba(255,255,255,0.08)',
+        width: 36, height: 36, border: '3px solid #e2e8f0',
         borderTopColor: C.blue, borderRadius: '50%',
         animation: 'spin .8s linear infinite', margin: '0 auto 16px',
       }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem' }}>인사이트 데이터 분석 중...</p>
+      <p style={{ color: '#64748b', fontSize: '0.85rem' }}>인사이트 데이터 분석 중...</p>
     </div>
   )
 
@@ -88,7 +88,7 @@ export default function TargetMenu() {
     <div style={{ padding: 20 }}>
       <div style={{ ...CARD, background: 'rgba(204,34,51,0.08)', border: '1px solid rgba(204,34,51,0.2)' }}>
         <div style={{ fontWeight: 700, color: '#ff6b6b', marginBottom: 8 }}>타겟 인사이트 로드 실패</div>
-        <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', marginBottom: 16 }}>{error || '데이터를 불러오지 못했습니다.'}</div>
+        <div style={{ fontSize: '0.82rem', color: '#64748b', marginBottom: 16 }}>{error || '데이터를 불러오지 못했습니다.'}</div>
         <button onClick={load} style={{
           padding: '8px 24px', borderRadius: 10, border: 'none',
           background: `linear-gradient(135deg, ${C.blue}, #2563eb)`,
@@ -110,7 +110,7 @@ export default function TargetMenu() {
   const serviceUsage: TargetInsights['service_usage'] | null = raw.service_usage ?? data.service_usage ?? null
 
   const funnelSteps = [
-    { label: '방문자 (클릭)', value: funnel.visitors, color: 'rgba(255,255,255,0.3)' },
+    { label: '방문자 (클릭)', value: funnel.visitors, color: '#94a3b8' },
     { label: '가입자', value: funnel.signups, color: C.blue },
     { label: '계산 이용자', value: funnel.calculations, color: C.green },
     { label: '퇴직금 적격', value: funnel.eligible, color: C.gold },
@@ -122,7 +122,7 @@ export default function TargetMenu() {
 
   const STATUS_CLR: Record<string, string> = {
     waiting: C.orange, '대기중': C.orange, reviewing: C.blue,
-    answered: C.green, '답변완료': C.green, closed: 'rgba(255,255,255,0.25)',
+    answered: C.green, '답변완료': C.green, closed: '#94a3b8',
   }
   const STATUS_LBL: Record<string, string> = {
     waiting: '대기', '대기중': '대기', reviewing: '검토',
@@ -140,14 +140,14 @@ export default function TargetMenu() {
             background: 'linear-gradient(135deg, #fff 30%, rgba(255,255,255,0.6))',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>Target Intelligence</h2>
-          <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.28)', marginTop: 2 }}>
+          <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: 2 }}>
             사용자 인사이트 &middot; 수익 분석 &middot; 세그먼트 분류
           </p>
         </div>
         <button onClick={load} style={{
           marginLeft: 'auto', padding: '6px 16px', borderRadius: 10,
-          border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
-          color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600,
+          border: '1px solid #e2e8f0', background: '#f8fafc',
+          color: '#64748b', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600,
         }}>새로고침</button>
       </div>
 
@@ -168,7 +168,7 @@ export default function TargetMenu() {
           }}>
             <div style={{ position: 'absolute', top: -6, right: -4, fontSize: '1.8rem', opacity: 0.06 }}>{m.i}</div>
             <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.38)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5 }}>{m.l}</div>
-            <div style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.25rem)', fontWeight: 800, color: '#fff', lineHeight: 1.1 }}>{m.v}</div>
+            <div style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.25rem)', fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>{m.v}</div>
             <div style={{ fontSize: '0.58rem', color: `${m.c}bb`, marginTop: 3, fontWeight: 600 }}>{m.s}</div>
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${m.c}, transparent)` }} />
           </div>
@@ -178,7 +178,7 @@ export default function TargetMenu() {
       {/* ═══ ACQUISITION FUNNEL ═══════════════════════════ */}
       <div style={{ ...CARD, marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 14 }}>
-          <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>Acquisition Funnel</span>
+          <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>Acquisition Funnel</span>
           <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.22)' }}>방문 → 가입 → 계산 → 적격</span>
         </div>
         {funnelSteps.map((step, i) => {
@@ -190,7 +190,7 @@ export default function TargetMenu() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                 <span style={{ fontSize: '0.73rem', color: 'rgba(255,255,255,0.48)', fontWeight: 600 }}>{step.label}</span>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
-                  <span style={{ fontSize: '0.92rem', fontWeight: 800, color: '#fff' }}>{step.value.toLocaleString()}</span>
+                  <span style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0f172a' }}>{step.value.toLocaleString()}</span>
                   {conv && (
                     <span style={{
                       fontSize: '0.62rem', fontWeight: 700, color: step.color,
@@ -199,7 +199,7 @@ export default function TargetMenu() {
                   )}
                 </div>
               </div>
-              <div style={{ height: 18, background: 'rgba(255,255,255,0.03)', borderRadius: 6, overflow: 'hidden' }}>
+              <div style={{ height: 18, background: '#fff', borderRadius: 6, overflow: 'hidden' }}>
                 <div style={{
                   width: `${Math.max(pct, step.value > 0 ? 1 : 0)}%`, height: '100%',
                   background: `linear-gradient(90deg, ${step.color}, ${step.color}55)`,
@@ -216,7 +216,7 @@ export default function TargetMenu() {
 
         {/* Revenue Intelligence */}
         <div style={CARD}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 2 }}>Revenue Intelligence</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: 2 }}>Revenue Intelligence</div>
           <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.22)', marginBottom: 16 }}>퇴직금 규모별 분석</div>
 
           <div style={{ display: 'flex', gap: 20, marginBottom: 18, flexWrap: 'wrap' }}>
@@ -237,10 +237,10 @@ export default function TargetMenu() {
           {revenue.segments.map((seg, i) => (
             <div key={seg.label} style={{ marginBottom: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>{seg.label}</span>
+                <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>{seg.label}</span>
                 <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.65)', fontWeight: 700 }}>{seg.count}건 &middot; {fmtW(seg.total)}</span>
               </div>
-              <div style={{ height: 8, background: 'rgba(255,255,255,0.03)', borderRadius: 4, overflow: 'hidden' }}>
+              <div style={{ height: 8, background: '#fff', borderRadius: 4, overflow: 'hidden' }}>
                 <div style={{
                   width: `${seg.count / maxRevSeg * 100}%`, height: '100%',
                   background: `linear-gradient(90deg, ${revColors[i]}, ${revColors[i]}77)`,
@@ -253,7 +253,7 @@ export default function TargetMenu() {
 
         {/* Company Landscape */}
         <div style={CARD}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 2 }}>Company Landscape</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: 2 }}>Company Landscape</div>
           <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.22)', marginBottom: 14 }}>사업장별 이용 분포 &middot; 총 {companies.length}개사</div>
           {companies.length > 0 ? (<>
             <ResponsiveContainer width="100%" height={180}>
@@ -271,14 +271,14 @@ export default function TargetMenu() {
                 const maxC = companies[0]?.count || 1
                 return (
                   <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-                    <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.25)', width: 14, textAlign: 'right' }}>{i + 1}</span>
+                    <span style={{ fontSize: '0.62rem', color: '#94a3b8', width: 14, textAlign: 'right' }}>{i + 1}</span>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: PIE[i % PIE.length], flexShrink: 0 }} />
-                    <span style={{ flex: 1, fontSize: '0.7rem', color: 'rgba(255,255,255,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
-                    <div style={{ width: 60, height: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 2, overflow: 'hidden', flexShrink: 0 }}>
+                    <span style={{ flex: 1, fontSize: '0.7rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
+                    <div style={{ width: 60, height: 4, background: '#f8fafc', borderRadius: 2, overflow: 'hidden', flexShrink: 0 }}>
                       <div style={{ width: `${c.count / maxC * 100}%`, height: '100%', background: PIE[i % PIE.length], borderRadius: 2 }} />
                     </div>
                     <span style={{ fontSize: '0.65rem', fontWeight: 700, color: PIE[i % PIE.length], width: 32, textAlign: 'right' }}>{c.count}</span>
-                    <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.25)', width: 32, textAlign: 'right' }}>{c.pct}%</span>
+                    <span style={{ fontSize: '0.58rem', color: '#94a3b8', width: 32, textAlign: 'right' }}>{c.pct}%</span>
                   </div>
                 )
               })}
@@ -290,13 +290,13 @@ export default function TargetMenu() {
       {/* ═══ SEGMENT ANALYSIS (2-col) ════════════════════ */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <div style={CARD}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 12 }}>근무기간별 분포</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: 12 }}>근무기간별 분포</div>
           {segments.by_duration.some(d => d.count > 0) ? (
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={segments.by_duration} layout="vertical" margin={{ top: 0, right: 16, left: 56, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} />
-                <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.45)' }} width={52} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#64748b' }} width={52} />
                 <Tooltip contentStyle={TT} formatter={(v: number) => [`${v}명`, '인원']} />
                 <Bar dataKey="count" radius={[0, 6, 6, 0]}>
                   {segments.by_duration.map((_, i) => <Cell key={i} fill={[C.purple, C.blue, C.green, C.orange][i]} />)}
@@ -306,13 +306,13 @@ export default function TargetMenu() {
           ) : <Empty />}
         </div>
         <div style={CARD}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 12 }}>급여수준별 분포</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: 12 }}>급여수준별 분포</div>
           {segments.by_wage.some(d => d.count > 0) ? (
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={segments.by_wage} layout="vertical" margin={{ top: 0, right: 16, left: 62, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} />
-                <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.45)' }} width={58} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#64748b' }} width={58} />
                 <Tooltip contentStyle={TT} formatter={(v: number) => [`${v}명`, '인원']} />
                 <Bar dataKey="count" radius={[0, 6, 6, 0]}>
                   {segments.by_wage.map((_, i) => <Cell key={i} fill={[C.red, C.orange, C.green, C.blue][i]} />)}
@@ -326,7 +326,7 @@ export default function TargetMenu() {
       {/* ═══ CROSS-SEGMENT HEATMAP ═══════════════════════ */}
       <div style={{ ...CARD, marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 16 }}>
-          <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>Cross-Segment Matrix</span>
+          <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>Cross-Segment Matrix</span>
           <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.22)' }}>근무기간 x 급여수준</span>
         </div>
         <div style={{ overflowX: 'auto' }}>
@@ -347,11 +347,11 @@ export default function TargetMenu() {
                 const intensity = val / maxHeat
                 return (
                   <div key={`c-${ri}-${ci}`} style={{
-                    background: val === 0 ? 'rgba(255,255,255,0.02)' : `rgba(49,130,246,${0.08 + intensity * 0.6})`,
+                    background: val === 0 ? '#fafafa' : `rgba(49,130,246,${0.08 + intensity * 0.6})`,
                     borderRadius: 10, padding: '12px 4px', textAlign: 'center',
                     fontSize: '0.85rem', fontWeight: 700,
-                    color: intensity > 0.35 ? '#fff' : 'rgba(255,255,255,0.45)',
-                    border: val === 0 ? '1px solid rgba(255,255,255,0.04)' : `1px solid rgba(49,130,246,${0.12 + intensity * 0.25})`,
+                    color: intensity > 0.35 ? '#fff' : '#64748b',
+                    border: val === 0 ? '1px solid #f1f5f9' : `1px solid rgba(49,130,246,${0.12 + intensity * 0.25})`,
                     transition: 'all .3s',
                   }}>
                     {val || <span style={{ opacity: 0.3 }}>-</span>}
@@ -368,7 +368,7 @@ export default function TargetMenu() {
 
         {/* Demographics — demo가 null이면 빈 카드 표시 */}
         <div style={CARD}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 16 }}>User Demographics</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: 16 }}>User Demographics</div>
           {demo ? (
             <>
               <div className="grid grid-cols-2 gap-4">
@@ -390,7 +390,7 @@ export default function TargetMenu() {
                       {demo.by_provider.map((p, i) => (
                         <div key={p.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <div style={{ width: 6, height: 6, borderRadius: '50%', background: [C.gold, C.red, C.blue, C.purple][i % 4] }} />
-                          <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.45)', flex: 1 }}>{p.label}</span>
+                          <span style={{ fontSize: '0.62rem', color: '#64748b', flex: 1 }}>{p.label}</span>
                           <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'rgba(255,255,255,0.65)' }}>{p.count}</span>
                         </div>
                       ))}
@@ -413,7 +413,7 @@ export default function TargetMenu() {
                         <PieChart>
                           <Pie data={mdata} dataKey="value" nameKey="name" cx="50%" cy="50%"
                             outerRadius="80%" innerRadius="50%" paddingAngle={3} strokeWidth={0}>
-                            {mdata.map((_, i) => <Cell key={i} fill={[C.blue, C.green, C.purple, 'rgba(255,255,255,0.12)'][i]} />)}
+                            {mdata.map((_, i) => <Cell key={i} fill={[C.blue, C.green, C.purple, '#e2e8f0'][i]} />)}
                           </Pie>
                           <Tooltip contentStyle={TT} />
                         </PieChart>
@@ -421,8 +421,8 @@ export default function TargetMenu() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         {mdata.map((d, i) => (
                           <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <div style={{ width: 6, height: 6, borderRadius: '50%', background: [C.blue, C.green, C.purple, 'rgba(255,255,255,0.12)'][i] }} />
-                            <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.45)', flex: 1 }}>{d.name}</span>
+                            <div style={{ width: 6, height: 6, borderRadius: '50%', background: [C.blue, C.green, C.purple, '#e2e8f0'][i] }} />
+                            <span style={{ fontSize: '0.62rem', color: '#64748b', flex: 1 }}>{d.name}</span>
                             <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'rgba(255,255,255,0.65)' }}>{d.value}</span>
                           </div>
                         ))}
@@ -433,15 +433,15 @@ export default function TargetMenu() {
               </div>
 
               {/* Onboarding Bar */}
-              <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid #e2e8f0' }}>
                 <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 6 }}>온보딩 현황</div>
                 <div style={{ display: 'flex', gap: 2, height: 8, borderRadius: 99, overflow: 'hidden', marginBottom: 5 }}>
                   <div style={{ flex: Math.max(demo.onboarding_completed, 0.01), background: C.green, transition: 'flex .3s' }} />
-                  <div style={{ flex: Math.max(demo.onboarding_pending, 0.01), background: 'rgba(255,255,255,0.08)', transition: 'flex .3s' }} />
+                  <div style={{ flex: Math.max(demo.onboarding_pending, 0.01), background: '#f1f5f9', transition: 'flex .3s' }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '0.62rem', color: C.green, fontWeight: 700 }}>완료 {demo.onboarding_completed}</span>
-                  <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)', fontWeight: 700 }}>미완료 {demo.onboarding_pending}</span>
+                  <span style={{ fontSize: '0.62rem', color: '#94a3b8', fontWeight: 700 }}>미완료 {demo.onboarding_pending}</span>
                 </div>
               </div>
             </>
@@ -451,7 +451,7 @@ export default function TargetMenu() {
         {/* Smart Tags */}
         <div style={CARD}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 16 }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>Smart User Tags</span>
+            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>Smart User Tags</span>
             <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.22)' }}>데이터 기반 자동 분류</span>
           </div>
           {tags.length > 0 ? (
@@ -479,20 +479,20 @@ export default function TargetMenu() {
 
           {/* Service Usage — serviceUsage null 방어 */}
           {serviceUsage && (
-            <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid #e2e8f0' }}>
               <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 10 }}>서비스 이용 비율</div>
               {(() => {
                 const other = Math.max(serviceUsage.total - serviceUsage.severance - serviceUsage.unemployment, 0)
                 const items = [
                   { l: '퇴직금', v: serviceUsage.severance, c: C.blue },
                   { l: '실업급여', v: serviceUsage.unemployment, c: C.green },
-                  { l: '기타', v: other, c: 'rgba(255,255,255,0.2)' },
+                  { l: '기타', v: other, c: '#94a3b8' },
                 ]
                 const mx = Math.max(1, ...items.map(i => i.v))
                 return items.map(item => (
                   <div key={item.l} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                    <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', width: 50, flexShrink: 0 }}>{item.l}</span>
-                    <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
+                    <span style={{ fontSize: '0.68rem', color: '#64748b', width: 50, flexShrink: 0 }}>{item.l}</span>
+                    <div style={{ flex: 1, height: 6, background: '#f8fafc', borderRadius: 3, overflow: 'hidden' }}>
                       <div style={{ width: `${item.v / mx * 100}%`, height: '100%', background: item.c, borderRadius: 3, minWidth: item.v > 0 ? 3 : 0 }} />
                     </div>
                     <span style={{ fontSize: '0.68rem', fontWeight: 700, color: item.c, width: 40, textAlign: 'right' }}>{item.v.toLocaleString()}</span>
@@ -507,7 +507,7 @@ export default function TargetMenu() {
       {/* ═══ GROWTH TIMELINE ═════════════════════════════ */}
       {growth.length > 1 && (
         <div style={{ ...CARD, marginBottom: 12 }}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 14 }}>Monthly Growth</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: 14 }}>Monthly Growth</div>
           <ResponsiveContainer width="100%" height={170}>
             <AreaChart data={growth} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
               <defs>
@@ -516,9 +516,9 @@ export default function TargetMenu() {
                   <stop offset="100%" stopColor={C.blue} stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} />
-              <YAxis tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} />
+              <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} />
               <Tooltip contentStyle={TT} formatter={(v: number) => [`${v}명`, '가입자']} />
               <Area type="monotone" dataKey="count" name="가입자" stroke={C.blue} fill="url(#tgt-grad)" strokeWidth={2} />
             </AreaChart>
@@ -531,17 +531,17 @@ export default function TargetMenu() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Category breakdown */}
           <div style={CARD}>
-            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 14 }}>문의 카테고리 분석</div>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: 14 }}>문의 카테고리 분석</div>
             {inq.by_category.length > 0 ? (
               inq.by_category.slice(0, 6).map((cat, i) => {
                 const mx = inq.by_category[0]?.count || 1
                 return (
                   <div key={cat.label} style={{ marginBottom: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                      <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>{cat.label}</span>
+                      <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>{cat.label}</span>
                       <span style={{ fontSize: '0.7rem', fontWeight: 700, color: PIE[i % PIE.length] }}>{cat.count}건</span>
                     </div>
-                    <div style={{ height: 5, background: 'rgba(255,255,255,0.03)', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ height: 5, background: '#fff', borderRadius: 3, overflow: 'hidden' }}>
                       <div style={{ width: `${cat.count / mx * 100}%`, height: '100%', background: PIE[i % PIE.length], borderRadius: 3 }} />
                     </div>
                   </div>
@@ -551,17 +551,17 @@ export default function TargetMenu() {
           </div>
           {/* Response metrics */}
           <div style={CARD}>
-            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 14 }}>문의 응답 분석</div>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: 14 }}>문의 응답 분석</div>
             <div className="grid grid-cols-2 gap-3" style={{ marginBottom: 16 }}>
-              <div style={{ textAlign: 'center', padding: 14, background: 'rgba(255,255,255,0.03)', borderRadius: 12 }}>
+              <div style={{ textAlign: 'center', padding: 14, background: '#fff', borderRadius: 12 }}>
                 <div style={{ fontSize: '1.4rem', fontWeight: 900, color: C.blue }}>{inq.total}</div>
-                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>전체 문의</div>
+                <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: 2 }}>전체 문의</div>
               </div>
-              <div style={{ textAlign: 'center', padding: 14, background: 'rgba(255,255,255,0.03)', borderRadius: 12 }}>
+              <div style={{ textAlign: 'center', padding: 14, background: '#fff', borderRadius: 12 }}>
                 <div style={{ fontSize: '1.4rem', fontWeight: 900, color: inq.avg_response_hours > 24 ? C.orange : C.green }}>
                   {inq.avg_response_hours > 0 ? `${inq.avg_response_hours}h` : '-'}
                 </div>
-                <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>평균 응답시간</div>
+                <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: 2 }}>평균 응답시간</div>
               </div>
             </div>
             <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 8 }}>상태별 분포</div>
@@ -570,8 +570,8 @@ export default function TargetMenu() {
               return (
                 <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
                   <div style={{ width: 7, height: 7, borderRadius: '50%', background: clr }} />
-                  <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.45)', width: 36 }}>{STATUS_LBL[s.label] || s.label}</span>
-                  <div style={{ flex: 1, height: 5, background: 'rgba(255,255,255,0.03)', borderRadius: 3, overflow: 'hidden' }}>
+                  <span style={{ fontSize: '0.68rem', color: '#64748b', width: 36 }}>{STATUS_LBL[s.label] || s.label}</span>
+                  <div style={{ flex: 1, height: 5, background: '#fff', borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{ width: `${inq.total > 0 ? (s.count / inq.total * 100) : 0}%`, height: '100%', background: clr, borderRadius: 3 }} />
                   </div>
                   <span style={{ fontSize: '0.68rem', fontWeight: 700, color: clr, width: 24, textAlign: 'right' }}>{s.count}</span>

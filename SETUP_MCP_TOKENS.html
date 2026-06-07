@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP 토큰 설정 가이드</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .mcp-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border-left: 4px solid #3B82F6;
+        }
+        .mcp-section.notion { border-left-color: #000; }
+        .mcp-section.github { border-left-color: #24292e; }
+        .mcp-section.vercel { border-left-color: #000; }
+        .mcp-section h2 {
+            color: #1e293b;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+        .status.active { background: #D1FAE5; color: #065F46; }
+        .status.pending { background: #FEF3C7; color: #92400E; }
+        .open-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+        .open-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);
+        }
+        .steps {
+            margin: 1rem 0;
+        }
+        .steps ol {
+            margin-left: 1.5rem;
+            line-height: 1.8;
+        }
+        .steps li {
+            margin-bottom: 0.5rem;
+        }
+        .token-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Cascadia Code', monospace;
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+        .token-input:focus {
+            outline: none;
+            border-color: #3B82F6;
+        }
+        .save-btn {
+            background: #10B981;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .save-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Cascadia Code', monospace;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+        .warning {
+            background: #FEF3C7;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #F59E0B;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 MCP 토큰 설정 가이드</h1>
+            <p>Notion, GitHub, Vercel MCP 활성화</p>
+        </div>
+
+        <div class="content">
+            <!-- Notion MCP -->
+            <div class="mcp-section notion">
+                <h2>
+                    <span>📓 Notion MCP</span>
+                    <span class="status pending">토큰 필요</span>
+                </h2>
+
+                <div class="steps">
+                    <p><strong>Integration Token 발급 방법:</strong></p>
+                    <ol>
+                        <li>아래 버튼 클릭하여 Notion Integrations 페이지 열기</li>
+                        <li><strong>"New Integration"</strong> 버튼 클릭</li>
+                        <li>
+                            <strong>Name:</strong> CATCH Development<br>
+                            <strong>Associated workspace:</strong> 본인 워크스페이스 선택
+                        </li>
+                        <li><strong>"Submit"</strong> 클릭</li>
+                        <li><strong>"Internal Integration Secret"</strong> 복사 (secret_... 형태)</li>
+                        <li>아래 입력란에 붙여넣고 저장</li>
+                        <li><strong>중요:</strong> Notion 페이지에서 "..." → "Add connections" → "CATCH Development" 연결</li>
+                    </ol>
+                </div>
+
+                <a href="https://www.notion.so/my-integrations" target="_blank" class="open-btn">
+                    🔗 Notion Integrations 열기
+                </a>
+
+                <div style="margin-top: 1rem;">
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Integration Token:</label>
+                    <input type="text" id="notionToken" class="token-input" placeholder="secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                    <button class="save-btn" onclick="saveNotionToken()">💾 저장</button>
+                </div>
+
+                <div class="warning">
+                    ⚠️ Integration 생성 후 반드시 "📋 CATCH 개발 태스크" Notion 페이지에 Integration을 연결해야 합니다!
+                </div>
+            </div>
+
+            <!-- GitHub MCP -->
+            <div class="mcp-section github">
+                <h2>
+                    <span>🐙 GitHub MCP</span>
+                    <span class="status pending">토큰 필요</span>
+                </h2>
+
+                <div class="steps">
+                    <p><strong>Personal Access Token 발급 방법:</strong></p>
+                    <ol>
+                        <li>아래 버튼 클릭하여 GitHub Tokens 페이지 열기</li>
+                        <li><strong>"Generate new token"</strong> → <strong>"Generate new token (classic)"</strong> 선택</li>
+                        <li>
+                            <strong>Note:</strong> CATCH MCP Integration<br>
+                            <strong>Expiration:</strong> No expiration (또는 1년)
+                        </li>
+                        <li><strong>Select scopes:</strong>
+                            <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                                <li>✅ <code>repo</code> (모든 하위 항목)</li>
+                                <li>✅ <code>workflow</code></li>
+                                <li>✅ <code>read:org</code></li>
+                            </ul>
+                        </li>
+                        <li><strong>"Generate token"</strong> 클릭</li>
+                        <li>생성된 토큰 복사 (ghp_... 형태)</li>
+                        <li>아래 입력란에 붙여넣고 저장</li>
+                    </ol>
+                </div>
+
+                <a href="https://github.com/settings/tokens/new" target="_blank" class="open-btn">
+                    🔗 GitHub Tokens 열기
+                </a>
+
+                <div style="margin-top: 1rem;">
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Personal Access Token:</label>
+                    <input type="text" id="githubToken" class="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                    <button class="save-btn" onclick="saveGithubToken()">💾 저장</button>
+                </div>
+            </div>
+
+            <!-- Vercel MCP -->
+            <div class="mcp-section vercel">
+                <h2>
+                    <span>▲ Vercel MCP</span>
+                    <span class="status pending">인증 필요</span>
+                </h2>
+
+                <div class="steps">
+                    <p><strong>Vercel CLI 인증 방법:</strong></p>
+                    <ol>
+                        <li>PowerShell 또는 터미널 열기</li>
+                        <li>아래 명령어 실행:
+                            <div class="code-block">npx vercel login</div>
+                        </li>
+                        <li>이메일 주소 입력</li>
+                        <li>이메일로 받은 확인 링크 클릭</li>
+                        <li>인증 완료!</li>
+                    </ol>
+                </div>
+
+                <div class="warning">
+                    ⚠️ Vercel은 별도 토큰 파일이 아닌 CLI 인증을 사용합니다. 위 명령어만 실행하면 됩니다.
+                </div>
+            </div>
+
+            <!-- 완료 후 -->
+            <div class="mcp-section" style="background: #D1FAE5; border-left-color: #10B981;">
+                <h2>✅ 설정 완료 후</h2>
+                <ol style="margin-left: 1.5rem; line-height: 1.8;">
+                    <li>VSCode에서 <code>Ctrl+Shift+P</code> → <strong>"Reload Window"</strong> 실행</li>
+                    <li>Claude Code 재시작</li>
+                    <li>MCP 서버들이 자동으로 활성화됨</li>
+                    <li>테스트 명령어:
+                        <ul style="margin-top: 0.5rem;">
+                            <li>"Notion CATCH 개발 태스크에서 진행 중인 작업 보여줘"</li>
+                            <li>"GitHub에서 최근 커밋 5개 보여줘"</li>
+                            <li>"Vercel 배포 상태 확인해줘"</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function saveNotionToken() {
+            const token = document.getElementById('notionToken').value.trim();
+            if (!token || !token.startsWith('secret_')) {
+                alert('❌ 올바른 Notion Integration Token을 입력하세요. (secret_로 시작)');
+                return;
+            }
+
+            // mcp.json 파일 업데이트를 위한 명령어 생성
+            const mcpPath = 'C:\\\\Users\\\\hun10\\\\.claude\\\\mcp.json';
+            const command = `
+PowerShell에서 다음 명령어를 실행하세요:
+
+$mcpConfig = Get-Content "${mcpPath}" -Raw | ConvertFrom-Json
+$mcpConfig.mcpServers.notion.env.NOTION_API_KEY = "${token}"
+$mcpConfig | ConvertTo-Json -Depth 10 | Set-Content "${mcpPath}"
+            `;
+
+            alert('✅ 토큰이 복사되었습니다!\n\n' + command);
+
+            // 클립보드에 PowerShell 명령어 복사
+            const tempInput = document.createElement('textarea');
+            tempInput.value = command.trim();
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+        }
+
+        function saveGithubToken() {
+            const token = document.getElementById('githubToken').value.trim();
+            if (!token || !token.startsWith('ghp_')) {
+                alert('❌ 올바른 GitHub Personal Access Token을 입력하세요. (ghp_로 시작)');
+                return;
+            }
+
+            const mcpPath = 'C:\\\\Users\\\\hun10\\\\.claude\\\\mcp.json';
+            const command = `
+PowerShell에서 다음 명령어를 실행하세요:
+
+$mcpConfig = Get-Content "${mcpPath}" -Raw | ConvertFrom-Json
+$mcpConfig.mcpServers.github.env.GITHUB_PERSONAL_ACCESS_TOKEN = "${token}"
+$mcpConfig | ConvertTo-Json -Depth 10 | Set-Content "${mcpPath}"
+            `;
+
+            alert('✅ 토큰이 복사되었습니다!\n\n' + command);
+
+            const tempInput = document.createElement('textarea');
+            tempInput.value = command.trim();
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+        }
+    </script>
+</body>
+</html>

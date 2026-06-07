@@ -203,13 +203,13 @@ export default function RecruitSummaryMenu() {
   }
 
   const thStyle: React.CSSProperties = {
-    padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)',
-    color: 'rgba(255,255,255,0.4)', fontWeight: 600,
+    padding: '10px 12px', borderBottom: '1px solid #f1f5f9',
+    color: '#64748b', fontWeight: 600,
     fontSize: '0.75rem', textTransform: 'uppercase' as const, letterSpacing: '0.05em',
   }
   const cellStyle: React.CSSProperties = {
-    padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)',
-    fontSize: '0.83rem', color: 'rgba(255,255,255,0.75)', verticalAlign: 'middle',
+    padding: '10px 12px', borderBottom: '1px solid #f1f5f9',
+    fontSize: '0.83rem', color: '#334155', verticalAlign: 'middle',
   }
 
   return (
@@ -218,7 +218,7 @@ export default function RecruitSummaryMenu() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
         <div>
           <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px' }}>📈 채용 Summary</h2>
-          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
             채용 전반 현황 및 전환율 분석
           </p>
         </div>
@@ -227,24 +227,24 @@ export default function RecruitSummaryMenu() {
           <select value={companyFilter} onChange={e => setCompanyFilter(e.target.value)}
             style={{
               padding: '6px 12px', borderRadius: 8,
-              border: '1px solid rgba(255,255,255,0.12)',
-              background: '#1a1a2e', color: '#fff', /* 불투명 배경: option 텍스트 가시성 확보 */
+              border: '1px solid #e2e8f0',
+              background: '#fff', color: '#0f172a', /* 불투명 배경: option 텍스트 가시성 확보 */
               fontSize: '0.82rem', cursor: 'pointer', outline: 'none',
             }}>
-            <option value="all" style={{ background: '#1a1a2e', color: '#fff' }}>전체 사업장</option>
-            {companies.map(c => <option key={c} value={c} style={{ background: '#1a1a2e', color: '#fff' }}>{c}</option>)}
+            <option value="all" style={{ background: '#fff', color: '#0f172a' }}>전체 사업장</option>
+            {companies.map(c => <option key={c} value={c} style={{ background: '#fff', color: '#0f172a' }}>{c}</option>)}
           </select>
           <button onClick={fetchData}
             style={{
-              padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)',
-              background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)',
+              padding: '6px 14px', borderRadius: 8, border: '1px solid #e2e8f0',
+              background: '#f8fafc', color: '#475569',
               fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
             }}>
             ↻ 새로고침
           </button>
           <button onClick={handleExportCsv}
             style={{
-              padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)',
+              padding: '6px 14px', borderRadius: 8, border: '1px solid #e2e8f0',
               background: 'rgba(49,200,100,0.1)', color: '#3fc878',
               fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
             }}>
@@ -265,7 +265,7 @@ export default function RecruitSummaryMenu() {
       )}
 
       {loading ? (
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>불러오는 중...</p>
+        <p style={{ color: '#64748b', fontSize: '0.85rem' }}>불러오는 중...</p>
       ) : (
         <>
           {/* ── KPI 카드 ── */}
@@ -281,33 +281,33 @@ export default function RecruitSummaryMenu() {
               { label: '채용소요일', value: kpi.avgDays !== null ? `${kpi.avgDays}일` : '-', color: '#60a5fa', isStr: true },
             ].map(k => (
               <div key={k.label} style={{
-                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                background: '#f8fafc', border: '1px solid #e2e8f0',
                 borderRadius: 14, padding: '16px 14px',
               }}>
                 <div style={{ fontSize: '1.9rem', fontWeight: 900, color: k.color, lineHeight: 1 }}>
                   {k.value}
                 </div>
-                <div style={{ fontSize: '0.73rem', color: 'rgba(255,255,255,0.4)', marginTop: 6 }}>{k.label}</div>
+                <div style={{ fontSize: '0.73rem', color: '#64748b', marginTop: 6 }}>{k.label}</div>
               </div>
             ))}
           </div>
 
           {/* ── 일별 트렌드 차트 ── */}
           <div style={{
-            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+            background: '#fff', border: '1px solid #e2e8f0',
             borderRadius: 14, padding: '20px 16px', marginBottom: 24,
           }}>
-            <p style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(255,255,255,0.7)', margin: '0 0 16px' }}>
+            <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', margin: '0 0 16px' }}>
               📈 일별 지원 트렌드 (최근 14일)
             </p>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={dailyTrend} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="date" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip
-                  contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, fontSize: 12 }}
-                  labelStyle={{ color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}
+                  contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: '#475569', marginBottom: 4 }}
                 />
                 <Line type="monotone" dataKey="지원" stroke="#3182f6" strokeWidth={2} dot={false} />
                 <Line type="monotone" dataKey="확정" stroke="#3fc878" strokeWidth={2} dot={false} />
@@ -316,7 +316,7 @@ export default function RecruitSummaryMenu() {
             </ResponsiveContainer>
             <div style={{ display: 'flex', gap: 16, marginTop: 10, justifyContent: 'center' }}>
               {[{ label: '지원', color: '#3182f6' }, { label: '확정', color: '#3fc878' }, { label: '거절', color: '#f04452' }].map(l => (
-                <span key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>
+                <span key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: '#64748b' }}>
                   <span style={{ width: 12, height: 3, borderRadius: 2, background: l.color, display: 'inline-block' }} />
                   {l.label}
                 </span>
@@ -327,24 +327,24 @@ export default function RecruitSummaryMenu() {
           {/* ── 사업장별 막대 차트 ── */}
           {companyBarData.length > 0 && (
             <div style={{
-              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+              background: '#fff', border: '1px solid #e2e8f0',
               borderRadius: 14, padding: '20px 16px', marginBottom: 24,
             }}>
-              <p style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(255,255,255,0.7)', margin: '0 0 16px' }}>
+              <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', margin: '0 0 16px' }}>
                 🏢 사업장별 지원 현황
               </p>
               <ResponsiveContainer width="100%" height={180}>
                 <BarChart data={companyBarData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                  <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
                   <Tooltip
-                    contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, fontSize: 12 }}
+                    contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 12 }}
                   />
-                  <Legend wrapperStyle={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }} />
+                  <Legend wrapperStyle={{ fontSize: '0.72rem', color: '#64748b' }} />
                   <Bar dataKey="지원" fill="#3182f6" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="확정" fill="#3fc878" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="목표" fill="rgba(255,255,255,0.12)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="목표" fill="#94a3b8" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -352,13 +352,13 @@ export default function RecruitSummaryMenu() {
 
           {/* ── 사업장별 상세 테이블 ── */}
           <div style={{
-            background: 'rgba(255,255,255,0.03)', borderRadius: 14, overflow: 'hidden',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: '#fff', borderRadius: 14, overflow: 'hidden',
+            border: '1px solid #e2e8f0',
           }}>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
                 <thead>
-                  <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
+                  <tr style={{ background: '#f8fafc' }}>
                     <th style={thStyle}>사업장</th>
                     <th style={{ ...thStyle, textAlign: 'center', width: 80 }}>활성공고</th>
                     <th style={{ ...thStyle, textAlign: 'center', width: 80 }}>마감공고</th>
@@ -373,7 +373,7 @@ export default function RecruitSummaryMenu() {
                 <tbody>
                   {companyStats.length === 0 && (
                     <tr>
-                      <td colSpan={9} style={{ ...cellStyle, textAlign: 'center', color: 'rgba(255,255,255,0.3)' }}>
+                      <td colSpan={9} style={{ ...cellStyle, textAlign: 'center', color: '#94a3b8' }}>
                         데이터가 없습니다.
                       </td>
                     </tr>
@@ -385,8 +385,8 @@ export default function RecruitSummaryMenu() {
                       <tr key={stat.company}>
                         <td style={{ ...cellStyle, fontWeight: 700 }}>{stat.company}</td>
                         <td style={{ ...cellStyle, textAlign: 'center', color: '#a78bfa' }}>{stat.activeJobs}</td>
-                        <td style={{ ...cellStyle, textAlign: 'center', color: 'rgba(255,255,255,0.35)' }}>{stat.closedJobs}</td>
-                        <td style={{ ...cellStyle, textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>{stat.headcount}</td>
+                        <td style={{ ...cellStyle, textAlign: 'center', color: '#64748b' }}>{stat.closedJobs}</td>
+                        <td style={{ ...cellStyle, textAlign: 'center', color: '#475569' }}>{stat.headcount}</td>
                         <td style={{ ...cellStyle, textAlign: 'center', color: '#3182f6' }}>{stat.applied}</td>
                         <td style={{ ...cellStyle, textAlign: 'center', color: '#3fc878' }}>{stat.confirmed}</td>
                         <td style={{ ...cellStyle, textAlign: 'center', color: '#f04452' }}>{stat.rejected}</td>

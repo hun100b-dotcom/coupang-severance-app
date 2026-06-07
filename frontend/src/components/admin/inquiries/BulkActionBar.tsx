@@ -1,4 +1,4 @@
-import { bulkInquiryStatus } from '../../../lib/api'
+﻿import { bulkInquiryStatus } from '../../../lib/api'
 
 interface Props {
   selectedIds: (string | number)[]
@@ -8,7 +8,7 @@ interface Props {
 const ACTIONS = [
   { label: '검토중으로', status: 'reviewing', color: '#3182f6' },
   { label: '답변완료로', status: 'answered',  color: '#00a876' },
-  { label: '종결로',     status: 'closed',    color: 'rgba(255,255,255,0.4)' },
+  { label: '종결로',     status: 'closed',    color: '#64748b' },
 ]
 
 export default function BulkActionBar({ selectedIds, onDone }: Props) {
@@ -37,7 +37,7 @@ export default function BulkActionBar({ selectedIds, onDone }: Props) {
       <span style={{ fontSize: '0.82rem', color: '#3182f6', fontWeight: 700 }}>
         {selectedIds.length}건 선택됨
       </span>
-      <span style={{ marginLeft: 8, fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)' }}>일괄 변경:</span>
+      <span style={{ marginLeft: 8, fontSize: '0.78rem', color: '#64748b' }}>일괄 변경:</span>
       {ACTIONS.map(a => (
         <button
           key={a.status}
