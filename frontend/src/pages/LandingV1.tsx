@@ -1,7 +1,7 @@
 // LandingV1 — 밝은 파스텔 테마 (전면 업그레이드 v2)
 // 색상: Primary #2563eb (깊은 파랑), Accent #7c3aed (보라), BG #f0f7ff→#f5f0ff
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
@@ -157,40 +157,62 @@ export default function LandingV1() {
   // ── 커스텀 마우스 커서 & 글로우 오브 ────────────────────────────────────────
   const orbRef = useRef<HTMLDivElement>(null)
   const cursorRef = useRef<HTMLDivElement>(null)
-  // RAF 핸들러 — 마우스 이동 렉 방지
   const rafRef = useRef<number | null>(null)
-
-  const handleMouseMoveCursor = useCallback((e: MouseEvent) => {
-    // 이전 RAF 취소 후 다음 프레임에 위치 업데이트 (렉 방지)
-    if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    rafRef.current = requestAnimationFrame(() => {
-      if (orbRef.current) {
-        orbRef.current.style.left = `${e.clientX}px`
-        orbRef.current.style.top = `${e.clientY}px`
-      }
-      if (cursorRef.current) {
-        cursorRef.current.style.left = `${e.clientX}px`
-        cursorRef.current.style.top = `${e.clientY}px`
-      }
-    })
-  }, [])
+  // 마우스 목표 위치 (mousemove에서 즉시 업데이트)
+  const targetPos = useRef({ x: -9999, y: -9999 })
+  // 현재 보간 위치 (RAF 루프에서 lerp로 조금씩 이동)
+  const cursorPos = useRef({ x: -9999, y: -9999 })
+  const orbPos = useRef({ x: -9999, y: -9999 })
+  // 커서 scale 보간값 (hover 시 부드럽게 커짐)
+  const cursorScale = useRef(1)
+  const isHovered = useRef(false)
 
   useEffect(() => {
-    // 링크·버튼 호버 시 커서 확대
-    const handleEnter = () => {
-      if (cursorRef.current) {
-        cursorRef.current.style.transform = 'translate(-50%, -50%) scale(2.5)'
-        cursorRef.current.style.background = 'rgba(37,99,235,0.4)'
-      }
-    }
-    const handleLeave = () => {
-      if (cursorRef.current) {
-        cursorRef.current.style.transform = 'translate(-50%, -50%) scale(1)'
-        cursorRef.current.style.background = '#2563eb'
-      }
+    // 터치 기기(스마트폰·태블릿)에서는 커서 효과 비활성
+    if (!window.matchMedia('(pointer: fine)').matches) return
+
+    // passive: true — 스크롤 차단 없이 빠르게 이벤트 수신
+    const handleMove = (e: MouseEvent) => {
+      targetPos.current.x = e.clientX
+      targetPos.current.y = e.clientY
     }
 
-    document.addEventListener('mousemove', handleMouseMoveCursor)
+    // RAF 루프 — 매 프레임 lerp(선형 보간) 계산 후 transform으로 위치 적용
+    // transform: translate3d → GPU 컴포지트 레이어, layout reflow 없음
+    const tick = () => {
+      // lerp 공식: 현재값 += (목표값 - 현재값) × 속도
+      cursorPos.current.x += (targetPos.current.x - cursorPos.current.x) * 0.18
+      cursorPos.current.y += (targetPos.current.y - cursorPos.current.y) * 0.18
+      // 오브는 더 천천히 따라옴 (무거운 느낌)
+      orbPos.current.x += (targetPos.current.x - orbPos.current.x) * 0.07
+      orbPos.current.y += (targetPos.current.y - orbPos.current.y) * 0.07
+      // scale도 lerp로 부드럽게
+      cursorScale.current += ((isHovered.current ? 2.5 : 1) - cursorScale.current) * 0.2
+
+      if (cursorRef.current) {
+        // 커서 중심 정렬: 크기 절반(5px) 빼기
+        cursorRef.current.style.transform = `translate3d(${cursorPos.current.x - 5}px, ${cursorPos.current.y - 5}px, 0) scale(${cursorScale.current.toFixed(3)})`
+      }
+      if (orbRef.current) {
+        // 오브 중심 정렬: 크기 절반(250px) 빼기
+        orbRef.current.style.transform = `translate3d(${orbPos.current.x - 250}px, ${orbPos.current.y - 250}px, 0)`
+      }
+
+      rafRef.current = requestAnimationFrame(tick)
+    }
+
+    document.addEventListener('mousemove', handleMove, { passive: true })
+    rafRef.current = requestAnimationFrame(tick)
+
+    // 링크·버튼 호버 시 커서 색상 + scale 변경
+    const handleEnter = () => {
+      isHovered.current = true
+      if (cursorRef.current) cursorRef.current.style.background = 'rgba(37,99,235,0.4)'
+    }
+    const handleLeave = () => {
+      isHovered.current = false
+      if (cursorRef.current) cursorRef.current.style.background = '#2563eb'
+    }
 
     const interactiveEls = document.querySelectorAll('a, button')
     interactiveEls.forEach((el) => {
@@ -199,14 +221,14 @@ export default function LandingV1() {
     })
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMoveCursor)
+      document.removeEventListener('mousemove', handleMove)
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
       interactiveEls.forEach((el) => {
         el.removeEventListener('mouseenter', handleEnter)
         el.removeEventListener('mouseleave', handleLeave)
       })
     }
-  }, [handleMouseMoveCursor])
+  }, [])
 
   // ── 로그인 페이지로 이동 (히어로/CTA 버튼에서 사용) ───────────────────────
   const goLogin = () => navigate('/login')
@@ -232,28 +254,33 @@ export default function LandingV1() {
         zIndex: 1,
       }}
     >
-      {/* ── 마우스 글로우 오브 ── */}
+      {/* ── 마우스 글로우 오브 — top/left 0 고정, translate3d로만 위치 제어 (GPU 가속) ── */}
       <div
         ref={orbRef}
         className="fixed pointer-events-none z-0 rounded-full"
         style={{
           width: 500,
           height: 500,
+          top: 0,
+          left: 0,
           background: 'radial-gradient(circle, rgba(37,99,235,0.07) 0%, transparent 70%)',
-          transform: 'translate(-50%, -50%)',
-          transition: 'none', // RAF로 직접 제어하므로 CSS transition 불필요
+          transform: 'translate3d(-9999px, -9999px, 0)',
+          willChange: 'transform',
         }}
       />
-      {/* ── 커스텀 커서 도트 ── */}
+      {/* ── 커스텀 커서 도트 — top/left 0 고정, translate3d로만 위치 제어 (GPU 가속) ── */}
       <div
         ref={cursorRef}
         className="fixed pointer-events-none z-[9999] rounded-full"
         style={{
           width: 10,
           height: 10,
+          top: 0,
+          left: 0,
           background: '#2563eb',
-          transform: 'translate(-50%, -50%)',
-          transition: 'transform 0.15s ease', // 위치는 RAF 직접 제어, transform만 transition 유지
+          transform: 'translate3d(-9999px, -9999px, 0)',
+          willChange: 'transform',
+          transition: 'background 0.15s ease', // 색상만 transition (위치·scale은 lerp로)
         }}
       />
 
