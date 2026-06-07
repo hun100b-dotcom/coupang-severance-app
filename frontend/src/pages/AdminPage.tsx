@@ -1,4 +1,4 @@
-// Admin OS — 전문 관리자 대시보드 (아코디언 사이드바 + 확장 라우팅)
+// Admin OS — 전문 관리자 대시보드 (라이트 모드 / 캐치퀀트봇 스타일)
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
@@ -14,7 +14,6 @@ import AuditLogsMenu from '../components/admin/menus/AuditLogsMenu'
 import NoticesMenu from '../components/admin/menus/NoticesMenu'
 import MembersMenu from '../components/admin/menus/MembersMenu'
 import AccountsMenu from '../components/admin/menus/AccountsMenu'
-// 채용 관련 신규 분리 메뉴 (Phase B~D)
 import JobPostingsMenu from '../components/admin/menus/JobPostingsMenu'
 import ApplicantsMenu from '../components/admin/menus/ApplicantsMenu'
 import ConfirmedMenu from '../components/admin/menus/ConfirmedMenu'
@@ -22,10 +21,9 @@ import RecruitSummaryMenu from '../components/admin/menus/RecruitSummaryMenu'
 
 interface PermLevel { label: string; color: string; permissions: Record<string, boolean> }
 
-// 기본 권한 폴백 (DB 로드 실패 시)
 const DEFAULT_PERMS: Record<string, PermLevel> = {
   super_admin: {
-    label: '슈퍼 관리자', color: '#f04040',
+    label: '슈퍼 관리자', color: '#e11d48',
     permissions: {
       dashboard: true, target: true,
       job_postings: true, applicants: true, confirmed: true, recruit_summary: true,
@@ -43,7 +41,7 @@ const DEFAULT_PERMS: Record<string, PermLevel> = {
     },
   },
   viewer: {
-    label: '뷰어', color: '#8b95a1',
+    label: '뷰어', color: '#64748b',
     permissions: {
       dashboard: true, target: false,
       job_postings: false, applicants: false, confirmed: false, recruit_summary: false,
@@ -73,7 +71,6 @@ export default function AdminPage() {
   const { user, isLoggedIn, loading, logout } = useAuth()
   const navigate = useNavigate()
 
-  // 기본 활성 메뉴: job_postings (채용공고 바로 진입)
   const [activeMenu, setActiveMenu] = useState<AdminMenu>('dashboard')
   const [permLevels, setPermLevels] = useState<Record<string, PermLevel>>(DEFAULT_PERMS)
   const [adminRole, setAdminRole] = useState<string | null>(null)
@@ -85,14 +82,12 @@ export default function AdminPage() {
     if (loading || !isLoggedIn || !user?.email) return
     const email = user.email
 
-    // 슈퍼 관리자 이메일 하드코딩 (환경변수 없이도 작동)
     if (email === SUPER_ADMIN_EMAIL) {
       setAdminRole('super_admin')
       setAdminChecked(true)
       return
     }
 
-    // VITE_ADMIN_EMAIL 환경변수 하위 호환
     const envAdminEmail = import.meta.env.VITE_ADMIN_EMAIL ?? ''
     if (envAdminEmail && email === envAdminEmail) {
       setAdminRole('super_admin')
@@ -100,7 +95,6 @@ export default function AdminPage() {
       return
     }
 
-    // DB에서 admin_accounts 조회
     if (!supabase) { setAdminChecked(true); return }
     ;(async () => {
       try {
@@ -118,7 +112,6 @@ export default function AdminPage() {
   const isAdmin = adminChecked && adminRole !== null
   const isSuperAdmin = adminRole === 'super_admin'
 
-  // 관리자 접속 감사 로그
   useEffect(() => {
     if (isAdmin && !loginLogged.current) {
       loginLogged.current = true
@@ -130,7 +123,6 @@ export default function AdminPage() {
     if (adminChecked && !isAdmin) navigate('/home')
   }, [adminChecked, isAdmin, navigate])
 
-  // DB에서 권한 레벨 로드
   useEffect(() => {
     if (!supabase) return
     ;(async () => {
@@ -150,17 +142,13 @@ export default function AdminPage() {
 
   const handleLogout = () => { logout(); navigate('/home') }
 
-  // 현재 사용자 역할 + 권한
   const currentRole = adminRole ?? 'admin'
   const currentPerms = permLevels[currentRole]?.permissions ?? DEFAULT_PERMS.admin.permissions
   const currentRoleLabel = permLevels[currentRole]?.label ?? '관리자'
   const currentRoleColor = permLevels[currentRole]?.color ?? '#3182f6'
 
-  const handleMenuChange = (menu: AdminMenu) => {
-    setActiveMenu(menu)
-  }
+  const handleMenuChange = (menu: AdminMenu) => setActiveMenu(menu)
 
-  // 권한 체크 + 컴포넌트 렌더링
   const renderMenu = () => {
     if (currentPerms[activeMenu] === false) {
       return (
@@ -172,15 +160,12 @@ export default function AdminPage() {
     switch (activeMenu) {
       case 'dashboard':       return <DashboardMenu />
       case 'target':          return <TargetMenu />
-      // ── 채용 및 인원 관리 (Phase B~D 신규 분리) ──
       case 'job_postings':    return <JobPostingsMenu />
       case 'applicants':      return <ApplicantsMenu />
       case 'confirmed':       return <ConfirmedMenu />
       case 'recruit_summary': return <RecruitSummaryMenu />
-      // ── 콘텐츠 관리 ──
       case 'inquiries':       return <InquiriesMenu />
       case 'notices':         return <NoticesMenu />
-      // ── 시스템 ──
       case 'members':         return <MembersMenu isSuperAdmin={isSuperAdmin} />
       case 'accounts':        return <AccountsMenu isSuperAdmin={isSuperAdmin} />
       case 'settings':        return <SettingsMenu isSuperAdmin={isSuperAdmin} />
@@ -190,64 +175,96 @@ export default function AdminPage() {
     }
   }
 
-  const activeMenuInfo = FLAT_MENUS.find(m => m.key === activeMenu)
-
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column',
-      minHeight: '100vh', background: '#0d0d1a',
-      color: '#fff', position: 'fixed', inset: 0,
-      zIndex: 100, overflow: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh',
+      background: '#f8fafc',   // slate-50 라이트 배경
+      color: '#0f172a',        // slate-900 텍스트
+      position: 'fixed',
+      inset: 0,
+      zIndex: 100,
+      overflow: 'auto',
     }}>
-      {/* 모바일 상단 select 드롭다운 */}
+      {/* 모바일 상단 헤더 바 */}
       <div
         className="md:hidden"
         style={{
-          display: 'flex', alignItems: 'center', gap: 8,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
           padding: '10px 12px',
-          background: 'rgba(10,10,20,0.98)',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          background: '#fff',
+          borderBottom: '1px solid #e2e8f0',
           flexShrink: 0,
         }}
       >
+        {/* CATCH Admin 로고 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 0 }}>
+          <span style={{ fontSize: '1.1rem' }}>⚡</span>
+          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#3182f6', whiteSpace: 'nowrap' }}>
+            CATCH
+          </span>
+        </div>
+
+        {/* 메뉴 드롭다운 */}
         <select
           value={activeMenu}
           onChange={e => handleMenuChange(e.target.value as AdminMenu)}
           style={{
-            flex: 1, padding: '8px 12px', borderRadius: 10,
-            border: '1px solid rgba(255,255,255,0.12)',
-            background: 'rgba(255,255,255,0.05)', color: '#fff',
-            fontSize: '0.9rem', fontWeight: 600, outline: 'none', cursor: 'pointer',
+            flex: 1,
+            padding: '7px 10px',
+            borderRadius: 8,
+            border: '1px solid #e2e8f0',
+            background: '#f8fafc',
+            color: '#0f172a',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            outline: 'none',
+            cursor: 'pointer',
           }}
         >
           {FLAT_MENUS.map(m => (
-            <option key={m.key} value={m.key} style={{ background: '#16162a', color: '#fff' }}>
-              {m.label}
-            </option>
+            <option key={m.key} value={m.key}>{m.label}</option>
           ))}
         </select>
+
+        {/* 역할 뱃지 */}
         <span style={{
-          fontSize: '0.62rem', fontWeight: 800,
+          fontSize: '0.6rem',
+          fontWeight: 800,
           color: currentRoleColor,
-          background: `${currentRoleColor}1a`,
+          background: `${currentRoleColor}14`,
           border: `1px solid ${currentRoleColor}33`,
-          padding: '2px 7px', borderRadius: 999, whiteSpace: 'nowrap',
+          padding: '3px 8px',
+          borderRadius: 999,
+          whiteSpace: 'nowrap',
+          flexShrink: 0,
         }}>
           {currentRoleLabel}
         </span>
+
+        {/* 로그아웃 버튼 */}
         <button
           onClick={handleLogout}
           style={{
-            padding: '6px 10px', borderRadius: 8, border: 'none',
-            background: 'rgba(240,68,82,0.1)', color: '#cc2233',
-            fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
+            padding: '6px 10px',
+            borderRadius: 8,
+            border: '1px solid #fecdd3',
+            background: '#fff1f2',
+            color: '#e11d48',
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            flexShrink: 0,
           }}
         >
           🚪
         </button>
       </div>
 
-      {/* 데스크탑: 사이드바(아코디언) + 메인 콘텐츠 */}
+      {/* 데스크탑: 사이드바 + 메인 콘텐츠 */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <div className="hidden md:block" style={{ flexShrink: 0 }}>
           <AdminSidebar
@@ -259,18 +276,13 @@ export default function AdminPage() {
           />
         </div>
 
+        {/* 메인 콘텐츠 영역 */}
         <main style={{
-          flex: 1, overflow: 'auto', minHeight: 0,
-          background: 'linear-gradient(135deg, #0d0d1a 0%, #111125 100%)',
+          flex: 1,
+          overflow: 'auto',
+          minHeight: 0,
+          background: '#f8fafc',
         }}>
-          {/* 모바일 현재 메뉴 표시 */}
-          <div className="md:hidden" style={{
-            padding: '12px 16px 0',
-            fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)',
-            fontWeight: 600, letterSpacing: '0.04em',
-          }}>
-            {activeMenuInfo?.label}
-          </div>
           {renderMenu()}
         </main>
       </div>
@@ -280,10 +292,22 @@ export default function AdminPage() {
 
 function AccessDenied({ label }: { label: string }) {
   return (
-    <div style={{ padding: '60px 24px', textAlign: 'center' }}>
-      <div style={{ fontSize: '2rem', marginBottom: 12 }}>🔒</div>
-      <div style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', marginBottom: 8 }}>접근 제한</div>
-      <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>{label}</div>
+    <div style={{ padding: '80px 24px', textAlign: 'center' }}>
+      <div style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 56,
+        height: 56,
+        borderRadius: '50%',
+        background: '#fff1f2',
+        border: '1px solid #fecdd3',
+        marginBottom: 16,
+      }}>
+        <span style={{ fontSize: '1.6rem' }}>🔒</span>
+      </div>
+      <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: 8 }}>접근 제한</div>
+      <div style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: 1.6 }}>{label}</div>
     </div>
   )
 }
