@@ -1,7 +1,7 @@
 // LandingV1 — 밝은 파스텔 테마 (전면 업그레이드 v2)
 // 색상: Primary #2563eb (깊은 파랑), Accent #7c3aed (보라), BG #f0f7ff→#f5f0ff
 
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
@@ -154,71 +154,6 @@ export default function LandingV1() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // ── 커스텀 마우스 커서 & 글로우 오브 ────────────────────────────────────────
-  const orbRef = useRef<HTMLDivElement>(null)
-  // 위치 전용 wrapper (translate3d, transition 없음 → 1:1 즉시 추적)
-  const cursorPosRef = useRef<HTMLDivElement>(null)
-  // scale·색상 전용 inner (CSS transition으로 호버 애니메이션)
-  const cursorDotRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    // 터치 기기(스마트폰·태블릿)에서는 커서 효과 비활성
-    if (!window.matchMedia('(pointer: fine)').matches) return
-
-    let rafId: number | null = null
-    let pendingX = 0, pendingY = 0
-
-    // mousemove마다 RAF 한 건만 예약 → 같은 프레임 내 중복 DOM 업데이트 방지
-    const handleMove = (e: MouseEvent) => {
-      pendingX = e.clientX
-      pendingY = e.clientY
-      if (rafId === null) {
-        rafId = requestAnimationFrame(() => {
-          // 커서 위치: lerp 없이 마우스 좌표 그대로 (중심 정렬: 크기 절반 5px 빼기)
-          if (cursorPosRef.current) {
-            cursorPosRef.current.style.transform = `translate3d(${pendingX - 5}px, ${pendingY - 5}px, 0)`
-          }
-          // 오브 위치: 마우스 위치와 동일하게 즉시 추적 (중심 정렬: 250px 빼기)
-          if (orbRef.current) {
-            orbRef.current.style.transform = `translate3d(${pendingX - 250}px, ${pendingY - 250}px, 0)`
-          }
-          rafId = null
-        })
-      }
-    }
-
-    // 링크·버튼 호버 시 커서 scale + 색상 변경 (CSS transition 0.15s로 부드럽게)
-    const handleEnter = () => {
-      if (cursorDotRef.current) {
-        cursorDotRef.current.style.transform = 'scale(2.5)'
-        cursorDotRef.current.style.background = 'rgba(37,99,235,0.4)'
-      }
-    }
-    const handleLeave = () => {
-      if (cursorDotRef.current) {
-        cursorDotRef.current.style.transform = 'scale(1)'
-        cursorDotRef.current.style.background = '#2563eb'
-      }
-    }
-
-    document.addEventListener('mousemove', handleMove, { passive: true })
-
-    const interactiveEls = document.querySelectorAll('a, button')
-    interactiveEls.forEach((el) => {
-      el.addEventListener('mouseenter', handleEnter)
-      el.addEventListener('mouseleave', handleLeave)
-    })
-
-    return () => {
-      document.removeEventListener('mousemove', handleMove)
-      if (rafId !== null) cancelAnimationFrame(rafId)
-      interactiveEls.forEach((el) => {
-        el.removeEventListener('mouseenter', handleEnter)
-        el.removeEventListener('mouseleave', handleLeave)
-      })
-    }
-  }, [])
-
   // ── 로그인 페이지로 이동 (히어로/CTA 버튼에서 사용) ───────────────────────
   const goLogin = () => navigate('/login')
 
@@ -231,58 +166,17 @@ export default function LandingV1() {
   }
 
   return (
-    // 전체 래퍼 — 밝은 파스텔 배경, 커스텀 커서, 가로 스크롤 방지
+    // 전체 래퍼 — 밝은 파스텔 배경, 가로 스크롤 방지
     <div
       className="min-h-screen overflow-x-hidden"
       style={{
         fontFamily: "'Noto Sans KR', sans-serif",
         background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
         color: '#0f172a',
-        cursor: 'none',
         position: 'relative',
         zIndex: 1,
       }}
     >
-      {/* ── 마우스 글로우 오브 — top/left 0 고정, translate3d로만 위치 제어 (GPU 가속) ── */}
-      <div
-        ref={orbRef}
-        className="fixed pointer-events-none z-0 rounded-full"
-        style={{
-          width: 500,
-          height: 500,
-          top: 0,
-          left: 0,
-          background: 'radial-gradient(circle, rgba(37,99,235,0.07) 0%, transparent 70%)',
-          transform: 'translate3d(-9999px, -9999px, 0)',
-          willChange: 'transform',
-        }}
-      />
-      {/* ── 커스텀 커서 — wrapper(위치 전용)·inner(scale·색상 전용) 분리 ── */}
-      {/* wrapper: translate3d로 위치만 제어, transition 없음 → 1:1 즉시 추적 */}
-      <div
-        ref={cursorPosRef}
-        className="fixed pointer-events-none z-[9999]"
-        style={{
-          top: 0,
-          left: 0,
-          transform: 'translate3d(-9999px, -9999px, 0)',
-          willChange: 'transform',
-        }}
-      >
-        {/* inner: scale·background만 CSS transition → 호버 시 부드럽게 확대 */}
-        <div
-          ref={cursorDotRef}
-          className="rounded-full"
-          style={{
-            width: 10,
-            height: 10,
-            background: '#2563eb',
-            transform: 'scale(1)',
-            transition: 'transform 0.15s ease, background 0.15s ease',
-          }}
-        />
-      </div>
-
       {/* ── NAV — 스크롤 전: 투명, 스크롤 후: 흰 블러 배경 ──────────────────── */}
       <nav
         className="fixed top-0 left-0 right-0 z-[100] flex justify-between items-center px-6 py-[18px]"
