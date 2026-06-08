@@ -10,7 +10,8 @@
 
 | 우선순위 | 작업 | 상세 |
 |---------|------|------|
-| **P0** | legal_variables 마이그레이션 DB 적용 | Supabase 대시보드 → SQL Editor → `supabase/migrations/20260603_legal_variables.sql` 붙여넣기 실행. MCP 재연결 후 자동 적용 가능 |
+| **P0** | **Render 백엔드 재활성화** | Render Dashboard 접속 → `coupang-severance-api` 서비스 상태 확인 → 비활성(suspended)이면 재활성화 클릭. 전수검사에서 /health 포함 전체 경로 404 확인됨 |
+| **P0** | legal_variables 마이그레이션 DB 적용 | Supabase 대시보드 → SQL Editor → `supabase/migrations/20260603_legal_variables.sql` 붙여넣기 실행 |
 | **P0** | GSC 수동 색인 요청 | 종훈님이 GSC 접속 → 각 URL 검색바 입력 → "색인 생성 요청" 클릭 |
 | **P1** | 채용팀 연락 → 공고 데이터 수집 | 쿠팡/컬리/CJ 채용담당자 연락 (코드 작업 아님) |
 | **P2** | Phase 2 B2C 랜딩 고도화 | 검색 노출 모니터링 (1~4주 소요) |
@@ -20,6 +21,30 @@
 ---
 
 ## ✅ 완료 작업 이력
+
+### 세션 10 — 2026-06-09 (어드민 라이트 개편 완료 + 전역 전수검사)
+
+**Task A — 어드민 UI/UX 전면 라이트 전환 완료 (커밋 3개)**
+
+- `ee75d8d` Step 1-3: 공용컴포넌트 5개(AdminCard/KpiStrip/SignalCard/PageHeader/AdminTable) + AdminPage/Sidebar + 대시보드(Overview/Visitor/CalcStats/Recruit)
+- `3446d66` Step 4-6: 채용(JobPostings/Applicants/Confirmed/RecruitSummary) + 콘텐츠(Inquiries/Notices) + 시스템(Members/Accounts/Settings/AuditLogs/ServerLogs/Target) 27파일
+- `46bb0f9` 파란 버튼 텍스트 색 마무리 4파일 (TemplateManager/NoticesMenu/CmsSettings/ApplicantsMenu)
+- `9b87bfa` TargetMenu 다크 잔재 제거 — `rgba(255,255,255,...)` → slate 라이트 토큰 21곳
+
+**Task B — 전역 전수검사 결과**
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| 프론트엔드 23개 라우트 | ✅ 22개 200, 1개 307 | `/home` 307은 HomeGuard 미로그인 리다이렉트 (정상) |
+| 어드민 다크 잔재 | ✅ 0건 | TargetMenu 수정 후 전체 클린 |
+| 빌드 TypeScript 에러 | ✅ 0건 | |
+| Render 백엔드 `/health` | ❌ 404 Not Found | **서비스 비활성화 추정 — 종훈님 Render Dashboard 확인 필요** |
+| Render 백엔드 `/redoc` | ❌ 404 | |
+| Render 백엔드 `/openapi.json` | ❌ 404 | |
+
+**push**: ✅ origin main 완료 (Vercel 자동 배포)
+
+---
 
 ### 세션 9 — 2026-06-03 (P0~P2 일괄 수정)
 
