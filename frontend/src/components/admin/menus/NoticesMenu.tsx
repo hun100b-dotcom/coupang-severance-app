@@ -153,7 +153,7 @@ export default function NoticesMenu() {
             borderRadius: 10,
             border: 'none',
             background: '#3182f6',
-            color: '#0f172a',
+            color: '#fff',
             fontWeight: 700,
             fontSize: '0.85rem',
             cursor: 'pointer',
@@ -394,7 +394,7 @@ export default function NoticesMenu() {
                   background: (saving || !form.title.trim() || !form.content.trim())
                     ? 'rgba(49,130,246,0.3)'
                     : '#3182f6',
-                  color: '#0f172a',
+                  color: '#fff',
                   fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
                 }}
               >

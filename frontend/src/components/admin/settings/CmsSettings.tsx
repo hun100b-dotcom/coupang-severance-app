@@ -135,5 +135,5 @@ const inputStyle: React.CSSProperties = {
 }
 const btnStyle: React.CSSProperties = {
   padding: '8px 20px', borderRadius: 8, border: 'none', background: '#3182f6',
-  color: '#0f172a', fontSize: '0.85rem', fontWeight: 700,
+  color: '#fff', fontSize: '0.85rem', fontWeight: 700,
 }

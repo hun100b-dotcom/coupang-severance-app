@@ -614,7 +614,7 @@ export default function ApplicantsMenu() {
                       <td style={cellStyle}>
                         {app.applicant_name ? (
                           <>
-                            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#fff' }}>
+                            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0f172a' }}>
                               {app.applicant_name}
                               <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: 4 }}>
                                 {app.applicant_gender === 'male' ? '남' : app.applicant_gender === 'female' ? '여' : ''}
