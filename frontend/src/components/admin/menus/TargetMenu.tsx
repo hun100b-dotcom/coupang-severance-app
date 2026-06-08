@@ -137,8 +137,7 @@ export default function TargetMenu() {
         <div>
           <h2 style={{
             fontSize: 'clamp(1.1rem, 3.5vw, 1.4rem)', fontWeight: 900, margin: 0,
-            background: 'linear-gradient(135deg, #fff 30%, rgba(255,255,255,0.6))',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            color: '#0f172a',
           }}>Target Intelligence</h2>
           <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: 2 }}>
             사용자 인사이트 &middot; 수익 분석 &middot; 세그먼트 분류
@@ -167,7 +166,7 @@ export default function TargetMenu() {
             padding: 'clamp(10px, 2vw, 16px)', position: 'relative', overflow: 'hidden',
           }}>
             <div style={{ position: 'absolute', top: -6, right: -4, fontSize: '1.8rem', opacity: 0.06 }}>{m.i}</div>
-            <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.38)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5 }}>{m.l}</div>
+            <div style={{ fontSize: '0.58rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5 }}>{m.l}</div>
             <div style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.25rem)', fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>{m.v}</div>
             <div style={{ fontSize: '0.58rem', color: `${m.c}bb`, marginTop: 3, fontWeight: 600 }}>{m.s}</div>
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${m.c}, transparent)` }} />
@@ -179,7 +178,7 @@ export default function TargetMenu() {
       <div style={{ ...CARD, marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 14 }}>
           <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>Acquisition Funnel</span>
-          <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.22)' }}>방문 → 가입 → 계산 → 적격</span>
+          <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>방문 → 가입 → 계산 → 적격</span>
         </div>
         {funnelSteps.map((step, i) => {
           const pct = step.value / maxFunnel * 100
@@ -188,7 +187,7 @@ export default function TargetMenu() {
           return (
             <div key={step.label} style={{ marginBottom: i < funnelSteps.length - 1 ? 10 : 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <span style={{ fontSize: '0.73rem', color: 'rgba(255,255,255,0.48)', fontWeight: 600 }}>{step.label}</span>
+                <span style={{ fontSize: '0.73rem', color: '#64748b', fontWeight: 600 }}>{step.label}</span>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
                   <span style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0f172a' }}>{step.value.toLocaleString()}</span>
                   {conv && (
@@ -217,19 +216,19 @@ export default function TargetMenu() {
         {/* Revenue Intelligence */}
         <div style={CARD}>
           <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: 2 }}>Revenue Intelligence</div>
-          <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.22)', marginBottom: 16 }}>퇴직금 규모별 분석</div>
+          <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginBottom: 16 }}>퇴직금 규모별 분석</div>
 
           <div style={{ display: 'flex', gap: 20, marginBottom: 18, flexWrap: 'wrap' }}>
             <div>
-              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 2 }}>총 적격 퇴직금</div>
+              <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, marginBottom: 2 }}>총 적격 퇴직금</div>
               <div style={{ fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', fontWeight: 900, color: C.gold }}>{fmtW(revenue.total_eligible_severance)}</div>
             </div>
             <div>
-              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 2 }}>고가치 유저 (300만+)</div>
+              <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, marginBottom: 2 }}>고가치 유저 (300만+)</div>
               <div style={{ fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', fontWeight: 900, color: C.purple }}>{revenue.high_value_count}명</div>
             </div>
             <div>
-              <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 2 }}>평균 퇴직금</div>
+              <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, marginBottom: 2 }}>평균 퇴직금</div>
               <div style={{ fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', fontWeight: 900, color: C.green }}>{fmtW(revenue.avg_severance)}</div>
             </div>
           </div>
@@ -238,7 +237,7 @@ export default function TargetMenu() {
             <div key={seg.label} style={{ marginBottom: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
                 <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>{seg.label}</span>
-                <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.65)', fontWeight: 700 }}>{seg.count}건 &middot; {fmtW(seg.total)}</span>
+                <span style={{ fontSize: '0.7rem', color: '#475569', fontWeight: 700 }}>{seg.count}건 &middot; {fmtW(seg.total)}</span>
               </div>
               <div style={{ height: 8, background: '#fff', borderRadius: 4, overflow: 'hidden' }}>
                 <div style={{
@@ -254,7 +253,7 @@ export default function TargetMenu() {
         {/* Company Landscape */}
         <div style={CARD}>
           <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: 2 }}>Company Landscape</div>
-          <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.22)', marginBottom: 14 }}>사업장별 이용 분포 &middot; 총 {companies.length}개사</div>
+          <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginBottom: 14 }}>사업장별 이용 분포 &middot; 총 {companies.length}개사</div>
           {companies.length > 0 ? (<>
             <ResponsiveContainer width="100%" height={180}>
               <PieChart>
@@ -327,7 +326,7 @@ export default function TargetMenu() {
       <div style={{ ...CARD, marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 16 }}>
           <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>Cross-Segment Matrix</span>
-          <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.22)' }}>근무기간 x 급여수준</span>
+          <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>근무기간 x 급여수준</span>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <div style={{
@@ -338,11 +337,11 @@ export default function TargetMenu() {
             {/* Header */}
             <div />
             {segments.wage_labels.map(l => (
-              <div key={l} style={{ textAlign: 'center', fontSize: '0.62rem', color: 'rgba(255,255,255,0.38)', padding: '6px 2px', fontWeight: 600 }}>{l}</div>
+              <div key={l} style={{ textAlign: 'center', fontSize: '0.62rem', color: '#94a3b8', padding: '6px 2px', fontWeight: 600 }}>{l}</div>
             ))}
             {/* Rows */}
             {segments.duration_labels.flatMap((rl, ri) => [
-              <div key={`rl-${ri}`} style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.42)', display: 'flex', alignItems: 'center', fontWeight: 600 }}>{rl}</div>,
+              <div key={`rl-${ri}`} style={{ fontSize: '0.65rem', color: '#64748b', display: 'flex', alignItems: 'center', fontWeight: 600 }}>{rl}</div>,
               ...(segments.heatmap[ri] ?? []).map((val, ci) => {
                 const intensity = val / maxHeat
                 return (
@@ -374,7 +373,7 @@ export default function TargetMenu() {
               <div className="grid grid-cols-2 gap-4">
                 {/* Auth Provider */}
                 <div>
-                  <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>인증 수단</div>
+                  <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>인증 수단</div>
                   {demo.by_provider.length > 0 ? (<>
                     <ResponsiveContainer width="100%" height={110}>
                       <PieChart>
@@ -391,7 +390,7 @@ export default function TargetMenu() {
                         <div key={p.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <div style={{ width: 6, height: 6, borderRadius: '50%', background: [C.gold, C.red, C.blue, C.purple][i % 4] }} />
                           <span style={{ fontSize: '0.62rem', color: '#64748b', flex: 1 }}>{p.label}</span>
-                          <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'rgba(255,255,255,0.65)' }}>{p.count}</span>
+                          <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#475569' }}>{p.count}</span>
                         </div>
                       ))}
                     </div>
@@ -399,7 +398,7 @@ export default function TargetMenu() {
                 </div>
                 {/* Marketing Consent */}
                 <div>
-                  <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>마케팅 동의</div>
+                  <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>마케팅 동의</div>
                   {(() => {
                     const mk = demo.marketing
                     const mdata = [
@@ -423,7 +422,7 @@ export default function TargetMenu() {
                           <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <div style={{ width: 6, height: 6, borderRadius: '50%', background: [C.blue, C.green, C.purple, '#e2e8f0'][i] }} />
                             <span style={{ fontSize: '0.62rem', color: '#64748b', flex: 1 }}>{d.name}</span>
-                            <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'rgba(255,255,255,0.65)' }}>{d.value}</span>
+                            <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#475569' }}>{d.value}</span>
                           </div>
                         ))}
                       </div>
@@ -434,7 +433,7 @@ export default function TargetMenu() {
 
               {/* Onboarding Bar */}
               <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 6 }}>온보딩 현황</div>
+                <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600, marginBottom: 6 }}>온보딩 현황</div>
                 <div style={{ display: 'flex', gap: 2, height: 8, borderRadius: 99, overflow: 'hidden', marginBottom: 5 }}>
                   <div style={{ flex: Math.max(demo.onboarding_completed, 0.01), background: C.green, transition: 'flex .3s' }} />
                   <div style={{ flex: Math.max(demo.onboarding_pending, 0.01), background: '#f1f5f9', transition: 'flex .3s' }} />
@@ -452,7 +451,7 @@ export default function TargetMenu() {
         <div style={CARD}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 16 }}>
             <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>Smart User Tags</span>
-            <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.22)' }}>데이터 기반 자동 분류</span>
+            <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>데이터 기반 자동 분류</span>
           </div>
           {tags.length > 0 ? (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -480,7 +479,7 @@ export default function TargetMenu() {
           {/* Service Usage — serviceUsage null 방어 */}
           {serviceUsage && (
             <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid #e2e8f0' }}>
-              <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 10 }}>서비스 이용 비율</div>
+              <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600, marginBottom: 10 }}>서비스 이용 비율</div>
               {(() => {
                 const other = Math.max(serviceUsage.total - serviceUsage.severance - serviceUsage.unemployment, 0)
                 const items = [
@@ -564,7 +563,7 @@ export default function TargetMenu() {
                 <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: 2 }}>평균 응답시간</div>
               </div>
             </div>
-            <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.32)', fontWeight: 600, marginBottom: 8 }}>상태별 분포</div>
+            <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600, marginBottom: 8 }}>상태별 분포</div>
             {inq.by_status.map(s => {
               const clr = STATUS_CLR[s.label] || C.purple
               return (
