@@ -21,7 +21,7 @@ export function ProfileSection({ name, avatarUrl }: ProfileSectionProps) {
         {avatarUrl ? (
           <img
             src={avatarUrl}
-            alt=""
+            alt={name}
             className="w-14 h-14 rounded-2xl object-cover shadow-md shadow-slate-200"
           />
         ) : (

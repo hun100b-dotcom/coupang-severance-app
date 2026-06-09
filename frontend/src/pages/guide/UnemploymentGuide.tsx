@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Calculator, ChevronRight } from 'lucide-react'
 import PageMeta from '../../components/PageMeta'
@@ -225,8 +225,8 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
 // ── 가이드 카드 (하단 추천 가이드) ──
 function GuideCard({ title, icon, href }: { title: string; icon: React.ReactNode; href: string }) {
   return (
-    <a
-      href={href}
+    <Link
+      to={href}
       className="block bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-xl p-4 hover:shadow-md transition-all"
     >
       <div className="flex items-center gap-3">
@@ -237,7 +237,7 @@ function GuideCard({ title, icon, href }: { title: string; icon: React.ReactNode
         </div>
         <ChevronRight className="w-4 h-4 text-cyan-600 ml-auto" />
       </div>
-    </a>
+    </Link>
   )
 }
 
@@ -582,7 +582,7 @@ export default function UnemploymentGuide() {
                 퇴직금(사용자 지급)과 실업급여(고용보험 지급)는 별개 제도입니다.
                 둘 다 조건을 충족하면 동시에 받을 수 있습니다.
                 퇴직금 계산 →{' '}
-                <a href="/guide/severance" className="text-cyan-600 underline font-bold">퇴직금 가이드</a>
+                <Link to="/guide/severance" className="text-cyan-600 underline font-bold">퇴직금 가이드</Link>
               </p>
             </InfoBox>
             <InfoBox title="온라인 신청 가능 (고용24)" variant="default">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Calculator, ChevronRight } from 'lucide-react'
 import PageMeta from '../../components/PageMeta'
@@ -136,8 +136,8 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
 // ── 가이드 카드 (하단 추천 가이드) ──
 function GuideCard({ title, icon: Icon, href }: { title: string; icon: React.ReactNode; href: string }) {
   return (
-    <a
-      href={href}
+    <Link
+      to={href}
       className="block bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-4 hover:shadow-md transition-all"
     >
       <div className="flex items-center gap-3">
@@ -148,7 +148,7 @@ function GuideCard({ title, icon: Icon, href }: { title: string; icon: React.Rea
         </div>
         <ChevronRight className="w-4 h-4 text-amber-600 ml-auto" />
       </div>
-    </a>
+    </Link>
   )
 }
 

@@ -61,6 +61,7 @@ const MENU_TREE: MenuGroup[] = [
     groupLabel: '시스템',
     groupIcon: '⚙️',
     children: [
+      { key: 'target',      icon: '🎯', label: 'Target' },
       { key: 'members',     icon: '👥', label: '회원 관리' },
       { key: 'accounts',    icon: '🔑', label: '관리자 계정' },
       { key: 'server_logs', icon: '🖥️', label: '서버 로그' },

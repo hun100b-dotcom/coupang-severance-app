@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Calculator, ChevronRight } from 'lucide-react'
 import PageMeta from '../../components/PageMeta'
@@ -225,8 +225,8 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
 // ── 가이드 카드 (하단 추천 가이드) ──
 function GuideCard({ title, icon, href }: { title: string; icon: React.ReactNode; href: string }) {
   return (
-    <a
-      href={href}
+    <Link
+      to={href}
       className="block bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4 hover:shadow-md transition-all"
     >
       <div className="flex items-center gap-3">
@@ -237,7 +237,7 @@ function GuideCard({ title, icon, href }: { title: string; icon: React.ReactNode
         </div>
         <ChevronRight className="w-4 h-4 text-blue-600 ml-auto" />
       </div>
-    </a>
+    </Link>
   )
 }
 
@@ -535,7 +535,7 @@ export default function SeveranceGuide() {
             퇴직금(근로자퇴직급여보장법)과 실업급여(고용보험법)는 완전히 다른 제도입니다.
             조건을 충족하면 둘 다 받을 수 있습니다.
             실업급여 조건 확인 →{' '}
-            <a href="/guide/unemployment" className="text-blue-600 underline font-bold">실업급여 가이드</a>
+            <Link to="/guide/unemployment" className="text-blue-600 underline font-bold">실업급여 가이드</Link>
           </InfoBox>
         </motion.section>
 

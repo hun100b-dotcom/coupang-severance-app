@@ -54,6 +54,7 @@ const DEFAULT_PERMS: Record<string, PermLevel> = {
 // 모바일 드롭다운용 평탄화 메뉴 목록
 const FLAT_MENUS: { key: AdminMenu; label: string }[] = [
   { key: 'dashboard',       label: '📊 대시보드' },
+  { key: 'target',          label: '🎯 타겟 분석' },
   { key: 'job_postings',    label: '💼 채용공고' },
   { key: 'applicants',      label: '📋 지원자 관리' },
   { key: 'confirmed',       label: '✅ 확정인원' },

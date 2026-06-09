@@ -1,6 +1,6 @@
 // 퇴직금 계산 페이지 — 4단계 설문 플로우 → 간편/PDF 정밀계산
 // 근거: 근로자퇴직급여 보장법 제8조
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageMeta from '../components/PageMeta'
 import { useGuestGate } from '../components/GuestGate'
@@ -118,11 +118,6 @@ const INIT: State = {
 
 export default function SeveranceFlow() {
   // ── SEO: 페이지 진입 시 브라우저 탭 제목 변경 → 뒤로가기 시 원래대로 복원 ──
-  useEffect(() => {
-    // PageMeta 컴포넌트가 title을 관리하므로 document.title 직접 설정 제거
-    return () => {}
-  }, [])
-
   const [s, setS] = useState<State>(INIT)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
