@@ -123,7 +123,7 @@ export default function ServerLogsMenu() {
       const { data, count } = await q
       setSysLogs(data ?? [])
       setSysTotal(count ?? 0)
-    } catch { /* silent */ }
+    } catch (err) { console.warn('[ServerLogs] 시스템 로그 조회 실패:', err) }
     finally { setSysLoading(false) }
   }, [sysPage, sysTypeFilter])
 
@@ -134,7 +134,7 @@ export default function ServerLogsMenu() {
       const res = await getAuditLogs({ page: auditPage, limit: 50, action: auditAction, start: auditStart, end: auditEnd })
       setAuditLogs(res.logs ?? [])
       setAuditTotal(res.total ?? 0)
-    } catch { /* silent */ }
+    } catch (err) { console.warn('[ServerLogs] 감사 로그 조회 실패:', err) }
     finally { setAuditLoading(false) }
   }, [auditPage, auditAction, auditStart, auditEnd])
 

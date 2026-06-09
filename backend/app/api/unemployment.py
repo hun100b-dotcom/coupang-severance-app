@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import traceback
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from datetime import datetime
 from typing import Optional
@@ -43,6 +44,7 @@ async def ub_precise(
         raw = await file.read()
         df = parse_welcomwel_pdf(raw)
     except Exception:
+        traceback.print_exc()  # Render 로그에서 PDF 파싱 실패 원인 추적용
         df = pd.DataFrame()
 
     if df.empty:

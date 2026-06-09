@@ -91,7 +91,8 @@ export default function MyPage() {
         .order('created_at', { ascending: false })
       if (error) throw error
       setInquiries((data as InquiryItem[]) ?? [])
-    } catch {
+    } catch (err) {
+      console.error('[마이페이지] 문의 내역 조회 실패:', err)
       setInquiries([])
     } finally {
       setLoadingInquiries(false)
@@ -112,7 +113,8 @@ export default function MyPage() {
           .order('created_at', { ascending: false })
           .limit(50)
         setReports((data as ReportRow[]) ?? [])
-      } catch {
+      } catch (err) {
+        console.error('[마이페이지] 계산 기록 조회 실패:', err)
         setReports([])
       } finally {
         setLoadingReports(false)

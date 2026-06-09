@@ -272,17 +272,15 @@ export default function SettingsMenu({ isSuperAdmin }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   const loadSettings = async () => {
-    try {
-      const res = await getSettings()
-      setSettings(res.settings ?? {})
-    } catch (e: unknown) { throw e }
+    const res = await getSettings()
+    setSettings(res.settings ?? {})
   }
 
   const loadIps = async () => {
     try {
       const res = await getBlockedIps()
       setIps(res.blocked_ips ?? [])
-    } catch { /* silent */ }
+    } catch (err) { console.warn('[Settings] 차단 IP 목록 조회 실패:', err) }
   }
 
   const reload = async () => {
