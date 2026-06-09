@@ -10,7 +10,7 @@
 
 | 우선순위 | 작업 | 상세 |
 |---------|------|------|
-| **P0** | legal_variables 마이그레이션 DB 적용 | Supabase 대시보드 → SQL Editor → `supabase/migrations/20260603_legal_variables.sql` 붙여넣기 실행 |
+| **P0** | legal_variables 마이그레이션 DB 완전 적용 | `label` 컬럼 없음 확인 (2026-06-10). Supabase SQL Editor → `ALTER TABLE public.legal_variables ADD COLUMN IF NOT EXISTS label text NOT NULL DEFAULT '';` 실행 후 데이터 업데이트 |
 | **P0** | GSC 수동 색인 요청 | 종훈님이 GSC 접속 → 각 URL 검색바 입력 → "색인 생성 요청" 클릭 |
 | **P1** | 채용팀 연락 → 공고 데이터 수집 | 쿠팡/컬리/CJ 채용담당자 연락 (코드 작업 아님) |
 | **P2** | Phase 2 B2C 랜딩 고도화 | 검색 노출 모니터링 (1~4주 소요) |
@@ -20,6 +20,36 @@
 ---
 
 ## ✅ 완료 작업 이력
+
+### 세션 12 — 2026-06-10 (전수 검사 6영역 재점검)
+
+**작업 요약**: Phase A~G 전 영역 전수 검사 수행. 세션 11에서 이미 핫픽스 완료된 항목들 확인.
+
+**추가 발견 사항**
+- `legal_variables` 테이블: `label` 컬럼 없음 (마이그레이션 SQL에는 있지만 DB 미적용). 단, 프론트 `legalVariables.ts`와 admin `LegalVariables.tsx` 모두 label 미사용 → **현재 기능 영향 없음** (P3)
+- DB 데이터 정상: `min_hourly_wage=10320(2026)`, `unemployment_max_daily=68100(2026)` ✅
+
+**6-Step 재검증 결과 (2026-06-10)**
+
+| Step | 항목 | 결과 |
+|------|------|------|
+| 1 | git status (코드 clean) | ✅ |
+| 2 | Vercel 200 (0.93s) | ✅ |
+| 3 | Render /health 200 (0.30s) | ✅ |
+| 4 | PDF 4종 /precise → 422 (정상) | ✅ |
+| 5 | TypeScript 에러 0건 / dark 잔재 0건 | ✅ |
+| 6 | 핵심 8개 파일 존재 (TargetMenu 포함) | ✅ |
+
+**코드 레벨 검증 요약**
+- TypeScript 빌드 에러: 0건 ✅
+- 빈 catch 블록: 없음 ✅
+- dark: Tailwind 클래스: 0건 ✅ (V2/V3는 의도적 다크 랜딩)
+- any 타입 남발: api.ts 1건 (최소) ✅
+- 인증 가드: MyPage 비로그인→/login 리다이렉트 ✅
+- GuestGate: 4개 계산기 PDF 업로드 보호 ✅
+- 어드민 인증: X-Admin-Token 401 정상 ✅
+
+---
 
 ### 세션 11 — 2026-06-10 (전수검사 핫픽스 8파일 + Render 재활성 확인)
 
