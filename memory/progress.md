@@ -10,7 +10,6 @@
 
 | 우선순위 | 작업 | 상세 |
 |---------|------|------|
-| **P0** | **Render 백엔드 재활성화** | Render Dashboard 접속 → `coupang-severance-api` 서비스 상태 확인 → 비활성(suspended)이면 재활성화 클릭. 전수검사에서 /health 포함 전체 경로 404 확인됨 |
 | **P0** | legal_variables 마이그레이션 DB 적용 | Supabase 대시보드 → SQL Editor → `supabase/migrations/20260603_legal_variables.sql` 붙여넣기 실행 |
 | **P0** | GSC 수동 색인 요청 | 종훈님이 GSC 접속 → 각 URL 검색바 입력 → "색인 생성 요청" 클릭 |
 | **P1** | 채용팀 연락 → 공고 데이터 수집 | 쿠팡/컬리/CJ 채용담당자 연락 (코드 작업 아님) |
@@ -21,6 +20,36 @@
 ---
 
 ## ✅ 완료 작업 이력
+
+### 세션 11 — 2026-06-10 (전수검사 핫픽스 8파일 + Render 재활성 확인)
+
+**커밋 `deb3558`: fix(audit): TargetMenu 접근 + Guide SPA full reload + a11y + dead code (8파일)**
+
+| 파일 | 변경 내용 |
+|------|---------|
+| `AdminSidebar.tsx` | MENU_TREE 시스템 그룹에 target 항목 누락 추가 |
+| `AdminPage.tsx` | FLAT_MENUS에 target 추가 (모바일 드롭다운) |
+| `SeveranceGuide.tsx` | GuideCard + 본문 inline `<a href>` → `<Link to>` + Link import |
+| `UnemploymentGuide.tsx` | 동일 패턴 |
+| `WeeklyAllowanceGuide.tsx` | GuideCard `<a href>` → `<Link to>` + Link import |
+| `AnnualLeaveGuide.tsx` | GuideCard `<a href>` → `<Link to>` + Link import |
+| `ProfileSection.tsx` | img `alt=""` → `alt={name}` (접근성 수정) |
+| `SeveranceFlow.tsx` | 빈 `useEffect` 제거 + import에서 `useEffect` 삭제 |
+
+**6-Step 검증 결과**
+
+| Step | 항목 | 결과 |
+|------|------|------|
+| 1 | git push origin main | ✅ |
+| 2 | Vercel 200 | ✅ |
+| 3 | Render /health 200 | ✅ **(이전 세션 404→이번 세션 200 자동 복구)** |
+| 4 | /docs /redoc /openapi.json 200 | ✅ |
+| 5 | AdminSidebar target 항목 코드 검증 | ✅ (diff 확인) |
+| 6 | GuideCard SPA 라우팅 (hasEventListeners:true) | ✅ |
+
+**push**: ✅ origin main 완료 (Vercel 자동 배포)
+
+---
 
 ### 세션 10 — 2026-06-09 (어드민 라이트 개편 완료 + 전역 전수검사)
 
@@ -234,7 +263,7 @@
 | 항목 | 상태 | 비고 |
 |------|------|------|
 | 프로덕션 URL | https://catch-daily-worker.vercel.app | Vercel 자동배포 |
-| API | https://coupang-severance-api.onrender.com | Render 자동배포 |
+| API | https://coupang-severance-app.onrender.com | Render 자동배포 |
 | Google Search Console | ✅ 등록 완료 | 속성: catch-daily-worker.vercel.app |
 | Naver Search Advisor | ✅ 등록 완료 | 소유권 인증 + 수집 요청 완료 |
 | Google 색인 | 🔄 진행 중 | /home 요청 완료, 나머지 9개 대기 |
