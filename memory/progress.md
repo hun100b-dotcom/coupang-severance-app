@@ -6,6 +6,20 @@
 
 ---
 
+## 🎨 웹 레이아웃 전면 리디자인 (redesign/web-layout 브랜치, 2026-06-28 완료, 미푸시)
+
+> 디자인 방향 "B고정" = 프리미엄 + 섹션 분리. 색: **블루 메인 + 그린(채용/재직수당) + 회색 + 의미색(danger/warning). 무지개 금지**. 토큰: tailwind `brand/accent/ink/line/page`. 모든 화면 더블리뷰(총괄A+적대B) + Playwright 실측 후 로컬 커밋(푸시 X), main 무수정, 계산 로직 무변경(UI만).
+
+**완료 화면 (전부 더블리뷰 통과):** 홈·계산기허브·채용·마이페이지·공지 / 퇴직금·실업급여·주휴·연차 플로우+결과 / 나의혜택 / 가이드허브+4가이드 / 결제·문의·설정 / 랜딩(/)·로그인·온보딩·스플래시 / SEO 6 + 약관 2
+
+**이번 세션 커밋(redesign/web-layout, 미푸시):** be53334(가이드) · 712d71e(결제/문의/설정) · 86f8d91(랜딩/로그인/온보딩) · e6ee787(SEO)
+- accent.700(#047857) 토큰 신설(흰배경 텍스트·녹색버튼 AA용)
+- 리뷰 기록: `docs/dual_review/redesign_*.md` (guide/payment_inquiry_settings/landing_login_onboarding/seo_terms)
+- **남은 개선점(비차단):** 공유 TopNav/BottomNav 글래스 제거(전역 단일 결정 필요) · 앱 버전표기 #94a3b8 전역 대비 · 320px Login 구글위젯 고정폭 클리핑 · 실업급여 SEO 히어로 그린(그룹핑상 블루 검토)
+- **다음:** 종훈님 육안 확인 후 push 여부 결정 → main 머지 또는 Vercel 프리뷰 배포
+
+---
+
 ## 🔴 다음 작업 (TODO)
 
 | 우선순위 | 작업 | 상세 |
