@@ -122,7 +122,7 @@ export default function CoupangPartTimeSeverance() {
 
       <div className="min-h-screen bg-[#F2F4F6] pb-20">
         {/* ── 헤더 히어로 섹션 ── */}
-        <div className="bg-gradient-to-br from-[#3182f6] to-[#7c3aed] px-4 pt-12 pb-10 text-white">
+        <div className="bg-gradient-to-br from-[#3182f6] to-[#1d4ed8] px-4 pt-12 pb-10 text-white">
           <motion.div
             className="max-w-lg mx-auto"
             initial={{ opacity: 0, y: 20 }}
@@ -222,7 +222,7 @@ export default function CoupangPartTimeSeverance() {
             transition={{ delay: 0.3 }}
           >
             <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Calculator className="w-4 h-4 text-purple-500" />
+              <Calculator className="w-4 h-4 text-brand" />
               퇴직금 계산 공식 (2026년 기준)
             </h2>
             <div className="bg-gray-50 rounded-xl p-4 font-mono text-sm text-center text-gray-800 mb-3">
