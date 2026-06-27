@@ -29,6 +29,11 @@
 - **로컬 검증 레시피**(MyPage 로그인 우회): Playwright localStorage `sb-hmjxrqhcwjyfkvlcejfc-auth-token` 가짜세션 + profiles 모킹(onboarding_completed:true)
 - **다음**: 공지사항(/notices) — 마지막 주요 탭. 그 후 계산 플로우/가이드/랜딩
 
+### 세션 15-9 — 2026-06-28 (디자인 개편: 실업급여 플로우+결과, 더블리뷰 PASS)
+- UnemploymentFlow sky→brand(블루그룹)·글래스 제거(로직 불변), ResultUnemployment 금액 brand-strong(#1B64DA)·안내 솔리드
+- 더블리뷰 A·B 모두 PASS(이슈 0). 기록 docs/dual_review/redesign_unemployment.md
+- 다음: 주휴수당(/weekly-allowance) → 연차 → 혜택
+
 ### 세션 15-8 — 2026-06-28 (디자인 개편: 퇴직금 결과+리포트, 더블리뷰 PASS)
 - index.css 글래스 클래스 솔리드화(.glass-card/.report-accordion-header/body) + 폰트↑(.formula-box/.ai-analysis-box) + 금액색 .num-digits→#1B64DA → **GlassCall/리포트 쓰는 모든 결과 화면 전파**
 - ResultSeverance: 참고안내 솔리드(로직 불변). ReportDetail: Container narrow·헤더 top-14·토큰 셀·금액 brand-strong·캡션 ink-700
