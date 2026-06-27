@@ -213,7 +213,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={e => { e.preventDefault(); navigate('/terms-of-service') }}
-              className="ml-auto text-xs text-blue-500 underline whitespace-nowrap"
+              className="ml-auto text-xs text-brand-strong underline whitespace-nowrap"
             >
               보기
             </button>
@@ -232,7 +232,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={e => { e.preventDefault(); navigate('/privacy-policy') }}
-              className="ml-auto text-xs text-blue-500 underline whitespace-nowrap"
+              className="ml-auto text-xs text-brand-strong underline whitespace-nowrap"
             >
               보기
             </button>
@@ -298,7 +298,7 @@ export default function LoginPage() {
           </div>
 
           {/* 구글 액세스 차단 안내 */}
-          <p className="text-[11px] text-[#8B95A1] text-center mt-4 leading-relaxed">
+          <p className="text-[11px] text-ink-700 text-center mt-4 leading-relaxed">
             Google 로그인이 차단되는 경우, 카카오 로그인을 이용해 주세요.
           </p>
         </div>
@@ -311,17 +311,17 @@ export default function LoginPage() {
             loginAsGuest() // 게스트 모드 활성화 (localStorage 저장)
             navigate('/home')
           }}
-          className="mt-3 w-full py-3 rounded-xl text-sm text-[#8B95A1] hover:text-[#6B7684] transition-colors flex items-center justify-center gap-1.5"
+          className="mt-3 w-full py-3 rounded-xl text-sm text-ink-700 hover:text-ink-900 transition-colors flex items-center justify-center gap-1.5"
         >
           <span>비로그인으로 진행하기</span>
-          <span className="text-[11px] text-[#B0BAC5]">(일부 기능 제한)</span>
+          <span className="text-[11px] text-ink-600">(일부 기능 제한)</span>
         </button>
 
         {/* 홈으로 돌아가기 */}
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="mt-1 w-full text-sm text-[#8B95A1]"
+          className="mt-1 w-full text-sm text-ink-700"
         >
           &larr; 홈으로
         </button>

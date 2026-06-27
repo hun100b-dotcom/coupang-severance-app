@@ -1,5 +1,5 @@
 // LandingV1 — 밝은 파스텔 테마 (전면 업그레이드 v2)
-// 색상: Primary #2563eb (깊은 파랑), Accent #7c3aed (보라), BG #f0f7ff→#f5f0ff
+// 색상: Primary #2563eb (깊은 파랑), Accent #1d4ed8 (딥블루), BG #f0f7ff→#eaf2fe
 
 import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -93,7 +93,8 @@ function SectionBridge({
   const arrowColor = isDark ? '#ffffff' : '#2563eb'
   // 텍스트 pill 배경: 배경색에 무관하게 가독성 확보
   // isDark=true(어두운 배경)이면 반투명 흰색 pill, 밝은 배경이면 반투명 파랑 pill
-  const pillBg = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.85)'
+  // 글래스 제거: 라이트 배경에선 솔리드 흰색 pill(블러 없이도 가독), 다크 배경에선 솔리드 진파랑 pill
+  const pillBg = isDark ? '#1B64DA' : '#ffffff'
   const pillBorder = isDark ? '1px solid rgba(255,255,255,0.25)' : '1px solid rgba(37,99,235,0.15)'
   const textColor = isDark ? '#ffffff' : '#1e3a5f'
   const subTextColor = isDark ? 'rgba(255,255,255,0.75)' : '#475569'
@@ -110,14 +111,14 @@ function SectionBridge({
       {/* 서브텍스트 — pill 배경으로 어떤 섹션 배경에서도 읽힘 */}
       <span
         className="text-[12px] font-semibold mb-1 px-3 py-1 rounded-full"
-        style={{ color: subTextColor, background: pillBg, border: pillBorder, backdropFilter: 'blur(8px)' }}
+        style={{ color: subTextColor, background: pillBg, border: pillBorder }}
       >
         {subText}
       </span>
       {/* 메인 텍스트 — pill 배경 적용 */}
       <span
         className="text-[15px] font-bold mb-3 mt-1 px-4 py-1.5 rounded-full group-hover:opacity-80 transition-opacity"
-        style={{ color: textColor, background: pillBg, border: pillBorder, backdropFilter: 'blur(8px)' }}
+        style={{ color: textColor, background: pillBg, border: pillBorder }}
       >
         {text}
       </span>
@@ -140,9 +141,14 @@ export default function LandingV1() {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 60)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    // body가 스크롤 컨테이너(html,body height:100%)인 경우 window.scrollY가 0으로 고정되므로
+    // document/body의 scrollTop까지 함께 읽어 실제 스크롤량을 판정한다
+    const handleScroll = () => {
+      const y = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop
+      setScrolled(y > 60)
+    }
+    window.addEventListener('scroll', handleScroll, true) // capture: 내부 스크롤 컨테이너 이벤트도 포착
+    return () => window.removeEventListener('scroll', handleScroll, true)
   }, [])
 
   // ── 모바일 감지 — HOW 섹션 세로/가로 타임라인 전환 ──────────────────────────
@@ -171,7 +177,7 @@ export default function LandingV1() {
       className="min-h-screen overflow-x-hidden"
       style={{
         fontFamily: "'Noto Sans KR', sans-serif",
-        background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
+        background: 'linear-gradient(135deg, #f0f7ff 0%, #eaf2fe 100%)',
         color: '#0f172a',
         position: 'relative',
         zIndex: 1,
@@ -196,7 +202,7 @@ export default function LandingV1() {
           onClick={goHome}
           className="px-[22px] py-[10px] rounded-[12px] text-sm font-bold text-white transition-all hover:scale-[1.04] hover:-translate-y-0.5"
           style={{
-            background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
             boxShadow: '0 4px 16px rgba(37,99,235,0.25)',
           }}
         >
@@ -211,7 +217,7 @@ export default function LandingV1() {
         style={{
           minHeight: '100vh',
           padding: '120px 0 80px',
-          background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
+          background: 'linear-gradient(135deg, #f0f7ff 0%, #eaf2fe 100%)',
         }}
       >
         {/* 좌측 상단 블롭 */}
@@ -235,7 +241,7 @@ export default function LandingV1() {
             width: 500,
             height: 500,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(37, 99, 235,0.06) 0%, transparent 70%)',
           }}
         />
 
@@ -339,7 +345,7 @@ export default function LandingV1() {
                 style={{
                   padding: '14px 28px',
                   fontSize: 16,
-                  background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
                   boxShadow: '0 8px 32px rgba(37,99,235,0.30)',
                 }}
               >
@@ -352,8 +358,8 @@ export default function LandingV1() {
                 style={{
                   padding: '14px 28px',
                   fontSize: 16,
-                  background: 'linear-gradient(135deg, #059669, #0891b2)',
-                  boxShadow: '0 8px 32px rgba(5,150,105,0.28)',
+                  background: 'linear-gradient(135deg, #047857, #03664a)',
+                  boxShadow: '0 8px 32px rgba(4,120,87,0.28)',
                 }}
               >
                 빠르게 시작하기 →
@@ -410,7 +416,7 @@ export default function LandingV1() {
         className="relative z-[1] overflow-hidden"
         style={{
           padding: '100px 0',
-          background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
+          background: 'linear-gradient(135deg, #f0f7ff 0%, #eaf2fe 100%)',
         }}
       >
         <div
@@ -432,7 +438,7 @@ export default function LandingV1() {
               style={{
                 background: 'rgba(239,68,68,0.10)',
                 border: '1px solid rgba(239,68,68,0.25)',
-                color: '#ef4444',
+                color: '#dc2626',
               }}
             >
               ⚠️ 지금 이 순간에도
@@ -461,7 +467,7 @@ export default function LandingV1() {
             <blockquote
               className="relative mb-12 rounded-[16px] overflow-hidden"
               style={{
-                background: 'linear-gradient(135deg, #eff6ff 0%, #ede9fe 100%)',
+                background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
                 borderLeft: '5px solid #2563eb',
                 boxShadow: '0 4px 24px rgba(37,99,235,0.12)',
                 padding: '32px 36px 32px 40px',
@@ -523,7 +529,7 @@ export default function LandingV1() {
               >
                 <div
                   className="font-black tracking-tight whitespace-nowrap"
-                  style={{ fontSize: 18, color: '#ef4444', letterSpacing: '-1px', minWidth: 60 }}
+                  style={{ fontSize: 18, color: '#dc2626', letterSpacing: '-1px', minWidth: 60 }}
                 >
                   1조 7,845억
                 </div>
@@ -551,14 +557,14 @@ export default function LandingV1() {
                 }}
               >
                 {/* 카드 제목 */}
-                <div className="text-[14px] font-bold mb-3" style={{ color: '#ef4444' }}>
+                <div className="text-[14px] font-bold mb-3" style={{ color: '#dc2626' }}>
                   ⚠️ 실업급여, 아는 사람만 받는다
                 </div>
                 {/* 수치 + 서브텍스트 */}
                 <div className="flex items-baseline gap-3 mb-2">
                   <div
                     className="font-black tracking-tight"
-                    style={{ fontSize: 26, color: '#ef4444', letterSpacing: '-1px' }}
+                    style={{ fontSize: 26, color: '#dc2626', letterSpacing: '-1px' }}
                   >
                     525만 명+
                   </div>
@@ -587,14 +593,14 @@ export default function LandingV1() {
                 }}
               >
                 {/* 카드 제목 */}
-                <div className="text-[14px] font-bold mb-3" style={{ color: '#ef4444' }}>
+                <div className="text-[14px] font-bold mb-3" style={{ color: '#dc2626' }}>
                   ⚠️ 잘못 계산하면 내 돈이 줄어든다
                 </div>
                 {/* 수치 + 서브텍스트 */}
                 <div className="flex items-baseline gap-3 mb-2">
                   <div
                     className="font-black tracking-tight"
-                    style={{ fontSize: 26, color: '#ef4444', letterSpacing: '-1px' }}
+                    style={{ fontSize: 26, color: '#dc2626', letterSpacing: '-1px' }}
                   >
                     3년
                   </div>
@@ -625,13 +631,13 @@ export default function LandingV1() {
       <section
         id="solution"
         className="relative z-[1]"
-        style={{ padding: '100px 0', background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)' }}
+        style={{ padding: '100px 0', background: 'linear-gradient(135deg, #f0f7ff 0%, #eaf2fe 100%)' }}
       >
         {/* SOLUTION 섹션 콘텐츠 — 모바일 px-4, 데스크탑 px-6 */}
         <div className="max-w-[1100px] mx-auto px-4 sm:px-6">
           <div className="grid md:grid-cols-2 gap-8 md:gap-[60px] items-center">
-            {/* 왼쪽: 설명 텍스트 — bg-white/90 카드로 blob 차단 */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 md:p-8">
+            {/* 왼쪽: 설명 텍스트 — 솔리드 흰 카드로 blob 차단 */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
               <Reveal>
                 <span
                   className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-medium mb-5"
@@ -666,7 +672,7 @@ export default function LandingV1() {
                   style={{
                     padding: '16px 32px',
                     fontSize: 16,
-                    background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
                     boxShadow: '0 6px 24px rgba(37,99,235,0.25)',
                   }}
                 >
@@ -723,7 +729,7 @@ export default function LandingV1() {
                     {/* 상단 hover 라인 */}
                     <div
                       className="absolute top-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ background: 'linear-gradient(90deg, #2563eb, #7c3aed)' }}
+                      style={{ background: 'linear-gradient(90deg, #2563eb, #1d4ed8)' }}
                     />
                     {/* 아이콘 */}
                     <div
@@ -731,7 +737,7 @@ export default function LandingV1() {
                       style={{
                         width: 44,
                         height: 44,
-                        background: 'linear-gradient(135deg, rgba(37,99,235,0.10), rgba(124,58,237,0.08))',
+                        background: 'linear-gradient(135deg, rgba(37,99,235,0.10), rgba(37, 99, 235,0.08))',
                       }}
                     >
                       {card.icon}
@@ -778,7 +784,7 @@ export default function LandingV1() {
         className="relative z-[1] overflow-hidden"
         style={{
           padding: '100px 0',
-          background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
+          background: 'linear-gradient(135deg, #f0f7ff 0%, #eaf2fe 100%)',
         }}
       >
         <div
@@ -791,10 +797,10 @@ export default function LandingV1() {
               'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
           }}
         />
-        {/* bg-white/90 카드: HOW 섹션 전체 내용을 불투명 카드로 감싸 blob 차단 */}
+        {/* 솔리드 흰 카드: HOW 섹션 전체 내용을 불투명 카드로 감싸 blob 차단 */}
         {/* 모바일 px-4, 데스크탑 px-6 */}
         <div className="relative z-[1] max-w-[1100px] mx-auto px-4 sm:px-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 md:p-10">
+          <div className="bg-white rounded-2xl shadow-lg p-6 md:p-10">
           <Reveal>
             <div className="text-center mb-[70px]">
               <span
@@ -835,7 +841,7 @@ export default function LandingV1() {
                           style={{
                             width: 48,
                             height: 48,
-                            background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
                             boxShadow: '0 0 0 8px rgba(37,99,235,0.10)',
                           }}
                         >
@@ -875,7 +881,7 @@ export default function LandingV1() {
                           style={{
                             width: 48,
                             height: 48,
-                            background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
                             boxShadow: '0 0 0 8px rgba(37,99,235,0.10)',
                           }}
                         >
@@ -904,7 +910,7 @@ export default function LandingV1() {
             </div>
           )}
 
-          </div>{/* /bg-white/90 카드 닫기 */}
+          </div>{/* /솔리드 흰 카드 닫기 */}
 
           {/* SectionBridge: HOW → WHY */}
           <SectionBridge
@@ -920,7 +926,7 @@ export default function LandingV1() {
       <section
         id="why"
         className="relative z-[1]"
-        style={{ padding: '100px 0', background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)' }}
+        style={{ padding: '100px 0', background: 'linear-gradient(135deg, #f0f7ff 0%, #eaf2fe 100%)' }}
       >
         {/* WHY 섹션 콘텐츠 — 모바일 px-4, 데스크탑 px-6 */}
         <div className="max-w-[1100px] mx-auto px-4 sm:px-6">
@@ -968,7 +974,7 @@ export default function LandingV1() {
                     <li className="flex gap-4 items-start">
                       <div
                         className="w-7 h-7 rounded-[8px] flex items-center justify-center text-[14px] flex-shrink-0 mt-0.5 text-white"
-                        style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}
+                        style={{ background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}
                       >
                         ✓
                       </div>
@@ -1005,7 +1011,7 @@ export default function LandingV1() {
                 <p className="text-[18px] mb-10" style={{ color: '#475569' }}>
                   근무일 이상이면 퇴직금 수령 가능
                 </p>
-                <div className="mx-auto mb-9 rounded-full" style={{ width: 40, height: 3, background: 'linear-gradient(90deg, #2563eb, #7c3aed)' }} />
+                <div className="mx-auto mb-9 rounded-full" style={{ width: 40, height: 3, background: 'linear-gradient(90deg, #2563eb, #1d4ed8)' }} />
                 <div className="grid grid-cols-2 gap-5">
                   {[
                     { num: '4개', label: '계산 서비스' },
@@ -1018,7 +1024,7 @@ export default function LandingV1() {
                       key={stat.label}
                       className="rounded-[14px] text-left p-3 sm:p-5"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(37,99,235,0.05), rgba(124,58,237,0.04))',
+                        background: 'linear-gradient(135deg, rgba(37,99,235,0.05), rgba(37, 99, 235,0.04))',
                         border: '1px solid rgba(37,99,235,0.10)',
                       }}
                     >
@@ -1047,7 +1053,7 @@ export default function LandingV1() {
         className="relative z-[1] overflow-hidden"
         style={{
           padding: '100px 0',
-          background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
+          background: 'linear-gradient(135deg, #f0f7ff 0%, #eaf2fe 100%)',
         }}
       >
         {/* 배경 그리드 — HERO와 동일 */}
@@ -1120,7 +1126,7 @@ export default function LandingV1() {
                 desc: '예정된 근무 일정을 한눈에 확인하고 출근 여부를 빠르게 확정하세요',
               },
               {
-                iconBg: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+                iconBg: 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
                 emoji: '✅',
                 title: '근무지원 관리',
                 desc: '새로운 근무지 지원 현황과 결과를 실시간으로 확인하세요',
@@ -1132,7 +1138,7 @@ export default function LandingV1() {
                 desc: '쿠팡·컬리 등 주요 물류센터 채용공고를 한눈에 확인하고 바로 지원하세요',
               },
               {
-                iconBg: 'linear-gradient(135deg, #ef4444, #f97316)',
+                iconBg: 'linear-gradient(135deg, #ef4444, #dc2626)',
                 emoji: '🔥',
                 title: '긴급·추가 모집 알림',
                 desc: '오늘 긴급모집, 추가모집, 내일 긴급모집 등 실시간 채용 정보를 놓치지 마세요',
@@ -1176,7 +1182,7 @@ export default function LandingV1() {
             <div
               className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-[16px] p-4 sm:p-8"
               style={{
-                background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
               }}
             >
               <div className="flex items-center gap-3">
@@ -1217,7 +1223,7 @@ export default function LandingV1() {
         className="relative z-[1] text-center overflow-hidden"
         style={{
           padding: '100px 0',
-          background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
+          background: 'linear-gradient(135deg, #f0f7ff 0%, #eaf2fe 100%)',
         }}
       >
         <div
@@ -1230,11 +1236,11 @@ export default function LandingV1() {
               'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
           }}
         />
-        {/* bg-white/90 카드: CTA 섹션 텍스트 영역을 불투명 카드로 감싸 blob 차단 */}
+        {/* 솔리드 흰 카드: CTA 섹션 텍스트 영역을 불투명 카드로 감싸 blob 차단 */}
         {/* 모바일 px-4, 데스크탑 px-6 */}
         <div className="relative z-[1] max-w-[700px] mx-auto px-4 sm:px-6">
           {/* 모바일 p-6, 데스크탑 p-12 */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 md:p-12">
+          <div className="bg-white rounded-2xl shadow-lg p-6 md:p-12">
           <Reveal>
             <span
               className="inline-block px-[14px] py-[6px] rounded-full text-[13px] font-medium mb-8"
@@ -1310,7 +1316,7 @@ export default function LandingV1() {
               신용카드 불필요 · 즉시 시작 · 언제든 탈퇴 가능
             </p>
           </Reveal>
-          </div>{/* /bg-white/90 카드 닫기 */}
+          </div>{/* /솔리드 흰 카드 닫기 */}
         </div>
       </section>
 
@@ -1320,12 +1326,12 @@ export default function LandingV1() {
         style={{
           padding: '40px 0',
           borderTop: '1px solid rgba(37,99,235,0.10)',
-          background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
+          background: 'linear-gradient(135deg, #f0f7ff 0%, #eaf2fe 100%)',
         }}
       >
         <div className="max-w-[1100px] mx-auto px-6">
           <div className="text-[20px] font-black mb-3" style={{ color: '#2563eb' }}>CATCH</div>
-          <div className="text-[13px]" style={{ color: '#94a3b8' }}>© 2026 CATCH — 퇴직금 한번에. All rights reserved.</div>
+          <div className="text-[13px]" style={{ color: '#475569' }}>© 2026 CATCH — 퇴직금 한번에. All rights reserved.</div>
         </div>
       </footer>
     </div>
