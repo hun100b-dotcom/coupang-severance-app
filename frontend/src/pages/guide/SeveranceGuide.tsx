@@ -171,12 +171,12 @@ const sectionVariants = {
 // ── 정보 박스 컴포넌트 ──
 function InfoBox({ title, children, variant = 'default' }: { title: string; children: React.ReactNode; variant?: 'default' | 'warning' | 'tip' }) {
   const variantStyles = {
-    default: 'bg-blue-50 border-blue-200',
-    warning: 'bg-amber-50 border-amber-200',
-    tip: 'bg-green-50 border-green-200',
+    default: 'bg-brand-bg border-brand-200',
+    warning: 'bg-warning/10 border-warning/30',
+    tip: 'bg-accent-bg border-accent/30',
   }
   return (
-    <div className={`border-l-4 ${variant === 'warning' ? 'border-amber-500' : variant === 'tip' ? 'border-green-500' : 'border-blue-500'} ${variantStyles[variant]} rounded-lg p-4 mb-4`}>
+    <div className={`border-l-4 ${variant === 'warning' ? 'border-warning' : variant === 'tip' ? 'border-accent' : 'border-brand'} ${variantStyles[variant]} rounded-lg p-4 mb-4`}>
       <h4 className="font-bold text-sm mb-2 text-gray-900">{title}</h4>
       <div className="text-sm text-gray-700">{children}</div>
     </div>
@@ -192,7 +192,7 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.3 }}
-      className="bg-white border border-gray-200 rounded-lg p-4 mb-6 sticky top-4 z-20"
+      className="bg-white border border-gray-200 rounded-lg p-4 mb-6 sticky top-14 z-20"
     >
       <button
         onClick={() => setShowContents(!showContents)}
@@ -227,7 +227,7 @@ function GuideCard({ title, icon, href }: { title: string; icon: React.ReactNode
   return (
     <Link
       to={href}
-      className="block bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4 hover:shadow-md transition-all"
+      className="block bg-gradient-to-br from-blue-50 to-brand-strong border border-blue-200 rounded-xl p-4 hover:shadow-md transition-all"
     >
       <div className="flex items-center gap-3">
         <div className="text-2xl">{icon}</div>
@@ -272,7 +272,7 @@ export default function SeveranceGuide() {
         jsonLd={[ARTICLE_SCHEMA, HOW_TO_SCHEMA, FAQ_SCHEMA, BREADCRUMB_SCHEMA]}
       />
 
-      <div className="w-full max-w-[460px] flex flex-col gap-4">
+      <div className="w-full max-w-[680px] flex flex-col gap-4">
 
         {/* ── 히어로 섹션 ── */}
         <motion.div
@@ -283,7 +283,7 @@ export default function SeveranceGuide() {
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -z-10" />
           {/* H1 — SEO 타겟 키워드 포함 */}
-          <h1 className="text-xl font-black mb-1 leading-tight">쿠팡 일용직 퇴직금 계산기</h1>
+          <h1 className="text-xl font-black mb-1 leading-tight text-white">쿠팡 일용직 퇴직금 계산기</h1>
           <p className="text-blue-100 text-sm mb-3">2026년 최신 기준 완전정복</p>
           {/* flex-wrap으로 뱃지가 375px 이하에서 줄바꿈 허용 */}
           <div className="flex flex-wrap gap-2 text-xs">
@@ -494,7 +494,7 @@ export default function SeveranceGuide() {
               { step: '5', title: '파산 시 국가 대지급제 신청', desc: '회사가 파산하거나 지급 불능이면 국가에서 대신 지급합니다. 관할 고용센터에 신청하세요.' },
             ].map(item => (
               <div key={item.step} className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 text-sm font-bold flex items-center justify-center flex-shrink-0">{item.step}</div>
+                <div className="w-8 h-8 rounded-full bg-brand-bg text-brand-strong text-sm font-bold flex items-center justify-center flex-shrink-0">{item.step}</div>
                 <div>
                   <h3 className="font-bold text-sm text-gray-900">{item.title}</h3>
                   <p className="text-xs text-gray-600 mt-1">{item.desc}</p>

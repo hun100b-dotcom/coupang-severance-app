@@ -171,12 +171,12 @@ const sectionVariants = {
 // ── 정보 박스 컴포넌트 ──
 function InfoBox({ title, children, variant = 'default' }: { title: string; children: React.ReactNode; variant?: 'default' | 'warning' | 'tip' }) {
   const variantStyles = {
-    default: 'bg-cyan-50 border-cyan-200',
-    warning: 'bg-amber-50 border-amber-200',
-    tip: 'bg-green-50 border-green-200',
+    default: 'bg-brand-bg border-brand-200',
+    warning: 'bg-warning/10 border-warning/30',
+    tip: 'bg-accent-bg border-accent/30',
   }
   return (
-    <div className={`border-l-4 ${variant === 'warning' ? 'border-amber-500' : variant === 'tip' ? 'border-green-500' : 'border-cyan-500'} ${variantStyles[variant]} rounded-lg p-4 mb-4`}>
+    <div className={`border-l-4 ${variant === 'warning' ? 'border-warning' : variant === 'tip' ? 'border-accent' : 'border-brand'} ${variantStyles[variant]} rounded-lg p-4 mb-4`}>
       <h4 className="font-bold text-sm mb-2 text-gray-900">{title}</h4>
       <div className="text-sm text-gray-700">{children}</div>
     </div>
@@ -192,7 +192,7 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.3 }}
-      className="bg-white border border-gray-200 rounded-lg p-4 mb-6 sticky top-4 z-20"
+      className="bg-white border border-gray-200 rounded-lg p-4 mb-6 sticky top-14 z-20"
     >
       <button
         onClick={() => setShowContents(!showContents)}
@@ -209,8 +209,8 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
               href={`#${item.id}`}
               className={`block text-sm py-1 px-2 rounded transition-colors ${
                 activeSection === item.id
-                  ? 'bg-cyan-100 text-cyan-700 font-semibold'
-                  : 'text-gray-600 hover:text-cyan-600'
+                  ? 'bg-brand-bg text-brand-strong font-semibold'
+                  : 'text-gray-600 hover:text-brand-strong'
               }`}
             >
               {item.label}
@@ -227,7 +227,7 @@ function GuideCard({ title, icon, href }: { title: string; icon: React.ReactNode
   return (
     <Link
       to={href}
-      className="block bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-xl p-4 hover:shadow-md transition-all"
+      className="block bg-gradient-to-br from-brand-bg to-white border border-brand-200 rounded-xl p-4 hover:shadow-md transition-all"
     >
       <div className="flex items-center gap-3">
         <div className="text-2xl">{icon}</div>
@@ -235,7 +235,7 @@ function GuideCard({ title, icon, href }: { title: string; icon: React.ReactNode
           <h4 className="font-bold text-sm text-gray-900">{title}</h4>
           <p className="text-xs text-gray-600 mt-1">가이드 보기</p>
         </div>
-        <ChevronRight className="w-4 h-4 text-cyan-600 ml-auto" />
+        <ChevronRight className="w-4 h-4 text-brand-strong ml-auto" />
       </div>
     </Link>
   )
@@ -272,25 +272,25 @@ export default function UnemploymentGuide() {
         jsonLd={[ARTICLE_SCHEMA, HOW_TO_SCHEMA, FAQ_SCHEMA, BREADCRUMB_SCHEMA]}
       />
 
-      <div className="w-full max-w-[460px] flex flex-col gap-4">
+      <div className="w-full max-w-[680px] flex flex-col gap-4">
 
         {/* ── 히어로 섹션 ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="rounded-2xl bg-gradient-to-br from-cyan-600 to-cyan-700 p-6 text-white overflow-hidden relative"
+          className="rounded-2xl bg-gradient-to-br from-brand-strong to-brand-strong p-6 text-white overflow-hidden relative"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -z-10" />
           {/* H1 — SEO 타겟 키워드 포함 */}
-          <h1 className="text-xl font-black mb-1 leading-tight">쿠팡 일용직 실업급여 계산기</h1>
-          <p className="text-cyan-100 text-sm mb-3">2026년 최신 기준 완전정복</p>
+          <h1 className="text-xl font-black mb-1 leading-tight text-white">쿠팡 일용직 실업급여 계산기</h1>
+          <p className="text-brand-strong text-sm mb-3">2026년 최신 기준 완전정복</p>
           <div className="flex gap-2 flex-wrap text-xs">
             <span className="bg-white/20 rounded-full px-2.5 py-1 font-bold">최대 270일</span>
             <span className="bg-white/20 rounded-full px-2.5 py-1 font-bold">1일 상한 68,100원</span>
             <span className="bg-white/20 rounded-full px-2.5 py-1 font-bold">신청기한 12개월</span>
           </div>
-          <p className="text-cyan-200 text-[11px] mt-3">마지막 업데이트: 2026-04-10</p>
+          <p className="text-brand-strong text-[11px] mt-3">마지막 업데이트: 2026-04-10</p>
         </motion.div>
 
         {/* ── 목차 ── */}
@@ -340,7 +340,7 @@ export default function UnemploymentGuide() {
           <h3 className="font-bold text-sm text-gray-900 mb-3">기본 3가지 조건</h3>
           <div className="space-y-3 mb-4">
             <div className="flex gap-3">
-              <div className="w-6 h-6 rounded-full bg-cyan-100 text-cyan-600 text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
+              <div className="w-6 h-6 rounded-full bg-brand-strong text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
               <div>
                 <h4 className="font-bold text-sm text-gray-900">피보험단위기간 180일 이상</h4>
                 <p className="text-xs text-gray-600 mt-1">
@@ -350,7 +350,7 @@ export default function UnemploymentGuide() {
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="w-6 h-6 rounded-full bg-cyan-100 text-cyan-600 text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
+              <div className="w-6 h-6 rounded-full bg-brand-strong text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
               <div>
                 <h4 className="font-bold text-sm text-gray-900">비자발적 이직 (실직)</h4>
                 <p className="text-xs text-gray-600 mt-1">
@@ -360,7 +360,7 @@ export default function UnemploymentGuide() {
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="w-6 h-6 rounded-full bg-cyan-100 text-cyan-600 text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
+              <div className="w-6 h-6 rounded-full bg-brand-strong text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
               <div>
                 <h4 className="font-bold text-sm text-gray-900">적극적 구직 활동</h4>
                 <p className="text-xs text-gray-600 mt-1">
@@ -393,27 +393,27 @@ export default function UnemploymentGuide() {
 
           <InfoBox title="1일 구직급여액 = 이직 전 평균임금 × 60%" variant="default">
             <div className="space-y-2 text-xs">
-              <p><span className="font-semibold">2026년 상한액</span>: <span className="text-cyan-700 font-bold">68,100원/일</span> (2026년 인상)</p>
+              <p><span className="font-semibold">2026년 상한액</span>: <span className="text-brand-strong font-bold">68,100원/일</span> (2026년 인상)</p>
               <p><span className="font-semibold">2026년 하한액</span>: 최저임금(10,320원) × 80% × 8시간 = <span className="font-bold">66,048원/일</span></p>
             </div>
           </InfoBox>
 
           <h3 className="font-bold text-sm text-gray-900 mb-2 mt-2">계산 예시</h3>
-          <div className="bg-cyan-50 rounded-lg p-3 text-xs space-y-1.5 text-gray-700 mb-4">
+          <div className="bg-brand-strong rounded-lg p-3 text-xs space-y-1.5 text-gray-700 mb-4">
             <p>• 퇴직 전 3개월 평균 월급: 200만원</p>
             <p>• 1일 평균임금: 200만원 ÷ 30일 ≈ 66,667원</p>
             <p>• 60% 적용: 66,667원 × 60% = 40,000원</p>
-            <p className="font-bold text-cyan-700 pt-1.5 border-t border-cyan-200">
+            <p className="font-bold text-brand-strong pt-1.5 border-t border-brand-200">
               → 40,000원/일 수급 (상한액 68,100원 미만이므로 그대로 적용)
             </p>
           </div>
 
-          <div className="bg-cyan-50 rounded-lg p-3 text-xs space-y-1.5 text-gray-700">
+          <div className="bg-brand-strong rounded-lg p-3 text-xs space-y-1.5 text-gray-700">
             <p className="font-bold text-gray-900">고임금 근로자 예시</p>
             <p>• 퇴직 전 월급: 350만원</p>
             <p>• 1일 평균임금: 350만원 ÷ 30일 ≈ 116,667원</p>
             <p>• 60% 적용: 116,667원 × 60% = 70,000원</p>
-            <p className="font-bold text-cyan-700 pt-1.5 border-t border-cyan-200">
+            <p className="font-bold text-brand-strong pt-1.5 border-t border-brand-200">
               → 상한액 68,100원 초과 → <span className="font-bold">68,100원/일</span> 적용
             </p>
           </div>
@@ -434,37 +434,37 @@ export default function UnemploymentGuide() {
           </p>
 
           <div className="space-y-2 mb-4">
-            <div className="bg-cyan-50 rounded-lg p-3 text-xs">
+            <div className="bg-brand-strong rounded-lg p-3 text-xs">
               <p className="font-bold text-gray-900 mb-2">30세 미만</p>
               <div className="grid grid-cols-3 gap-1 text-center">
-                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">1~3년</p><p className="font-bold text-cyan-700">90일</p></div>
-                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">3~5년</p><p className="font-bold text-cyan-700">90일</p></div>
-                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">5~10년</p><p className="font-bold text-cyan-700">120일</p></div>
+                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">1~3년</p><p className="font-bold text-brand-strong">90일</p></div>
+                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">3~5년</p><p className="font-bold text-brand-strong">90일</p></div>
+                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">5~10년</p><p className="font-bold text-brand-strong">120일</p></div>
               </div>
             </div>
-            <div className="bg-cyan-50 rounded-lg p-3 text-xs">
+            <div className="bg-brand-strong rounded-lg p-3 text-xs">
               <p className="font-bold text-gray-900 mb-2">30~50세 미만</p>
               <div className="grid grid-cols-4 gap-1 text-center">
-                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">1~3년</p><p className="font-bold text-cyan-700">90일</p></div>
-                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">3~5년</p><p className="font-bold text-cyan-700">120일</p></div>
-                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">5~10년</p><p className="font-bold text-cyan-700">150일</p></div>
-                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">10년~</p><p className="font-bold text-cyan-700">180일</p></div>
+                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">1~3년</p><p className="font-bold text-brand-strong">90일</p></div>
+                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">3~5년</p><p className="font-bold text-brand-strong">120일</p></div>
+                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">5~10년</p><p className="font-bold text-brand-strong">150일</p></div>
+                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">10년~</p><p className="font-bold text-brand-strong">180일</p></div>
               </div>
             </div>
-            <div className="bg-cyan-50 rounded-lg p-3 text-xs">
+            <div className="bg-brand-strong rounded-lg p-3 text-xs">
               <p className="font-bold text-gray-900 mb-2">50세 이상 / 장애인</p>
               <div className="grid grid-cols-4 gap-1 text-center">
-                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">1~3년</p><p className="font-bold text-cyan-700">120일</p></div>
-                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">3~5년</p><p className="font-bold text-cyan-700">150일</p></div>
-                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">5~10년</p><p className="font-bold text-cyan-700">210일</p></div>
-                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">10년~</p><p className="font-bold text-cyan-700">270일</p></div>
+                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">1~3년</p><p className="font-bold text-brand-strong">120일</p></div>
+                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">3~5년</p><p className="font-bold text-brand-strong">150일</p></div>
+                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">5~10년</p><p className="font-bold text-brand-strong">210일</p></div>
+                <div className="bg-white rounded p-1"><p className="text-[10px] text-gray-500">10년~</p><p className="font-bold text-brand-strong">270일</p></div>
               </div>
             </div>
           </div>
 
           <InfoBox title="최대 수급 총액 계산" variant="tip">
             <p className="text-xs">예) 30대, 가입 2년, 일급 40,000원 → 120일 수급</p>
-            <p className="text-xs font-bold text-green-700 mt-1">40,000원 × 120일 = 480만원</p>
+            <p className="text-xs font-bold text-brand-strong mt-1">40,000원 × 120일 = 480만원</p>
             <p className="text-xs mt-1 text-gray-600">※ 이 금액이 실제 생활비로 지원됩니다</p>
           </InfoBox>
         </motion.section>
@@ -483,27 +483,27 @@ export default function UnemploymentGuide() {
           <div className="space-y-3 mb-4">
             {[
               {
-                step: '1', color: 'bg-cyan-100 text-cyan-600',
+                step: '1', color: 'bg-brand-strong text-white',
                 title: '워크넷 구직등록',
                 desc: '워크넷(www.worknet.go.kr)에 먼저 구직자 등록을 완료하세요. 미등록 시 고용센터 방문이 불가합니다.',
               },
               {
-                step: '2', color: 'bg-cyan-100 text-cyan-600',
+                step: '2', color: 'bg-brand-strong text-white',
                 title: '이직확인서 요청',
                 desc: '마지막 사업주(쿠팡/CFS)에게 이직확인서 발급을 요청합니다. 거부 시 고용센터에 신청하면 대신 요청해 줍니다.',
               },
               {
-                step: '3', color: 'bg-cyan-100 text-cyan-600',
+                step: '3', color: 'bg-brand-strong text-white',
                 title: '고용센터 방문 신청',
                 desc: '주소지 관할 고용센터에 이직확인서 + 신분증 + 통장 사본을 가져가 신청합니다. 퇴직 후 12개월 이내여야 합니다.',
               },
               {
-                step: '4', color: 'bg-cyan-100 text-cyan-600',
+                step: '4', color: 'bg-brand-strong text-white',
                 title: '수급자격 결정 면접',
                 desc: '고용센터에서 수급자격 인정 여부를 심사합니다. 통상 1~2주 내 결정됩니다.',
               },
               {
-                step: '5', color: 'bg-cyan-100 text-cyan-600',
+                step: '5', color: 'bg-brand-strong text-white',
                 title: '구직활동 및 실업 인정',
                 desc: '매 4주마다 구직활동 증명을 제출하고 실업 인정을 받으면 수급일 7일 이내에 급여가 지급됩니다.',
               },
@@ -539,17 +539,17 @@ export default function UnemploymentGuide() {
             자주 퇴직을 반복하며 실업급여를 받으면 지급액이 줄어듭니다.
           </p>
           <div className="space-y-2 mb-4">
-            <div className="bg-amber-50 rounded-lg p-3 text-xs">
-              <p className="font-bold text-amber-800 mb-1">5년간 3회: 최대 10% 감액</p>
-              <p className="text-amber-700">5년 이내에 3번 이상 실업급여를 수급하면 세 번째부터 10%가 감액됩니다.</p>
+            <div className="bg-brand-bg rounded-lg p-3 text-xs">
+              <p className="font-bold text-brand-strong mb-1">5년간 3회: 최대 10% 감액</p>
+              <p className="text-brand-strong">5년 이내에 3번 이상 실업급여를 수급하면 세 번째부터 10%가 감액됩니다.</p>
             </div>
-            <div className="bg-amber-50 rounded-lg p-3 text-xs">
-              <p className="font-bold text-amber-800 mb-1">5년간 4회: 최대 25% 감액</p>
-              <p className="text-amber-700">네 번째 수급부터 25%가 감액됩니다.</p>
+            <div className="bg-brand-bg rounded-lg p-3 text-xs">
+              <p className="font-bold text-brand-strong mb-1">5년간 4회: 최대 25% 감액</p>
+              <p className="text-brand-strong">네 번째 수급부터 25%가 감액됩니다.</p>
             </div>
-            <div className="bg-amber-50 rounded-lg p-3 text-xs">
-              <p className="font-bold text-amber-800 mb-1">5년간 5회 이상: 최대 50% 감액</p>
-              <p className="text-amber-700">다섯 번째 이상 수급부터 최대 50%까지 감액됩니다.</p>
+            <div className="bg-brand-bg rounded-lg p-3 text-xs">
+              <p className="font-bold text-brand-strong mb-1">5년간 5회 이상: 최대 50% 감액</p>
+              <p className="text-brand-strong">다섯 번째 이상 수급부터 최대 50%까지 감액됩니다.</p>
             </div>
           </div>
           <InfoBox title="쿠팡 일용직은 해당 가능성 낮음" variant="tip">
@@ -582,7 +582,7 @@ export default function UnemploymentGuide() {
                 퇴직금(사용자 지급)과 실업급여(고용보험 지급)는 별개 제도입니다.
                 둘 다 조건을 충족하면 동시에 받을 수 있습니다.
                 퇴직금 계산 →{' '}
-                <Link to="/guide/severance" className="text-cyan-600 underline font-bold">퇴직금 가이드</Link>
+                <Link to="/guide/severance" className="text-brand-strong underline font-bold">퇴직금 가이드</Link>
               </p>
             </InfoBox>
             <InfoBox title="온라인 신청 가능 (고용24)" variant="default">
@@ -638,7 +638,7 @@ export default function UnemploymentGuide() {
         >
           <button
             onClick={() => navigate('/unemployment')}
-            className="w-full bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-xl py-4 font-bold text-base flex items-center justify-center gap-2 hover:shadow-lg transition-all mb-4"
+            className="w-full bg-gradient-to-r from-brand-strong to-brand-strong text-white rounded-xl py-4 font-bold text-base flex items-center justify-center gap-2 hover:shadow-lg transition-all mb-4"
           >
             <Calculator className="w-5 h-5" />
             지금 바로 CATCH로 실업급여 계산하기
