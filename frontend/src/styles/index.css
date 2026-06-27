@@ -187,13 +187,13 @@ h1, h2, h3, h4, h5, h6 {
   background-clip: text;
 }
 
+/* 2026 리디자인: 글래스모피즘 제거 → 솔리드 흰 카드 + 토큰(line/shadow-card).
+   GlassCard를 쓰는 모든 결과·리포트 화면에 일괄 반영 */
 .glass-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.03);
-  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid #E5E8EB;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 4px 16px rgba(16,24,40,0.06);
+  border-radius: 20px;
 }
 
 /* ─────────────────────────────────────────────
@@ -420,7 +420,8 @@ h1, h2, h3, h4, h5, h6 {
   flex-wrap: wrap;
 }
 .num-hero .num-digits {
-  color: var(--toss-blue);
+  /* 흰 배경 대비 AA(4.5↑) + ReportDetail 금액과 일관 — 진한 브랜드 블루 */
+  color: #1B64DA;
 }
 .num-hero .num-digits.ineligible {
   color: var(--toss-text);
@@ -429,8 +430,8 @@ h1, h2, h3, h4, h5, h6 {
   font-size: clamp(1rem, 2.5vw, 1.25rem);
   font-weight: 600;
   letter-spacing: -0.01em;
-  opacity: 0.7;
-  color: var(--toss-blue);
+  opacity: 0.8;
+  color: #1B64DA;
 }
 .num-hero .num-unit.ineligible {
   color: var(--toss-text-2);
@@ -689,19 +690,16 @@ input:focus {
   align-items: center;
   justify-content: space-between;
   padding: 18px 20px;
-  background: rgba(255,255,255,0.72);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  border: 0.5px solid rgba(255,255,255,0.5);
-  box-shadow: 0 20px 60px rgba(49,130,246,0.08), 0 4px 16px rgba(0,0,0,0.06);
-  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #E5E8EB;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 4px 16px rgba(16,24,40,0.06);
+  border-radius: 16px;
   cursor: pointer;
   transition: background 0.15s ease, box-shadow 0.15s ease;
   user-select: none;
 }
 .report-accordion-header:hover {
-  background: rgba(232,241,255,0.85);
-  box-shadow: 0 24px 64px rgba(49,130,246,0.13), 0 4px 16px rgba(0,0,0,0.07);
+  background: #F7F9FC;
 }
 .report-accordion-header.open {
   border-radius: 20px 20px 0 0;
@@ -723,13 +721,11 @@ input:focus {
               opacity 0.3s ease;
   max-height: 0;
   opacity: 0;
-  background: rgba(255,255,255,0.72);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  border: 0.5px solid rgba(255,255,255,0.5);
+  background: #ffffff;
+  border: 1px solid #E5E8EB;
   border-top: none;
-  border-radius: 0 0 20px 20px;
-  box-shadow: 0 20px 60px rgba(49,130,246,0.08), 0 4px 16px rgba(0,0,0,0.06);
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 4px 16px rgba(16,24,40,0.06);
 }
 .report-accordion-body.open {
   max-height: 9999px;
@@ -773,18 +769,18 @@ input:focus {
   background: rgba(49,130,246,0.05);
   border: 1px solid rgba(49,130,246,0.15);
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 0.83rem;
+  font-size: 0.92rem;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
-  line-height: 1.9;
+  line-height: 1.95;
   color: var(--toss-text);
 }
 .formula-box .formula-result {
   font-weight: 800;
   color: var(--toss-blue);
-  font-size: 0.88rem;
+  font-size: 0.98rem;
   border-top: 1px solid rgba(49,130,246,0.2);
   padding-top: 8px;
   margin-top: 6px;
@@ -847,7 +843,7 @@ input:focus {
   border: 1px solid rgba(107, 114, 128, 0.15);
   border-radius: 14px;
   padding: 18px 20px;
-  font-size: 0.875rem;
+  font-size: 0.95rem;
   line-height: 1.85;
   color: #374151;
   white-space: pre-line;

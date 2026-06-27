@@ -29,6 +29,12 @@
 - **로컬 검증 레시피**(MyPage 로그인 우회): Playwright localStorage `sb-hmjxrqhcwjyfkvlcejfc-auth-token` 가짜세션 + profiles 모킹(onboarding_completed:true)
 - **다음**: 공지사항(/notices) — 마지막 주요 탭. 그 후 계산 플로우/가이드/랜딩
 
+### 세션 15-8 — 2026-06-28 (디자인 개편: 퇴직금 결과+리포트, 더블리뷰 PASS)
+- index.css 글래스 클래스 솔리드화(.glass-card/.report-accordion-header/body) + 폰트↑(.formula-box/.ai-analysis-box) + 금액색 .num-digits→#1B64DA → **GlassCall/리포트 쓰는 모든 결과 화면 전파**
+- ResultSeverance: 참고안내 솔리드(로직 불변). ReportDetail: Container narrow·헤더 top-14·토큰 셀·금액 brand-strong·캡션 ink-700
+- 더블리뷰: A WARN(셀 캡션 ink-600 대비)+B minor(금액색 불일치·회사명줄) → ink-700/금액 brand-strong/truncate 수정. PASS. 기록 docs/dual_review/redesign_result_report.md
+- 로컬 체크포인트 커밋(2번째). **다음**: 실업급여 플로우(/unemployment)+결과 → 주휴 → 연차 → 혜택
+
 ### 세션 15-7 — 2026-06-28 (디자인 개편: 퇴직금 플로우 /severance 위저드, 더블리뷰 PASS)
 - **공유 CalcLayout.tsx 토큰화 → 4계산기 플로우에 일괄 반영**: ACCENT 무지개(blue/sky/amber/emerald)→brand/accent(blue·sky→브랜드블루/amber·emerald→그린, 계산기 허브 그룹 일치), 글래스→솔리드 흰카드, CalcHeader top-14, 폰트↑
 - SeveranceFlow: divider/SEO폭만(계산 로직 28일블록 불변). PdfSourceSelector: 토큰화+저장팝업 portal. GuestGate: portal+pb-[88px](BottomNav 가림 해소)

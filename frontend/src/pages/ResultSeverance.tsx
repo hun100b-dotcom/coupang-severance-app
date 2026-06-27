@@ -656,14 +656,14 @@ export default function ResultSeverance({ result, resultType, company, onReset }
         {/* ── 참고 안내 ────────────────────────────────── */}
         <div
           style={{
-            padding: '12px 16px',
-            background: 'rgba(255,255,255,0.5)',
+            padding: '14px 16px',
+            background: '#F7F9FC',
+            border: '1px solid #E5E8EB',
             borderRadius: 12,
             marginBottom: 20,
-            fontSize: '0.78rem',
-            color: 'var(--toss-text-3)',
+            fontSize: '0.85rem',
+            color: 'var(--toss-text-2)',
             lineHeight: 1.6,
-            backdropFilter: 'blur(10px)',
           }}
         >
           ℹ️ 이 결과는 참고용이에요. 정확한 퇴직금은 회사 급여 기록과 노무사 상담을 통해 확인해 주세요.
