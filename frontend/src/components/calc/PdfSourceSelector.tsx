@@ -1,6 +1,7 @@
 // PDF 소스 선택기 — "저장된 PDF에서 선택" / "새로 업로드" + 저장 팝업
 // 기존 onPdfSelect(file: File) 인터페이스 그대로 유지
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, Upload, Loader2, X, Check, FolderOpen } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
@@ -10,12 +11,12 @@ import {
 } from '../../lib/pdfStorage'
 import type { SavedPdf } from '../../types/supabase'
 
-// ── accent 색상 맵 (Tailwind JIT 호환) ──
+// ── accent 색상 맵 — 계산기 허브 그룹과 일치(blue&sky→브랜드 블루 / amber&emerald→그린) ──
 const ACCENT_CLASSES = {
-  blue:    { bg: 'bg-blue-500', text: 'text-blue-500', light: 'bg-blue-50', border: 'border-blue-200' },
-  sky:     { bg: 'bg-sky-500', text: 'text-sky-500', light: 'bg-sky-50', border: 'border-sky-200' },
-  amber:   { bg: 'bg-amber-500', text: 'text-amber-500', light: 'bg-amber-50', border: 'border-amber-200' },
-  emerald: { bg: 'bg-emerald-500', text: 'text-emerald-500', light: 'bg-emerald-50', border: 'border-emerald-200' },
+  blue:    { bg: 'bg-brand', text: 'text-brand', light: 'bg-brand-bg', border: 'border-brand-200' },
+  sky:     { bg: 'bg-brand', text: 'text-brand', light: 'bg-brand-bg', border: 'border-brand-200' },
+  amber:   { bg: 'bg-accent', text: 'text-[#047857]', light: 'bg-accent-bg', border: 'border-accent/30' },
+  emerald: { bg: 'bg-accent', text: 'text-[#047857]', light: 'bg-accent-bg', border: 'border-accent/30' },
 } as const
 
 interface PdfSourceSelectorProps {
@@ -151,7 +152,7 @@ export default function PdfSourceSelector({
           className={`flex-1 py-2.5 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-1.5 ${
             tab === 'saved'
               ? `${a.bg} text-white shadow-md`
-              : 'bg-white/50 text-[#8b95a1] border border-white/40'
+              : 'bg-white text-ink-600 border border-line'
           }`}>
           <FolderOpen className="w-3.5 h-3.5" />
           저장된 PDF {savedPdfs.length > 0 && `(${savedPdfs.length})`}
@@ -160,7 +161,7 @@ export default function PdfSourceSelector({
           className={`flex-1 py-2.5 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-1.5 ${
             tab === 'upload'
               ? `${a.bg} text-white shadow-md`
-              : 'bg-white/50 text-[#8b95a1] border border-white/40'
+              : 'bg-white text-ink-600 border border-line'
           }`}>
           <Upload className="w-3.5 h-3.5" />
           새로 업로드
@@ -190,7 +191,7 @@ export default function PdfSourceSelector({
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
                     loadingDownload === pdf.id
                       ? `${a.light} ${a.border} border`
-                      : `bg-white/50 border border-white/40 hover:bg-white/80 active:scale-[0.98]`
+                      : `bg-white border border-line hover:bg-[#F7F9FC] active:scale-[0.98]`
                   }`}>
                   <FileText className={`w-5 h-5 shrink-0 ${a.text}`} />
                   <div className="flex-1 min-w-0">
@@ -248,12 +249,12 @@ export default function PdfSourceSelector({
 
       {/* ─── 다운로드 실패 에러 메시지 ─── */}
       {downloadError && (
-        <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-red-50 border border-red-100">
-          <span className="text-red-500 text-[13px] leading-snug whitespace-pre-line">{downloadError}</span>
+        <div className="flex items-start gap-2 px-4 py-3 rounded-lg bg-danger/[0.08] border border-danger/20">
+          <span className="text-danger text-[13px] leading-snug whitespace-pre-line">{downloadError}</span>
           <button
             type="button"
             onClick={() => setDownloadError(null)}
-            className="shrink-0 text-red-300 hover:text-red-500 ml-auto"
+            className="shrink-0 text-danger/50 hover:text-danger ml-auto"
             aria-label="에러 닫기"
           >
             <X className="w-4 h-4" />
@@ -261,37 +262,38 @@ export default function PdfSourceSelector({
         </div>
       )}
 
-      {/* ─── PDF 저장 팝업 (바텀시트) ─── */}
+      {/* ─── PDF 저장 팝업 (바텀시트) — portal로 body 렌더(BottomNav 위 표시) ─── */}
+      {createPortal(
       <AnimatePresence>
         {showSavePopup && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm sm:p-4"
             onClick={() => !savingPdf && setShowSavePopup(false)}
           >
             <motion.div
-              initial={{ y: 200 }}
-              animate={{ y: 0 }}
-              exit={{ y: 200 }}
+              initial={{ y: 200, opacity: 0.6 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 200, opacity: 0.6 }}
               transition={{ type: 'spring', damping: 25 }}
-              className="w-full max-w-[460px] bg-white rounded-t-[24px] p-6 pb-8 shadow-2xl"
+              className="w-full max-w-[460px] bg-white rounded-t-xl sm:rounded-xl p-6 pb-8 shadow-float"
               onClick={e => e.stopPropagation()}
             >
               {/* 핸들 바 */}
-              <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+              <div className="w-10 h-1 bg-line rounded-full mx-auto mb-5 sm:hidden" />
 
               {saveResult ? (
                 // 결과 표시
                 <div className="text-center py-2">
-                  <div className={`w-12 h-12 rounded-full ${saveResult.ok ? 'bg-emerald-100' : 'bg-red-100'} flex items-center justify-center mx-auto mb-3`}>
+                  <div className={`w-12 h-12 rounded-full ${saveResult.ok ? 'bg-accent-bg' : 'bg-danger/10'} flex items-center justify-center mx-auto mb-3`}>
                     {saveResult.ok
-                      ? <Check className="w-6 h-6 text-emerald-600" />
-                      : <X className="w-6 h-6 text-red-600" />
+                      ? <Check className="w-6 h-6 text-[#047857]" />
+                      : <X className="w-6 h-6 text-danger" />
                     }
                   </div>
-                  <p className="text-[15px] font-bold text-[#191f28]">{saveResult.msg}</p>
+                  <p className="text-[15px] font-bold text-ink-900">{saveResult.msg}</p>
                 </div>
               ) : (
                 // 저장 확인
@@ -310,7 +312,7 @@ export default function PdfSourceSelector({
                       </p>
                     )}
                     {savedPdfs.length >= MAX_PDFS && (
-                      <p className="text-[12px] text-red-500 mt-2 font-semibold">
+                      <p className="text-[12px] text-danger mt-2 font-semibold">
                         저장 공간이 꽉 찼어요 ({MAX_PDFS}개). 마이페이지에서 기존 PDF를 삭제해 주세요.
                       </p>
                     )}
@@ -318,7 +320,7 @@ export default function PdfSourceSelector({
                   <div className="flex gap-3">
                     <button type="button"
                       onClick={() => setShowSavePopup(false)}
-                      className="flex-1 py-3.5 rounded-2xl text-[14px] font-semibold text-[#8b95a1] bg-gray-100 hover:bg-gray-200 transition-all active:scale-[0.98]">
+                      className="flex-1 min-h-[48px] rounded-lg text-[14px] font-semibold text-ink-600 bg-[#F2F4F6] hover:bg-line transition-all active:scale-[0.98]">
                       괜찮아요
                     </button>
                     <button type="button"
@@ -338,7 +340,8 @@ export default function PdfSourceSelector({
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body)}
     </div>
   )
 }

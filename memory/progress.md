@@ -21,6 +21,131 @@
 
 ## ✅ 완료 작업 이력
 
+### 세션 15-4 — 2026-06-28 (디자인 개편: 마이페이지 /mypage 전체 완료, 더블리뷰 PASS)
+- 셸 + 5개 서브탭(홈/즐겨찾기/지원현황/스케줄/설정) 전부 무지개 제거·토큰화 완료
+- 셸: 중복 헤더(뒤로/로그아웃) 제거, 세그먼트 pill 탭바(라벨 상시표시+aria-label), 반응형 max-w-760
+- 서비스 색코딩 violet/emerald/amber → 브랜드 블루 통일(SavedResultsList/QuickActions/SavedResultDetail), 스케줄 보라 그라데→블루, 즐겨찾기 노랑별→블루. 지원현황 STATUS_CONFIG는 의미색이라 유지(알림토스트 보라만 블루로)
+- 더블리뷰: A·B 모두 조건부 PASS → 동일 MAJOR(`xs:inline` 죽은클래스로 375/320 탭라벨 숨김+aria 누락) 수렴 → 라벨 상시표시+aria-label+tailwind xs추가로 수정, 알림토스트 보라·즐겨찾기⭐ 정리 → 검증 PASS. 기록 `docs/dual_review/redesign_mypage.md`
+- **로컬 검증 레시피**(MyPage 로그인 우회): Playwright localStorage `sb-hmjxrqhcwjyfkvlcejfc-auth-token` 가짜세션 + profiles 모킹(onboarding_completed:true)
+- **다음**: 공지사항(/notices) — 마지막 주요 탭. 그 후 계산 플로우/가이드/랜딩
+
+### 세션 15-7 — 2026-06-28 (디자인 개편: 퇴직금 플로우 /severance 위저드, 더블리뷰 PASS)
+- **공유 CalcLayout.tsx 토큰화 → 4계산기 플로우에 일괄 반영**: ACCENT 무지개(blue/sky/amber/emerald)→brand/accent(blue·sky→브랜드블루/amber·emerald→그린, 계산기 허브 그룹 일치), 글래스→솔리드 흰카드, CalcHeader top-14, 폰트↑
+- SeveranceFlow: divider/SEO폭만(계산 로직 28일블록 불변). PdfSourceSelector: 토큰화+저장팝업 portal. GuestGate: portal+pb-[88px](BottomNav 가림 해소)
+- 더블리뷰: A WARN(선택버튼 흰텍스트 on #3182F6=3.71) → 흰텍스트 버튼 채움색 진한색(브랜드-strong/#047857)으로 수정(5.41). B PASS+minor(게이트모달 가림)→portal 수정. 검증 PASS. 기록 docs/dual_review/redesign_severance_flow.md
+- **CalcLayout 공유라 실업/주휴/연차 플로우도 자동 개선됨** → 각 플로우 리뷰 시 재확인
+- **다음**: 퇴직금 결과(ResultSeverance)+리포트(/report/:id)
+
+### 세션 15-6 — 2026-06-28 (종훈님 우선순위 피드백 4건 처리)
+1. **전역 폰트 상향**: 코드가 토큰 아닌 임의 px(text-[13px])를 씀 → index.css에서 .text-[10~17px]·text-xs·text-sm를 +1.5px override(!important, @tailwind utilities 뒤). 전 화면 반영. 11→12.5/12→13.5/13→14.5/14→15.5px
+2. **NoticesBanner**: mx-3 my-2 자체여백 제거(홈 카드와 정렬) + 인디고 그라데→브랜드 블루+좌측 액센트바, 텍스트 ink-800 semibold
+3. **계산기 카드 구분**: 4서비스를 2그룹 섹션(퇴사후정산=블루/재직중수당=그린)으로 분리 + 그룹별 상단 액센트보더·큰 아이콘(지폐/방패/시계달력/야자수)·라벨 19px·CTA 그룹색. 블루/그린 2색만(무지개 회피)
+4. **채용 검색창 겹침**: 원인=index.css 전역 input[type=text]{padding:14px 16px}(특이도 0,1,1)가 pl-10 덮음 → !pl-12 강제(패딩 48px, 아이콘끝 34px, 14px 간격)
+- 검증: tsc 0, 375px 오버플로 0(홈/계산기), 검색 패딩 실측 48px
+- **다음(보류중)**: 마이페이지는 종훈님 별도 지시 후 / 공지·가이드·랜딩은 그 다음
+
+### 세션 15-5 — 2026-06-28 (디자인 개편: 공지사항 /notices + 모달, 더블리뷰 PASS)
+- `NoticesPage.tsx` 전면 재구성 — max-w-[500px]→Container 반응형(모바일1/데스크톱2열), 하드코딩색→토큰, 모달 createPortal(body)+flex 중앙정렬
+- 더블리뷰: A FAIL(데스크톱 모달 Framer transform이 Tailwind translate 덮어써 우측 치우침)+WARN(날짜 대비) / B BLOCKER×2(카드 min-w-0 누락 그리드폭발 + 모달 break-keep 무공백 미줄바꿈)
+- 2차 수정: flex 중앙정렬 패턴, 카드 min-w-0+break-words, 모달 min-w-0+break-words, 날짜 ink-600 → 측정검증 PASS(모달 cx=640 정중앙, 카드 트랙 288px, 오버플로 0)
+- **교훈 재확인**: grid/flex 아이템 min-w-0+break-words는 모든 카드/모달 필수. Framer Motion+Tailwind translate 중앙정렬 충돌은 flex 정렬로 회피
+- ✅ **주요 4탭(계산기/채용/마이페이지/공지) 디자인 개편 전부 완료**. 다음: 계산 플로우(퇴직금/실업급여/주휴/연차/혜택)+결과 → 가이드 → 랜딩
+
+### 세션 15-4b (이전 중간기록 — 무시)
+- **셸 완료**: `MyPage.tsx` — 중복 헤더(뒤로가기/로그아웃) 제거(TopNav가 제공), 세그먼트 pill 탭바(토큰), 반응형 컨테이너(max-w-760). 모든 로직/훅 보존
+- **홈 탭 완료**: SavedResultsList(서비스별 violet/emerald/amber → 브랜드 블루 통일), QuickActions(동일), ProfileCard·SupportSection 외곽 토큰화(rounded-xl/shadow-card/border-line)
+- **로컬 검증 장벽 & 해법**: MyPage는 비로그인 시 /login 리다이렉트 → 게스트로 못 봄. OAuth는 운영도메인. **해법**: Playwright에서 가짜 Supabase 세션(localStorage `sb-hmjxrqhcwjyfkvlcejfc-auth-token`) + profiles 쿼리 모킹(onboarding_completed:true) 주입 → 렌더 확인. (운영코드 무수정)
+- **남은 4 서브탭**: 즐겨찾기(MyFavoritesTab)·지원현황(MyApplicationsTab 989줄, STATUS_CONFIG 16 hex)·스케줄(MyScheduleTab, 그라데이션 #3182f6→#6d28d9 보라)·설정(MySettingsTab) + SavedResultDetail/InquiryModal 모달. 대부분 단순 색 토큰 스왑, Applications만 구조적
+- **다음**: 나머지 4 서브탭 무지개 제거 → mypage 더블리뷰 → 보고. 그 후 공지사항(/notices)
+
+### 세션 15-3 — 2026-06-28 (디자인 개편: 채용정보 /jobs + 상세 모달, 더블리뷰 PASS)
+- `src/pages/JobsPage.tsx` 전면 재구성 — 로직(즐겨찾기/지원플로우/Realtime/토스트/?focus) 100% 보존, 스타일/구조만
+- 무지개 제거(히어로 purple·카피 sky/violet·CTA indigo·즐겨찾기 yellow-400·모달 teal) → 블루+그린(채용)+회색+의미색(긴급 danger/warning)
+- 반응형: 카드 그리드 모바일1/sm2/lg3열, 상세 모달=모바일 바텀시트/데스크톱 중앙 다이얼로그
+- 텍스트 잘림 수정: 카드 메타 세로스택 truncate, 모달 값 줄바꿈
+- **모달 createPortal(body)** — 루트 z-[1] 컨텍스트 탈출(기존부터 BottomNav가 모달 덮던 버그 해결)
+- 더블리뷰: 1차 A PASS(WARN 2)/B FAIL(BLOCKER min-w-0 가로오버플로 + MAJOR 모달이름잘림) → 2차 수정(카드 min-w-0, 모달 break-words, 닫기 44px, 의미색 대비↑) → 최종확인 PASS. 기록 `docs/dual_review/redesign_jobs.md`
+- **교훈**: grid/flex 아이템 `min-w-0` 누락 시 truncate 무력화 → 홈·채용 모두 B가 적출한 동일 패턴. 이후 카드 그리드엔 항상 min-w-0
+- **다음 화면**: 마이페이지(/mypage) + 서브탭 — 보고 후 이어감
+
+### 세션 15-2 — 2026-06-27 (디자인 개편: 계산기 허브 /calculator, 더블리뷰 PASS)
+- `src/pages/CalculatorPage.tsx` 전면 재구성 — 무지개 그라데이션(블루·시안·그린·앰버+노랑) 제거 → **블루+회색만**
+- 위계: 대표 퇴직금=블루 그라데이션 피처 카드(풀폭) + 나머지 3개(실업급여/주휴/연차)=흰 카드 반응형 그리드(모바일1/sm2/lg3열). Phase 0 Container/Card/Button 재사용
+- 카드 높이 통일(items-stretch+h-full+CTA mt-auto → 302px 균일), break-keep, tabular-nums
+- 더블리뷰: A PASS(조건부, 피처 수치라벨 white/80→white/90 수정) / B PASS(이슈 0). 기록 `docs/dual_review/redesign_calculator.md`
+- **다음 화면**: 채용정보(/jobs) + 상세 모달(텍스트 잘림 수정) — 보고 후 이어감
+- 게스트 진입(로컬): `/login` → "비로그인으로 진행하기" 버튼 → /home. (랜딩 "지금 시작하기"는 게스트 미설정 버그 — 별도 결정 대기)
+
+### 세션 15 — 2026-06-27 (디자인 개편 Phase 0 + 홈 "B-fixed", 더블리뷰 PASS)
+- **브랜치**: `redesign/web-layout` (백업 태그 `pre-redesign-2026-06-27`) · **main 무수정 · Vercel 푸시 보류(로컬 확인 단계)**
+- **방향**: B(프리미엄 비주얼)+A(섹션 구분) = "B-fixed" · 색 = 블루 메인+그린(채용)+회색 중립, 무지개 금지
+- **Phase 0(기반)**:
+  - `tailwind.config.js` 디자인 토큰(brand/accent/ink/line/page, radius sm~pill, shadow card·float). 기존 `toss.*` 하위호환 유지
+  - `index.css` AnimatedBackground 톤다운(무지개 5블롭 → 블루 단색 2블롭 + 거의 흰색 베이스)
+  - 반응형: `components/ui/Container`(모바일 풀폭 / 데스크톱 1080 다단)
+  - 내비 분기: `TopNav` 반응형(md+ 가로내비 홈·채용·계산기·가이드·공지+고객센터+로그인 / 모바일 컴팩트), `BottomNav` `md:hidden`, `Layout` 데스크톱 하단 패딩 축소
+  - 공통 컴포넌트 신설: `ui/{Container,Card,Badge,Chip,SectionHeader,Button}`
+- **홈(/home)**: B-fixed 전면 재구성 — 히어로(좌 카피+CTA / 우 플로팅 결과카드), 통계 스트립, 섹션 구분(채용=그린/계산기/가이드), 색 통일. **Layout 밖 독립 라우트라 Home 내부에서 TopNav/BottomNav 직접 렌더**(App.tsx 라우팅/가드 무수정)
+- **더블리뷰(월드클래스 기준)**: 1차 B가 MAJOR(빈 채용 데이터 데드 코드) 적출 → 수정. 2차 A가 768 CTA 래핑·터치타겟·명도대비 FAIL → 수정. 최종 확인 **PASS**(tsc/build 0에러, AA 대비 충족, 무지개 0). 기록: `docs/dual_review/redesign_phase0_home.md`, 기획서: `tasks/plans/redesign_phase0_home.md`
+- **다음 화면**: 계산기 허브(/calculator) — 별도 지시 대기
+- **남은 개선**: 녹색 CTA 흰 텍스트 대비, prefers-reduced-motion, TopNav 공통 컴포넌트 폴리시
+
+### 세션 14 — 2026-06-10 (P3 핫픽스: legal_variables 연도 필터)
+
+**문제**: `legal_variables` 테이블에 동일 `key`에 2025/2026 두 행 존재 → `.single()` "2행 반환" 에러 → fallback(10320) 강제 사용
+
+**수정**: `frontend/src/lib/legalVariables.ts`
+- `getLegalVariable()`: `.eq('effective_year', CURRENT_YEAR)` 추가 → `.single()` 1행 보장
+- `preloadLegalVariables()`: 동일 연도 필터 적용 → 과거 연도 행 캐시 덮어쓰기 방지
+- 캐시 키: `key` → `key_연도` 형식으로 변경 (연도 전환 시 자동 갱신)
+- `CURRENT_YEAR = new Date().getFullYear()` 동적 산출 (매년 자동 적용)
+
+**검증**
+
+| Step | 항목 | 결과 |
+|------|------|------|
+| 1 | git push `01d8133..48baa0b` | ✅ |
+| 2 | Vercel READY (페이지 정상 로드) | ✅ 배포 진행 중 |
+| 3 | Render /health 200 | ✅ |
+| 4 | PostgREST `?key=eq.min_hourly_wage&effective_year=eq.2026` | ✅ 1행(10320) 반환 |
+| 5 | WeeklyAllowance 페이지 console error | ✅ 0건 |
+| 6 | Vercel 새 번들(`index-C_PGI-vE.js`) 배포 | 🔄 진행 중 (빌드 시간 소요) |
+
+**버그 재현 확인**: 연도 필터 없는 쿼리 → 2행 반환 실측 (`min_hourly_wage`: 2025=10030, 2026=10320)
+
+**커밋**: `48baa0b` fix(legal): legal_variables 쿼리에 연도 필터 추가
+
+---
+
+## ✅ 완료 작업 이력
+
+### 세션 13 — 2026-06-10 (mcp.json 키 동기화 + 6-Step 최종 검증)
+
+**핵심 발견**: 직전 세션(91턴)이 "모든 키 401"로 오진. 실제 원인은 `~/.claude/mcp.json`의 `SUPABASE_SERVICE_ROLE_KEY` 값이 `backend/.env`와 달랐던 것.
+
+**수행 작업**
+
+| 항목 | 상태 |
+|------|------|
+| `mcp.json` service_role 키 → `backend/.env` 값으로 동기화 | ✅ PowerShell 직접 실행 (끝자리 `...1L9E`) |
+| frontend/.env.local / backend/.env | ✅ 변경 불필요 (기존 키 정상) |
+| Render / Vercel 환경변수 | ✅ 변경 불필요 (기존 키 정상) |
+
+**6-Step 검증 결과 (2026-06-10)**
+
+| Step | 항목 | 결과 |
+|------|------|------|
+| 1 | git status + .gitignore | ✅ `.env`/`.env.local` 보호, 코드 변경 없음 |
+| 2 | Vercel 200 (0.04s) | ✅ |
+| 3 | Render /health 200 (0.13s) | ✅ |
+| 4 | legal_variables 4행 반환 | ✅ 최저시급 10,320(2026)/10,030(2025), 실업급여 68,100/66,000 |
+| 5 | service_role REST 200 (MCP 동등검증) | ✅ (MCP는 다음 세션 재시작 시 새 키 적용) |
+| 6 | 라이브 UI `/weekly-allowance` 접근 | ✅ 계산기 1/5 스텝 렌더링 정상 |
+
+**부가 메모**: `legalVariables.ts:38` `.single()` 쿼리에 연도 필터 없어 항상 fallback(10320) 사용 중. 기능 영향 없음. spawn_task 등록.
+
+---
+
 ### 세션 12 — 2026-06-10 (전수 검사 6영역 재점검)
 
 **작업 요약**: Phase A~G 전 영역 전수 검사 수행. 세션 11에서 이미 핫픽스 완료된 항목들 확인.

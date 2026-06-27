@@ -117,12 +117,12 @@ export default function MyFavoritesTab({ userId }: Props) {
   if (favorites.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-        <div className="w-16 h-16 rounded-full bg-yellow-50 flex items-center justify-center">
-          <Star className="w-8 h-8 text-yellow-300" />
+        <div className="w-16 h-16 rounded-full bg-brand-bg flex items-center justify-center">
+          <Star className="w-8 h-8 text-brand" />
         </div>
         <p className="text-[15px] font-bold text-[#4e5968]">아직 저장한 공고가 없어요</p>
         <p className="text-[13px] text-[#8b95a1] leading-relaxed">
-          채용정보 탭에서 ⭐을 눌러<br />관심 회사나 센터를 저장하세요
+          채용정보 탭에서 별 버튼을 눌러<br />관심 회사나 센터를 저장하세요
         </p>
       </div>
     )
@@ -139,9 +139,9 @@ export default function MyFavoritesTab({ userId }: Props) {
         <div className="flex flex-wrap gap-2">
           {favorites.map(fav => (
             <div key={fav.id}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-yellow-50 border border-yellow-200">
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-bg border border-brand-200">
               {/* 즐겨찾기 타입 라벨 */}
-              <span className="text-[10px] text-yellow-600 font-bold">
+              <span className="text-[10px] text-brand-strong font-bold">
                 {fav.favorite_type === 'company' ? '회사' : '센터'}
               </span>
               <span className="text-[13px] font-semibold text-[#4e5968]">
@@ -153,7 +153,7 @@ export default function MyFavoritesTab({ userId }: Props) {
               {/* 즐겨찾기 해제 버튼 */}
               <button
                 onClick={() => handleUnfavorite(fav.favorite_type, fav.favorite_value)}
-                className="ml-0.5 text-yellow-400 hover:text-red-400 transition-colors"
+                className="ml-0.5 text-brand hover:text-red-400 transition-colors"
                 title="즐겨찾기 해제"
               >
                 <Star className="w-3.5 h-3.5 fill-current" />
@@ -186,8 +186,8 @@ export default function MyFavoritesTab({ userId }: Props) {
                 {/* 이미 즐겨찾기 된 항목 — 별 클릭으로 해제 */}
                 <button
                   onClick={() => handleUnfavorite('company', job.company_name)}
-                  className="p-1.5 rounded-xl hover:bg-yellow-50 transition-colors shrink-0">
-                  <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                  className="p-1.5 rounded-xl hover:bg-brand-bg transition-colors shrink-0">
+                  <Star className="w-5 h-5 fill-brand text-brand" />
                 </button>
               </div>
 

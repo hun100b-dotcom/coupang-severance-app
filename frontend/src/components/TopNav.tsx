@@ -1,15 +1,26 @@
-// 상단 네비게이션 바 컴포넌트
-// - 좌측: CATCH 텍스트 로고 (클릭 시 /home으로 이동)
-// - 우측: 로그인 상태에 따라 "로그인" 버튼 또는 프로필 아바타 + 드롭다운
+// 상단 네비게이션 바 — 반응형 (2026 리디자인)
+// - 데스크톱(md+): 가로 내비 — 로고 · 홈/채용/계산기/가이드/공지 · 고객센터 · 마이/로그인
+// - 모바일(<md): 컴팩트 — 로고 + 고객센터 + 로그인/프로필 (하단 BottomNav가 메인 내비 역할)
 
 import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, ChevronDown, LogOut, LayoutDashboard, Settings } from 'lucide-react'
+import { User, ChevronDown, LogOut, LayoutDashboard, Settings, Headphones } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+
+// ── 데스크톱 가로 내비 링크 정의 ──
+const NAV_LINKS = [
+  { label: '홈',     path: '/home',       match: (p: string) => p === '/home' || p === '/' },
+  { label: '채용',   path: '/jobs',       match: (p: string) => p === '/jobs' },
+  { label: '계산기', path: '/calculator', match: (p: string) =>
+      ['/calculator', '/severance', '/unemployment', '/weekly-allowance', '/annual-leave'].includes(p) },
+  { label: '가이드', path: '/guide',      match: (p: string) => p.startsWith('/guide') },
+  { label: '공지',   path: '/notices',    match: (p: string) => p === '/notices' },
+]
 
 export default function TopNav() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, isLoggedIn, loading, logout } = useAuth()
 
   // 드롭다운 열림/닫힘 상태
@@ -34,37 +45,32 @@ export default function TopNav() {
     navigate('/home')
   }
 
-  // 이니셜 아바타 배경색 (이름 첫 글자 기준으로 일관된 색상 계산)
+  // 이니셜 아바타 배경색 (이름 첫 글자 기준 — 블루/그린/중립 계열만 사용)
   function getAvatarColor(name: string) {
-    const colors = [
-      'bg-blue-500', 'bg-violet-500', 'bg-emerald-500',
-      'bg-rose-500', 'bg-amber-500', 'bg-cyan-500',
-    ]
+    const colors = ['bg-brand', 'bg-accent', 'bg-ink-700']
     const idx = name.charCodeAt(0) % colors.length
     return colors[idx]
   }
 
-  // 이름에서 이니셜 추출 (한국어는 첫 글자, 영어는 이니셜)
   function getInitial(name: string) {
     return name.charAt(0).toUpperCase()
   }
 
   return (
-    // 상단 고정 바: 흰 배경 + 하단 얇은 보더 + z-50으로 항상 최상위
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
-      <div className="max-w-[460px] mx-auto px-4 h-14 flex items-center justify-between">
+    // 상단 고정 바: 흰 배경 + 토큰 보더 + z-50
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-line">
+      <div className="w-full max-w-[1080px] mx-auto px-4 md:px-6 h-14 flex items-center justify-between gap-4">
 
-        {/* ── 좌측: CATCH 텍스트 로고 ── */}
+        {/* ── 좌측: CATCH 로고 ── */}
         <button
           onClick={() => navigate('/home')}
-          className="flex items-center gap-0.5 select-none"
+          className="flex items-center gap-0.5 select-none flex-shrink-0"
           aria-label="CATCH 홈으로 이동"
         >
-          {/* 브랜드 텍스트: 굵은 폰트 + 파란색 강조 + 살짝 기울여 개성 부여 */}
           <span
             className="text-[22px] font-black tracking-tight leading-none"
             style={{
-              background: 'linear-gradient(135deg, #3182F6 0%, #1a56d6 100%)',
+              background: 'linear-gradient(135deg, #3182F6 0%, #1B64DA 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -72,53 +78,74 @@ export default function TopNav() {
           >
             CATCH
           </span>
-          {/* 브랜드 포인트 점: 로고 옆에 파란 소형 점 */}
-          <span
-            className="w-1.5 h-1.5 rounded-full mb-3 ml-0.5 flex-shrink-0"
-            style={{ background: '#3182F6' }}
-          />
+          <span className="w-1.5 h-1.5 rounded-full mb-3 ml-0.5 flex-shrink-0 bg-brand" />
         </button>
 
-        {/* ── 우측: 인증 상태에 따른 UI ── */}
-        <div className="flex items-center">
+        {/* ── 중앙: 데스크톱 전용 가로 내비 (모바일 숨김) ── */}
+        <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
+          {NAV_LINKS.map(link => {
+            const active = link.match(location.pathname)
+            return (
+              <button
+                key={link.path}
+                onClick={() => navigate(link.path)}
+                className={`px-3.5 h-9 rounded-md text-[15px] font-bold transition-colors ${
+                  active ? 'text-brand bg-brand-bg' : 'text-ink-700 hover:text-ink-900 hover:bg-[#F2F4F6]'
+                }`}
+                aria-current={active ? 'page' : undefined}
+              >
+                {link.label}
+              </button>
+            )
+          })}
+        </nav>
 
-          {/* 초기 로딩 중: 스켈레톤으로 레이아웃 튐 방지 */}
+        {/* ── 우측: 고객센터(데스크톱) + 인증 상태 ── */}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+
+          {/* 고객센터 — 데스크톱에서만 텍스트 노출 */}
+          <button
+            onClick={() => navigate('/inquiry')}
+            className="hidden md:flex items-center gap-1.5 px-3 h-9 rounded-md text-[14px] font-semibold text-ink-700 hover:bg-[#F2F4F6] transition-colors"
+            aria-label="고객센터"
+          >
+            <Headphones size={16} />
+            고객센터
+          </button>
+
+          {/* 초기 로딩 중: 스켈레톤 */}
           {loading ? (
-            <div className="w-8 h-8 rounded-full bg-gray-100 animate-pulse" />
+            <div className="w-9 h-9 rounded-full bg-[#F2F4F6] animate-pulse" />
           ) : isLoggedIn && user ? (
             /* ── 로그인 상태: 아바타 + 드롭다운 ── */
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(prev => !prev)}
-                className="flex items-center gap-2 rounded-full pl-1 pr-2 py-1 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 rounded-pill pl-1 pr-2 py-1 min-h-[44px] hover:bg-[#F2F4F6] transition-colors"
                 aria-expanded={dropdownOpen}
                 aria-haspopup="true"
+                aria-label="내 메뉴 열기"
               >
-                {/* 프로필 아바타: 이미지가 있으면 이미지, 없으면 이니셜 */}
                 {user.avatarUrl ? (
                   <img
                     src={user.avatarUrl}
                     alt={user.name}
-                    className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-100"
+                    className="w-8 h-8 rounded-full object-cover ring-2 ring-brand-100"
                     referrerPolicy="no-referrer"
                   />
                 ) : (
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ring-2 ring-blue-100 ${getAvatarColor(user.name)}`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ring-2 ring-brand-100 ${getAvatarColor(user.name)}`}
                   >
                     {getInitial(user.name)}
                   </div>
                 )}
-
-                {/* 이름 간이 표시 (화면 좁을 경우 최대 80px 제한) */}
-                <span className="text-sm font-medium text-gray-700 max-w-[80px] truncate hidden xs:block">
+                <span className="text-sm font-medium text-ink-700 max-w-[80px] truncate hidden sm:block">
                   {user.name}
                 </span>
-
-                {/* 드롭다운 화살표 아이콘 */}
                 <ChevronDown
                   size={14}
-                  className={`text-gray-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}
+                  className={`text-ink-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}
                 />
               </button>
 
@@ -130,38 +157,31 @@ export default function TopNav() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.96 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
-                    className="absolute right-0 top-full mt-2 w-44 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
+                    className="absolute right-0 top-full mt-2 w-44 bg-white rounded-lg shadow-float border border-line overflow-hidden"
                   >
-                    {/* 유저 정보 헤더 */}
-                    <div className="px-4 py-3 border-b border-gray-50">
-                      <p className="text-xs text-gray-400 truncate">{user.email}</p>
-                      <p className="text-sm font-semibold text-gray-800 truncate">{user.name}</p>
+                    <div className="px-4 py-3 border-b border-line">
+                      <p className="text-xs text-ink-400 truncate">{user.email}</p>
+                      <p className="text-sm font-semibold text-ink-900 truncate">{user.name}</p>
                     </div>
-
-                    {/* 마이페이지 이동 */}
                     <button
                       onClick={() => { setDropdownOpen(false); navigate('/mypage') }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-ink-700 hover:bg-[#F2F4F6] transition-colors"
                     >
-                      <LayoutDashboard size={15} className="text-gray-400" />
+                      <LayoutDashboard size={15} className="text-ink-400" />
                       마이페이지
                     </button>
-
-                    {/* 설정 이동 */}
                     <button
                       onClick={() => { setDropdownOpen(false); navigate('/settings') }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-50"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-ink-700 hover:bg-[#F2F4F6] transition-colors border-t border-line"
                     >
-                      <Settings size={15} className="text-gray-400" />
+                      <Settings size={15} className="text-ink-400" />
                       설정
                     </button>
-
-                    {/* 로그아웃 */}
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors border-t border-gray-50"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-danger hover:bg-danger/5 transition-colors border-t border-line"
                     >
-                      <LogOut size={15} className="text-red-400" />
+                      <LogOut size={15} className="text-danger" />
                       로그아웃
                     </button>
                   </motion.div>
@@ -172,8 +192,7 @@ export default function TopNav() {
             /* ── 비로그인 상태: 로그인 버튼 ── */
             <button
               onClick={() => navigate('/login')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold text-white transition-all active:scale-95"
-              style={{ background: 'linear-gradient(135deg, #3182F6, #1a56d6)' }}
+              className="flex items-center gap-1.5 px-4 min-h-[44px] rounded-pill text-sm font-semibold text-white bg-brand hover:bg-brand-strong transition-all active:scale-95"
             >
               <User size={14} />
               로그인

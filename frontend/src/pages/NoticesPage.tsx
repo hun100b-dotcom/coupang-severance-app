@@ -1,14 +1,17 @@
-// NoticesPage.tsx — 공지사항 전체 목록 페이지
-// - 홈 화면의 공지사항 배너 클릭 시 이동하는 페이지
-// - 카드 상단: 제목(title) 굵게 표시
-// - 카드 하단: 본문(content) 3줄 미리보기 (말줄임)
+// NoticesPage.tsx — 공지사항 전체 목록 페이지 (2026 리디자인 "B-fixed")
+// - Layout 안 페이지(TopNav/BottomNav는 Layout 제공)
+// - 색: 블루 메인 + 회색 중립 (무지개 없음, 토큰화)
+// - 반응형: 모바일 1열 / 데스크톱 2열 카드 그리드
+// - 상세 모달: 모바일 바텀시트 / 데스크톱 중앙 다이얼로그, createPortal(body)로 z-[1] 컨텍스트 탈출(BottomNav 위 표시)
 // - 카드 클릭 시 모달에서 제목 + 전체 본문 표시
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowLeft, Megaphone, X, Clock } from 'lucide-react'
 import { useNotices } from '../hooks/useNotices'
+import Container from '../components/ui/Container'
 import type { Notice } from '../types/supabase'
 
 export default function NoticesPage() {
@@ -29,189 +32,183 @@ export default function NoticesPage() {
   }
 
   return (
-    // 전체 페이지 래퍼
-    <div className="relative z-[1] min-h-screen bg-gray-50">
+    <div className="relative z-[1] min-h-screen">
 
-      {/* ── 커스텀 상단 헤더 ──
-          TopNav는 Layout에 포함되므로 sticky top-14 로 그 아래에 배치 */}
-      <div className="sticky top-14 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-4 py-3 flex items-center gap-3">
-        {/* 뒤로가기 버튼 */}
-        <button
-          type="button"
-          onClick={() => navigate('/home')}
-          className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors"
-          aria-label="홈으로 돌아가기"
-        >
-          <ArrowLeft size={18} className="text-gray-600" />
-        </button>
-
-        {/* 페이지 제목 */}
-        <div className="flex items-center gap-2">
-          <Megaphone size={16} className="text-blue-500" />
-          <h1 className="text-base font-bold text-gray-800">공지사항</h1>
-        </div>
+      {/* ── 상단 헤더 — TopNav 아래 sticky 배치 ── */}
+      <div className="sticky top-14 z-40 bg-page/85 backdrop-blur-md border-b border-line">
+        <Container className="h-12 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => navigate('/home')}
+            className="flex items-center justify-center w-11 h-11 -ml-2 rounded-md hover:bg-[#F2F4F6] transition-colors"
+            aria-label="홈으로 돌아가기"
+          >
+            <ArrowLeft size={18} className="text-ink-700" />
+          </button>
+          <div className="flex items-center gap-2">
+            <Megaphone size={16} className="text-brand" />
+            <h1 className="text-[17px] font-extrabold text-ink-900 tracking-tight">공지사항</h1>
+          </div>
+        </Container>
       </div>
 
       {/* ── 공지사항 카드 목록 ── */}
-      <div className="max-w-[500px] mx-auto px-4 py-4 space-y-3">
-
-        {/* 로딩 중: 스켈레톤 카드 */}
+      <Container className="py-5">
+        {/* 로딩 — 스켈레톤 그리드 */}
         {loading && (
-          <>
-            {[1, 2, 3].map(i => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 animate-pulse"
-              >
-                {/* 제목 스켈레톤 */}
-                <div className="h-4 bg-gray-100 rounded w-2/3 mb-3" />
-                {/* 본문 스켈레톤 */}
-                <div className="h-3 bg-gray-100 rounded w-full mb-1.5" />
-                <div className="h-3 bg-gray-100 rounded w-3/4" />
+          <div className="grid md:grid-cols-2 gap-3">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="bg-white rounded-xl p-4 shadow-card border border-line">
+                <div className="h-4 bg-line rounded w-2/3 mb-3 animate-pulse" />
+                <div className="h-3 bg-line/70 rounded w-full mb-1.5 animate-pulse" />
+                <div className="h-3 bg-line/70 rounded w-3/4 animate-pulse" />
               </div>
             ))}
-          </>
-        )}
-
-        {/* 공지사항 없음 안내 */}
-        {!loading && notices.length === 0 && (
-          <div className="text-center py-16 text-gray-400">
-            <Megaphone size={36} className="mx-auto mb-3 opacity-30" />
-            <p className="text-sm">등록된 공지사항이 없습니다.</p>
           </div>
         )}
 
-        {/* 공지사항 카드 목록 */}
-        {!loading && notices.map((notice, idx) => (
-          <motion.button
-            key={notice.id}
-            type="button"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.06, duration: 0.25 }}
-            onClick={() => setSelected(notice)}
-            className="w-full text-left bg-white rounded-2xl p-4 shadow-sm border border-gray-100
-                       hover:border-blue-200 hover:shadow-md active:scale-[0.98]
-                       transition-all duration-150"
-          >
-            {/* 카드 상단: 공지 번호 배지 + 날짜 */}
-            <div className="flex items-center justify-between mb-2">
-              <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600
-                               bg-blue-50 px-2 py-0.5 rounded-full">
-                <Megaphone size={10} />
-                공지 {idx + 1}
-              </span>
-              <span className="flex items-center gap-1 text-xs text-gray-400">
-                <Clock size={10} />
-                {formatDate(notice.created_at)}
-              </span>
-            </div>
+        {/* 빈 상태 */}
+        {!loading && notices.length === 0 && (
+          <div className="bg-white rounded-xl border border-line shadow-card text-center py-16 px-6">
+            <Megaphone size={36} className="mx-auto mb-3 text-ink-400" strokeWidth={1.5} />
+            <p className="text-[15px] font-semibold text-ink-700">등록된 공지사항이 없어요</p>
+            <p className="text-[13px] text-ink-500 mt-1">새 소식이 올라오면 여기에 표시됩니다</p>
+          </div>
+        )}
 
-            {/* 제목: 굵게 표시. title이 없으면 content 앞부분으로 대체 */}
-            <p className="text-sm font-bold text-gray-800 mb-1.5 leading-snug line-clamp-1">
-              {notice.title?.trim() || notice.content.slice(0, 30)}
-            </p>
+        {/* 목록 — 반응형 2열 그리드 */}
+        {!loading && notices.length > 0 && (
+          <div className="grid md:grid-cols-2 gap-3 items-stretch">
+            {notices.map((notice, idx) => (
+              <motion.button
+                key={notice.id}
+                type="button"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(idx, 8) * 0.05, duration: 0.25 }}
+                onClick={() => setSelected(notice)}
+                className="w-full h-full min-w-0 text-left bg-white rounded-xl p-4 shadow-card border border-line
+                           hover:border-brand-200 hover:shadow-float hover:-translate-y-0.5 active:scale-[0.98]
+                           transition-all duration-200"
+              >
+                {/* 상단: 공지 번호 배지 + 날짜 */}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-strong
+                                   bg-brand-bg px-2 py-0.5 rounded-pill">
+                    <Megaphone size={10} />
+                    공지 {idx + 1}
+                  </span>
+                  <span className="flex items-center gap-1 text-[11px] text-ink-600 tabular-nums">
+                    <Clock size={10} />
+                    {formatDate(notice.created_at)}
+                  </span>
+                </div>
 
-            {/* 본문 미리보기: 최대 2줄, 넘치면 말줄임 */}
-            <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
-              {notice.content}
-            </p>
+                {/* 제목 */}
+                <p className="text-[14px] font-bold text-ink-900 mb-1.5 leading-snug line-clamp-1 break-words">
+                  {notice.title?.trim() || notice.content.slice(0, 30)}
+                </p>
 
-            {/* 본문이 길 때 "전체보기" 힌트 */}
-            {notice.content.length > 60 && (
-              <p className="text-xs text-blue-400 mt-1.5 font-medium">전체보기 →</p>
-            )}
-          </motion.button>
-        ))}
-      </div>
+                {/* 본문 미리보기 (최대 2줄) */}
+                <p className="text-[13px] text-ink-600 leading-relaxed line-clamp-2 break-words">
+                  {notice.content}
+                </p>
 
-      {/* ── 공지사항 상세 모달 ── */}
-      <AnimatePresence>
-        {selected && (
-          <>
-            {/* 배경 오버레이 */}
+                {/* 길 때 전체보기 힌트 */}
+                {notice.content.length > 60 && (
+                  <p className="text-[12px] text-brand mt-1.5 font-semibold">전체보기 →</p>
+                )}
+              </motion.button>
+            ))}
+          </div>
+        )}
+      </Container>
+
+      {/* ── 상세 모달 (portal로 body 렌더 → BottomNav 위 표시) ──
+          flex 중앙정렬 패턴: 모바일=하단 시트(items-end) / 데스크톱=중앙(md:items-center).
+          ⚠️ Framer Motion이 인라인 transform을 주입하므로 Tailwind translate 중앙정렬을 쓰면 덮어써짐 →
+             absolute+translate 대신 flex 컨테이너로 중앙정렬해야 데스크톱에서 안 치우침 */}
+      {createPortal(
+        <AnimatePresence>
+          {selected && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/40 z-50 backdrop-blur-[2px]"
+              className="fixed inset-0 z-[60] flex items-end md:items-center justify-center bg-black/40 backdrop-blur-[2px] md:p-4"
               onClick={() => setSelected(null)}
-            />
-
-            {/* 모달 카드 (모바일: 하단 시트, PC: 중앙 모달) */}
-            <motion.div
-              initial={{ opacity: 0, y: 40, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 40, scale: 0.96 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl
-                         md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2
-                         md:max-w-lg md:w-full md:rounded-3xl"
-              style={{ maxHeight: '80vh' }}
             >
-              {/* 모바일 핸들 바 */}
-              <div className="flex justify-center pt-3 pb-1 md:hidden">
-                <div className="w-10 h-1 rounded-full bg-gray-200" />
-              </div>
-
-              {/* 모달 헤더 */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <Megaphone size={16} className="text-blue-500" />
-                  <span className="font-bold text-gray-800 text-base">공지사항</span>
+              {/* 모달 카드 (모바일: 하단 시트, PC: 중앙 모달) */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 40 }}
+                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                className="w-full md:max-w-lg bg-white rounded-t-xl md:rounded-xl shadow-float flex flex-col max-h-[85vh]"
+                onClick={e => e.stopPropagation()}
+              >
+                {/* 모바일 핸들 바 */}
+                <div className="flex justify-center pt-3 pb-1 md:hidden">
+                  <div className="w-10 h-1 rounded-full bg-line" />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setSelected(null)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-                  aria-label="모달 닫기"
+
+                {/* 모달 헤더 */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-line shrink-0">
+                  <div className="flex items-center gap-2">
+                    <Megaphone size={16} className="text-brand" />
+                    <span className="font-bold text-ink-900 text-[15px]">공지사항</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelected(null)}
+                    className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-[#F2F4F6] transition-colors"
+                    aria-label="모달 닫기"
+                  >
+                    <X size={16} className="text-ink-600" />
+                  </button>
+                </div>
+
+                {/* 모달 본문 (세로 스크롤 가능, 가로 폭발 방지 min-w-0) */}
+                <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden px-5 py-4">
+                  <p className="text-[12px] text-ink-600 mb-3 flex items-center gap-1 tabular-nums">
+                    <Clock size={10} />
+                    {formatDate(selected.created_at)}
+                  </p>
+
+                  {selected.title?.trim() && (
+                    <h2 className="text-[16px] font-bold text-ink-900 mb-3 leading-snug break-words">
+                      {selected.title}
+                    </h2>
+                  )}
+
+                  {selected.title?.trim() && <hr className="border-line mb-3" />}
+
+                  <p className="text-[14px] text-ink-700 leading-relaxed whitespace-pre-wrap break-words">
+                    {selected.content}
+                  </p>
+                </div>
+
+                {/* 하단 닫기 버튼 */}
+                <div
+                  className="px-5 py-4 border-t border-line shrink-0"
+                  style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
                 >
-                  <X size={16} className="text-gray-500" />
-                </button>
-              </div>
-
-              {/* 모달 본문 (스크롤 가능) */}
-              <div className="px-5 py-4 overflow-y-auto" style={{ maxHeight: 'calc(80vh - 140px)' }}>
-                {/* 날짜 */}
-                <p className="text-xs text-gray-400 mb-3 flex items-center gap-1">
-                  <Clock size={10} />
-                  {formatDate(selected.created_at)}
-                </p>
-
-                {/* 제목: 굵게 크게 표시 */}
-                {selected.title?.trim() && (
-                  <h2 className="text-base font-bold text-gray-800 mb-3 leading-snug">
-                    {selected.title}
-                  </h2>
-                )}
-
-                {/* 본문 구분선 (제목이 있을 때만 표시) */}
-                {selected.title?.trim() && (
-                  <hr className="border-gray-100 mb-3" />
-                )}
-
-                {/* 전체 본문: 줄바꿈 보존 */}
-                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-                  {selected.content}
-                </p>
-              </div>
-
-              {/* 모달 하단 닫기 버튼 */}
-              <div className="px-5 py-4 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => setSelected(null)}
-                  className="w-full py-3 rounded-2xl bg-gray-100 text-gray-600 text-sm font-semibold
-                             hover:bg-gray-200 transition-colors active:scale-[0.98]"
-                >
-                  닫기
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelected(null)}
+                    className="w-full min-h-[48px] rounded-md bg-[#F2F4F6] text-ink-700 text-[14px] font-semibold
+                               hover:bg-line transition-colors active:scale-[0.98]"
+                  >
+                    닫기
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   )
 }

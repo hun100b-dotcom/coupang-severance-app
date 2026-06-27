@@ -3,6 +3,27 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────
+   🔠 전역 타입 스케일 상향 (2026 가독성 피드백)
+   - 이 코드베이스는 폰트 크기를 토큰 대신 임의 px(text-[13px])로 직접 사용.
+   - 캡션·보조·본문(10~17px대)이 너무 작다는 피드백 → 임의 px 유틸을 한 곳에서 +1.5px 일괄 상향.
+   - @tailwind utilities 뒤 + !important 로 모든 화면(홈/계산기/채용/마이/가이드/랜딩)에 반영.
+   - 18px 이상 대형 헤딩은 이미 충분히 커서 제외(위계 유지).
+   Before → After:
+     10→11.5 · 11→12.5 · 12→13.5 · 13→14.5 · 14→15.5 · 15→16.5 · 16→17.5 · 17→18.5
+───────────────────────────────────────────── */
+.text-\[10px\]{ font-size:11.5px !important; }
+.text-\[11px\]{ font-size:12.5px !important; }
+.text-\[12px\]{ font-size:13.5px !important; }
+.text-\[13px\]{ font-size:14.5px !important; }
+.text-\[14px\]{ font-size:15.5px !important; }
+.text-\[15px\]{ font-size:16.5px !important; }
+.text-\[16px\]{ font-size:17.5px !important; }
+.text-\[17px\]{ font-size:18.5px !important; }
+/* Tailwind 기본 명명 클래스도 동일 스케일로 정합 (text-xs 12→13.5 / text-sm 14→15.5) */
+.text-xs{ font-size:13.5px !important; line-height:1.5 !important; }
+.text-sm{ font-size:15.5px !important; line-height:1.55 !important; }
+
+/* ─────────────────────────────────────────────
    CSS 변수 & 글로벌 리셋
 ───────────────────────────────────────────── */
 :root {
@@ -84,8 +105,8 @@ h1, h2, h3, h4, h5, h6 {
 .app-bg {
   position: fixed;
   inset: 0;
-  /* 연한 파스텔 베이스 — 블롭 색이 잘 보이도록 */
-  background: #eef2ff;
+  /* 2026 리디자인: 거의 흰색에 가까운 단색 베이스 — 무지개 톤다운 */
+  background: #FBFCFE;
   overflow: hidden;
   z-index: 0;
 }
@@ -98,65 +119,33 @@ h1, h2, h3, h4, h5, h6 {
   will-change: transform, opacity;
 }
 
-/* ── Blob 1: 대형 딥 블루 ─────────── */
+/* ── Blob 1: 좌상단 아주 옅은 브랜드 블루 ───────────
+   (퍼플/인디고/스카이 제거 → 블루 단색 계열만, 채도·투명도 대폭 하향) */
 .blob-1 {
-  width: 860px; height: 860px;
+  width: 820px; height: 820px;
   background: radial-gradient(circle at 40% 40%,
-    rgba(59, 130, 246, 0.5) 0%,
-    rgba(96, 165, 250, 0.25) 45%,
+    rgba(49, 130, 246, 0.10) 0%,
+    rgba(49, 130, 246, 0.05) 45%,
     transparent 72%);
-  filter: blur(75px);
-  top: -260px; left: -220px;
-  animation: blob1 20s ease-in-out infinite;
+  filter: blur(90px);
+  top: -280px; left: -240px;
+  animation: blob1 28s ease-in-out infinite;
 }
 
-/* ── Blob 2: 대형 인디고-퍼플 ─────── */
+/* ── Blob 2: 우하단 아주 옅은 블루 ─────── */
 .blob-2 {
-  width: 760px; height: 760px;
+  width: 720px; height: 720px;
   background: radial-gradient(circle at 55% 45%,
-    rgba(99, 102, 241, 0.45) 0%,
-    rgba(167, 139, 250, 0.22) 45%,
+    rgba(49, 130, 246, 0.08) 0%,
+    rgba(96, 165, 250, 0.04) 45%,
     transparent 72%);
-  filter: blur(80px);
-  top: 35%; right: -200px;
-  animation: blob2 24s ease-in-out infinite;
+  filter: blur(95px);
+  bottom: -260px; right: -200px;
+  animation: blob2 32s ease-in-out infinite;
 }
 
-/* ── Blob 3: 중형 하늘색 ─────────── */
-.blob-3 {
-  width: 620px; height: 620px;
-  background: radial-gradient(circle at 50% 50%,
-    rgba(14, 165, 233, 0.38) 0%,
-    rgba(125, 211, 252, 0.18) 50%,
-    transparent 75%);
-  filter: blur(70px);
-  bottom: -150px; left: 10%;
-  animation: blob3 22s ease-in-out infinite;
-}
-
-/* ── Blob 4: 퍼플-바이올렛 ─────────── */
-.blob-4 {
-  width: 520px; height: 520px;
-  background: radial-gradient(circle at 50% 50%,
-    rgba(168, 85, 247, 0.3) 0%,
-    rgba(216, 180, 254, 0.15) 50%,
-    transparent 75%);
-  filter: blur(72px);
-  top: 50%; left: -80px;
-  animation: blob4 18s ease-in-out infinite;
-}
-
-/* ── Blob 5: 라이트 블루 ─────────── */
-.blob-5 {
-  width: 560px; height: 560px;
-  background: radial-gradient(circle at 50% 50%,
-    rgba(56, 189, 248, 0.32) 0%,
-    rgba(186, 230, 253, 0.15) 50%,
-    transparent 75%);
-  filter: blur(76px);
-  top: 5%; right: 5%;
-  animation: blob5 27s ease-in-out infinite;
-}
+/* Blob 3~5: 톤다운으로 제거 (DOM에 남아도 보이지 않도록 숨김) */
+.blob-3, .blob-4, .blob-5 { display: none; }
 
 /* 키프레임 — 확실한 이동 거리 */
 @keyframes blob1 {

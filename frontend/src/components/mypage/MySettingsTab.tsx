@@ -263,7 +263,7 @@ export default function MySettingsTab() {
           {/* 이모지 아바타 + 닉네임 편집 */}
           <div className="flex items-center gap-4 mb-4">
             {/* 기본 이모지 아바타 (이미지 업로드는 추후 구현) */}
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-violet-100 flex items-center justify-center text-3xl flex-shrink-0 shadow-inner">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-bg to-brand-100 flex items-center justify-center text-3xl flex-shrink-0 shadow-inner">
               👤
             </div>
 

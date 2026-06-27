@@ -127,7 +127,7 @@ export default function MyScheduleTab({ userId }: Props) {
         </div>
         <div
           className="mt-1 px-6 py-2.5 rounded-2xl text-white text-[13px] font-bold"
-          style={{ background: 'linear-gradient(135deg, #3182f6, #6d28d9)' }}
+          style={{ background: 'linear-gradient(135deg, #3182f6, #1b64da)' }}
         >
           채용정보 탭에서 지원하기
         </div>
@@ -142,7 +142,7 @@ export default function MyScheduleTab({ userId }: Props) {
       <div
         className="rounded-[24px] p-4 text-white"
         style={{
-          background: 'linear-gradient(135deg, #3182f6 0%, #6d28d9 100%)',
+          background: 'linear-gradient(135deg, #3182f6 0%, #1b64da 100%)',
           boxShadow: '0 8px 32px rgba(49,130,246,0.25)',
         }}
       >
@@ -337,22 +337,22 @@ export default function MyScheduleTab({ userId }: Props) {
       {completedApps.length > 0 && (
         <div className="rounded-[24px] p-4 bg-white border border-slate-100 shadow-[0_4px_16px_rgba(49,130,246,0.04)]">
           <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="w-4 h-4 text-violet-600" />
+            <TrendingUp className="w-4 h-4 text-brand" />
             <p className="text-[14px] font-extrabold text-[#191f28]">수입 통계</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             {/* 이번 달 합계 */}
-            <div className="bg-violet-50 rounded-2xl p-3 text-center">
+            <div className="bg-brand-bg rounded-2xl p-3 text-center">
               <p className="text-[11px] text-[#8b95a1] mb-1">이번 달 합계</p>
-              <p className="text-[20px] font-black text-violet-600">
+              <p className="text-[20px] font-black text-brand-strong">
                 {monthSummary.income > 0 ? (monthSummary.income / 10000).toFixed(1) : '0'}
                 <span className="text-[12px] font-bold">만원</span>
               </p>
             </div>
             {/* 전체 누적 */}
-            <div className="bg-emerald-50 rounded-2xl p-3 text-center">
+            <div className="bg-accent-bg rounded-2xl p-3 text-center">
               <p className="text-[11px] text-[#8b95a1] mb-1">전체 누적</p>
-              <p className="text-[20px] font-black text-emerald-600">
+              <p className="text-[20px] font-black text-[#047857]">
                 {totalIncome > 0 ? (totalIncome / 10000).toFixed(1) : '0'}
                 <span className="text-[12px] font-bold">만원</span>
               </p>

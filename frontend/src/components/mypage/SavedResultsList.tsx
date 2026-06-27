@@ -64,13 +64,13 @@ function getSummaryText(payload: AnyPayload | null | undefined): string {
   return ''
 }
 
-// 탭별 색상 설정
+// 탭별 색상 설정 — 색 규칙: 블루 메인 + 회색 중립 (서비스별 무지개 색코딩 제거, 전부 브랜드 블루로 통일)
 const TAB_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
-  severance:        { bg: 'bg-blue-50',    text: 'text-blue-600',   dot: 'bg-blue-400' },
-  unemployment:     { bg: 'bg-violet-50',  text: 'text-violet-600', dot: 'bg-violet-400' },
-  weekly_allowance: { bg: 'bg-emerald-50', text: 'text-emerald-600',dot: 'bg-emerald-400' },
-  annual_leave:     { bg: 'bg-amber-50',   text: 'text-amber-600',  dot: 'bg-amber-400' },
-  unknown:          { bg: 'bg-slate-50',   text: 'text-slate-600',  dot: 'bg-slate-400' },
+  severance:        { bg: 'bg-brand-bg',  text: 'text-brand-strong', dot: 'bg-brand' },
+  unemployment:     { bg: 'bg-brand-bg',  text: 'text-brand-strong', dot: 'bg-brand' },
+  weekly_allowance: { bg: 'bg-brand-bg',  text: 'text-brand-strong', dot: 'bg-brand' },
+  annual_leave:     { bg: 'bg-brand-bg',  text: 'text-brand-strong', dot: 'bg-brand' },
+  unknown:          { bg: 'bg-[#F2F4F6]', text: 'text-ink-600',      dot: 'bg-ink-400' },
 }
 
 import { useState } from 'react'
@@ -88,7 +88,7 @@ export function SavedResultsList({ reports, loading, onSelectReport, onGoCalcula
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.05, ease: [0.2, 0.8, 0.2, 1] }}
-      className="bg-white rounded-[32px] shadow-[0_18px_60px_rgba(15,23,42,0.08)] border border-slate-100 overflow-hidden"
+      className="bg-white rounded-xl shadow-card border border-line overflow-hidden"
     >
       {/* 섹션 헤더 */}
       <div className="px-5 pt-5 pb-3">

@@ -35,10 +35,10 @@ export function ProfileCard({ name, email, avatarUrl, joinedAt, daysWithCatch, o
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
-      className="bg-white rounded-[32px] shadow-[0_18px_60px_rgba(15,23,42,0.10)] border border-slate-100 overflow-hidden"
+      className="bg-white rounded-xl shadow-card border border-line overflow-hidden"
     >
       {/* 상단 파란 배경 영역 */}
-      <div className="h-20 bg-gradient-to-r from-[#3182f6] to-[#60a5fa] relative" />
+      <div className="h-20 bg-gradient-to-r from-brand to-brand-strong relative" />
 
       {/* 아바타 + 기본 정보 */}
       <div className="px-5 pb-5">
@@ -73,7 +73,7 @@ export function ProfileCard({ name, email, avatarUrl, joinedAt, daysWithCatch, o
             <span className="text-[11px] text-[#8b95a1]">가입일 {formatDate(joinedAt)}</span>
           )}
           {daysWithCatch !== null && daysWithCatch >= 0 && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-[11px] font-bold text-[#3182f6]">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-pill bg-brand-bg text-[11px] font-bold text-brand-strong">
               🎯 CATCH와 함께한 {daysWithCatch}일
             </span>
           )}
