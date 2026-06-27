@@ -1,13 +1,21 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { User, Headphones, HelpCircle, ChevronRight, Building2, Calendar, Gift, MapPin, Briefcase, BookOpen, Clock } from 'lucide-react'
+import {
+  ChevronRight, ArrowRight, MapPin, Clock, Briefcase, BookOpen,
+  Building2, CalendarDays, Gift, Zap, ShieldCheck, FileText, Sparkles,
+} from 'lucide-react'
 import PageMeta from '../components/PageMeta'
+import TopNav from '../components/TopNav'
+import BottomNav from '../components/BottomNav'
+import Container from '../components/ui/Container'
+import Card, { CardButton } from '../components/ui/Card'
+import Badge from '../components/ui/Badge'
+import SectionHeader from '../components/ui/SectionHeader'
 import { api, registerClick } from '../lib/api'
 import { getCompanyLogoUrl } from '../lib/jobUtils'
 import type { JobPosting } from '../types/supabase'
 import { INTRO_COPIES } from '../lib/constants'
-import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import NoticesBanner from '../components/NoticesBanner'
 import { useNotices } from '../hooks/useNotices'
@@ -25,8 +33,7 @@ function useCountUp(target: number, duration = 1500) {
     const step = (now: number) => {
       const elapsed = now - start
       const progress = Math.min(elapsed / duration, 1)
-      // ease-out-quart
-      const eased = 1 - Math.pow(1 - progress, 4)
+      const eased = 1 - Math.pow(1 - progress, 4) // ease-out-quart
       setValue(Math.round(eased * target))
       if (progress < 1) requestAnimationFrame(step)
     }
@@ -43,7 +50,7 @@ function HighlightCatch({ text }: { text: string }) {
     <>
       {parts.map((part, i) =>
         part === 'CATCH' ? (
-          <span key={i} className="text-[#3182F6] font-bold drop-shadow-sm">{part}</span>
+          <span key={i} className="text-brand font-black">{part}</span>
         ) : (
           <span key={i}>{part}</span>
         )
@@ -52,67 +59,51 @@ function HighlightCatch({ text }: { text: string }) {
   )
 }
 
-// ── 카드 입장 애니메이션 설정 ──
-const cardVariants = {
-  hidden: { opacity: 0, y: 22 },
+// ── 카드 입장 애니메이션 ──
+const fadeUp = {
+  hidden: { opacity: 0, y: 18 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: {
-      delay: i * 0.08,
-      duration: 0.55,
-      ease: [0.22, 1, 0.36, 1],
-    },
+    transition: { delay: i * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] },
   }),
 }
 
 export default function Home() {
-  // ── SEO: 홈 페이지 탭 제목 설정 — 검색 결과에서 클릭을 유도하는 핵심 타이틀 ──
-  useEffect(() => {
-    // PageMeta 컴포넌트가 title을 관리하므로 document.title 직접 설정 제거
-  }, [])
-
   const navigate = useNavigate()
-  const { isLoggedIn } = useAuth()
   const { notices } = useNotices()
   const [count, setCount] = useState(0)
   const [countLoaded, setCountLoaded] = useState(false)
   const [copyIdx, setCopyIdx] = useState(0)
-  const [scrolled, setScrolled] = useState(false)
   const animatedCount = useCountUp(count)
 
-  // 로그인 후 게스트 계산 결과 자동 저장 완료 알림 상태
+  // 로그인 후 게스트 계산 결과 자동 저장 완료 알림
   const [autoSaved, setAutoSaved] = useState(false)
-
-  // 홈 마운트 시 자동 저장 완료 플래그 확인 (1번만 체크)
   useEffect(() => {
     if (consumePendingSaveDone()) {
       setAutoSaved(true)
-      // 4초 후 자동 숨김
       const timer = setTimeout(() => setAutoSaved(false), 4000)
       return () => clearTimeout(timer)
     }
   }, [])
 
-  // 채용정보 프리뷰 (is_urgent=true 우선, 최대 3건)
+  // 채용정보 프리뷰 (긴급 우선, 최대 3건)
   const [recentJobs, setRecentJobs] = useState<JobPosting[]>([])
-  const [jobsLoading, setJobsLoading] = useState(true)   // 로딩 상태 (스켈레톤 표시용)
-  const [jobsError, setJobsError] = useState(false)       // 에러 상태 (재시도 버튼 표시용)
+  const [jobsLoading, setJobsLoading] = useState(true)
+  const [jobsError, setJobsError] = useState(false)
 
-  // 채용 프리뷰 로드 함수 (에러 시 재시도 가능하도록 분리)
   const fetchRecentJobs = useCallback(async () => {
     if (!supabase) { setJobsLoading(false); return }
     setJobsLoading(true)
     setJobsError(false)
     try {
-      // 오늘 날짜 (KST 기준) — 만료된 공고 자동 제외
       const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })
       const { data, error } = await supabase
         .from('job_postings')
         .select('*')
         .eq('status', 'active')
-        .or(`expires_at.gte.${todayStr},expires_at.is.null`)  // 마감일 지난 공고 제외
-        .order('is_urgent', { ascending: false })  // 급구 공고 우선
+        .or(`expires_at.gte.${todayStr},expires_at.is.null`)
+        .order('is_urgent', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(3)
       if (error) throw error
@@ -127,50 +118,24 @@ export default function Home() {
 
   useEffect(() => { fetchRecentJobs() }, [fetchRecentJobs])
 
-  // 스크롤 감지 → 헤더 글래스모피즘
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 16)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-
-  // 누적 카운트 조회
-  // 1순위: FastAPI 백엔드 /click-count (6초 타임아웃 — Render 콜드스타트 방지)
-  // 2순위: Supabase click_counter 테이블 직접 조회 (백엔드 미응답 시 폴백)
-  // 3순위: 완전 실패 시 count=0으로라도 로딩 상태 해제
+  // 누적 카운트 조회 (백엔드 → Supabase 폴백 → 0)
   useEffect(() => {
     const fetchCount = async () => {
-      // ── 1단계: 백엔드 API (짧은 타임아웃) ──────────────────────────────
       try {
-        const { data } = await api.get<{ total: number }>('/click-count', {
-          timeout: 6000, // 6초 안에 응답 없으면 Supabase 폴백으로 전환
-        })
+        const { data } = await api.get<{ total: number }>('/click-count', { timeout: 6000 })
         if (typeof data?.total === 'number') {
           setCount(data.total)
           setCountLoaded(true)
           return
         }
-      } catch {
-        // 백엔드 콜드스타트 중이거나 CORS/네트워크 오류 → Supabase 직접 조회
-      }
+      } catch { /* 폴백으로 전환 */ }
 
-      // ── 2단계: Supabase click_counter 테이블 직접 조회 (항상 빠름) ──────
       if (supabase) {
         try {
-          const { data } = await supabase
-            .from('click_counter')
-            .select('total')
-            .eq('id', 1)
-            .single()
-          // total 컬럼이 숫자면 표시, 아니면 0으로 표시
+          const { data } = await supabase.from('click_counter').select('total').eq('id', 1).single()
           setCount(typeof data?.total === 'number' ? data.total : 0)
-        } catch {
-          // Supabase도 실패하면 0 유지
-        }
+        } catch { /* 0 유지 */ }
       }
-
-      // ── 3단계: 어떤 경우에도 로딩 상태 해제 (스켈레톤이 영원히 보이지 않도록) ──
       setCountLoaded(true)
     }
     fetchCount()
@@ -202,502 +167,427 @@ export default function Home() {
   const mainCopy = INTRO_COPIES[copyIdx]
   const lines = mainCopy.split('\n')
 
+  // 계산기 서브 카드 4종 (색 규칙: 블루 메인 — 전부 brand 톤으로 통일, 무지개 제거)
+  const calcCards = [
+    { label: '실업급여', sub: '수급 자격 확인',    icon: Building2,    onClick: handleUnemployment },
+    { label: '주휴수당', sub: '이번 주 얼마일까?', icon: CalendarDays, onClick: handleWeekly },
+    { label: '연차수당', sub: '남은 연차 정산',    icon: CalendarDays, onClick: handleAnnual },
+    { label: '나의 혜택', sub: '숨은 지원금 찾기', icon: Gift,         onClick: handleBenefits },
+  ]
+
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-8">
+    <>
+      <TopNav />
 
-      {/* ── 로그인 후 게스트 계산 결과 자동 저장 완료 알림 배너 ── */}
-      <AnimatePresence>
-        {autoSaved && (
-          <motion.div
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            className="fixed top-16 left-1/2 -translate-x-1/2 z-[200] w-[calc(100%-32px)] max-w-sm"
-          >
-            <div className="flex items-center gap-3 bg-emerald-500 text-white px-4 py-3 rounded-2xl shadow-lg">
-              <span className="text-lg">✅</span>
-              <div>
-                <p className="text-sm font-bold">계산결과가 저장됐어요!</p>
-                <p className="text-xs opacity-80">마이페이지에서 언제든지 다시 확인할 수 있어요</p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* AnimatedBackground(z-0) 위에 콘텐츠 — relative z-[1] 필수 */}
+      <main className="relative z-[1] min-h-screen pt-14 pb-[96px] md:pb-12">
 
-      {/* ── SEO 메타태그: 홈 페이지 ── */}
-      {/* noIndex: /home은 로그인 사용자 전용 — 검색 결과에 노출되면 공고 내용이 스니펫으로 잡힘 */}
-      <PageMeta
-        title="쿠팡 일용직 퇴직금·실업급여 계산기 | CATCH — CFS·컬리 무료 자동 계산"
-        description="쿠팡·CFS·마켓컬리·CJ대한통운 일용직 퇴직금, 실업급여, 주휴수당, 연차수당 무료 자동 계산기. PDF 업로드 한 번, 3분 안에 내 권리 확인."
-        canonical="https://catch-daily-worker.vercel.app/"
-        noIndex={true}
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'FAQPage',
-          mainEntity: [
-            {
-              '@type': 'Question',
-              name: '쿠팡 일용직 퇴직금 얼마나 받나요?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: '쿠팡·CFS 일용직 퇴직금 평균 수령액은 약 250만 원입니다. 1년 이상·주 15시간 이상 근무 시 청구 가능하며, CATCH 계산기에서 PDF 업로드 한 번으로 3분 안에 정확한 금액을 확인할 수 있습니다.',
+        {/* ── SEO 메타 ── */}
+        <PageMeta
+          title="쿠팡 일용직 퇴직금·실업급여 계산기 | CATCH — CFS·컬리 무료 자동 계산"
+          description="쿠팡·CFS·마켓컬리·CJ대한통운 일용직 퇴직금, 실업급여, 주휴수당, 연차수당 무료 자동 계산기. PDF 업로드 한 번, 3분 안에 내 권리 확인."
+          canonical="https://catch-daily-worker.vercel.app/"
+          noIndex={true}
+          jsonLd={{
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: [
+              {
+                '@type': 'Question',
+                name: '쿠팡 일용직 퇴직금 얼마나 받나요?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: '쿠팡·CFS 일용직 퇴직금 평균 수령액은 약 250만 원입니다. 1년 이상·주 15시간 이상 근무 시 청구 가능하며, CATCH 계산기에서 PDF 업로드 한 번으로 3분 안에 정확한 금액을 확인할 수 있습니다.',
+                },
               },
-            },
-            {
-              '@type': 'Question',
-              name: 'CATCH 계산기는 쿠팡 외 다른 회사도 되나요?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: '네, 쿠팡·CFS·마켓컬리·CJ대한통운·한진택배 등 일용직 근로자라면 모두 이용 가능합니다. PDF 급여명세서 또는 근무일수·임금 정보만 있으면 계산할 수 있습니다.',
+              {
+                '@type': 'Question',
+                name: 'CATCH 계산기는 쿠팡 외 다른 회사도 되나요?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: '네, 쿠팡·CFS·마켓컬리·CJ대한통운·한진택배 등 일용직 근로자라면 모두 이용 가능합니다. PDF 급여명세서 또는 근무일수·임금 정보만 있으면 계산할 수 있습니다.',
+                },
               },
-            },
-            {
-              '@type': 'Question',
-              name: 'CATCH 앱은 무료인가요?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: '완전 무료입니다. 퇴직금·실업급여·주휴수당·연차수당 계산 모두 무료이며, 회원가입 없이도 간편계산을 이용할 수 있습니다.',
+              {
+                '@type': 'Question',
+                name: 'CATCH 앱은 무료인가요?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: '완전 무료입니다. 퇴직금·실업급여·주휴수당·연차수당 계산 모두 무료이며, 회원가입 없이도 간편계산을 이용할 수 있습니다.',
+                },
               },
-            },
-          ],
-        }}
-      />
+            ],
+          }}
+        />
 
-      {/* ── 글래스모피즘 스티키 헤더 ── */}
-      {/* 홈 헤더 — grid-cols-3이나 중앙 버튼이 375px에서 좁아지지 않도록 gap 축소 */}
-      <header
-        className={`sticky top-0 z-30 w-full max-w-[460px] grid grid-cols-3 items-center gap-1 py-3 pb-4 transition-all duration-300 ${
-          scrolled
-            ? 'bg-white/70 backdrop-blur-2xl border-b border-white/40 shadow-[0_1px_3px_rgba(0,0,0,0.04)] rounded-b-2xl -mx-2 px-4'
-            : 'bg-transparent'
-        }`}
-      >
-        <div className="col-span-1 flex justify-start min-w-0">
-          <button
-            type="button"
-            onClick={() => navigate('/inquiry')}
-            className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans active:scale-95 transition-transform"
-            aria-label="고객센터"
-          >
-            <Headphones className="w-4 h-4 flex-shrink-0" />
-            <span className="truncate">고객센터</span>
-          </button>
-        </div>
-        <div className="col-span-1 flex justify-center min-w-0">
-          <button
-            type="button"
-            onClick={() => navigate('/landing')}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white/40 backdrop-blur-md border border-white/60 text-[#3182F6] text-xs sm:text-sm font-medium hover:bg-white/50 font-sans active:scale-95 transition-transform"
-          >
-            <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-            <span className="truncate">왜 CATCH인가요?</span>
-          </button>
-        </div>
-        <div className="col-span-1 flex justify-end items-center gap-2 min-w-0">
-          {isLoggedIn ? (
-            <>
-              <button
-                type="button"
-                onClick={() => navigate('/mypage')}
-                className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans active:scale-95 transition-transform"
-                aria-label="마이페이지"
-              >
-                <span className="truncate">마이페이지</span>
-                <User className="w-4 h-4 flex-shrink-0" />
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => navigate('/login')}
-              className="flex items-center gap-1 text-sm text-[#4E5968] hover:text-[#191F28] font-medium font-sans active:scale-95 transition-transform"
-              aria-label="로그인"
-            >
-              <span className="truncate">로그인</span>
-              <User className="w-4 h-4 flex-shrink-0" />
-            </button>
-          )}
-        </div>
-      </header>
-
-      <div className="w-full max-w-[460px] flex flex-col gap-4 flex-1">
-        {/* ── 공지사항 배너 ── */}
-        <NoticesBanner notices={notices} />
-
-        {/* ── 메인 히어로 카드 ── */}
-        <motion.div
-          custom={0}
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-          className="rounded-[32px] p-6 bg-white/60 backdrop-blur-xl border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.06)]"
-        >
-          <div className="text-center mb-5">
+        {/* ── 자동 저장 완료 알림 배너 ── */}
+        <AnimatePresence>
+          {autoSaved && (
             <motion.div
-              className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#3182F6] overflow-hidden mb-3 shadow-lg shadow-blue-500/30"
-              whileHover={{ rotate: [0, -8, 8, 0] }}
-              transition={{ duration: 0.5 }}
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              className="fixed top-16 left-1/2 -translate-x-1/2 z-[200] w-[calc(100%-32px)] max-w-sm"
             >
-              <img src="/catch-logo.png" alt="CATCH" className="w-full h-full object-contain p-1.5" />
-            </motion.div>
-            <p className="text-xl font-black text-[#1a73e8] tracking-tight mb-1">CATCH</p>
-            <p className="text-xs font-semibold text-[#8B95A1] tracking-wide">
-              퇴직금 · 실업급여 자동계산
-            </p>
-          </div>
-          <div className="min-h-[4.5rem] flex flex-col justify-center items-center mb-4 overflow-hidden relative">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.p
-                key={copyIdx}
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                className="text-center text-[#191F28] text-[clamp(22px,5.5vw,26px)] font-extrabold leading-[1.3] tracking-tighter font-sans"
-              >
-                {lines.map((line, i) => (
-                  <span key={i}>
-                    <HighlightCatch text={line} />
-                    {i < lines.length - 1 && <br />}
-                  </span>
-                ))}
-              </motion.p>
-            </AnimatePresence>
-          </div>
-
-          {/* 누적 카운트 — 카운트업 애니메이션 */}
-          <div className="text-center py-3 px-4 rounded-xl bg-blue-50/80">
-            {!countLoaded ? (
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-[120px] h-5 rounded-lg bg-gray-200/60 animate-pulse" />
+              <div className="flex items-center gap-3 bg-accent text-white px-4 py-3 rounded-lg shadow-float">
+                <span className="text-lg">✅</span>
+                <div>
+                  <p className="text-sm font-bold">계산결과가 저장됐어요!</p>
+                  <p className="text-xs opacity-80">마이페이지에서 언제든지 다시 확인할 수 있어요</p>
+                </div>
               </div>
-            ) : (
-              <p className="text-sm text-[#4E5968]">
-                지금까지{' '}
-                <span className="text-[#3182F6] font-extrabold text-lg num-countup">
-                  {animatedCount.toLocaleString()}명
-                </span>
-                이 확인했어요
-              </p>
-            )}
-          </div>
-        </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* ── 그린 CTA: 내 주변 단기알바 캐치하기 ── */}
-        <motion.button
-          custom={1}
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-          type="button"
-          onClick={() => navigate('/jobs')}
-          className="group w-full rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-emerald-200/50 bg-gradient-to-br from-[#10b981] to-[#059669] p-4 flex items-center gap-3 text-left relative overflow-hidden"
-          whileHover={{ scale: 1.01, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer bg-[length:200%_100%] pointer-events-none" />
-          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-            <Briefcase className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white font-bold text-base">내 주변 단기알바 캐치하기</p>
-            <p className="text-white/90 text-sm">쿠팡 · CJ · 컬리 실시간 채용</p>
-          </div>
-          <ChevronRight className="w-5 h-5 text-white flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
-        </motion.button>
+        <Container className="flex flex-col gap-6 md:gap-8 pt-4">
 
-        {/* ── 파란 CTA: 내 퇴직금 캐치하기 ── */}
-        <motion.button
-          custom={1}
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-          type="button"
-          onClick={handleSeverance}
-          className="group w-full rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-blue-200/50 bg-gradient-to-br from-[#3182F6] to-[#2563eb] p-4 flex items-center gap-3 text-left relative overflow-hidden"
-          whileHover={{ scale: 1.01, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          {/* 시머 오버레이 */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer bg-[length:200%_100%] pointer-events-none" />
-          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
-            <img src="/catch-logo.png" alt="" className="w-full h-full object-contain p-1" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white font-bold text-base">내 퇴직금 캐치하기</p>
-            <p className="text-white/90 text-sm">가장 많이 찾는 서비스</p>
-          </div>
-          <ChevronRight className="w-5 h-5 text-white flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
-        </motion.button>
+          {/* ── 공지사항 배너 ── */}
+          <NoticesBanner notices={notices} />
 
-        {/* ── 오늘의 채용정보 프리뷰 ── */}
-        {/* 로딩 중 / 에러 / 공고 있을 때만 카드 표시 */}
-        {(jobsLoading || jobsError || recentJobs.length > 0) && (
-          <motion.div
-            custom={2}
-            variants={cardVariants}
+          {/* ════════════ 히어로 ════════════ */}
+          {/* 데스크톱: 좌(카피+CTA) · 우(플로팅 결과 카드) 2단 / 모바일: 세로 스택 */}
+          <motion.section
+            custom={0}
+            variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="rounded-[32px] p-5 bg-white/50 backdrop-blur-xl border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
+            className="relative overflow-hidden rounded-xl border border-line bg-gradient-to-b from-brand-bg to-white shadow-card p-6 md:p-8"
           >
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[15px] font-extrabold text-[#191f28]">오늘의 채용정보</p>
-              <button onClick={() => navigate('/jobs')}
-                className="flex items-center gap-0.5 text-[13px] font-semibold text-[#3182f6] hover:underline">
-                더 보기 <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+            <div className="grid md:grid-cols-2 gap-6 md:gap-10 items-center">
 
-            {/* 로딩 스켈레톤 */}
-            {jobsLoading && (
-              <div className="flex flex-col gap-2">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-white/60 border border-white/40">
-                    <div className="flex-1 flex flex-col gap-1.5">
-                      <div className="h-3.5 w-28 rounded-lg bg-gray-200/70 animate-pulse" />
-                      <div className="h-3 w-20 rounded-lg bg-gray-200/50 animate-pulse" />
+              {/* 좌: 카피 + CTA */}
+              <div className="flex flex-col items-start">
+                <Badge tone="brand" className="mb-4">
+                  <Sparkles className="w-3 h-3" /> 일용직 권리 찾기
+                </Badge>
+
+                {/* 7초 로테이션 헤드라인 */}
+                <div className="min-h-[5.5rem] md:min-h-[6.5rem] w-full overflow-hidden">
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.h1
+                      key={copyIdx}
+                      initial={{ opacity: 0, y: 14 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                      className="text-ink-900 text-[clamp(24px,5.5vw,34px)] font-extrabold leading-[1.28] tracking-tight break-keep text-balance"
+                    >
+                      {lines.map((line, i) => (
+                        <span key={i}>
+                          <HighlightCatch text={line} />
+                          {i < lines.length - 1 && <br />}
+                        </span>
+                      ))}
+                    </motion.h1>
+                  </AnimatePresence>
+                </div>
+
+                <p className="text-ink-700 text-[14px] md:text-[15px] leading-relaxed mt-3 mb-6 break-keep">
+                  퇴직금 · 실업급여 · 주휴 · 연차수당, PDF 한 번으로 3분 만에.
+                </p>
+
+                {/* CTA 2개 — 블루(퇴직금) · 그린(채용)
+                    lg:flex-row — md(768) 구간은 좌측 컬럼이 좁아지므로 세로 스택 유지, lg부터 가로 배치 */}
+                <div className="flex flex-col lg:flex-row gap-3 w-full">
+                  <button
+                    type="button"
+                    onClick={handleSeverance}
+                    className="group flex-1 inline-flex items-center justify-center gap-2 min-h-[54px] rounded-lg font-bold text-white text-[16px] whitespace-nowrap
+                      bg-gradient-to-br from-brand to-brand-strong shadow-[0_8px_20px_rgba(49,130,246,0.28)]
+                      transition-all active:scale-[0.97] hover:shadow-[0_10px_26px_rgba(49,130,246,0.36)]"
+                  >
+                    <FileText className="w-5 h-5 flex-shrink-0" />
+                    내 퇴직금 캐치하기
+                    <ArrowRight className="w-4 h-4 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/jobs')}
+                    className="group flex-1 inline-flex items-center justify-center gap-2 min-h-[54px] rounded-lg font-bold text-white text-[16px] whitespace-nowrap
+                      bg-gradient-to-br from-accent to-accent-strong shadow-[0_8px_20px_rgba(6,190,123,0.26)]
+                      transition-all active:scale-[0.97] hover:shadow-[0_10px_26px_rgba(6,190,123,0.34)]"
+                  >
+                    <Briefcase className="w-5 h-5 flex-shrink-0" />
+                    단기알바 캐치하기
+                  </button>
+                </div>
+
+                {/* "왜 CATCH인가요?" 보조 링크 */}
+                <button
+                  type="button"
+                  onClick={() => navigate('/landing')}
+                  className="mt-1 min-h-[44px] -ml-2 px-2 text-[13px] font-semibold text-ink-600 hover:text-brand transition-colors inline-flex items-center gap-1"
+                >
+                  왜 CATCH인가요? <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* 우: 플로팅 결과 미리보기 카드 (B 비주얼 — 깊이감) */}
+              <div className="w-full">
+                <Card variant="float" padding="lg" className="relative overflow-hidden">
+                  {/* 로고 헤더 */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-11 h-11 rounded-md bg-brand flex items-center justify-center overflow-hidden shadow-[0_4px_12px_rgba(49,130,246,0.35)]">
+                      <img src="/catch-logo.png" alt="CATCH" className="w-full h-full object-contain p-1.5" />
                     </div>
-                    <div className="h-5 w-16 rounded-lg bg-gray-200/60 animate-pulse shrink-0" />
+                    <div>
+                      <p className="text-[15px] font-black text-brand-strong leading-tight">CATCH</p>
+                      <p className="text-[11px] font-semibold text-ink-600">퇴직금 · 실업급여 자동계산</p>
+                    </div>
+                  </div>
+
+                  {/* 예상 평균 퇴직금 (티저) */}
+                  <div className="rounded-lg bg-brand-bg px-4 py-4 mb-3">
+                    <p className="text-[12px] font-semibold text-ink-700 mb-1">쿠팡·CFS 일용직 평균 퇴직금</p>
+                    <p className="flex items-baseline gap-1">
+                      <span className="text-[30px] md:text-[34px] font-black text-brand-strong tracking-tight num-countup">약 250</span>
+                      <span className="text-[16px] font-bold text-brand-strong">만원</span>
+                    </p>
+                  </div>
+
+                  {/* 누적 카운트 */}
+                  <div className="rounded-lg bg-[#F7F9FC] px-4 py-3 flex items-center justify-between">
+                    {!countLoaded ? (
+                      <div className="w-[140px] h-5 rounded-md bg-line animate-pulse" />
+                    ) : (
+                      <p className="text-[13px] text-ink-700">
+                        지금까지{' '}
+                        <span className="text-brand font-extrabold num-countup">{animatedCount.toLocaleString()}명</span>
+                        이 확인했어요
+                      </p>
+                    )}
+                    <button
+                      onClick={handleSeverance}
+                      className="flex items-center justify-center min-h-[44px] min-w-[44px] -mr-2 rounded-md text-brand hover:text-brand-strong hover:bg-brand-bg transition-colors flex-shrink-0"
+                      aria-label="퇴직금 계산하러 가기"
+                    >
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </motion.section>
+
+          {/* ════════════ 통계 스트립 ════════════ */}
+          <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible">
+            <Card padding="none" className="px-2 py-3 md:px-4">
+              <div className="grid grid-cols-3 divide-x divide-line">
+                {[
+                  { icon: Zap,        title: '1분 계산',   sub: '간단 입력' },
+                  { icon: ShieldCheck, title: '안전 보관',  sub: '개인정보 보호' },
+                  { icon: FileText,    title: 'PDF 분석',   sub: '정밀 계산' },
+                ].map(item => (
+                  <div key={item.title} className="flex flex-col items-center justify-center gap-1 px-2 py-1 text-center">
+                    <item.icon className="w-5 h-5 text-brand" strokeWidth={1.8} />
+                    <p className="text-[13px] font-bold text-ink-900 leading-tight">{item.title}</p>
+                    <p className="text-[11px] text-ink-600 leading-tight">{item.sub}</p>
                   </div>
                 ))}
               </div>
-            )}
-
-            {/* 에러 상태 — 재시도 버튼 표시 */}
-            {!jobsLoading && jobsError && (
-              <div className="flex flex-col items-center gap-2 py-4">
-                <p className="text-[13px] text-[#8b95a1]">공고를 불러오지 못했어요</p>
-                <button
-                  onClick={fetchRecentJobs}
-                  className="text-[12px] font-semibold text-[#3182f6] hover:underline"
-                >
-                  다시 시도
-                </button>
-              </div>
-            )}
-
-            {/* 공고 카드 목록 */}
-            {!jobsLoading && !jobsError && (
-              <div className="flex flex-col gap-2">
-                {recentJobs.map(job => {
-                  // ── 섹션 기반 뱃지 결정 (section 컬럼 우선, is_urgent 폴백) ──
-                  const sectionBadge = job.section === 'today-urgent'
-                    ? { text: '오늘긴급', bg: 'bg-red-100', color: 'text-red-600' }
-                    : job.section === 'tomorrow-urgent'
-                      ? { text: '내일긴급', bg: 'bg-orange-100', color: 'text-orange-600' }
-                      : job.is_urgent
-                        ? { text: '급구', bg: 'bg-red-100', color: 'text-red-600' }
-                        : null
-
-                  // ── 혜택 뱃지 (최대 2개) ──
-                  const benefits: string[] = Array.isArray(job.benefits) ? job.benefits.slice(0, 2) : []
-
-                  // ── D-day 계산 (마감일까지 남은 일수) ──
-                  let dDay: string | null = null
-                  if (job.expires_at) {
-                    const today = new Date()
-                    today.setHours(0, 0, 0, 0)
-                    const exp = new Date(job.expires_at)
-                    exp.setHours(0, 0, 0, 0)
-                    const diff = Math.ceil((exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-                    if (diff === 0) dDay = 'D-Day'
-                    else if (diff > 0) dDay = `D-${diff}`
-                  }
-
-                  // ── 회사 로고 URL ──
-                  const logoUrl = getCompanyLogoUrl(job.company_name)
-
-                  return (
-                    <button key={job.id} onClick={() => navigate(`/jobs?focus=${job.id}`)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-white/60 border border-white/40
-                        hover:bg-white/80 active:scale-[0.98] transition-all text-left">
-                      {/* 회사 로고 (없으면 첫 글자 아바타) */}
-                      <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
-                        {logoUrl !== '/logos/default.svg' ? (
-                          <img src={logoUrl} alt={job.company_name} className="w-6 h-6 object-contain" />
-                        ) : (
-                          <span className="text-[14px] font-bold text-[#8b95a1]">{job.company_name.charAt(0)}</span>
-                        )}
-                      </div>
-
-                      {/* 중앙 텍스트 영역 — 모바일에서 임금이 우측으로 밀리지 않도록 flex-1 */}
-                      <div className="flex-1 min-w-0">
-                        {/* ── 첫째 줄: 회사명 + 뱃지들 (좌) + 임금 (우) ── */}
-                        {/* justify-between으로 임금을 우측에 고정 — 별도 shrink-0 컬럼 불필요 */}
-                        <div className="flex items-start justify-between gap-2">
-                          {/* 좌: 회사명 + 섹션뱃지 + D-day */}
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="text-[14px] font-bold text-[#191f28] truncate">{job.company_name}</span>
-                            {sectionBadge && (
-                              <span className={`px-1.5 py-0.5 rounded-full ${sectionBadge.bg} ${sectionBadge.color} text-[10px] font-bold shrink-0`}>
-                                {sectionBadge.text}
-                              </span>
-                            )}
-                            {dDay && (
-                              <span className="px-1.5 py-0.5 rounded-full bg-gray-100 text-[#4e5968] text-[10px] font-bold shrink-0">
-                                {dDay}
-                              </span>
-                            )}
-                          </div>
-                          {/* 우: 임금 뱃지 — 일급/시급 레이블 + 금액 (우측 고정) */}
-                          {/* shrink-0으로 좌측 truncate 영역이 눌러도 금액이 잘리지 않도록 */}
-                          <div className="text-right shrink-0">
-                            {job.daily_wage > 0 ? (
-                              <>
-                                <p className="text-[10px] text-[#8b95a1] leading-tight">일급</p>
-                                <p className="text-[14px] font-black text-[#3182f6] leading-tight">
-                                  {job.daily_wage.toLocaleString('ko-KR')}원
-                                </p>
-                              </>
-                            ) : (
-                              <>
-                                <p className="text-[10px] text-[#8b95a1] leading-tight">시급</p>
-                                <p className="text-[14px] font-black text-[#3182f6] leading-tight">
-                                  {job.hourly_wage.toLocaleString('ko-KR')}원
-                                </p>
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* 센터명 */}
-                        {job.center_name && (
-                          <p className="text-[11px] text-[#8b95a1] truncate mt-0.5">{job.center_name}</p>
-                        )}
-
-                        {/* ── 지역/근무시간: 아이콘+텍스트 세로 스택 ── */}
-                        {/* word-break: keep-all — 한국어 단어 중간에서 줄바뀜 방지 (인천광역/시, 시구오류/동 현상 수정) */}
-                        <div className="mt-0.5 flex flex-col gap-0.5">
-                          {job.region && (
-                            <div className="flex items-center gap-0.5 text-[12px] text-[#8b95a1]" style={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
-                              <MapPin className="w-3 h-3 shrink-0" />
-                              <span>{job.region}</span>
-                            </div>
-                          )}
-                          {/* 근무시간: truncate로 overflow 방지, keep-all로 한글 단어 보호 */}
-                          {job.work_hours && (
-                            <div className="flex items-center gap-0.5 text-[12px] text-[#8b95a1]" style={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
-                              <Clock className="w-3 h-3 shrink-0" />
-                              <span className="truncate">{job.work_hours}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* 혜택 뱃지 (최대 2개, 작은 칩) */}
-                        {benefits.length > 0 && (
-                          <div className="flex items-center gap-1 mt-1">
-                            {benefits.map(b => (
-                              <span key={b} className="px-1.5 py-0.5 rounded-md bg-blue-50 text-[#3182f6] text-[10px] font-medium">
-                                {b}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            )}
+            </Card>
           </motion.div>
-        )}
 
-        {/* ── 서브 카드 4개 그리드 ── */}
-        <motion.div
-          custom={2}
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-2 gap-3"
-        >
-          {[
-            { label: '실업급여', sub: '수급 자격 확인', icon: Building2, color: 'text-slate-500', bg: 'bg-slate-100', onClick: handleUnemployment },
-            { label: '주휴수당', sub: '이번 주 얼마일까?', icon: Calendar, color: 'text-emerald-600', bg: 'bg-emerald-50', onClick: handleWeekly },
-            { label: '연차수당', sub: '남은 연차 정산', icon: Calendar, color: 'text-amber-500', bg: 'bg-amber-50', onClick: handleAnnual },
-            { label: '나의 혜택', sub: '숨은 지원금 찾기', icon: Gift, color: 'text-violet-500', bg: 'bg-violet-50', onClick: handleBenefits },
-          ].map((card, i) => (
-            <motion.button
-              key={card.label}
-              type="button"
-              onClick={card.onClick}
-              className="rounded-[32px] p-4 flex flex-col items-start text-left bg-white/50 backdrop-blur-md border border-white/60 shadow-[0_12px_40px_rgba(49,130,246,0.05)]"
-              whileHover={{ y: -3, boxShadow: '0 16px 48px rgba(49,130,246,0.12)' }}
-              whileTap={{ scale: 0.96 }}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.24 + i * 0.06, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <div className={`w-10 h-10 ${card.bg} rounded-xl flex items-center justify-center mb-2`}>
-                <card.icon className={`w-5 h-5 ${card.color}`} />
-              </div>
-              <p className="font-semibold text-[#191F28] text-sm">{card.label}</p>
-              <p className="text-xs text-[#8B95A1] mt-0.5">{card.sub}</p>
-            </motion.button>
-          ))}
-        </motion.div>
+          {/* ════════════ 오늘의 채용정보 ════════════ */}
+          {/* 섹션은 상시 렌더 — 내부에서 로딩/에러/빈상태/목록 4상태를 모두 처리(빈 상태 도달 가능) */}
+          <motion.section custom={2} variants={fadeUp} initial="hidden" animate="visible">
+              <SectionHeader
+                title="오늘의 채용정보"
+                tone="accent"
+                action={
+                  <button
+                    onClick={() => navigate('/jobs')}
+                    className="inline-flex items-center gap-0.5 min-h-[44px] px-2 -mr-2 text-[13px] font-semibold text-accent-strong hover:underline"
+                  >
+                    더 보기 <ChevronRight className="w-4 h-4" />
+                  </button>
+                }
+              />
 
-        {/* ── 노동법 가이드 배너 — 검색엔진 유입용 가이드 페이지 진입점 ── */}
-        <motion.button
-          custom={3}
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-          type="button"
-          onClick={() => navigate('/guide')}
-          className="group w-full rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-indigo-200/50 bg-gradient-to-br from-indigo-500 to-purple-600 p-4 flex items-center gap-3 text-left relative overflow-hidden"
-          whileHover={{ scale: 1.01, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          {/* 시머 효과 */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer bg-[length:200%_100%] pointer-events-none" />
-          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-            <BookOpen className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white font-bold text-base">노동법 가이드</p>
-            <p className="text-white/90 text-sm">퇴직금 · 실업급여 · 주휴수당 · 연차수당</p>
-          </div>
-          <ChevronRight className="w-5 h-5 text-white flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
-        </motion.button>
+              {/* 로딩 스켈레톤 */}
+              {jobsLoading && (
+                <div className="grid md:grid-cols-3 gap-3">
+                  {[1, 2, 3].map(i => (
+                    <Card key={i} padding="sm" className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-md bg-line animate-pulse shrink-0" />
+                      <div className="flex-1 flex flex-col gap-1.5">
+                        <div className="h-3.5 w-28 rounded bg-line animate-pulse" />
+                        <div className="h-3 w-20 rounded bg-line/70 animate-pulse" />
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
 
-        {/* ── 하단 트러스트 바 ── */}
-        <motion.div
-          custom={3}
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-          className="rounded-[32px] px-4 py-3 flex items-center justify-around gap-2 bg-white/40 backdrop-blur-lg border border-white/50 shadow-[0_8px_32px_rgba(49,130,246,0.04)]"
-        >
-          {[
-            { emoji: '⚡', title: '1분 만에', sub: '간단 계산' },
-            { emoji: '🔒', title: '안전하게', sub: '개인정보 보호' },
-            { emoji: '📄', title: 'PDF 파일', sub: '정밀 분석' },
-          ].map((item, i) => (
-            <div key={item.title} className="flex items-center gap-2 min-w-0">
-              {i > 0 && <div className="w-px h-8 bg-white/60 mr-2" />}
-              <span className="text-xl">{item.emoji}</span>
-              <div>
-                <p className="text-xs font-semibold text-[#191F28] leading-tight">{item.title}</p>
-                <p className="text-[10px] text-[#8B95A1] leading-tight">{item.sub}</p>
-              </div>
+              {/* 에러 — 재시도 */}
+              {!jobsLoading && jobsError && (
+                <Card padding="lg" className="flex flex-col items-center gap-2">
+                  <p className="text-[13px] text-ink-600">공고를 불러오지 못했어요</p>
+                  <button onClick={fetchRecentJobs} className="text-[13px] font-semibold text-brand hover:underline min-h-[44px] px-3">
+                    다시 시도
+                  </button>
+                </Card>
+              )}
+
+              {/* 빈 상태 — 공고 없음 (로딩/에러 아님 + 0건) */}
+              {!jobsLoading && !jobsError && recentJobs.length === 0 && (
+                <Card padding="lg" className="flex flex-col items-center gap-1 text-center">
+                  <Briefcase className="w-7 h-7 text-ink-400 mb-1" strokeWidth={1.6} />
+                  <p className="text-[14px] font-semibold text-ink-700">아직 등록된 공고가 없어요</p>
+                  <p className="text-[12px] text-ink-600">새 채용공고가 올라오면 가장 먼저 알려드릴게요</p>
+                </Card>
+              )}
+
+              {/* 공고 카드 — 데스크톱 3열 / 모바일 1열 */}
+              {!jobsLoading && !jobsError && recentJobs.length > 0 && (
+                <div className="grid md:grid-cols-3 gap-3 items-stretch">
+                  {recentJobs.map(job => {
+                    // 섹션 뱃지 (section 우선, is_urgent 폴백)
+                    const sectionBadge = job.section === 'today-urgent'
+                      ? { text: '오늘긴급', tone: 'danger' as const }
+                      : job.section === 'tomorrow-urgent'
+                        ? { text: '내일긴급', tone: 'warning' as const }
+                        : job.is_urgent
+                          ? { text: '급구', tone: 'danger' as const }
+                          : null
+
+                    const benefits: string[] = Array.isArray(job.benefits) ? job.benefits.slice(0, 2) : []
+
+                    // D-day 계산
+                    let dDay: string | null = null
+                    if (job.expires_at) {
+                      const today = new Date(); today.setHours(0, 0, 0, 0)
+                      const exp = new Date(job.expires_at); exp.setHours(0, 0, 0, 0)
+                      const diff = Math.ceil((exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+                      if (diff === 0) dDay = 'D-Day'
+                      else if (diff > 0) dDay = `D-${diff}`
+                    }
+
+                    const logoUrl = getCompanyLogoUrl(job.company_name)
+
+                    return (
+                      <CardButton
+                        key={job.id}
+                        padding="sm"
+                        onClick={() => navigate(`/jobs?focus=${job.id}`)}
+                        className="flex items-start gap-3 h-full min-w-0"
+                      >
+                        {/* 회사 로고 */}
+                        <div className="w-9 h-9 rounded-md bg-[#F2F4F6] flex items-center justify-center overflow-hidden shrink-0">
+                          {logoUrl !== '/logos/default.svg' ? (
+                            <img src={logoUrl} alt={job.company_name} className="w-6 h-6 object-contain" />
+                          ) : (
+                            <span className="text-[14px] font-bold text-ink-600">{job.company_name.charAt(0)}</span>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          {/* 1행: 회사명 + 뱃지 / 임금 */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                              <span className="text-[14px] font-bold text-ink-900 truncate max-w-full">{job.company_name}</span>
+                              {sectionBadge && <Badge tone={sectionBadge.tone}>{sectionBadge.text}</Badge>}
+                              {dDay && <Badge tone="neutral">{dDay}</Badge>}
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-[10px] text-ink-600 leading-tight">{job.daily_wage > 0 ? '일급' : '시급'}</p>
+                              <p className="text-[14px] font-black text-brand leading-tight tabular-nums">
+                                {(job.daily_wage > 0 ? job.daily_wage : job.hourly_wage).toLocaleString('ko-KR')}원
+                              </p>
+                            </div>
+                          </div>
+
+                          {job.center_name && (
+                            <p className="text-[11px] text-ink-600 truncate mt-0.5">{job.center_name}</p>
+                          )}
+
+                          {/* 지역 / 근무시간 */}
+                          <div className="mt-1 flex flex-col gap-0.5">
+                            {job.region && (
+                              <div className="flex items-center gap-1 text-[12px] text-ink-600" style={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
+                                <MapPin className="w-3 h-3 shrink-0" />
+                                <span>{job.region}</span>
+                              </div>
+                            )}
+                            {job.work_hours && (
+                              <div className="flex items-center gap-1 text-[12px] text-ink-600" style={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
+                                <Clock className="w-3 h-3 shrink-0" />
+                                <span className="truncate">{job.work_hours}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* 혜택 칩 (최대 2개) */}
+                          {benefits.length > 0 && (
+                            <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                              {benefits.map(b => (
+                                <span key={b} className="px-1.5 py-0.5 rounded-sm bg-brand-bg text-brand-strong text-[10px] font-semibold">
+                                  {b}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </CardButton>
+                    )
+                  })}
+                </div>
+              )}
+          </motion.section>
+
+          {/* ════════════ 계산기 ════════════ */}
+          <motion.section custom={3} variants={fadeUp} initial="hidden" animate="visible">
+            <SectionHeader title="계산기" subtitle="내 권리, 항목별로 빠르게 확인" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 items-stretch">
+              {calcCards.map(card => (
+                <CardButton
+                  key={card.label}
+                  padding="md"
+                  onClick={card.onClick}
+                  className="flex flex-col items-start h-full"
+                >
+                  <div className="w-11 h-11 rounded-md bg-brand-bg flex items-center justify-center mb-3">
+                    <card.icon className="w-5 h-5 text-brand" strokeWidth={1.9} />
+                  </div>
+                  <p className="font-bold text-ink-900 text-[15px]">{card.label}</p>
+                  <p className="text-[12px] text-ink-600 mt-0.5">{card.sub}</p>
+                </CardButton>
+              ))}
             </div>
-          ))}
-        </motion.div>
+          </motion.section>
 
-        {/* ── 푸터 ── */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="text-center text-[10px] font-light text-gray-400 leading-relaxed mt-2"
-        >
-          © 2026 CATCH by LEAF-MASTER. All rights reserved.
-          <br />
-          <span className="text-[9px]">이 결과는 참고용이에요. 정확한 금액은 노무사 상담을 받으세요.</span>
-        </motion.p>
-      </div>
+          {/* ════════════ 노동법 가이드 ════════════ */}
+          <motion.button
+            custom={4}
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            type="button"
+            onClick={() => navigate('/guide')}
+            className="group w-full rounded-xl border border-brand-700 bg-gradient-to-br from-brand-strong to-brand-700 p-6 flex items-center gap-4 text-left shadow-[0_8px_24px_rgba(27,100,218,0.22)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(27,100,218,0.32)] active:scale-[0.99]"
+          >
+            <div className="w-11 h-11 rounded-md bg-white/20 flex items-center justify-center flex-shrink-0">
+              <BookOpen className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-bold text-[16px]">노동법 가이드</p>
+              <p className="text-white/90 text-[13px] break-keep">퇴직금 · 실업급여 · 주휴수당 · 연차수당</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+          </motion.button>
 
-    </div>
+          {/* ── 푸터 ── */}
+          <p className="text-center text-[11px] font-normal text-ink-600 leading-relaxed mt-1">
+            © 2026 CATCH by LEAF-MASTER. All rights reserved.
+            <br />
+            <span className="text-[10px]">이 결과는 참고용이에요. 정확한 금액은 노무사 상담을 받으세요.</span>
+          </p>
+        </Container>
+      </main>
+
+      {/* 모바일 하단 탭 (데스크톱은 TopNav가 대체) */}
+      <BottomNav />
+    </>
   )
 }

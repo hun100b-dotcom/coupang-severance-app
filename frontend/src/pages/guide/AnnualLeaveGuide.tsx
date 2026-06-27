@@ -82,12 +82,12 @@ const sectionVariants = {
 // ── 정보 박스 컴포넌트 ──
 function InfoBox({ title, children, variant = 'default' }: { title: string; children: React.ReactNode; variant?: 'default' | 'warning' | 'tip' }) {
   const variantStyles = {
-    default: 'bg-amber-50 border-amber-200',
-    warning: 'bg-amber-50 border-amber-200',
-    tip: 'bg-yellow-50 border-yellow-200',
+    default: 'bg-accent-bg border-accent/30',
+    warning: 'bg-warning/10 border-warning/30',
+    tip: 'bg-accent-bg border-accent/30',
   }
   return (
-    <div className={`border-l-4 ${variant === 'warning' ? 'border-amber-500' : variant === 'tip' ? 'border-yellow-500' : 'border-amber-500'} ${variantStyles[variant]} rounded-lg p-4 mb-4`}>
+    <div className={`border-l-4 ${variant === 'warning' ? 'border-warning' : variant === 'tip' ? 'border-accent' : 'border-accent'} ${variantStyles[variant]} rounded-lg p-4 mb-4`}>
       <h4 className="font-bold text-sm mb-2 text-gray-900">{title}</h4>
       <div className="text-sm text-gray-700">{children}</div>
     </div>
@@ -103,7 +103,7 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.3 }}
-      className="bg-white border border-gray-200 rounded-lg p-4 mb-6 sticky top-4 z-20"
+      className="bg-white border border-gray-200 rounded-lg p-4 mb-6 sticky top-14 z-20"
     >
       <button
         onClick={() => setShowContents(!showContents)}
@@ -120,8 +120,8 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
               href={`#${item.id}`}
               className={`block text-sm py-1 px-2 rounded transition-colors ${
                 activeSection === item.id
-                  ? 'bg-amber-100 text-amber-700 font-semibold'
-                  : 'text-gray-600 hover:text-amber-600'
+                  ? 'bg-accent-bg text-accent-700 font-semibold'
+                  : 'text-gray-600 hover:text-accent-700'
               }`}
             >
               {item.label}
@@ -138,7 +138,7 @@ function GuideCard({ title, icon: Icon, href }: { title: string; icon: React.Rea
   return (
     <Link
       to={href}
-      className="block bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-4 hover:shadow-md transition-all"
+      className="block bg-gradient-to-br from-accent-700 to-accent-bg border border-accent/30 rounded-xl p-4 hover:shadow-md transition-all"
     >
       <div className="flex items-center gap-3">
         <div className="text-2xl">{Icon}</div>
@@ -146,7 +146,7 @@ function GuideCard({ title, icon: Icon, href }: { title: string; icon: React.Rea
           <h4 className="font-bold text-sm text-gray-900">{title}</h4>
           <p className="text-xs text-gray-600 mt-1">가이드 보기</p>
         </div>
-        <ChevronRight className="w-4 h-4 text-amber-600 ml-auto" />
+        <ChevronRight className="w-4 h-4 text-accent-700 ml-auto" />
       </div>
     </Link>
   )
@@ -185,18 +185,18 @@ export default function AnnualLeaveGuide() {
         jsonLd={[FAQ_SCHEMA, BREADCRUMB_SCHEMA]}
       />
 
-      <div className="w-full max-w-[460px] flex flex-col gap-4">
+      <div className="w-full max-w-[680px] flex flex-col gap-4">
 
         {/* ── 히어로 섹션 ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="rounded-2xl bg-gradient-to-br from-amber-600 to-yellow-600 p-6 text-white overflow-hidden relative"
+          className="rounded-2xl bg-gradient-to-br from-accent-700 to-accent p-6 text-white overflow-hidden relative"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -z-10" />
-          <h2 className="text-2xl font-black mb-2">미사용 연차를 돈으로 받아요</h2>
-          <p className="text-amber-100 text-sm mb-4">첫해 최대 11일 | 이후 최대 25일</p>
+          <h2 className="text-2xl font-black mb-2 text-white">미사용 연차를 돈으로 받아요</h2>
+          <p className="text-white/85 text-sm mb-4">첫해 최대 11일 | 이후 최대 25일</p>
           <div className="text-3xl font-black">퇴직 시 정산</div>
         </motion.div>
 
@@ -240,16 +240,16 @@ export default function AnnualLeaveGuide() {
           <p className="text-sm text-gray-700 mb-4">연차는 근무 기간과 출근율에 따라 발생합니다.</p>
 
           <div className="space-y-3 mb-4">
-            <div className="bg-amber-50 rounded-lg p-3 text-xs">
+            <div className="bg-accent-bg rounded-lg p-3 text-xs">
               <p className="font-bold text-gray-900 mb-1">첫 해 (1년)</p>
               <p className="text-gray-600">80% 이상 출근 시 15일 발생</p>
               <p className="text-gray-500 text-[10px] mt-1">※ 일반적으로 퇴직 시 최대 11일 정산</p>
             </div>
-            <div className="bg-amber-50 rounded-lg p-3 text-xs">
+            <div className="bg-accent-bg rounded-lg p-3 text-xs">
               <p className="font-bold text-gray-900 mb-1">2~2년 11개월</p>
               <p className="text-gray-600">80% 이상 출근 시 15일</p>
             </div>
-            <div className="bg-amber-50 rounded-lg p-3 text-xs">
+            <div className="bg-accent-bg rounded-lg p-3 text-xs">
               <p className="font-bold text-gray-900 mb-1">3년 이상</p>
               <p className="text-gray-600">2년마다 +1일씩 증가 (최대 25일)</p>
               <p className="text-gray-500 text-[10px] mt-1">3년: 20일, 5년: 21일, 7년: 22일...</p>
@@ -281,11 +281,11 @@ export default function AnnualLeaveGuide() {
           </p>
 
           <div className="space-y-3 mb-4">
-            <div className="bg-amber-50 rounded-lg p-3 text-xs">
+            <div className="bg-accent-bg rounded-lg p-3 text-xs">
               <p className="font-bold text-gray-900 mb-1">✓ 연차 발생 조건</p>
               <p className="text-gray-600">1년 이상 근무 + 80% 이상 출근</p>
             </div>
-            <div className="bg-amber-50 rounded-lg p-3 text-xs">
+            <div className="bg-accent-bg rounded-lg p-3 text-xs">
               <p className="font-bold text-gray-900 mb-1">주의사항</p>
               <p className="text-gray-600">일용직은 출근율 계산이 정규직과 다를 수 있습니다.<br />
               회사가 별도 규정을 가지고 있을 수 있으므로 확인이 필요합니다.</p>
@@ -328,7 +328,7 @@ export default function AnnualLeaveGuide() {
 
           <div className="mb-4">
             <h3 className="font-bold text-sm text-gray-900 mb-3">계산 예시</h3>
-            <div className="bg-amber-50 rounded-lg p-3 text-xs space-y-1 text-gray-700">
+            <div className="bg-accent-bg rounded-lg p-3 text-xs space-y-1 text-gray-700">
               <p>• 근무 기간: 2년</p>
               <p>• 월 급여: 200만원</p>
               <p>• 월 평균 근로일: 22일</p>
@@ -336,7 +336,7 @@ export default function AnnualLeaveGuide() {
               <p className="mt-3">• 연차 발생: 15일 (첫해 기준)</p>
               <p>• 사용한 연차: 3일</p>
               <p>• 미사용 연차: 15일 - 3일 = 12일</p>
-              <p className="font-bold text-amber-700 pt-2">
+              <p className="font-bold text-accent-700 pt-2">
                 → 연차수당: 90,909원 × 12일 = 1,090,908원
               </p>
             </div>
@@ -358,28 +358,28 @@ export default function AnnualLeaveGuide() {
 
           <div className="space-y-3 mb-4">
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 text-sm font-bold flex items-center justify-center flex-shrink-0">1</div>
+              <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">1</div>
               <div>
                 <h4 className="font-bold text-sm text-gray-900">연차 사용 계획</h4>
                 <p className="text-xs text-gray-600 mt-1">남은 연차를 사용할지 정산받을지 결정</p>
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 text-sm font-bold flex items-center justify-center flex-shrink-0">2</div>
+              <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">2</div>
               <div>
                 <h4 className="font-bold text-sm text-gray-900">미사용 연차 확인</h4>
                 <p className="text-xs text-gray-600 mt-1">회사에서 미사용 연차 일수 확인</p>
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 text-sm font-bold flex items-center justify-center flex-shrink-0">3</div>
+              <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">3</div>
               <div>
                 <h4 className="font-bold text-sm text-gray-900">정산금 청구</h4>
                 <p className="text-xs text-gray-600 mt-1">내용증명으로 미지급 연차수당 청구</p>
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 text-sm font-bold flex items-center justify-center flex-shrink-0">4</div>
+              <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">4</div>
               <div>
                 <h4 className="font-bold text-sm text-gray-900">수령</h4>
                 <p className="text-xs text-gray-600 mt-1">퇴직금 및 최종 급여와 함께 수령</p>
@@ -458,7 +458,7 @@ export default function AnnualLeaveGuide() {
         >
           <button
             onClick={() => navigate('/annual-leave')}
-            className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 text-white rounded-xl py-4 font-bold text-base flex items-center justify-center gap-2 hover:shadow-lg transition-all mb-4"
+            className="w-full bg-gradient-to-r from-accent-700 to-accent text-white rounded-xl py-4 font-bold text-base flex items-center justify-center gap-2 hover:shadow-lg transition-all mb-4"
           >
             <Calculator className="w-5 h-5" />
             지금 바로 연차수당 계산하기

@@ -120,16 +120,16 @@ export function SupportSection({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.15, ease: [0.2, 0.8, 0.2, 1] }}
-      className="bg-white rounded-[32px] shadow-[0_18px_60px_rgba(15,23,42,0.08)] border border-slate-100 overflow-hidden"
+      className="bg-white rounded-xl shadow-card border border-line overflow-hidden"
     >
       <div className="px-5 pt-5 pb-4">
-        <p className="text-[15px] font-extrabold text-[#191f28] tracking-tight mb-4">고객지원</p>
+        <p className="text-[15px] font-extrabold text-ink-900 tracking-tight mb-4">고객지원</p>
 
         {/* 1:1 문의 버튼 */}
         <button
           type="button"
           onClick={onOpenInquiry}
-          className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl bg-[#3182f6] text-white hover:bg-[#1b64da] active:scale-[0.98] transition-all shadow-[0_8px_24px_rgba(49,130,246,0.3)] mb-4"
+          className="w-full flex items-center gap-3 px-4 py-4 rounded-lg bg-brand text-white hover:bg-brand-strong active:scale-[0.98] transition-all shadow-[0_8px_24px_rgba(49,130,246,0.3)] mb-4"
         >
           <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
             <MessageCircle className="w-5 h-5" />

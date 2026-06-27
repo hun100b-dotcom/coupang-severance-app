@@ -23,7 +23,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F2F4F6] flex items-center justify-center relative z-[1]">
-        <p className="text-sm text-[#8B95A1]">로딩 중...</p>
+        <p className="text-sm text-ink-500">로딩 중...</p>
       </div>
     )
   }
@@ -32,7 +32,7 @@ export default function SettingsPage() {
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-[#F2F4F6] flex items-center justify-center relative z-[1]">
-        <p className="text-sm text-[#8B95A1]">로그인이 필요합니다. 이동 중...</p>
+        <p className="text-sm text-ink-500">로그인이 필요합니다. 이동 중...</p>
       </div>
     )
   }
@@ -41,28 +41,28 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-[#F2F4F6] pb-24 relative z-[1]">
 
       {/* ── 헤더 ── */}
-      <header className="sticky top-0 z-30 bg-[#F2F4F6]/90 backdrop-blur-xl border-b border-gray-200/50">
-        <div className="max-w-[460px] mx-auto px-4 h-14 flex items-center gap-2">
+      <header className="sticky top-0 z-30 bg-[#F2F4F6] border-b border-line">
+        <div className="max-w-[640px] mx-auto px-4 h-14 flex items-center gap-2">
           {/* 뒤로가기 버튼 */}
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="p-1.5 rounded-xl hover:bg-black/5 transition-colors"
+            className="flex items-center justify-center w-11 h-11 -ml-2 rounded-md hover:bg-black/5 transition-colors"
             aria-label="뒤로가기"
           >
-            <ChevronLeft className="w-5 h-5 text-[#191f28]" />
+            <ChevronLeft className="w-5 h-5 text-ink-900" />
           </button>
 
           {/* 페이지 제목 */}
           <div className="flex items-center gap-1.5">
-            <Settings className="w-4 h-4 text-[#8b95a1]" />
-            <h1 className="text-[17px] font-extrabold text-[#191f28] tracking-tight">설정</h1>
+            <Settings className="w-4 h-4 text-ink-500" />
+            <h1 className="text-[17px] font-extrabold text-ink-900 tracking-tight">설정</h1>
           </div>
         </div>
       </header>
 
       {/* ── 설정 콘텐츠 (공통 컴포넌트 재사용) ── */}
-      <main className="max-w-[460px] mx-auto px-4 pt-4 pb-6">
+      <main className="max-w-[640px] mx-auto px-4 pt-4 pb-6">
         <MySettingsTab />
       </main>
 

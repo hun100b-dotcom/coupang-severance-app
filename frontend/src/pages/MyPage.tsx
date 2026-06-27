@@ -3,7 +3,7 @@
 // C-4: 지원현황 탭에 미읽음 알림 빨간 점 배지 (Supabase Realtime)
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, LogOut, Home, Star, ClipboardList, CalendarDays, Settings } from 'lucide-react'
+import { LogOut, Home, Star, ClipboardList, CalendarDays, Settings } from 'lucide-react'
 // Trash2는 계정관리 섹션 제거로 사용하지 않음 (설정 탭으로 이동)
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -225,73 +225,67 @@ export default function MyPage() {
 
   // 회원 탈퇴 핸들러는 ⚙️ 설정 탭(MySettingsTab)으로 이동됨
 
-  // 현재 탭의 헤더 타이틀
-  const tabTitle = TABS.find(t => t.key === activeTab)?.label ?? '내 정보'
-
   return (
-    <div className="min-h-screen bg-[#F2F4F6] pb-24 relative z-10">
+    <div className="relative z-[1] pb-8">
 
-      {/* ── 헤더 ── */}
-      <header className="sticky top-0 z-30 bg-[#F2F4F6]/90 backdrop-blur-xl border-b border-gray-200/50">
-        <div className="max-w-[460px] mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={() => navigate('/home')}
-              className="p-1.5 rounded-xl hover:bg-black/5 transition-colors">
-              <ChevronLeft className="w-5 h-5 text-[#191f28]" />
-            </button>
-            <h1 className="text-[17px] font-extrabold text-[#191f28] tracking-tight">{tabTitle}</h1>
+      {/* ── 페이지 헤더 (TopNav가 상단 내비를 제공하므로 뒤로가기/로그아웃 중복 헤더 제거) ── */}
+      <div className="w-full max-w-[760px] mx-auto px-4 md:px-6 pt-4">
+        <div className="flex items-end justify-between gap-3 mb-4">
+          <div className="min-w-0">
+            <h1 className="text-[24px] md:text-[28px] font-black text-ink-900 tracking-tight">마이페이지</h1>
+            <p className="text-[14px] text-ink-700 mt-1 truncate">
+              <span className="font-bold text-ink-900">{displayName}</span>님, 반가워요
+              {daysWithCatch != null && <span className="text-ink-600"> · CATCH와 {daysWithCatch}일째</span>}
+            </p>
           </div>
           <button type="button" onClick={() => logout()}
-            className="flex items-center gap-1.5 text-[12px] text-[#8B95A1] hover:text-[#4e5968] transition-colors px-2 py-1 rounded-lg hover:bg-black/5">
-            <LogOut className="w-3.5 h-3.5" />
+            className="shrink-0 flex items-center gap-1.5 min-h-[40px] px-3 rounded-md text-[13px] font-semibold text-ink-600 hover:text-ink-900 hover:bg-[#F2F4F6] transition-colors">
+            <LogOut className="w-4 h-4" />
             로그아웃
           </button>
         </div>
 
-        {/* ── 탭 네비게이션 바 ── */}
-        {/* C-4: 지원현황 탭에 미읽음 알림 빨간 점 배지 */}
-        <div className="max-w-[460px] mx-auto px-4 flex gap-0 overflow-x-auto">
-          {TABS.map(tab => {
-            const Icon = tab.icon
-            const isActive = activeTab === tab.key
-            // 지원현황 탭에만 미읽음 배지 표시
-            const hasBadge = tab.key === 'applications' && unreadNotifCount > 0
-            return (
-              <button
-                key={tab.key}
-                onClick={() => {
-                  setActiveTab(tab.key)
-                  // 지원현황 탭 클릭 시 알림 읽음 처리
-                  if (tab.key === 'applications') markNotificationsRead()
-                }}
-                className={`relative flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] text-[12px] font-bold whitespace-nowrap border-b-2 transition-all shrink-0 ${
-                  isActive
-                    ? 'border-[#3182f6] text-[#3182f6]'
-                    : 'border-transparent text-[#8b95a1] hover:text-[#4e5968]'
-                }`}
-              >
-                <div className="relative">
-                  <Icon className="w-3.5 h-3.5" />
-                  {/* 빨간 점 배지 — 미읽음 알림 있을 때만 표시 */}
-                  {hasBadge && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 ring-1 ring-white" />
-                  )}
-                </div>
-                {tab.label}
-                {/* 숫자 배지 (5개 이하면 숫자, 그 이상이면 점만) */}
-                {hasBadge && unreadNotifCount <= 9 && (
-                  <span className="ml-0.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">
-                    {unreadNotifCount}
+        {/* ── 탭 바 (세그먼트형 pill) — C-4: 지원현황 미읽음 배지 ── */}
+        <div className="sticky top-14 z-30 -mx-4 px-4 md:-mx-6 md:px-6 py-2 bg-page/80 backdrop-blur-md">
+          <div className="flex gap-1 overflow-x-auto hide-scrollbar p-1 bg-white border border-line rounded-pill shadow-card">
+            {TABS.map(tab => {
+              const Icon = tab.icon
+              const isActive = activeTab === tab.key
+              const hasBadge = tab.key === 'applications' && unreadNotifCount > 0
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => {
+                    setActiveTab(tab.key)
+                    if (tab.key === 'applications') markNotificationsRead()
+                  }}
+                  className={`relative flex-1 flex items-center justify-center gap-1.5 px-3 min-h-[44px] text-[13px] font-bold whitespace-nowrap rounded-pill transition-colors shrink-0 ${
+                    isActive ? 'bg-brand text-white' : 'text-ink-600 hover:text-ink-900 hover:bg-[#F2F4F6]'
+                  }`}
+                  aria-label={tab.label}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <span className="relative inline-flex">
+                    <Icon className="w-4 h-4" />
+                    {hasBadge && (
+                      <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full bg-danger ring-1 ${isActive ? 'ring-brand' : 'ring-white'}`} />
+                    )}
                   </span>
-                )}
-              </button>
-            )
-          })}
+                  <span>{tab.label}</span>
+                  {hasBadge && unreadNotifCount <= 9 && (
+                    <span className="ml-0.5 w-4 h-4 rounded-full bg-danger text-white text-[9px] font-black flex items-center justify-center">
+                      {unreadNotifCount}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
         </div>
-      </header>
+      </div>
 
       {/* ── 탭 콘텐츠 ── */}
-      <main className="max-w-[460px] mx-auto px-4 pt-4 pb-6">
+      <main className="w-full max-w-[760px] mx-auto px-4 md:px-6 pt-4 pb-6">
 
         {/* ① 홈 탭 — 기존 마이페이지 내용 */}
         {activeTab === 'home' && (

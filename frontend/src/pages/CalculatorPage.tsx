@@ -1,63 +1,84 @@
-// 계산기 허브 — 각 서비스를 풀너비 카드로 스크롤 형태 배치
-// 홈과 차별화: 각 카드가 독립적인 "서비스 소개 + CTA" 형태
+// 계산기 허브 (/calculator) — 2026 리디자인 v2 "구분 강화"
+// - Layout 안 페이지(TopNav/BottomNav는 Layout이 제공) → 콘텐츠만 렌더
+// - 피드백 반영: "실업/주휴/연차가 다 똑같아 보임" → 구별 강화
+//   ① 2개 의미 그룹으로 섹션 분리 (퇴사 후 정산 / 재직 중 수당)
+//   ② 그룹별 색(블루 / 그린) + ③ 크고 뚜렷한 서로 다른 아이콘 + ④ 라벨 확대
+//   ⚠️ 무지개 금지 — 사용 색은 사문화된 블루·그린 2색만(그룹 단위로 통제)
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Briefcase, ShieldCheck, Clock, CalendarDays, ArrowRight } from 'lucide-react'
+import { Banknote, ShieldCheck, CalendarClock, Palmtree, ArrowRight } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import PageMeta from '../components/PageMeta'
+import Container from '../components/ui/Container'
+import { CardButton } from '../components/ui/Card'
+import Badge from '../components/ui/Badge'
+import SectionHeader from '../components/ui/SectionHeader'
 
-// 서비스별 고유 컬러 + 설명 + 히어로 스타일
-const SERVICES = [
+interface Service {
+  id: string
+  label: string
+  desc: string
+  stats: { label: string; value: string }[]
+  icon: LucideIcon
+  path: string
+  featured?: boolean
+}
+
+interface Group {
+  key: string
+  title: string
+  subtitle: string
+  tone: 'brand' | 'accent'        // SectionHeader 액센트 바
+  accent: string                   // 아이콘/상단보더 색 (hex)
+  chip: string                     // 아이콘 칩 배경 (hex)
+  services: Service[]
+}
+
+// ── 2개 의미 그룹 ──
+const GROUPS: Group[] = [
   {
-    id: 'severance',
-    label: '퇴직금 계산기',
-    headline: '내 퇴직금,\n얼마나 받을 수 있을까?',
-    desc: 'PDF 한 장이면 정밀 계산 완료. 28일 역산 블록 알고리즘으로 정확한 금액을 알려드려요.',
-    stats: [
-      { label: '평균 수령액', value: '250만원' },
-      { label: '미청구율', value: '70%', accent: true },
+    key: 'leave',
+    title: '퇴사 후 정산',
+    subtitle: '퇴직·실직 시 받는 돈',
+    tone: 'brand',
+    accent: '#1B64DA',
+    chip: '#EAF2FE',
+    services: [
+      {
+        id: 'severance', label: '퇴직금', featured: true,
+        desc: 'PDF 한 장이면 28일 블록 알고리즘으로 정밀 계산',
+        stats: [{ label: '평균 수령액', value: '250만원' }, { label: '미청구율', value: '70%' }],
+        icon: Banknote, path: '/severance',
+      },
+      {
+        id: 'unemployment', label: '실업급여',
+        desc: '고용보험 이력·퇴직 사유로 수급 자격과 금액 확인',
+        stats: [{ label: '수급 기간', value: '최대 270일' }, { label: '일 상한', value: '6.6만원' }],
+        icon: ShieldCheck, path: '/unemployment',
+      },
     ],
-    icon: Briefcase,
-    gradient: 'from-[#3182F6] via-[#2570e0] to-[#1b5fd4]',
-    path: '/severance',
   },
   {
-    id: 'unemployment',
-    label: '실업급여 계산기',
-    headline: '실업급여,\n나도 받을 수 있을까?',
-    desc: '고용보험 가입 이력과 퇴직 사유를 분석해서 수급 자격과 예상 금액을 계산해드려요.',
-    stats: [
-      { label: '수급 기간', value: '최대 270일' },
-      { label: '일 수급액', value: '최대 6.6만원' },
+    key: 'inwork',
+    title: '재직 중 수당',
+    subtitle: '일하는 동안 챙기는 돈',
+    tone: 'accent',
+    accent: '#05A56C',
+    chip: '#E6F8F1',
+    services: [
+      {
+        id: 'weekly', label: '주휴수당',
+        desc: '주 15시간 이상 근무 시 발생하는 유급휴일 수당',
+        stats: [{ label: '발생 조건', value: '주 15시간+' }, { label: '기준', value: '근기법 55조' }],
+        icon: CalendarClock, path: '/weekly-allowance',
+      },
+      {
+        id: 'annual', label: '연차수당',
+        desc: '미사용 연차를 수당으로 — 발생·사용·미지급 정산',
+        stats: [{ label: '첫해', value: '최대 11일' }, { label: '이후 매년', value: '최대 25일' }],
+        icon: Palmtree, path: '/annual-leave',
+      },
     ],
-    icon: ShieldCheck,
-    gradient: 'from-[#0ea5e9] via-[#0284c7] to-[#0369a1]',
-    path: '/unemployment',
-  },
-  {
-    id: 'weekly',
-    label: '주휴수당 계산기',
-    headline: '주휴수당,\n매주 빠짐없이 받고 있나요?',
-    desc: '주 15시간 이상 근무하면 발생하는 주휴수당. 한 주도 빠짐없이 확인하세요.',
-    stats: [
-      { label: '발생 조건', value: '주 15시간+' },
-      { label: '계산 기준', value: '근로기준법 55조' },
-    ],
-    icon: Clock,
-    gradient: 'from-[#10b981] via-[#059669] to-[#047857]',
-    path: '/weekly-allowance',
-  },
-  {
-    id: 'annual',
-    label: '연차수당 계산기',
-    headline: '남은 연차,\n돈으로 받을 수 있어요',
-    desc: '미사용 연차를 수당으로 정산. 발생일수, 남은일수, 미지급 청구까지 한번에 계산.',
-    stats: [
-      { label: '첫해 연차', value: '최대 11일' },
-      { label: '이후 매년', value: '최대 25일' },
-    ],
-    icon: CalendarDays,
-    gradient: 'from-[#f59e0b] via-[#d97706] to-[#b45309]',
-    path: '/annual-leave',
   },
 ]
 
@@ -65,86 +86,95 @@ export default function CalculatorPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-28">
-      {/* ── SEO 메타태그: 계산기 허브 ── */}
+    <div className="relative z-[1]">
       <PageMeta
         title="일용직 계산기 허브 — 퇴직금·실업급여·주휴수당·연차수당 | CATCH"
         description="퇴직금, 실업급여, 주휴수당, 연차수당 4가지 계산기를 한 곳에서. 쿠팡·컬리 일용직 근로자 전용 무료 계산 서비스."
         canonical="https://catch-daily-worker.vercel.app/calculator"
       />
 
-      <div className="w-full max-w-[460px] flex flex-col gap-4">
+      <Container className="flex flex-col gap-7 md:gap-9 pt-4 pb-8">
 
-        {/* ── 페이지 타이틀 ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="px-1 mb-1"
+        {/* ── 페이지 헤더 ── */}
+        <motion.header
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="px-1"
         >
-          <h1 className="text-[22px] font-black text-[#191f28] tracking-tight">계산기</h1>
-          {/* text-gray-600: 가독성 확보 (기존 #8b95a1 은 밝은 배경에서 대비 부족) */}
-          <p className="text-[13px] text-gray-600 mt-0.5">무료로 정확하게, PDF 정밀계산 또는 간편 입력</p>
-        </motion.div>
+          <h1 className="text-[26px] md:text-[30px] font-black text-ink-900 tracking-tight">계산기</h1>
+          <p className="text-[15px] text-ink-700 mt-1 break-keep">
+            무료로 정확하게 — PDF 정밀계산 또는 간편 입력으로 내 권리를 확인하세요.
+          </p>
+        </motion.header>
 
-        {/* ── 서비스 카드 스택 ── */}
-        {SERVICES.map((svc, i) => {
-          const Icon = svc.icon
-          return (
-            <motion.div
-              key={svc.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-[28px] overflow-hidden"
-            >
-              <div className={`bg-gradient-to-br ${svc.gradient} p-5 relative`}>
-                {/* 장식 블러 원 */}
-                <div className="absolute top-3 right-3 w-24 h-24 rounded-full bg-white/[0.06] blur-2xl pointer-events-none" />
+        {/* ── 그룹별 섹션 ── */}
+        {GROUPS.map((group, gi) => (
+          <section key={group.key}>
+            <SectionHeader title={group.title} subtitle={group.subtitle} tone={group.tone} />
 
-                {/* 상단: 아이콘 + 라벨 */}
-                <div className="flex items-center gap-2 mb-3 relative z-10">
-                  <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
-                    <Icon className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-[12px] font-bold text-white/90">{svc.label}</span>
-                </div>
+            <div className="grid sm:grid-cols-2 gap-4 items-stretch">
+              {group.services.map((svc, si) => {
+                const Icon = svc.icon
+                return (
+                  <motion.div
+                    key={svc.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: (gi * 2 + si) * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                    className="h-full"
+                  >
+                    {/* 카드: 상단 3px 그룹 액센트 보더로 그룹 소속을 시각화 */}
+                    <CardButton
+                      padding="lg"
+                      onClick={() => navigate(svc.path)}
+                      className="flex flex-col h-full border-t-[3px]"
+                      style={{ borderTopColor: group.accent }}
+                    >
+                      {/* 큰 아이콘 + 라벨 */}
+                      <div className="flex items-start gap-3.5">
+                        <div
+                          className="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0"
+                          style={{ background: group.chip }}
+                        >
+                          <Icon className="w-7 h-7" strokeWidth={1.9} style={{ color: group.accent }} />
+                        </div>
+                        <div className="min-w-0 pt-0.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h3 className="text-[19px] font-black text-ink-900 tracking-tight leading-none">{svc.label}</h3>
+                            {svc.featured && <Badge tone="brand">대표</Badge>}
+                          </div>
+                          <p className="text-[13px] text-ink-600 leading-relaxed mt-1.5 break-keep">{svc.desc}</p>
+                        </div>
+                      </div>
 
-                {/* 헤드라인 */}
-                <h2 className="text-[20px] font-black text-white leading-tight tracking-tight mb-2 whitespace-pre-line relative z-10">
-                  {svc.headline}
-                </h2>
+                      {/* 수치 뱃지 */}
+                      <div className="flex flex-wrap gap-2 mt-4">
+                        {svc.stats.map(st => (
+                          <div key={st.label} className="px-2.5 py-1.5 rounded-md" style={{ background: group.chip }}>
+                            <p className="text-[11px] text-ink-700 leading-tight">{st.label}</p>
+                            <p className="text-[14px] font-extrabold leading-tight tabular-nums" style={{ color: group.accent }}>{st.value}</p>
+                          </div>
+                        ))}
+                      </div>
 
-                {/* 설명 */}
-                <p className="text-[13px] text-white/85 leading-relaxed mb-4 relative z-10">{svc.desc}</p>
+                      {/* CTA — 그룹 색 버튼, 카드 하단 고정 */}
+                      <span
+                        className="mt-5 inline-flex items-center justify-center gap-2 w-full min-h-[48px] rounded-md text-white font-bold text-[15px] transition-transform active:scale-[0.98]"
+                        style={{ background: group.accent }}
+                      >
+                        계산하기
+                        <ArrowRight className="w-4 h-4" />
+                      </span>
+                    </CardButton>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </section>
+        ))}
 
-                {/* 수치 뱃지 */}
-                <div className="flex gap-2 mb-4 relative z-10">
-                  {svc.stats.map(st => (
-                    <div key={st.label} className="px-3 py-1.5 rounded-xl bg-white/15 backdrop-blur-sm">
-                      <p className="text-[10px] text-white/80">{st.label}</p>
-                      <p className={`text-[14px] font-extrabold ${st.accent ? 'text-yellow-300' : 'text-white'}`}>{st.value}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA 버튼 */}
-                <motion.button
-                  type="button"
-                  onClick={() => navigate(svc.path)}
-                  className="w-full py-3.5 rounded-2xl bg-white/95 backdrop-blur-sm font-bold text-[15px] flex items-center justify-center gap-2
-                    shadow-[0_8px_24px_rgba(0,0,0,0.12)] active:scale-[0.98] transition-transform relative z-10"
-                  style={{ color: svc.gradient.includes('3182F6') ? '#3182F6' : svc.gradient.includes('0ea5e9') ? '#0284c7' : svc.gradient.includes('10b981') ? '#059669' : '#d97706' }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  계산하기
-                  <ArrowRight className="w-4 h-4" />
-                </motion.button>
-              </div>
-            </motion.div>
-          )
-        })}
-
-      </div>
+      </Container>
     </div>
   )
 }

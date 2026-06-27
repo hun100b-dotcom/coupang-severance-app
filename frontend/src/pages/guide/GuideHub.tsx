@@ -22,8 +22,8 @@ const GUIDES = [
     description: '일용직도 받을 수 있어요. 조건, 계산법, 청구 절차를 알려드립니다.',
     icon: Briefcase,
     href: '/guide/severance',
-    color: 'bg-blue-50',
-    accentColor: 'text-blue-600',
+    color: 'bg-brand-bg',
+    accentColor: 'text-brand-strong',
   },
   {
     id: 'unemployment',
@@ -31,8 +31,8 @@ const GUIDES = [
     description: '퇴직 후 생활을 지킬 수 있어요. 수급 조건과 신청 방법을 알려드립니다.',
     icon: ShieldCheck,
     href: '/guide/unemployment',
-    color: 'bg-cyan-50',
-    accentColor: 'text-cyan-600',
+    color: 'bg-brand-bg',
+    accentColor: 'text-brand-strong',
   },
   {
     id: 'weekly',
@@ -40,8 +40,8 @@ const GUIDES = [
     description: '주 15시간 이상 일하면 발생해요. 계산 방법과 미지급 대처법을 알려드립니다.',
     icon: Clock,
     href: '/guide/weekly-allowance',
-    color: 'bg-emerald-50',
-    accentColor: 'text-emerald-600',
+    color: 'bg-accent-bg',
+    accentColor: 'text-accent-700',
   },
   {
     id: 'annual',
@@ -49,8 +49,8 @@ const GUIDES = [
     description: '미사용 연차를 돈으로 받을 수 있어요. 발생 조건과 계산법을 알려드립니다.',
     icon: CalendarDays,
     href: '/guide/annual-leave',
-    color: 'bg-amber-50',
-    accentColor: 'text-amber-600',
+    color: 'bg-accent-bg',
+    accentColor: 'text-accent-700',
   },
 ]
 
@@ -63,7 +63,7 @@ export default function GuideHub() {
   }, [])
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-gradient-to-b from-blue-50 via-white to-white">
+    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-gradient-to-b from-brand-bg via-white to-white">
       {/* ── SEO 메타태그: title, description, canonical, JSON-LD 구조화 데이터 ── */}
       <PageMeta
         title="노동법 가이드 — 퇴직금·실업급여·주휴수당·연차수당 완전 정리 | CATCH"
@@ -72,18 +72,18 @@ export default function GuideHub() {
         jsonLd={BREADCRUMB_SCHEMA}
       />
 
-      <div className="w-full max-w-[460px] flex flex-col gap-6">
+      <div className="w-full max-w-[760px] flex flex-col gap-6">
 
         {/* ── 히어로 섹션 (TopNav가 Layout에서 제공되므로 자체 네비 제거) ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="rounded-3xl bg-gradient-to-br from-blue-600 via-blue-500 to-purple-600 p-8 text-white overflow-hidden relative"
+          className="rounded-3xl bg-gradient-to-br from-brand to-brand-strong p-8 text-white overflow-hidden relative"
         >
           {/* 배경 장식 */}
           <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl -z-10" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-400/20 rounded-full blur-3xl -z-10" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -z-10" />
 
           <div className="relative z-10 flex items-start gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
@@ -92,7 +92,7 @@ export default function GuideHub() {
           </div>
 
           <h1 className="text-3xl font-black mb-3 tracking-tight">CATCH 노동법 가이드</h1>
-          <p className="text-blue-100 text-sm leading-relaxed">
+          <p className="text-white/85 text-sm leading-relaxed">
             일용직 근로자를 위한 핵심 노동법 정보를 한눈에 확인하세요.
           </p>
         </motion.div>
@@ -112,7 +112,7 @@ export default function GuideHub() {
               >
                 <Link
                   to={guide.href}
-                  className={`flex flex-col h-full ${guide.color} rounded-2xl p-5 transition-all hover:shadow-lg hover:shadow-blue-200/30`}
+                  className={`flex flex-col h-full ${guide.color} rounded-2xl p-5 transition-all hover:shadow-lg hover:shadow-float`}
                 >
                   {/* 아이콘 */}
                   <div className={`w-10 h-10 rounded-xl ${guide.accentColor} bg-white mb-3 flex items-center justify-center`}>
@@ -147,7 +147,7 @@ export default function GuideHub() {
         >
           <button
             onClick={() => navigate('/severance')}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl py-4 font-bold text-base flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+            className="w-full bg-gradient-to-r from-brand to-brand-strong text-white rounded-2xl py-4 font-bold text-base flex items-center justify-center gap-2 hover:shadow-lg transition-all"
           >
             <Calculator className="w-5 h-5" />
             지금 바로 계산해보기

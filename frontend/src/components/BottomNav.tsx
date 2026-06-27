@@ -91,7 +91,8 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white/97 backdrop-blur-md border-t border-gray-100"
+      // 데스크톱(md+)은 상단 가로 내비(TopNav)가 메인이므로 하단탭 숨김
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/97 backdrop-blur-md border-t border-line"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="max-w-[500px] mx-auto">

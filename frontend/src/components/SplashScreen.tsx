@@ -27,7 +27,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         position: 'fixed',
         inset: 0,
         zIndex: 9999,
-        background: 'linear-gradient(135deg, #f0f7ff 0%, #f5f0ff 100%)',
+        background: 'linear-gradient(135deg, #f0f7ff 0%, #eaf2fe 100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -76,7 +76,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         <div
           style={{
             height: '100%',
-            background: 'linear-gradient(90deg, #2563eb, #7c3aed)',
+            background: 'linear-gradient(90deg, #2563eb, #1d4ed8)',
             borderRadius: '999px',
             animation: 'catchProgress 1.8s ease-in-out forwards',
           }}

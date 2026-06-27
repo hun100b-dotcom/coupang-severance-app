@@ -74,12 +74,12 @@ const sectionVariants = {
 // ── 정보 박스 컴포넌트 ──
 function InfoBox({ title, children, variant = 'default' }: { title: string; children: React.ReactNode; variant?: 'default' | 'warning' | 'tip' }) {
   const variantStyles = {
-    default: 'bg-emerald-50 border-emerald-200',
-    warning: 'bg-amber-50 border-amber-200',
-    tip: 'bg-green-50 border-green-200',
+    default: 'bg-accent-bg border-accent/30',
+    warning: 'bg-warning/10 border-warning/30',
+    tip: 'bg-accent-bg border-accent/30',
   }
   return (
-    <div className={`border-l-4 ${variant === 'warning' ? 'border-amber-500' : variant === 'tip' ? 'border-green-500' : 'border-emerald-500'} ${variantStyles[variant]} rounded-lg p-4 mb-4`}>
+    <div className={`border-l-4 ${variant === 'warning' ? 'border-warning' : variant === 'tip' ? 'border-accent' : 'border-accent'} ${variantStyles[variant]} rounded-lg p-4 mb-4`}>
       <h4 className="font-bold text-sm mb-2 text-gray-900">{title}</h4>
       <div className="text-sm text-gray-700">{children}</div>
     </div>
@@ -95,7 +95,7 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.3 }}
-      className="bg-white border border-gray-200 rounded-lg p-4 mb-6 sticky top-4 z-20"
+      className="bg-white border border-gray-200 rounded-lg p-4 mb-6 sticky top-14 z-20"
     >
       <button
         onClick={() => setShowContents(!showContents)}
@@ -112,8 +112,8 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
               href={`#${item.id}`}
               className={`block text-sm py-1 px-2 rounded transition-colors ${
                 activeSection === item.id
-                  ? 'bg-emerald-100 text-emerald-700 font-semibold'
-                  : 'text-gray-600 hover:text-emerald-600'
+                  ? 'bg-accent-bg text-accent-700 font-semibold'
+                  : 'text-gray-600 hover:text-accent-700'
               }`}
             >
               {item.label}
@@ -130,7 +130,7 @@ function GuideCard({ title, icon: Icon, href }: { title: string; icon: React.Rea
   return (
     <Link
       to={href}
-      className="block bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-4 hover:shadow-md transition-all"
+      className="block bg-gradient-to-br from-accent-700 to-accent border border-accent/30 rounded-xl p-4 hover:shadow-md transition-all"
     >
       <div className="flex items-center gap-3">
         <div className="text-2xl">{Icon}</div>
@@ -138,7 +138,7 @@ function GuideCard({ title, icon: Icon, href }: { title: string; icon: React.Rea
           <h4 className="font-bold text-sm text-gray-900">{title}</h4>
           <p className="text-xs text-gray-600 mt-1">가이드 보기</p>
         </div>
-        <ChevronRight className="w-4 h-4 text-emerald-600 ml-auto" />
+        <ChevronRight className="w-4 h-4 text-accent-700 ml-auto" />
       </div>
     </Link>
   )
@@ -177,18 +177,18 @@ export default function WeeklyAllowanceGuide() {
         jsonLd={[FAQ_SCHEMA, BREADCRUMB_SCHEMA]}
       />
 
-      <div className="w-full max-w-[460px] flex flex-col gap-4">
+      <div className="w-full max-w-[680px] flex flex-col gap-4">
 
         {/* ── 히어로 섹션 ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="rounded-2xl bg-gradient-to-br from-emerald-600 to-green-700 p-6 text-white overflow-hidden relative"
+          className="rounded-2xl bg-gradient-to-br from-accent-700 to-accent p-6 text-white overflow-hidden relative"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -z-10" />
-          <h2 className="text-2xl font-black mb-2">매주 빠짐없이 받아야 해요</h2>
-          <p className="text-emerald-100 text-sm mb-4">주 15시간 이상 근무 시 발생</p>
+          <h2 className="text-2xl font-black mb-2 text-white">매주 빠짐없이 받아야 해요</h2>
+          <p className="text-white/85 text-sm mb-4">주 15시간 이상 근무 시 발생</p>
           <div className="text-3xl font-black">근로기준법 55조 보장</div>
         </motion.div>
 
@@ -231,14 +231,14 @@ export default function WeeklyAllowanceGuide() {
 
           <div className="space-y-3 mb-4">
             <div className="flex gap-3">
-              <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
+              <div className="w-6 h-6 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
               <div>
                 <h4 className="font-bold text-sm text-gray-900">주간 근로 시간</h4>
                 <p className="text-xs text-gray-600 mt-1">1주 15시간 이상 근무</p>
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
+              <div className="w-6 h-6 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
               <div>
                 <h4 className="font-bold text-sm text-gray-900">주간 개근</h4>
                 <p className="text-xs text-gray-600 mt-1">그 주의 소정근로일을 모두 근무해야 함</p>
@@ -281,11 +281,11 @@ export default function WeeklyAllowanceGuide() {
 
           <div className="mb-4">
             <h3 className="font-bold text-sm text-gray-900 mb-3">계산 예시</h3>
-            <div className="bg-emerald-50 rounded-lg p-3 text-xs space-y-1 text-gray-700">
+            <div className="bg-accent-bg rounded-lg p-3 text-xs space-y-1 text-gray-700">
               <p>• 시급: 12,000원</p>
               <p>• 1일 근로시간: 8시간</p>
               <p>• 1일 통상임금: 12,000원 × 8시간 = 96,000원</p>
-              <p className="font-bold text-emerald-700 pt-2">
+              <p className="font-bold text-accent-700 pt-2">
                 → 주휴수당: 96,000원/주
               </p>
             </div>
@@ -317,11 +317,11 @@ export default function WeeklyAllowanceGuide() {
           </p>
 
           <div className="space-y-3 mb-4">
-            <div className="bg-emerald-50 rounded-lg p-3 text-xs">
+            <div className="bg-accent-bg rounded-lg p-3 text-xs">
               <p className="font-bold text-gray-900 mb-1">✓ 받을 수 있는 경우</p>
               <p className="text-gray-600">매주 정해진 요일에 출근하는 일용직 근로자</p>
             </div>
-            <div className="bg-amber-50 rounded-lg p-3 text-xs">
+            <div className="bg-accent-bg rounded-lg p-3 text-xs">
               <p className="font-bold text-gray-900 mb-1">✗ 받기 어려운 경우</p>
               <p className="text-gray-600">출근 패턴이 불규칙하거나 주 15시간 미만의 경우</p>
             </div>
@@ -350,28 +350,28 @@ export default function WeeklyAllowanceGuide() {
 
           <div className="space-y-3 mb-4">
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 text-sm font-bold flex items-center justify-center flex-shrink-0">1</div>
+              <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">1</div>
               <div>
                 <h4 className="font-bold text-sm text-gray-900">근무 기록 확인</h4>
                 <p className="text-xs text-gray-600 mt-1">지난 4주 동안의 일한 날짜와 시간 정리</p>
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 text-sm font-bold flex items-center justify-center flex-shrink-0">2</div>
+              <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">2</div>
               <div>
                 <h4 className="font-bold text-sm text-gray-900">급여 명세서 확인</h4>
                 <p className="text-xs text-gray-600 mt-1">주휴수당 항목이 있는지 확인</p>
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 text-sm font-bold flex items-center justify-center flex-shrink-0">3</div>
+              <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">3</div>
               <div>
                 <h4 className="font-bold text-sm text-gray-900">회사에 청구</h4>
                 <p className="text-xs text-gray-600 mt-1">내용증명으로 미지급 주휴수당 지급 요청</p>
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 text-sm font-bold flex items-center justify-center flex-shrink-0">4</div>
+              <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">4</div>
               <div>
                 <h4 className="font-bold text-sm text-gray-900">행정기관 신고</h4>
                 <p className="text-xs text-gray-600 mt-1">고용노동부 고용센터에 신고 (미지급 임금 문제)</p>
@@ -442,7 +442,7 @@ export default function WeeklyAllowanceGuide() {
         >
           <button
             onClick={() => navigate('/weekly-allowance')}
-            className="w-full bg-gradient-to-r from-emerald-600 to-green-700 text-white rounded-xl py-4 font-bold text-base flex items-center justify-center gap-2 hover:shadow-lg transition-all mb-4"
+            className="w-full bg-gradient-to-r from-accent-700 to-accent text-white rounded-xl py-4 font-bold text-base flex items-center justify-center gap-2 hover:shadow-lg transition-all mb-4"
           >
             <Calculator className="w-5 h-5" />
             지금 바로 주휴수당 계산하기

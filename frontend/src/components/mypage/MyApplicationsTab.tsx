@@ -360,7 +360,7 @@ export default function MyApplicationsTab({ userId }: Props) {
           >
             <div
               className="rounded-2xl px-4 py-3 text-[14px] font-bold text-white text-center"
-              style={{ background: 'linear-gradient(135deg, #3182f6, #7c3aed)', boxShadow: '0 8px 32px rgba(37,99,235,0.35)' }}
+              style={{ background: 'linear-gradient(135deg, #3182f6, #1b64da)', boxShadow: '0 8px 32px rgba(37,99,235,0.35)' }}
             >
               🔔 {notifToast}
             </div>

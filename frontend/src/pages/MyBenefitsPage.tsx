@@ -37,10 +37,10 @@ const BENEFITS: BenefitCard[] = [
   {
     id: 'duru',
     badge: '★ 필수 확인',
-    badgeColor: 'bg-blue-500 text-white',
+    badgeColor: 'bg-brand-strong text-white',
     icon: Shield,
-    iconBg: 'bg-blue-50',
-    iconColor: 'text-blue-500',
+    iconBg: 'bg-brand-bg',
+    iconColor: 'text-brand',
     title: '두루누리 사회보험 지원',
     subtitle: '고용보험·국민연금 보험료 최대 80% 지원',
     highlight: '월 보수 270만 원 미만이면 해당돼요',
@@ -56,10 +56,10 @@ const BENEFITS: BenefitCard[] = [
   {
     id: 'eitc',
     badge: '💰 현금 지급',
-    badgeColor: 'bg-emerald-500 text-white',
+    badgeColor: 'bg-[#047857] text-white',
     icon: Sparkles,
-    iconBg: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
+    iconBg: 'bg-accent-bg',
+    iconColor: 'text-[#047857]',
     title: '근로장려금 (EITC)',
     subtitle: '저소득 근로자 세금 환급형 지원금',
     highlight: '연 소득 3,800만 원 미만 단독 가구도 신청 가능',
@@ -76,10 +76,10 @@ const BENEFITS: BenefitCard[] = [
   {
     id: 'housing',
     badge: '🏠 주거 지원',
-    badgeColor: 'bg-violet-500 text-white',
+    badgeColor: 'bg-brand-strong text-white',
     icon: Home,
-    iconBg: 'bg-violet-50',
-    iconColor: 'text-violet-500',
+    iconBg: 'bg-brand-bg',
+    iconColor: 'text-brand',
     title: '주거급여',
     subtitle: '임차료·수선비 실비 지원',
     highlight: '중위소득 48% 이하이면 매달 임차료 받아요',
@@ -95,10 +95,10 @@ const BENEFITS: BenefitCard[] = [
   {
     id: 'employment',
     badge: '📋 취업 지원',
-    badgeColor: 'bg-amber-500 text-white',
+    badgeColor: 'bg-brand-strong text-white',
     icon: BookOpen,
-    iconBg: 'bg-amber-50',
-    iconColor: 'text-amber-600',
+    iconBg: 'bg-brand-bg',
+    iconColor: 'text-brand',
     title: '국민취업지원제도',
     subtitle: '구직 활동 지원금 + 취업 지원 프로그램',
     highlight: '구직촉진수당 월 50만 원, 최대 6개월 지급',
@@ -114,10 +114,10 @@ const BENEFITS: BenefitCard[] = [
   {
     id: 'insurance',
     badge: '🛡️ 고용보험',
-    badgeColor: 'bg-slate-600 text-white',
+    badgeColor: 'bg-ink-700 text-white',
     icon: Users,
-    iconBg: 'bg-slate-100',
-    iconColor: 'text-slate-600',
+    iconBg: 'bg-[#F2F4F6]',
+    iconColor: 'text-ink-700',
     title: '고용보험 피보험자 혜택',
     subtitle: '실업급여·출산급여·육아휴직급여 수급 자격',
     highlight: '18개월 중 180일 이상 가입 → 실업급여 자격',
@@ -133,10 +133,10 @@ const BENEFITS: BenefitCard[] = [
   {
     id: 'health',
     badge: '💊 건강보험',
-    badgeColor: 'bg-rose-500 text-white',
+    badgeColor: 'bg-brand-strong text-white',
     icon: Heart,
-    iconBg: 'bg-rose-50',
-    iconColor: 'text-rose-500',
+    iconBg: 'bg-brand-bg',
+    iconColor: 'text-brand',
     title: '건강보험료 경감',
     subtitle: '지역가입자 건강보험료 경감 제도',
     highlight: '소득·지역 기준 충족 시 최대 50% 경감',
@@ -166,7 +166,7 @@ function GovernmentBenefitsSection() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="rounded-[28px] bg-gradient-to-br from-violet-500 to-purple-700 p-5 text-white shadow-[0_12px_40px_rgba(139,92,246,0.3)]"
+        className="rounded-xl bg-gradient-to-br from-brand-strong to-brand-700 p-5 text-white shadow-[0_12px_40px_rgba(27,100,218,0.22)]"
       >
         <p className="text-[11px] font-bold opacity-70 mb-1 tracking-widest uppercase">Benefits Guide</p>
         <p className="text-[22px] font-extrabold leading-tight mb-2">
@@ -176,7 +176,7 @@ function GovernmentBenefitsSection() {
           놓치고 있는 지원금이 있을 수 있어요.<br />카드를 눌러 내용을 확인해 보세요.
         </p>
         <div className="mt-3 flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-white/60 animate-pulse inline-block" />
+          <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse inline-block" />
           <p className="text-[11px] opacity-70">총 {BENEFITS.length}가지 혜택 안내</p>
         </div>
       </motion.div>
@@ -192,7 +192,7 @@ function GovernmentBenefitsSection() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 + i * 0.06 }}
-            className="rounded-[24px] bg-white/60 backdrop-blur-xl border border-white/60 shadow-[0_8px_32px_rgba(49,130,246,0.06)] overflow-hidden"
+            className="rounded-xl bg-white border border-line shadow-[0_8px_32px_rgba(49,130,246,0.06)] overflow-hidden"
           >
             {/* 카드 헤더 — 탭 역할 */}
             <button
@@ -219,9 +219,9 @@ function GovernmentBenefitsSection() {
 
             {/* 핵심 수치 */}
             <div className="px-4 pb-3">
-              <div className="rounded-xl bg-white/50 border border-white/60 px-3 py-2 flex items-center justify-between">
+              <div className="rounded-xl bg-[#F7F9FC] border border-line px-3 py-2 flex items-center justify-between">
                 <p className="text-[11px] text-[#8b95a1]">{benefit.amountLabel}</p>
-                <p className="text-sm font-extrabold text-[#3182f6]">{benefit.amount}</p>
+                <p className="text-sm font-extrabold text-brand-strong">{benefit.amount}</p>
               </div>
             </div>
 
@@ -231,10 +231,10 @@ function GovernmentBenefitsSection() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
-                className="px-4 pb-4 space-y-3 border-t border-white/40 pt-3"
+                className="px-4 pb-4 space-y-3 border-t border-line pt-3"
               >
-                <div className="rounded-xl bg-blue-50/80 border border-blue-100/60 px-3 py-2.5">
-                  <p className="text-[12px] font-bold text-blue-700">{benefit.highlight}</p>
+                <div className="rounded-xl bg-brand-bg border border-brand-100 px-3 py-2.5">
+                  <p className="text-[12px] font-bold text-brand-strong">{benefit.highlight}</p>
                 </div>
 
                 <div>
@@ -242,16 +242,16 @@ function GovernmentBenefitsSection() {
                   <ul className="space-y-1.5">
                     {benefit.conditions.map((c, ci) => (
                       <li key={ci} className="flex gap-2 text-[12px] text-[#4e5968] leading-relaxed">
-                        <span className="text-[#3182f6] font-bold flex-shrink-0">•</span>
+                        <span className="text-brand-strong font-bold flex-shrink-0">•</span>
                         {c}
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <div className="rounded-xl bg-amber-50/80 border border-amber-100/60 px-3 py-2.5">
-                  <p className="text-[11px] font-bold text-amber-700 mb-0.5">💡 신청 방법</p>
-                  <p className="text-[12px] text-amber-800 leading-relaxed">{benefit.tip}</p>
+                <div className="rounded-xl bg-[#F7F9FC] border border-line px-3 py-2.5">
+                  <p className="text-[11px] font-bold text-ink-700 mb-0.5">💡 신청 방법</p>
+                  <p className="text-[12px] text-ink-700 leading-relaxed">{benefit.tip}</p>
                 </div>
               </motion.div>
             )}
@@ -264,7 +264,7 @@ function GovernmentBenefitsSection() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className="rounded-[24px] bg-white/40 backdrop-blur-lg border border-white/50 px-4 py-4"
+        className="rounded-xl bg-white border border-line px-4 py-4"
       >
         <p className="text-[11px] font-bold text-[#4e5968] mb-2.5">📞 통합 문의처</p>
         <div className="space-y-2">
@@ -276,7 +276,7 @@ function GovernmentBenefitsSection() {
           ].map(([org, tel]) => (
             <div key={org} className="flex justify-between items-center text-[12px]">
               <span className="text-[#4e5968]">{org}</span>
-              <span className="font-bold text-[#3182f6]">{tel}</span>
+              <span className="font-bold text-brand-strong">{tel}</span>
             </div>
           ))}
         </div>
@@ -300,18 +300,18 @@ export default function MyBenefitsPage() {
     <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-10">
 
       {/* ── 헤더 ── */}
-      <header className="sticky top-0 z-30 w-full max-w-[460px] py-3 mb-1">
-        <div className="flex items-center gap-2 px-2 py-2 rounded-2xl bg-white/60 backdrop-blur-2xl border border-white/50 shadow-[0_2px_12px_rgba(49,130,246,0.07)]">
+      <header className="sticky top-14 z-40 w-full max-w-[600px] py-3 mb-1">
+        <div className="flex items-center gap-2 px-2 py-2 rounded-2xl bg-white border border-line shadow-[0_2px_12px_rgba(49,130,246,0.07)]">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="p-1.5 rounded-xl hover:bg-black/5 transition-colors active:scale-95"
+            className="flex items-center justify-center w-11 h-11 -ml-1 rounded-md hover:bg-[#F2F4F6] transition-colors active:scale-95"
           >
             <ChevronLeft className="w-5 h-5 text-[#191f28]" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-xl bg-violet-100 flex items-center justify-center">
-              <Gift className="w-4 h-4 text-violet-600" />
+            <div className="w-7 h-7 rounded-xl bg-brand-bg flex items-center justify-center">
+              <Gift className="w-4 h-4 text-brand" />
             </div>
             <h1 className="text-[17px] font-extrabold text-[#191f28] tracking-tight">나의 혜택</h1>
           </div>
@@ -319,7 +319,7 @@ export default function MyBenefitsPage() {
       </header>
 
       {/* ── 콘텐츠 ── */}
-      <div className="w-full max-w-[460px]">
+      <div className="w-full max-w-[600px]">
         <GovernmentBenefitsSection />
       </div>
     </div>

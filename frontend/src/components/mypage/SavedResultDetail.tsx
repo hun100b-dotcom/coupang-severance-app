@@ -40,15 +40,15 @@ function SeveranceDetail({ p }: { p: SeverancePayload }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-xl bg-brand-bg flex items-center justify-center">
           <span className="text-lg">💼</span>
         </div>
         <p className="font-extrabold text-[#191f28]">퇴직금 계산 결과</p>
       </div>
       {rows.map(r => (
-        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-blue-50 border border-blue-100' : 'bg-slate-50 border border-slate-100'}`}>
+        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-brand-bg border border-brand-100' : 'bg-slate-50 border border-slate-100'}`}>
           <span className="text-[12px] text-[#4e5968]">{r.label}</span>
-          <span className={`text-sm font-bold ${r.highlight ? 'text-[#3182f6]' : 'text-[#191f28]'}`}>{r.value}</span>
+          <span className={`text-sm font-bold ${r.highlight ? 'text-brand-strong' : 'text-[#191f28]'}`}>{r.value}</span>
         </div>
       ))}
       {p.eligibility_message && (
@@ -76,15 +76,15 @@ function WeeklyAllowanceDetail({ p }: { p: WeeklyAllowancePayload }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-xl bg-brand-bg flex items-center justify-center">
           <span className="text-lg">📅</span>
         </div>
         <p className="font-extrabold text-[#191f28]">주휴수당 계산 결과</p>
       </div>
       {rows.map(r => (
-        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-emerald-50 border border-emerald-100' : 'bg-slate-50 border border-slate-100'}`}>
+        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-brand-bg border border-brand-100' : 'bg-slate-50 border border-slate-100'}`}>
           <span className="text-[12px] text-[#4e5968]">{r.label}</span>
-          <span className={`text-sm font-bold ${r.highlight ? 'text-emerald-700' : 'text-[#191f28]'}`}>{r.value}</span>
+          <span className={`text-sm font-bold ${r.highlight ? 'text-brand-strong' : 'text-[#191f28]'}`}>{r.value}</span>
         </div>
       ))}
     </div>
@@ -104,15 +104,15 @@ function AnnualLeaveDetail({ p }: { p: AnnualLeavePayload }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-xl bg-brand-bg flex items-center justify-center">
           <span className="text-lg">📋</span>
         </div>
         <p className="font-extrabold text-[#191f28]">연차수당 계산 결과</p>
       </div>
       {rows.map(r => (
-        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-amber-50 border border-amber-100' : 'bg-slate-50 border border-slate-100'}`}>
+        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-brand-bg border border-brand-100' : 'bg-slate-50 border border-slate-100'}`}>
           <span className="text-[12px] text-[#4e5968]">{r.label}</span>
-          <span className={`text-sm font-bold ${r.highlight ? 'text-amber-700' : 'text-[#191f28]'}`}>{r.value}</span>
+          <span className={`text-sm font-bold ${r.highlight ? 'text-brand-strong' : 'text-[#191f28]'}`}>{r.value}</span>
         </div>
       ))}
     </div>
@@ -132,15 +132,15 @@ function UnemploymentDetail({ p }: { p: UnemploymentPayload }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-xl bg-brand-bg flex items-center justify-center">
           <span className="text-lg">🛡️</span>
         </div>
         <p className="font-extrabold text-[#191f28]">실업급여 계산 결과</p>
       </div>
       {rows.map(r => (
-        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-violet-50 border border-violet-100' : 'bg-slate-50 border border-slate-100'}`}>
+        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-brand-bg border border-brand-100' : 'bg-slate-50 border border-slate-100'}`}>
           <span className="text-[12px] text-[#4e5968]">{r.label}</span>
-          <span className={`text-sm font-bold ${r.highlight ? 'text-violet-700' : 'text-[#191f28]'}`}>{r.value}</span>
+          <span className={`text-sm font-bold ${r.highlight ? 'text-brand-strong' : 'text-[#191f28]'}`}>{r.value}</span>
         </div>
       ))}
     </div>

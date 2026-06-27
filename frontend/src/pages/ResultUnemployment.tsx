@@ -108,7 +108,7 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
               <p className="label-sm">예상 실업급여 총액</p>
               {eligible && <span style={{ fontSize: '0.72rem', color: 'var(--toss-text-3)', fontWeight: 500 }}>세전</span>}
             </div>
-            <p className="num-hero" style={{ color: eligible ? 'var(--toss-blue)' : '#cc2233' }}>
+            <p className="num-hero" style={{ color: eligible ? '#1B64DA' : '#cc2233' }}>
               {eligible ? fmt(Math.round(total_estimate)) : '수급 불가'}
             </p>
           </div>
@@ -147,7 +147,7 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
                   <div className="progress-bar-fill" style={{ width: `${Math.min((days / 270) * 100, 100)}%`, height: '100%', borderRadius: 6 }} />
                 </div>
               </div>
-              <span style={{ fontWeight: 800, color: 'var(--toss-blue)', fontFamily: "'Inter', sans-serif", fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
+              <span style={{ fontWeight: 800, color: '#1B64DA', fontFamily: "'Inter', sans-serif", fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
                 {days}일
               </span>
             </div>
@@ -158,7 +158,7 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
         )}
 
         {/* 안내 */}
-        <div style={{ padding: '14px 18px', background: 'rgba(255,255,255,0.5)', borderRadius: 14, marginBottom: 20, fontSize: '0.82rem', color: 'var(--toss-text-3)', lineHeight: 1.6, backdropFilter: 'blur(10px)' }}>
+        <div style={{ padding: '14px 18px', background: '#F7F9FC', border: '1px solid #E5E8EB', borderRadius: 12, marginBottom: 20, fontSize: '0.85rem', color: 'var(--toss-text-2)', lineHeight: 1.6 }}>
           ℹ️ 이 결과는 참고용이에요. 정확한 실업급여는 고용센터에서 확인해 주세요.
         </div>
 

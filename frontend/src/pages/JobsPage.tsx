@@ -1,7 +1,11 @@
-// 채용정보 피드 — 물류센터 특화 UI v3
-// 히어로 로테이션 문구 + 섹션 분류 + 공식 로고 + 즐겨찾기 + 프레임카드 상세(지도 포함)
-// + 지원하기 버튼: 로그인 게이트 → 인적사항 폼 모달 → job_applications INSERT (D-NEW-5)
+// 채용정보 피드 — 2026 리디자인 "B-fixed"
+// - Layout 안 페이지(TopNav/BottomNav는 Layout 제공) → 콘텐츠만 렌더
+// - 색: 블루 메인 + 그린(채용 보조) + 회색 중립 + 의미색(긴급=빨강/주황). 무지개(퍼플/인디고/스카이/틸) 제거
+// - 반응형: 모바일 1열 / sm 2열 / lg 3열 카드 그리드 · 상세는 모바일 바텀시트 / 데스크톱 중앙 다이얼로그
+// - 긴 회사명·주소·근무시간 텍스트 잘림(truncate) 보강
+// - ⚠️ 기능 로직(즐겨찾기·지원 플로우·실시간 구독·토스트·모달)은 전부 보존, 스타일/구조만 개편
 import { useEffect, useState, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import PageMeta from '../components/PageMeta'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -20,6 +24,7 @@ import type { JobPosting } from '../types/supabase'
 import type { JobFavorite } from '../types/supabase'
 import KakaoShareButton from '../components/KakaoShareButton'
 import { useKakaoShare } from '../hooks/useKakaoShare'
+import Container from '../components/ui/Container'
 // 지원 폼 모달: 인적사항 직접 입력 + 개인정보 동의 (D-NEW-4)
 import ApplyFormModal from '../components/jobs/ApplyFormModal'
 
@@ -41,38 +46,30 @@ interface JobCardData extends JobPosting {
   map_query: string  // 지도 검색어
 }
 
-// ── 히어로 로테이션 문구 + 색상 ──
+// ── 히어로 로테이션 문구 (색은 통일 — 무지개 제거) ──
 const HERO_COPIES = [
-  { text: '쿠팡 · CJ · 컬리 채용 정보를 한 곳에서', color: 'text-sky-200' },
-  { text: '채용팀에서 직접 보내주는 검증된 채용 정보', color: 'text-emerald-200' },
-  { text: '알바몬에도 없는, 현장의 실시간 공고', color: 'text-amber-200' },
-  { text: '매일 새로 올라오는 채용 공고를 놓치지 마세요', color: 'text-violet-200' },
+  '쿠팡 · CJ · 컬리 채용 정보를 한 곳에서',
+  '채용팀에서 직접 보내주는 검증된 채용 정보',
+  '알바몬에도 없는, 현장의 실시간 공고',
+  '매일 새로 올라오는 채용 공고를 놓치지 마세요',
 ]
 
 // 회사 로고 매핑은 lib/jobUtils.ts 에서 공유 (COMPANY_LOGOS, getCompanyLogoUrl)
 
 // ── DB JobPosting → UI JobCardData 변환 함수 ──
-// job_postings 테이블의 section + benefits 컬럼(20260410 추가)을 UI에 반영합니다.
 function toCardData(job: JobPosting): JobCardData {
-  // recruit_type: DB의 section 컬럼 우선 사용, 없으면 is_urgent로 폴백
-  // section 컬럼: today-urgent(오늘추가모집) | tomorrow-urgent(내일긴급) | always(상시)
   let recruit_type: 'urgent_today' | 'urgent_tomorrow' | 'regular' = 'regular'
   if (job.section === 'today-urgent') {
     recruit_type = 'urgent_today'
   } else if (job.section === 'tomorrow-urgent') {
     recruit_type = 'urgent_tomorrow'
   } else if (job.is_urgent) {
-    // 레거시 호환: section 없는 기존 긴급 공고 → 오늘 추가모집으로 표시
     recruit_type = 'urgent_today'
   }
 
-  // 로고: 회사명에 키워드가 포함되면 해당 로고, 없으면 기본 아이콘
   const logo_url = getCompanyLogoUrl(job.company_name)
-
-  // 복리후생: DB의 benefits 배열 사용 (20260410 추가). 없으면 빈 배열
   const benefits: string[] = Array.isArray(job.benefits) ? job.benefits : []
 
-  // 지원 방법: contact_phone / external_link로부터 빌드
   const apply_methods: ApplyMethod[] = []
   if (job.contact_phone) {
     apply_methods.push({ type: 'phone', label: '전화 지원', value: job.contact_phone })
@@ -86,50 +83,43 @@ function toCardData(job: JobPosting): JobCardData {
     ...job,
     logo_url,
     recruit_type,
-    address_detail: job.region,  // DB에 상세주소 없음 → region으로 대체
+    address_detail: job.region,
     benefits,
     apply_methods,
-    // 카카오맵 검색어: "지역 회사명 센터명"
     map_query: `${job.region} ${job.company_name} ${job.center_name}`,
   }
 }
 
-// ── 섹션 설정 ──
+// ── 섹션 설정 (의미색: 오늘=danger, 내일=warning, 상시=accent) ──
 const SECTIONS = [
-  { type: 'urgent_today' as const, label: '오늘 추가모집', color: '#ef4444', bg: 'from-red-500/10 to-red-500/5', border: 'border-red-200', icon: '🔥' },
-  { type: 'urgent_tomorrow' as const, label: '내일 긴급모집', color: '#f97316', bg: 'from-orange-500/10 to-orange-500/5', border: 'border-orange-200', icon: '⚡' },
-  { type: 'regular' as const, label: '상시 모집', color: '#22c55e', bg: 'from-emerald-500/10 to-emerald-500/5', border: 'border-emerald-200', icon: '✅' },
+  { type: 'urgent_today' as const,    label: '오늘 추가모집', color: '#C81E2E', bg: 'bg-danger/[0.07]',  border: 'border-danger/20',  icon: '🔥' },
+  { type: 'urgent_tomorrow' as const, label: '내일 긴급모집', color: '#B45309', bg: 'bg-warning/[0.08]', border: 'border-warning/25', icon: '⚡' },
+  { type: 'regular' as const,         label: '상시 모집',    color: '#047857', bg: 'bg-accent/[0.08]',  border: 'border-accent/25',  icon: '✅' },
 ]
 
-// ── CTA 매핑 ──
+// ── CTA 매핑 (무지개 제거: phone=브랜드 / sms=그린 / kakao=카카오 브랜드색 유지 / landing=중립 / catch=브랜드) ──
 const CTA_MAP: Record<string, { icon: typeof Phone; bg: string; text: string }> = {
-  phone:   { icon: Phone,          bg: 'bg-gradient-to-r from-[#3182F6] to-[#2563eb]', text: 'text-white' },
-  sms:     { icon: MessageSquare,   bg: 'bg-gradient-to-r from-[#10b981] to-[#059669]', text: 'text-white' },
+  phone:   { icon: Phone,          bg: 'bg-brand hover:bg-brand-strong', text: 'text-white' },
+  sms:     { icon: MessageSquare,   bg: 'bg-accent hover:bg-accent-strong', text: 'text-white' },
   kakao:   { icon: Send,            bg: 'bg-[#FEE500]', text: 'text-[#3C1E1E]' },
-  landing: { icon: ExternalLink,    bg: 'bg-gray-100 border border-gray-200', text: 'text-[#191f28]' },
-  catch:   { icon: Rocket,          bg: 'bg-gradient-to-r from-[#3182F6] to-[#6366f1]', text: 'text-white' },
+  landing: { icon: ExternalLink,    bg: 'bg-[#F2F4F6] border border-line', text: 'text-ink-900' },
+  catch:   { icon: Rocket,          bg: 'bg-brand hover:bg-brand-strong', text: 'text-white' },
 }
 
 type SortKey = 'latest' | 'wage'
-// REGION_OPTIONS는 DB 데이터 로드 후 동적으로 생성합니다 (컴포넌트 내부로 이동)
 
 export default function JobsPage() {
-  // ── SEO: 채용정보 페이지 탭 제목 설정 → 언마운트 시 기본 타이틀 복원 ──
   useEffect(() => {
-    // PageMeta 컴포넌트가 title을 관리하므로 document.title 직접 설정 제거
     return () => {}
   }, [])
 
   const navigate = useNavigate()
   const { user, isLoggedIn } = useAuth()
 
-  // 카카오톡 공유 훅 초기화
   const { shareJob } = useKakaoShare()
 
   const [loading, setLoading] = useState(true)
-  // ── DB에서 불러온 공고 목록 (변환된 JobCardData 형태) ──
   const [allJobs, setAllJobs] = useState<JobCardData[]>([])
-  // 에러 메시지 (DB 조회 실패 시)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [selectedJob, setSelectedJob] = useState<JobCardData | null>(null)
   const [regionFilter, setRegionFilter] = useState('전체')
@@ -140,22 +130,16 @@ export default function JobsPage() {
   const [favorites, setFavorites] = useState<JobFavorite[]>([])
   const [heroCopyIdx, setHeroCopyIdx] = useState(0)
 
-  // 지원한 공고 ID 맵 (job_posting_id → application_id)
   const [appliedMap, setAppliedMap] = useState<Record<string, string>>({})
-  // 지원 진행 중인 공고 ID (버튼 로딩 표시용 — 레거시, isApplySubmitting으로 대체)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_applyingId, _setApplyingId] = useState<string | null>(null)
-  // 로그인 유도 모달 표시 여부
   const [loginPromptOpen, setLoginPromptOpen] = useState(false)
-  // 인라인 토스트 메시지 (alert 대체 — 2초 후 자동 소멸)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [toastType, setToastType] = useState<'success' | 'error'>('success')
-  // 지원 폼 모달 상태 (D-NEW-5: 로그인 게이트 → 인적사항 입력 → 지원 완료)
   const [applyModalOpen, setApplyModalOpen] = useState(false)
   const [pendingApplyJobId, setPendingApplyJobId] = useState<string | null>(null)
   const [isApplySubmitting, setIsApplySubmitting] = useState(false)
 
-  // ── URL 쿼리파라미터: Home 프리뷰에서 ?focus=<jobId>로 진입 시 해당 공고 자동 오픈 ──
   const [searchParams, setSearchParams] = useSearchParams()
 
   // 히어로 문구 로테이션
@@ -164,23 +148,20 @@ export default function JobsPage() {
     return () => clearInterval(timer)
   }, [])
 
-  // ── Supabase job_postings 조회 함수 ──
-  // status = 'active' 인 공고만 가져와 JobCardData로 변환
+  // ── Supabase job_postings 조회 ──
   const fetchJobs = async () => {
     if (!supabase) { setLoading(false); return }
     setFetchError(null)
     try {
-      // 오늘 날짜 (KST 기준, YYYY-MM-DD) — 만료 공고 자동 제외에 사용
       const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })
       const { data, error } = await supabase
         .from('job_postings')
         .select('*')
-        .eq('status', 'active')        // 활성 공고만
-        .or(`expires_at.gte.${todayStr},expires_at.is.null`)  // 마감일 지난 공고 자동 제외 (직업안정법 허위·과장광고 대응)
-        .order('is_urgent', { ascending: false })  // 급구 먼저
-        .order('created_at', { ascending: false })  // 최신순
+        .eq('status', 'active')
+        .or(`expires_at.gte.${todayStr},expires_at.is.null`)
+        .order('is_urgent', { ascending: false })
+        .order('created_at', { ascending: false })
       if (error) throw error
-      // DB 데이터를 UI 카드 데이터 형태로 변환
       setAllJobs((data ?? []).map(job => toCardData(job as JobPosting)))
     } catch (err) {
       console.error('[공고 로드 오류]', err)
@@ -190,13 +171,11 @@ export default function JobsPage() {
     }
   }
 
-  // ── 최초 공고 로드 ──
   useEffect(() => {
     fetchJobs()
   }, [])
 
   // ── Supabase Realtime 구독 ──
-  // 어드민이 공고를 추가/수정/삭제하면 채용탭에 즉시 반영
   useEffect(() => {
     if (!supabase) return
     const sb = supabase
@@ -205,38 +184,33 @@ export default function JobsPage() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'job_postings' },
-        () => {
-          // 변경 감지 시 전체 목록 재조회
-          fetchJobs()
-        }
+        () => { fetchJobs() }
       )
       .subscribe()
 
     return () => { sb.removeChannel(channel) }
   }, [])
 
-  // ── Home 프리뷰에서 ?focus=<jobId>로 진입 시 해당 공고 상세 자동 오픈 ──
+  // ── ?focus=<jobId>로 진입 시 해당 공고 상세 자동 오픈 ──
   useEffect(() => {
     const focusId = searchParams.get('focus')
     if (!focusId || loading || allJobs.length === 0) return
     const target = allJobs.find(j => j.id === focusId)
     if (target) {
       setSelectedJob(target)
-      // focus 파라미터 제거 (뒤로가기 시 다시 열리지 않도록)
       searchParams.delete('focus')
       setSearchParams(searchParams, { replace: true })
     }
   }, [loading, allJobs, searchParams, setSearchParams])
 
-  // 즐겨찾기 + 지원 현황 동시 로드
+  // 즐겨찾기 + 지원 현황 로드
   useEffect(() => {
     if (!isLoggedIn || !user) return
     listFavorites(user.id).then(setFavorites)
     getAppliedJobIds(user.id).then(setAppliedMap)
   }, [isLoggedIn, user])
 
-  // ── 지역 옵션 동적 생성 ──
-  // DB에서 불러온 공고의 region 값으로부터 중복 제거 후 생성
+  // ── 지역 옵션 ──
   const REGION_OPTIONS = useMemo(
     () => ['전체', ...Array.from(new Set(allJobs.map(j => j.region))).sort()],
     [allJobs]
@@ -264,7 +238,6 @@ export default function JobsPage() {
   const sections = SECTIONS.map(s => ({ ...s, jobs: filtered.filter(j => j.recruit_type === s.type) })).filter(s => s.jobs.length > 0)
 
   // 즐겨찾기 토글
-  // 로그인하지 않은 상태에서 별 클릭 시 → 로그인 유도 모달 표시
   const toggleFav = async (type: 'company' | 'center', value: string) => {
     if (!isLoggedIn || !user) { setLoginPromptOpen(true); return }
     if (isFavorited(favorites, type, value)) {
@@ -275,33 +248,24 @@ export default function JobsPage() {
     setFavorites(await listFavorites(user.id))
   }
 
-  // ── 인라인 토스트 표시 헬퍼 ──
-  // alert() 대신 상단 fixed 배너로 2초간 표시 후 자동 사라짐
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToastMsg(msg)
     setToastType(type)
     setTimeout(() => setToastMsg(null), 2000)
   }
 
-  // ── 지원하기 핸들러 — 1단계: 게이트 체크 ──
-  // 로그인 여부 → 중복 확정 사전 체크 → 모달 오픈 (D-NEW-5)
+  // ── 지원하기 1단계: 게이트 체크 ──
   const handleApply = async (e: React.MouseEvent, jobId: string) => {
-    e.stopPropagation()  // 카드 클릭 이벤트 버블링 방지
-
-    // 비로그인 → 로그인 유도 모달
+    e.stopPropagation()
     if (!isLoggedIn || !user) {
       setLoginPromptOpen(true)
       return
     }
-
-    // 이미 지원한 공고 → 중복 방지
     if (appliedMap[jobId]) return
 
-    // 해당 공고의 work_date 조회 (중복 확정 체크용)
     const targetJob = allJobs.find(j => j.id === jobId)
     const jobWorkDate = targetJob?.work_date ?? null
 
-    // 프론트 사전 체크: 같은 날짜에 이미 confirmed 상태인 지원이 있으면 차단
     if (jobWorkDate) {
       const conflictDate = await checkConfirmedOnDate(user.id, jobWorkDate)
       if (conflictDate) {
@@ -313,13 +277,11 @@ export default function JobsPage() {
       }
     }
 
-    // 지원 폼 모달 오픈 (인적사항 + 근무정보 + 동의 입력)
     setPendingApplyJobId(jobId)
     setApplyModalOpen(true)
   }
 
-  // ── 지원하기 핸들러 — 2단계: 폼 제출 ──
-  // ApplyFormModal에서 인적사항 + 근무정보 + 동의를 받아 DB에 INSERT
+  // ── 지원하기 2단계: 폼 제출 ──
   const handleApplyModalSubmit = async (data: {
     applicant_name: string
     applicant_birth: string
@@ -356,9 +318,8 @@ export default function JobsPage() {
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-4 pb-28">
-      {/* ── SEO 메타태그: 채용정보 페이지 ── */}
-      {/* noIndex: 공고 본문(일급·회사명·센터명)이 Google 스니펫에 노출되지 않도록 차단 */}
+    <div className="relative z-[1]">
+      {/* ── SEO 메타태그 ── */}
       <PageMeta
         title="쿠팡·컬리 일용직 채용정보 | CATCH"
         description="쿠팡, 쿠팡이츠, 마켓컬리, CJ대한통운 등 일용직 단기알바 최신 채용정보. 오늘 시작 가능한 급구 공고 확인하세요."
@@ -366,8 +327,7 @@ export default function JobsPage() {
         noIndex={true}
       />
 
-      {/* ── 인라인 토스트 배너 (alert 대체) ──
-          fixed 상단 배너: 2초간 표시 후 AnimatePresence로 부드럽게 사라짐 */}
+      {/* ── 인라인 토스트 배너 ── */}
       <AnimatePresence>
         {toastMsg && (
           <motion.div
@@ -375,42 +335,34 @@ export default function JobsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className={`fixed top-4 left-1/2 -translate-x-1/2 z-[300] w-[calc(100%-32px)] max-w-[428px]
-              px-4 py-3 rounded-2xl shadow-lg text-sm font-semibold text-center
-              ${toastType === 'success'
-                ? 'bg-[#3182f6] text-white'
-                : 'bg-red-500 text-white'
-              }`}
+            className={`fixed top-16 left-1/2 -translate-x-1/2 z-[300] w-[calc(100%-32px)] max-w-[428px]
+              px-4 py-3 rounded-lg shadow-float text-sm font-semibold text-center text-white
+              ${toastType === 'success' ? 'bg-brand' : 'bg-danger'}`}
           >
             {toastMsg}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="w-full max-w-[460px] flex flex-col gap-4">
+      <Container className="flex flex-col gap-5 md:gap-7 pt-4 pb-8">
 
-        {/* ── 히어로 카드 — 생동감 있는 그래디언트 + 로테이션 문구 ── */}
+        {/* ════════════ 히어로 (블루 그라데이션) ════════════ */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="rounded-[28px] overflow-hidden relative"
+          className="relative overflow-hidden rounded-xl border border-brand-700
+            bg-gradient-to-br from-brand-strong to-brand-700 p-6 md:p-8 shadow-[0_10px_30px_rgba(27,100,218,0.22)]"
         >
-          <div className="bg-gradient-to-br from-[#1e40af] via-[#3b82f6] to-[#7c3aed] p-6 pb-5">
-            {/* 글로우 장식 */}
-            <div className="absolute -top-6 -right-6 w-40 h-40 rounded-full bg-cyan-400/20 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
-            <div className="absolute top-1/2 right-1/4 w-20 h-20 rounded-full bg-white/[0.06] blur-2xl pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent animate-shimmer bg-[length:200%_100%] pointer-events-none" />
+          <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/[0.08] blur-3xl pointer-events-none" />
 
-            <div className="relative z-10">
-              {/* 메인 타이틀 */}
-              <h1 className="text-[22px] font-black text-white leading-tight tracking-tight mb-2">
-                우리 지역 채용 정보<br />캐치하기
+          <div className="relative z-10 md:flex md:items-center md:justify-between md:gap-8">
+            <div className="md:flex-1">
+              <h1 className="text-[22px] md:text-[26px] font-black text-white leading-tight tracking-tight mb-2 break-keep">
+                우리 지역 채용 정보 캐치하기
               </h1>
-
-              {/* 로테이션 서브 타이틀 — 문구별 색상 변화 */}
-              <div className="h-[40px] overflow-hidden mb-4">
+              {/* 로테이션 서브타이틀 (색 통일) */}
+              <div className="h-[26px] overflow-hidden">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.p
                     key={heroCopyIdx}
@@ -418,125 +370,147 @@ export default function JobsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                    className={`text-[13px] leading-relaxed font-medium ${HERO_COPIES[heroCopyIdx].color}`}
+                    className="text-[13px] md:text-[14px] leading-relaxed font-medium text-white/90 break-keep"
                   >
-                    {HERO_COPIES[heroCopyIdx].text}
+                    {HERO_COPIES[heroCopyIdx]}
                   </motion.p>
                 </AnimatePresence>
               </div>
+            </div>
 
-              {/* 요약 수치 — 375px 모바일에서 4칸 유지하되 px-1로 패딩 축소 */}
-              <div className="grid grid-cols-4 gap-1.5">
-                {[
-                  { n: allJobs.length, label: '전체', c: 'text-white' },
-                  { n: allJobs.filter(j => j.recruit_type === 'urgent_today').length, label: '오늘긴급', c: 'text-red-300' },
-                  { n: allJobs.filter(j => j.recruit_type === 'urgent_tomorrow').length, label: '내일긴급', c: 'text-amber-300' },
-                  { n: allJobs.filter(j => j.recruit_type === 'regular').length, label: '상시', c: 'text-emerald-300' },
-                ].map(s => (
-                  <div key={s.label} className="px-1 py-2 rounded-2xl bg-white/[0.12] backdrop-blur-sm text-center">
-                    <p className={`text-[16px] font-black ${s.c}`}>{s.n}</p>
-                    <p className="text-[9px] text-white/50 font-medium leading-tight">{s.label}</p>
-                  </div>
-                ))}
-              </div>
+            {/* 요약 수치 (의미색 점만 사용, 숫자는 흰색) */}
+            <div className="grid grid-cols-4 gap-2 mt-5 md:mt-0 md:w-[360px]">
+              {[
+                { n: allJobs.length, label: '전체', dot: 'bg-white' },
+                { n: allJobs.filter(j => j.recruit_type === 'urgent_today').length, label: '오늘긴급', dot: 'bg-danger' },
+                { n: allJobs.filter(j => j.recruit_type === 'urgent_tomorrow').length, label: '내일긴급', dot: 'bg-warning' },
+                { n: allJobs.filter(j => j.recruit_type === 'regular').length, label: '상시', dot: 'bg-accent' },
+              ].map(s => (
+                <div key={s.label} className="px-1 py-2.5 rounded-md bg-white/[0.14] text-center">
+                  <p className="text-[18px] font-black text-white leading-none tabular-nums">{s.n}</p>
+                  <p className="text-[10px] text-white/80 font-medium leading-tight mt-1 flex items-center justify-center gap-1">
+                    <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />{s.label}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </motion.div>
 
-        {/* ── 검색바 ── */}
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8b95a1]" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="회사, 센터, 지역, 업무 검색"
-            className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white/80 backdrop-blur-md border border-white/60
-              text-[14px] text-[#191f28] placeholder:text-[#c8cdd2] outline-none
-              focus:ring-2 focus:ring-[#3182f6]/30 shadow-[0_4px_16px_rgba(49,130,246,0.06)] transition-all"
-          />
-        </div>
-
-        {/* ── 카테고리 바 — overflow-x-auto로 375px 가로 스크롤 방지 ── */}
-        <div className="flex items-center gap-2 bg-white/50 backdrop-blur-md rounded-2xl p-2 border border-white/60 shadow-[0_4px_16px_rgba(49,130,246,0.04)] overflow-x-auto min-w-0">
-          {/* 지역 드롭다운 */}
+        {/* ════════════ 검색 + 필터 ════════════ */}
+        <div className="flex flex-col gap-3">
+          {/* 검색바
+              ⚠️ index.css 전역 input[type=text]{padding:14px 16px}(특이도 0,1,1)가 Tailwind pl-10을 덮어써
+                 아이콘과 placeholder가 겹쳤음 → important 수정자(!pl-12 !pr-4)로 좌측 패딩 강제 확보 */}
           <div className="relative">
-            <button onClick={() => setRegionOpen(v => !v)}
-              className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[13px] font-bold transition-all ${
-                regionFilter !== '전체'
-                  ? 'bg-[#3182f6] text-white shadow-md shadow-blue-500/20'
-                  : 'bg-white text-[#4e5968] shadow-sm'
-              }`}>
-              <MapPin className="w-3.5 h-3.5" />
-              {regionFilter}
-              <ChevronDown className={`w-3 h-3 transition-transform ${regionOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {regionOpen && (
-              <div className="absolute top-full left-0 mt-1.5 w-44 bg-white rounded-2xl shadow-2xl border border-gray-100 z-30 overflow-hidden py-1">
-                {REGION_OPTIONS.map(r => (
-                  <button key={r} onClick={() => { setRegionFilter(r); setRegionOpen(false) }}
-                    className={`w-full text-left px-4 py-2.5 text-[13px] transition-colors ${
-                      regionFilter === r ? 'bg-blue-50 text-[#3182f6] font-bold' : 'text-[#4e5968] hover:bg-gray-50'
-                    }`}>
-                    {r}
-                  </button>
-                ))}
-              </div>
-            )}
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-ink-500 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="회사, 센터, 지역, 업무 검색"
+              className="w-full !pl-12 !pr-4 min-h-[48px] rounded-lg bg-white border border-line
+                text-[14px] text-ink-900 placeholder:text-ink-400 outline-none
+                focus:ring-2 focus:ring-brand/30 focus:border-brand shadow-card transition-all"
+            />
           </div>
 
-          {/* 급구 토글 */}
-          <button onClick={() => setUrgentOnly(v => !v)}
-            className={`px-3.5 py-2.5 rounded-xl text-[13px] font-bold transition-all ${
-              urgentOnly ? 'bg-red-500 text-white shadow-md shadow-red-500/20' : 'bg-white text-[#8b95a1] shadow-sm'
-            }`}>
-            🔥 급구
-          </button>
+          {/* 필터 바 */}
+          <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar min-w-0">
+            {/* 지역 드롭다운 */}
+            <div className="relative shrink-0">
+              <button onClick={() => setRegionOpen(v => !v)}
+                className={`flex items-center gap-1.5 px-3.5 min-h-[44px] rounded-pill text-[13px] font-bold border transition-all ${
+                  regionFilter !== '전체'
+                    ? 'bg-brand text-white border-brand'
+                    : 'bg-white text-ink-700 border-line'
+                }`}>
+                <MapPin className="w-3.5 h-3.5" />
+                {regionFilter}
+                <ChevronDown className={`w-3 h-3 transition-transform ${regionOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {regionOpen && (
+                <div className="absolute top-full left-0 mt-1.5 w-44 bg-white rounded-lg shadow-float border border-line z-30 overflow-hidden py-1 max-h-[280px] overflow-y-auto">
+                  {REGION_OPTIONS.map(r => (
+                    <button key={r} onClick={() => { setRegionFilter(r); setRegionOpen(false) }}
+                      className={`w-full text-left px-4 py-2.5 text-[13px] transition-colors ${
+                        regionFilter === r ? 'bg-brand-bg text-brand font-bold' : 'text-ink-700 hover:bg-[#F2F4F6]'
+                      }`}>
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          <div className="flex-1" />
+            {/* 급구 토글 (의미색 danger) */}
+            <button onClick={() => setUrgentOnly(v => !v)}
+              className={`shrink-0 px-3.5 min-h-[44px] rounded-pill text-[13px] font-bold border transition-all ${
+                urgentOnly ? 'bg-danger text-white border-danger' : 'bg-white text-ink-700 border-line'
+              }`}>
+              🔥 급구
+            </button>
 
-          {/* 정렬 */}
-          <button onClick={() => setSortKey(s => s === 'latest' ? 'wage' : 'latest')}
-            className="flex items-center gap-1 px-3 py-2.5 rounded-xl bg-white text-[12px] font-bold text-[#4e5968] shadow-sm">
-            <ArrowUpDown className="w-3.5 h-3.5" />
-            {sortKey === 'latest' ? '최신순' : '시급순'}
-          </button>
+            <div className="flex-1 min-w-[8px]" />
+
+            {/* 정렬 */}
+            <button onClick={() => setSortKey(s => s === 'latest' ? 'wage' : 'latest')}
+              className="shrink-0 flex items-center gap-1 px-3.5 min-h-[44px] rounded-pill bg-white border border-line text-[13px] font-bold text-ink-700">
+              <ArrowUpDown className="w-3.5 h-3.5" />
+              {sortKey === 'latest' ? '최신순' : '시급순'}
+            </button>
+          </div>
         </div>
 
-        {/* ── 섹션별 공고 ── */}
+        {/* ════════════ 섹션별 공고 (4상태) ════════════ */}
         {loading ? (
-          <div className="flex items-center justify-center py-20 gap-2 text-[#8b95a1]">
-            <Loader2 className="w-5 h-5 animate-spin" /><span className="text-[14px]">불러오는 중...</span>
+          // 로딩 — 스켈레톤 그리드
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="rounded-xl bg-white border border-line p-4 shadow-card">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-md bg-line animate-pulse shrink-0" />
+                  <div className="flex-1 flex flex-col gap-1.5">
+                    <div className="h-3.5 w-28 rounded bg-line animate-pulse" />
+                    <div className="h-3 w-20 rounded bg-line/70 animate-pulse" />
+                  </div>
+                </div>
+                <div className="h-12 w-full rounded-md bg-line/60 animate-pulse mb-3" />
+                <div className="h-10 w-full rounded-md bg-line/50 animate-pulse" />
+              </div>
+            ))}
           </div>
         ) : fetchError ? (
-          // DB 조회 실패 시 에러 카드 표시
-          <div className="rounded-[28px] p-10 bg-white/60 backdrop-blur-md border border-red-100 text-center">
-            <p className="text-[15px] font-bold text-red-500 mb-2">⚠️ 오류</p>
-            <p className="text-[13px] text-[#8b95a1]">{fetchError}</p>
+          // 에러
+          <div className="rounded-xl p-10 bg-white border border-danger/20 text-center shadow-card">
+            <p className="text-[15px] font-bold text-[#C81E2E] mb-2">⚠️ 오류</p>
+            <p className="text-[13px] text-ink-600">{fetchError}</p>
             <button
               onClick={fetchJobs}
-              className="mt-4 px-5 py-2 rounded-xl bg-[#3182f6] text-white text-[13px] font-bold"
+              className="mt-4 px-5 min-h-[44px] rounded-md bg-brand text-white text-[13px] font-bold hover:bg-brand-strong transition-colors"
             >
               다시 불러오기
             </button>
           </div>
         ) : sections.length === 0 ? (
-          <div className="rounded-[28px] p-10 bg-white/60 backdrop-blur-md border border-white/60 text-center">
-            <Briefcase className="w-12 h-12 text-[#d1d5db] mx-auto mb-3" />
-            <p className="text-[16px] font-bold text-[#8b95a1]">공고가 없어요</p>
-            <p className="text-[13px] text-[#c8cdd2] mt-1">검색 조건을 변경해보세요</p>
+          // 빈 상태
+          <div className="rounded-xl p-12 bg-white border border-line text-center shadow-card">
+            <Briefcase className="w-12 h-12 text-ink-400 mx-auto mb-3" strokeWidth={1.5} />
+            <p className="text-[16px] font-bold text-ink-700">공고가 없어요</p>
+            <p className="text-[13px] text-ink-500 mt-1">검색 조건을 변경해보세요</p>
           </div>
         ) : (
+          // 목록 — 섹션별 + 반응형 그리드
           sections.map(section => (
-            <div key={section.type}>
+            <section key={section.type}>
               {/* 섹션 헤더 */}
-              <div className={`flex items-center gap-2 mb-3 px-4 py-2 rounded-2xl bg-gradient-to-r ${section.bg} border ${section.border}`}>
+              <div className={`flex items-center gap-2 mb-3 px-4 py-2.5 rounded-lg ${section.bg} border ${section.border}`}>
                 <span className="text-[15px]">{section.icon}</span>
                 <span className="text-[14px] font-extrabold" style={{ color: section.color }}>{section.label}</span>
-                <span className="ml-auto text-[12px] font-bold px-2.5 py-0.5 rounded-full" style={{ background: section.color + '15', color: section.color }}>{section.jobs.length}건</span>
+                <span className="ml-auto text-[12px] font-bold px-2.5 py-0.5 rounded-pill" style={{ background: section.color + '26', color: section.color }}>{section.jobs.length}건</span>
               </div>
 
-              <div className="flex flex-col gap-3 mb-4">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-stretch">
                 {section.jobs.map((job, i) => {
                   const centerKey = `${job.company_name}::${job.center_name}`
                   const isFav = isFavorited(favorites, 'company', job.company_name) || isFavorited(favorites, 'center', centerKey)
@@ -546,104 +520,98 @@ export default function JobsPage() {
                       key={job.id}
                       initial={{ opacity: 0, y: 14 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                      className={`rounded-[24px] overflow-hidden bg-white/80 backdrop-blur-md border-2 transition-all
-                        shadow-[0_8px_32px_rgba(49,130,246,0.06)]
-                        ${isFav ? 'border-yellow-400 shadow-[0_8px_32px_rgba(250,204,21,0.15)]' : 'border-white/60'}`}
+                      transition={{ delay: i * 0.04, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                      className={`flex flex-col h-full min-w-0 rounded-xl bg-white border transition-all shadow-card hover:shadow-float
+                        ${isFav ? 'border-brand/40' : 'border-line'}`}
                     >
-                      <div className="p-4">
-                        {/* 상단: 로고 + 회사명/센터명 + 긴급배지 + 즐겨찾기 */}
-                        <div className="flex items-start gap-3 mb-3.5">
+                      <div className="flex flex-col h-full p-4">
+                        {/* 상단: 로고 + 회사명/센터 + 긴급배지 + 즐겨찾기 */}
+                        <div className="flex items-start gap-3 mb-3">
                           <img src={job.logo_url} alt={job.company_name}
-                            className="w-12 h-12 rounded-xl object-contain bg-white p-1 shadow-sm border border-gray-100 shrink-0" />
+                            className="w-12 h-12 rounded-md object-contain bg-white p-1 border border-line shrink-0" />
                           <div className="flex-1 min-w-0">
-                            {/* 긴급 배지 — 카드 상단에 크게 표시 */}
                             {job.recruit_type !== 'regular' && (
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold mb-1 ${
-                                job.recruit_type === 'urgent_today' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-pill text-[10px] font-bold mb-1 ${
+                                job.recruit_type === 'urgent_today' ? 'bg-danger/10 text-[#C81E2E]' : 'bg-warning/10 text-[#B45309]'
                               }`}>
                                 {job.recruit_type === 'urgent_today' ? '🔥 오늘 긴급' : '⚡ 내일 긴급'}
                               </span>
                             )}
-                            <p className="text-[15px] font-extrabold text-[#191f28] leading-tight truncate">{job.company_name}</p>
-                            <p className="text-[12px] text-[#8b95a1] leading-tight truncate">{job.center_name}</p>
+                            <p className="text-[15px] font-extrabold text-ink-900 leading-tight truncate">{job.company_name}</p>
+                            <p className="text-[12px] text-ink-600 leading-tight truncate">{job.center_name}</p>
                           </div>
                           <button onClick={(e) => { e.stopPropagation(); toggleFav('center', centerKey) }}
-                            className="p-1.5 -mt-0.5 rounded-xl hover:bg-yellow-50 transition-colors shrink-0">
-                            <Star className={`w-5 h-5 transition-all ${isFav ? 'fill-yellow-400 text-yellow-400 scale-110' : 'text-gray-300'}`} />
+                            className="flex items-center justify-center w-11 h-11 -mt-1 -mr-1 rounded-md hover:bg-brand-bg transition-colors shrink-0"
+                            aria-label="즐겨찾기">
+                            <Star className={`w-5 h-5 transition-all ${isFav ? 'fill-brand text-brand scale-110' : 'text-ink-400'}`} />
                           </button>
                         </div>
 
-                        {/* 시급 히어로 카드 — 지원 동기의 핵심 정보. 시급 크게, 일급 보조 */}
-                        <div className="bg-gradient-to-r from-blue-50 via-sky-50 to-indigo-50 rounded-2xl px-4 py-3 mb-3">
-                          <div className="flex items-baseline justify-between">
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-[10px] text-[#8b95a1] font-medium">시급</span>
-                              <span className="text-[26px] font-black text-[#3182f6] tracking-tight leading-none">{fmtWage(job.hourly_wage)}</span>
-                              <span className="text-[13px] font-bold text-[#3182f6]">원</span>
+                        {/* 시급 블록 (브랜드 톤) */}
+                        <div className="bg-brand-bg rounded-md px-4 py-3 mb-3">
+                          <div className="flex items-baseline justify-between gap-2">
+                            <div className="flex items-baseline gap-1 min-w-0">
+                              <span className="text-[10px] text-ink-600 font-medium shrink-0">시급</span>
+                              <span className="text-[24px] font-black text-brand tracking-tight leading-none tabular-nums truncate">{fmtWage(job.hourly_wage)}</span>
+                              <span className="text-[13px] font-bold text-brand shrink-0">원</span>
                             </div>
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-[10px] text-[#8b95a1] font-medium">일급</span>
-                              <span className="text-[16px] font-black text-[#4e5968] tracking-tight">{fmtWage(job.daily_wage)}</span>
-                              <span className="text-[11px] font-semibold text-[#8b95a1]">원</span>
+                            <div className="flex items-baseline gap-1 shrink-0">
+                              <span className="text-[10px] text-ink-600 font-medium">일급</span>
+                              <span className="text-[15px] font-black text-ink-700 tracking-tight tabular-nums">{fmtWage(job.daily_wage)}</span>
+                              <span className="text-[11px] font-semibold text-ink-500">원</span>
                             </div>
                           </div>
                         </div>
 
-                        {/* 위치·시간·모집인원·마감 한 줄 — 작은 점(·)으로 구분해 콤팩트하게 */}
-                        <div className="flex items-center gap-1.5 text-[12px] text-[#6b7280] mb-2.5 flex-wrap">
-                          <span className="flex items-center gap-1 shrink-0">
-                            <MapPin className="w-3.5 h-3.5 text-[#3182f6] shrink-0" />
-                            <span className="truncate max-w-[90px]">{job.address_detail}</span>
+                        {/* 위치·시간·인원·마감 — 세로 스택 + 각 줄 truncate */}
+                        <div className="flex flex-col gap-1 text-[12px] text-ink-600 mb-3">
+                          <span className="flex items-center gap-1.5 min-w-0">
+                            <MapPin className="w-3.5 h-3.5 text-brand shrink-0" />
+                            <span className="truncate" style={{ wordBreak: 'keep-all' }}>{job.address_detail}</span>
                           </span>
-                          <span className="text-[#c8cdd2] shrink-0">·</span>
-                          <span className="flex items-center gap-1 shrink-0">
-                            <Clock className="w-3.5 h-3.5 text-[#8b95a1] shrink-0" />{job.work_hours}
+                          <span className="flex items-center gap-1.5 min-w-0">
+                            <Clock className="w-3.5 h-3.5 text-ink-500 shrink-0" />
+                            <span className="truncate">{job.work_hours}</span>
                           </span>
-                          <span className="text-[#c8cdd2] shrink-0">·</span>
-                          <span className="flex items-center gap-1 shrink-0 font-medium">
-                            <Users className="w-3.5 h-3.5 text-[#8b95a1] shrink-0" />{job.headcount}명
+                          <span className="flex items-center gap-3">
+                            <span className="flex items-center gap-1.5 shrink-0">
+                              <Users className="w-3.5 h-3.5 text-ink-500 shrink-0" />{job.headcount}명
+                            </span>
+                            {job.expires_at && (
+                              <span className="text-[#C81E2E] font-semibold shrink-0">~{fmtDate(job.expires_at)} 마감</span>
+                            )}
                           </span>
-                          {job.expires_at && (
-                            <>
-                              <span className="text-[#c8cdd2] shrink-0">·</span>
-                              <span className="shrink-0 text-[#ef4444] font-semibold">~{fmtDate(job.expires_at)}</span>
-                            </>
-                          )}
                         </div>
 
-                        {/* 혜택 뱃지 — 최대 3개 + 초과 카운트. 이모지 강조 */}
+                        {/* 혜택 (그린 칩) 최대 3개 */}
                         {job.benefits.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                          <div className="flex flex-wrap items-center gap-1.5 mb-4">
                             {job.benefits.slice(0, 3).map(b => (
-                              <span key={b} className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 border border-emerald-100 text-[11px] font-semibold text-emerald-700">
+                              <span key={b} className="flex items-center gap-1 px-2 py-0.5 rounded-sm bg-accent-bg text-[#047857] text-[11px] font-semibold">
                                 <span className="text-[10px]">{getBenefitEmoji(b)}</span>{b}
                               </span>
                             ))}
                             {job.benefits.length > 3 && (
-                              <span className="text-[11px] text-[#8b95a1] font-medium">+{job.benefits.length - 3}개 더</span>
+                              <span className="text-[11px] text-ink-500 font-medium">+{job.benefits.length - 3}개 더</span>
                             )}
                           </div>
                         )}
 
-                        {/* 하단 버튼: 상세보기(라인) + 지원하기(강조) */}
-                        <div className="flex gap-2 mt-1">
+                        {/* 하단 버튼 — mt-auto로 카드 높이 통일 */}
+                        <div className="flex gap-2 mt-auto">
                           <button
                             onClick={() => setSelectedJob(job)}
-                            className="flex-1 py-3 rounded-2xl border border-[#e5e8eb] text-[#4e5968]
+                            className="flex-1 min-h-[44px] rounded-md border border-line text-ink-700
                               font-bold text-[13px] flex items-center justify-center gap-1
-                              active:scale-[0.98] transition-transform hover:bg-gray-50"
+                              active:scale-[0.98] transition-all hover:bg-[#F2F4F6]"
                           >
                             상세보기
                           </button>
-
-                          {/* 지원하기 버튼 — 이미 지원했으면 비활성화 */}
                           {appliedMap[job.id] ? (
                             <button
                               disabled
-                              className="flex-1 py-3 rounded-2xl bg-emerald-100 text-emerald-700
-                                font-bold text-[13px] flex items-center justify-center gap-1
-                                cursor-default opacity-90"
+                              className="flex-1 min-h-[44px] rounded-md bg-accent-bg text-[#047857]
+                                font-bold text-[13px] flex items-center justify-center gap-1 cursor-default"
                             >
                               <CheckCircle2 className="w-4 h-4" />
                               지원완료
@@ -652,9 +620,9 @@ export default function JobsPage() {
                             <button
                               onClick={(e) => handleApply(e, job.id)}
                               disabled={isApplySubmitting && pendingApplyJobId === job.id}
-                              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#3182F6] to-[#6366f1]
+                              className="flex-1 min-h-[44px] rounded-md bg-brand hover:bg-brand-strong
                                 text-white font-bold text-[13px] flex items-center justify-center gap-1
-                                shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-transform
+                                shadow-[0_4px_14px_rgba(49,130,246,0.28)] active:scale-[0.98] transition-all
                                 disabled:opacity-70 disabled:cursor-not-allowed"
                             >
                               {isApplySubmitting && pendingApplyJobId === job.id ? (
@@ -670,236 +638,234 @@ export default function JobsPage() {
                   )
                 })}
               </div>
-            </div>
+            </section>
           ))
         )}
-      </div>
+      </Container>
 
-      {/* ── 상세 바텀시트 — 프레임카드 6영역 + 지도 ── */}
+      {/* ════════════ 상세 — 모바일 바텀시트 / 데스크톱 중앙 다이얼로그 ════════════ */}
+      {/* portal로 body에 렌더 → 루트 div의 z-[1] 스태킹 컨텍스트를 탈출해 BottomNav(z-50) 위에 표시 */}
+      {createPortal(
       <AnimatePresence>
         {selectedJob && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm sm:p-4"
             onClick={() => setSelectedJob(null)}
           >
             <motion.div
-              initial={{ y: 500 }}
-              animate={{ y: 0 }}
-              exit={{ y: 500 }}
-              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className="w-full max-w-[460px] bg-white rounded-t-[28px]
-                shadow-[0_-12px_48px_rgba(0,0,0,0.12)] max-h-[92vh] flex flex-col"
+              initial={{ y: 500, opacity: 0.6 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 500, opacity: 0.6 }}
+              transition={{ type: 'spring', damping: 30, stiffness: 320 }}
+              className="w-full max-w-[460px] sm:max-w-[560px] bg-white rounded-t-xl sm:rounded-xl
+                shadow-float max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden"
               onClick={e => e.stopPropagation()}
             >
-              {/* 스크롤 가능 콘텐츠 영역 — sticky CTA와 분리 */}
+              {/* 스크롤 콘텐츠 */}
               <div className="flex-1 overflow-y-auto">
-              <div className="p-6">
-                <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
-                <button onClick={() => setSelectedJob(null)}
-                  className="absolute top-5 right-5 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
-                  <X className="w-4 h-4 text-[#8b95a1]" />
-                </button>
+                <div className="p-6">
+                  <div className="w-10 h-1 bg-line rounded-full mx-auto mb-5 sm:hidden" />
+                  <button onClick={() => setSelectedJob(null)}
+                    className="absolute top-3 right-3 flex items-center justify-center w-11 h-11 rounded-full bg-[#F2F4F6] hover:bg-line transition-colors z-10"
+                    aria-label="닫기">
+                    <X className="w-4 h-4 text-ink-600" />
+                  </button>
 
-                {/* Frame 1: 회사 정보 */}
-                <div className="flex items-center gap-3 mb-5">
-                  {/* 회사 공식 로고 (상세) */}
-                  <img src={selectedJob.logo_url} alt={selectedJob.company_name}
-                    className="w-13 h-13 rounded-2xl object-contain bg-white p-1.5 shadow-md border border-gray-100 shrink-0"
-                    style={{ width: 52, height: 52 }} />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-1.5">
+                  {/* Frame 1: 회사 정보 */}
+                  <div className="flex items-start gap-3 mb-5 pr-10">
+                    <img src={selectedJob.logo_url} alt={selectedJob.company_name}
+                      className="w-13 h-13 rounded-md object-contain bg-white p-1.5 border border-line shrink-0"
+                      style={{ width: 52, height: 52 }} />
+                    <div className="flex-1 min-w-0">
                       {selectedJob.recruit_type !== 'regular' && (
-                        <span className={`px-2 py-0.5 rounded-lg text-[11px] font-bold ${
-                          selectedJob.recruit_type === 'urgent_today' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'
+                        <span className={`inline-flex px-2 py-0.5 rounded-md text-[11px] font-bold mb-1 ${
+                          selectedJob.recruit_type === 'urgent_today' ? 'bg-danger/10 text-[#C81E2E]' : 'bg-warning/10 text-[#B45309]'
                         }`}>
                           {selectedJob.recruit_type === 'urgent_today' ? '🔥 오늘 긴급' : '⚡ 내일 긴급'}
                         </span>
                       )}
+                      <h2 className="text-[18px] font-black text-ink-900 leading-tight break-words">{selectedJob.company_name}</h2>
+                      <p className="text-[14px] text-ink-600 break-words">{selectedJob.center_name}</p>
                     </div>
-                    <h2 className="text-[18px] font-black text-[#191f28] mt-0.5">{selectedJob.company_name}</h2>
-                    <p className="text-[14px] text-[#6b7280]">{selectedJob.center_name}</p>
+                    <button onClick={() => toggleFav('center', `${selectedJob.company_name}::${selectedJob.center_name}`)}
+                      className="flex items-center justify-center w-11 h-11 rounded-md hover:bg-brand-bg transition-colors shrink-0"
+                      aria-label="즐겨찾기">
+                      <Star className={`w-6 h-6 ${
+                        isFavorited(favorites, 'center', `${selectedJob.company_name}::${selectedJob.center_name}`)
+                          ? 'fill-brand text-brand' : 'text-ink-400'
+                      }`} />
+                    </button>
                   </div>
-                  <button onClick={() => toggleFav('center', `${selectedJob.company_name}::${selectedJob.center_name}`)}
-                    className="p-2 rounded-xl hover:bg-yellow-50 transition-colors">
-                    <Star className={`w-6 h-6 ${
-                      isFavorited(favorites, 'center', `${selectedJob.company_name}::${selectedJob.center_name}`)
-                        ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                    }`} />
-                  </button>
-                </div>
 
-                {/* Frame 2: 급여 */}
-                <div className="grid grid-cols-2 gap-2.5 mb-4">
-                  <div className="bg-gradient-to-br from-blue-50 to-sky-50 rounded-2xl p-4 text-center">
-                    <p className="text-[11px] text-[#8b95a1] mb-1">시급</p>
-                    <p className="text-[26px] font-black text-[#3182f6] tracking-tight">{fmtWage(selectedJob.hourly_wage)}<span className="text-[14px]">원</span></p>
-                  </div>
-                  <div className="bg-slate-50 rounded-2xl p-4 text-center">
-                    <p className="text-[11px] text-[#8b95a1] mb-1">일급</p>
-                    <p className="text-[26px] font-black text-[#191f28] tracking-tight">{fmtWage(selectedJob.daily_wage)}<span className="text-[14px]">원</span></p>
-                  </div>
-                </div>
-
-                {/* Frame 3: 근무 조건 */}
-                <div className="rounded-2xl bg-gray-50 p-4 mb-4">
-                  <p className="text-[12px] font-bold text-[#8b95a1] mb-3">근무 조건</p>
-                  <div className="grid grid-cols-2 gap-y-4 gap-x-3">
-                    <FrameRow icon={<MapPin className="w-4 h-4 text-[#3182f6]" />} label="위치" value={selectedJob.address_detail} />
-                    <FrameRow icon={<Clock className="w-4 h-4 text-[#f59e0b]" />} label="근무시간" value={selectedJob.work_hours} />
-                    <FrameRow icon={<Users className="w-4 h-4 text-[#10b981]" />} label="모집인원" value={`${selectedJob.headcount}명`} />
-                    {selectedJob.expires_at && <FrameRow icon={<Clock className="w-4 h-4 text-[#ef4444]" />} label="마감일" value={fmtDate(selectedJob.expires_at)} />}
-                  </div>
-                </div>
-
-                {/* Frame 4: 혜택 & 복리후생 — 이모지 매핑으로 시각적 매력 강화 */}
-                {selectedJob.benefits.length > 0 && (
-                  <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 p-4 mb-4">
-                    <p className="text-[12px] font-bold text-emerald-700 mb-3">🎁 혜택 &amp; 복리후생</p>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedJob.benefits.map(b => (
-                        <span key={b} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-emerald-100 text-[13px] font-semibold text-[#4e5968] shadow-sm">
-                          <span>{getBenefitEmoji(b)}</span>{b}
-                        </span>
-                      ))}
+                  {/* Frame 2: 급여 */}
+                  <div className="grid grid-cols-2 gap-2.5 mb-4">
+                    <div className="bg-brand-bg rounded-md p-4 text-center">
+                      <p className="text-[11px] text-ink-600 mb-1">시급</p>
+                      <p className="text-[24px] font-black text-brand tracking-tight tabular-nums">{fmtWage(selectedJob.hourly_wage)}<span className="text-[14px]">원</span></p>
+                    </div>
+                    <div className="bg-[#F7F9FC] rounded-md p-4 text-center">
+                      <p className="text-[11px] text-ink-600 mb-1">일급</p>
+                      <p className="text-[24px] font-black text-ink-900 tracking-tight tabular-nums">{fmtWage(selectedJob.daily_wage)}<span className="text-[14px]">원</span></p>
                     </div>
                   </div>
-                )}
 
-                {/* Frame 5: 상세 내용 */}
-                {selectedJob.description && (
-                  <div className="rounded-2xl bg-gray-50 p-4 mb-4">
-                    <p className="text-[12px] font-bold text-[#8b95a1] mb-2.5">상세 내용</p>
-                    <p className="text-[14px] text-[#4e5968] leading-relaxed whitespace-pre-line">{selectedJob.description}</p>
+                  {/* Frame 3: 근무 조건 */}
+                  <div className="rounded-md bg-[#F7F9FC] p-4 mb-4">
+                    <p className="text-[12px] font-bold text-ink-600 mb-3">근무 조건</p>
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-3">
+                      <FrameRow icon={<MapPin className="w-4 h-4 text-brand" />} label="위치" value={selectedJob.address_detail} />
+                      <FrameRow icon={<Clock className="w-4 h-4 text-brand" />} label="근무시간" value={selectedJob.work_hours} />
+                      <FrameRow icon={<Users className="w-4 h-4 text-brand" />} label="모집인원" value={`${selectedJob.headcount}명`} />
+                      {selectedJob.expires_at && <FrameRow icon={<Clock className="w-4 h-4 text-danger" />} label="마감일" value={fmtDate(selectedJob.expires_at)} />}
+                    </div>
                   </div>
-                )}
 
-                {/* Frame 5.5: 위치 지도 */}
-                <div className="rounded-2xl bg-gray-50 p-4 mb-4">
-                  <div className="flex items-center gap-2 mb-2.5">
-                    <Map className="w-4 h-4 text-[#3182f6]" />
-                    <p className="text-[12px] font-bold text-[#8b95a1]">위치 정보</p>
-                  </div>
-                  <p className="text-[13px] text-[#4e5968] mb-2.5">{selectedJob.address_detail}</p>
-                  <a
-                    href={`https://map.kakao.com/?q=${encodeURIComponent(selectedJob.map_query)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#FEE500] text-[#3C1E1E] font-bold text-[13px]
-                      active:scale-[0.98] transition-transform"
-                  >
-                    <Map className="w-4 h-4" />
-                    카카오맵에서 위치 보기
-                  </a>
-                </div>
-
-                {/* Frame 6: 지원 방법 */}
-                <div className="rounded-2xl bg-gray-50 p-4">
-                  <p className="text-[12px] font-bold text-[#8b95a1] mb-3">지원 방법</p>
-                  <div className="flex flex-col gap-2.5">
-                    {selectedJob.apply_methods.map((method, i) => {
-                      const cta = CTA_MAP[method.type] ?? CTA_MAP.phone
-                      const Icon = cta.icon
-                      const href =
-                        method.type === 'phone' ? `tel:${method.value}` :
-                        method.type === 'sms' ? `sms:${method.value}` :
-                        method.value
-                      return (
-                        <a key={i} href={href}
-                          target={['landing', 'kakao'].includes(method.type) ? '_blank' : undefined}
-                          rel={['landing', 'kakao'].includes(method.type) ? 'noopener noreferrer' : undefined}
-                          className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl
-                            ${cta.bg} ${cta.text} font-bold text-[14px]
-                            active:scale-[0.98] transition-transform`}>
-                          <Icon className="w-4 h-4" />{method.label}
-                        </a>
-                      )
-                    })}
-                    {/* 원본 공고 링크 없는 경우 명시 — 직업안정법 면책 대응 */}
-                    {!selectedJob.external_link && (
-                      <p className="text-center text-[13px] text-gray-400 py-1">회사 정보 링크 없음</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* 비슷한 공고 더보기 — 같은 회사 또는 같은 지역 공고 최대 3건 */}
-                {(() => {
-                  const similar = allJobs.filter(j =>
-                    j.id !== selectedJob.id &&
-                    (j.company_name === selectedJob.company_name || j.region === selectedJob.region)
-                  ).slice(0, 3)
-                  if (similar.length === 0) return null
-                  return (
-                    <div className="rounded-2xl bg-gray-50 p-4 mb-4">
-                      <p className="text-[12px] font-bold text-[#8b95a1] mb-3">📋 비슷한 공고 더보기</p>
-                      <div className="flex flex-col gap-2">
-                        {similar.map(j => (
-                          <button
-                            key={j.id}
-                            onClick={() => setSelectedJob(j)}
-                            className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 text-left hover:border-blue-200 transition-colors active:scale-[0.98]"
-                          >
-                            <img src={j.logo_url} alt={j.company_name}
-                              className="w-9 h-9 rounded-lg object-contain bg-white p-0.5 border border-gray-100 shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[13px] font-bold text-[#191f28] truncate">{j.company_name}</p>
-                              <p className="text-[11px] text-[#8b95a1] truncate">{j.center_name} · {j.region}</p>
-                            </div>
-                            <div className="shrink-0 text-right">
-                              <p className="text-[14px] font-black text-[#3182f6]">{fmtWage(j.hourly_wage)}<span className="text-[10px] font-semibold">원</span></p>
-                              <p className="text-[10px] text-[#8b95a1]">시급</p>
-                            </div>
-                          </button>
+                  {/* Frame 4: 혜택 (그린) */}
+                  {selectedJob.benefits.length > 0 && (
+                    <div className="rounded-md bg-accent-bg border border-accent/20 p-4 mb-4">
+                      <p className="text-[12px] font-bold text-[#047857] mb-3">🎁 혜택 &amp; 복리후생</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedJob.benefits.map(b => (
+                          <span key={b} className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-white border border-accent/20 text-[13px] font-semibold text-ink-700">
+                            <span>{getBenefitEmoji(b)}</span>{b}
+                          </span>
                         ))}
                       </div>
                     </div>
-                  )
-                })()}
+                  )}
 
-                {/* 카카오톡 공유 버튼 — 채용공고를 지인에게 공유 */}
-                <div className="mt-1">
-                  <p className="text-[12px] font-bold text-[#8b95a1] mb-2.5">이 공고 공유하기</p>
-                  <KakaoShareButton
-                    onClick={() =>
-                      shareJob({
-                        companyName: selectedJob.company_name,
-                        // job_title 필드 없음 — center_name을 직종 힌트로 사용
-                        jobTitle: selectedJob.center_name || undefined,
-                        region: selectedJob.region || undefined,
-                        hourlyWage: selectedJob.hourly_wage || undefined,
-                        dailyWage: selectedJob.daily_wage,
-                        logoUrl: selectedJob.logo_url,
-                      })
-                    }
-                    label="카카오톡으로 공유하기"
-                  />
+                  {/* Frame 5: 상세 내용 */}
+                  {selectedJob.description && (
+                    <div className="rounded-md bg-[#F7F9FC] p-4 mb-4">
+                      <p className="text-[12px] font-bold text-ink-600 mb-2.5">상세 내용</p>
+                      <p className="text-[14px] text-ink-700 leading-relaxed whitespace-pre-line break-keep">{selectedJob.description}</p>
+                    </div>
+                  )}
+
+                  {/* Frame 5.5: 위치 지도 */}
+                  <div className="rounded-md bg-[#F7F9FC] p-4 mb-4">
+                    <div className="flex items-center gap-2 mb-2.5">
+                      <Map className="w-4 h-4 text-brand" />
+                      <p className="text-[12px] font-bold text-ink-600">위치 정보</p>
+                    </div>
+                    <p className="text-[13px] text-ink-700 mb-2.5 break-keep">{selectedJob.address_detail}</p>
+                    <a
+                      href={`https://map.kakao.com/?q=${encodeURIComponent(selectedJob.map_query)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 min-h-[48px] rounded-md bg-[#FEE500] text-[#3C1E1E] font-bold text-[13px]
+                        active:scale-[0.98] transition-transform"
+                    >
+                      <Map className="w-4 h-4" />
+                      카카오맵에서 위치 보기
+                    </a>
+                  </div>
+
+                  {/* Frame 6: 지원 방법 */}
+                  <div className="rounded-md bg-[#F7F9FC] p-4">
+                    <p className="text-[12px] font-bold text-ink-600 mb-3">지원 방법</p>
+                    <div className="flex flex-col gap-2.5">
+                      {selectedJob.apply_methods.map((method, i) => {
+                        const cta = CTA_MAP[method.type] ?? CTA_MAP.phone
+                        const Icon = cta.icon
+                        const href =
+                          method.type === 'phone' ? `tel:${method.value}` :
+                          method.type === 'sms' ? `sms:${method.value}` :
+                          method.value
+                        return (
+                          <a key={i} href={href}
+                            target={['landing', 'kakao'].includes(method.type) ? '_blank' : undefined}
+                            rel={['landing', 'kakao'].includes(method.type) ? 'noopener noreferrer' : undefined}
+                            className={`flex items-center justify-center gap-2 min-h-[48px] rounded-md
+                              ${cta.bg} ${cta.text} font-bold text-[14px]
+                              active:scale-[0.98] transition-all`}>
+                            <Icon className="w-4 h-4" />{method.label}
+                          </a>
+                        )
+                      })}
+                      {!selectedJob.external_link && (
+                        <p className="text-center text-[13px] text-ink-500 py-1">회사 정보 링크 없음</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 비슷한 공고 더보기 */}
+                  {(() => {
+                    const similar = allJobs.filter(j =>
+                      j.id !== selectedJob.id &&
+                      (j.company_name === selectedJob.company_name || j.region === selectedJob.region)
+                    ).slice(0, 3)
+                    if (similar.length === 0) return null
+                    return (
+                      <div className="rounded-md bg-[#F7F9FC] p-4 mt-4">
+                        <p className="text-[12px] font-bold text-ink-600 mb-3">📋 비슷한 공고 더보기</p>
+                        <div className="flex flex-col gap-2">
+                          {similar.map(j => (
+                            <button
+                              key={j.id}
+                              onClick={() => setSelectedJob(j)}
+                              className="flex items-center gap-3 p-3 rounded-md bg-white border border-line text-left hover:border-brand-200 transition-colors active:scale-[0.98]"
+                            >
+                              <img src={j.logo_url} alt={j.company_name}
+                                className="w-9 h-9 rounded-md object-contain bg-white p-0.5 border border-line shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[13px] font-bold text-ink-900 truncate">{j.company_name}</p>
+                                <p className="text-[11px] text-ink-500 truncate">{j.center_name} · {j.region}</p>
+                              </div>
+                              <div className="shrink-0 text-right">
+                                <p className="text-[14px] font-black text-brand tabular-nums">{fmtWage(j.hourly_wage)}<span className="text-[10px] font-semibold">원</span></p>
+                                <p className="text-[10px] text-ink-500">시급</p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })()}
+
+                  {/* 카카오톡 공유 */}
+                  <div className="mt-4">
+                    <p className="text-[12px] font-bold text-ink-600 mb-2.5">이 공고 공유하기</p>
+                    <KakaoShareButton
+                      onClick={() =>
+                        shareJob({
+                          companyName: selectedJob.company_name,
+                          jobTitle: selectedJob.center_name || undefined,
+                          region: selectedJob.region || undefined,
+                          hourlyWage: selectedJob.hourly_wage || undefined,
+                          dailyWage: selectedJob.daily_wage,
+                          logoUrl: selectedJob.logo_url,
+                        })
+                      }
+                      label="카카오톡으로 공유하기"
+                    />
+                  </div>
                 </div>
               </div>
-              </div>
-              {/* ── 하단 고정 CTA — 지원하기 버튼을 항상 눈에 보이게 sticky 배치 ── */}
+
+              {/* 하단 고정 CTA */}
               <div
-                className="bg-white border-t border-gray-100 px-5 py-4 shrink-0"
+                className="bg-white border-t border-line px-5 py-4 shrink-0"
                 style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
               >
                 {appliedMap[selectedJob.id] ? (
-                  // 이미 지원 완료 상태
                   <button
                     disabled
-                    className="w-full py-4 rounded-2xl bg-emerald-50 border border-emerald-200
-                      text-emerald-700 font-black text-[15px] flex items-center justify-center gap-2 cursor-default"
+                    className="w-full min-h-[52px] rounded-lg bg-accent-bg border border-accent/20
+                      text-[#047857] font-black text-[15px] flex items-center justify-center gap-2 cursor-default"
                   >
                     <CheckCircle2 className="w-5 h-5" />지원 완료
                   </button>
                 ) : (
-                  // 지원하기 버튼 — 팝업에서 바로 지원 가능
                   <button
                     onClick={(e) => handleApply(e, selectedJob.id)}
                     disabled={isApplySubmitting && pendingApplyJobId === selectedJob.id}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#3182F6] to-[#6366f1]
+                    className="w-full min-h-[52px] rounded-lg bg-brand hover:bg-brand-strong
                       text-white font-black text-[15px] flex items-center justify-center gap-2
-                      shadow-xl shadow-blue-500/30 active:scale-[0.98] transition-transform
+                      shadow-[0_8px_20px_rgba(49,130,246,0.30)] active:scale-[0.98] transition-all
                       disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {isApplySubmitting && pendingApplyJobId === selectedJob.id ? (
@@ -913,11 +879,12 @@ export default function JobsPage() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body)}
 
       {regionOpen && <div className="fixed inset-0 z-20" onClick={() => setRegionOpen(false)} />}
 
-      {/* ── 지원 폼 모달 — 인적사항 + 근무정보 + 동의 (전면 개편 2026-04-11) ── */}
+      {/* ── 지원 폼 모달 ── */}
       <ApplyFormModal
         isOpen={applyModalOpen}
         onClose={() => { setApplyModalOpen(false); setPendingApplyJobId(null) }}
@@ -930,19 +897,16 @@ export default function JobsPage() {
             : ''
         }
         isSubmitting={isApplySubmitting}
-        // 공고별 업무 선택지 (task_options 없으면 기본값 사용)
         taskOptions={
           pendingApplyJobId
             ? (allJobs.find(j => j.id === pendingApplyJobId)?.task_options ?? [])
             : []
         }
-        // 공고별 모집 근무조 (비어있으면 전체 표시)
         shiftOptions={
           pendingApplyJobId
             ? (allJobs.find(j => j.id === pendingApplyJobId)?.shift_options ?? [])
             : []
         }
-        // 공고 근무 예정일 — 중복 확정 차단 기준
         workDate={
           pendingApplyJobId
             ? (allJobs.find(j => j.id === pendingApplyJobId)?.work_date ?? null)
@@ -950,14 +914,15 @@ export default function JobsPage() {
         }
       />
 
-      {/* ── 로그인 유도 모달 — 비로그인 상태에서 지원하기 클릭 시 표시 ── */}
+      {/* ── 로그인 유도 모달 (portal로 body 렌더) ── */}
+      {createPortal(
       <AnimatePresence>
         {loginPromptOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
             onClick={() => setLoginPromptOpen(false)}
           >
             <motion.div
@@ -966,35 +931,30 @@ export default function JobsPage() {
               exit={{ y: 40, opacity: 0, scale: 0.97 }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-[380px] bg-white rounded-[28px] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.15)]"
+              className="w-full max-w-[380px] bg-white rounded-xl p-6 shadow-float"
             >
-              {/* 아이콘 */}
               <div className="flex items-center justify-center mb-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <div className="w-14 h-14 rounded-lg bg-brand flex items-center justify-center shadow-[0_8px_20px_rgba(49,130,246,0.30)]">
                   <LogIn className="w-7 h-7 text-white" />
                 </div>
               </div>
-
-              {/* 텍스트 */}
-              <h3 className="text-[18px] font-black text-[#191f28] text-center mb-2">
+              <h3 className="text-[18px] font-black text-ink-900 text-center mb-2">
                 로그인이 필요해요
               </h3>
-              <p className="text-[13px] text-[#8b95a1] text-center leading-relaxed mb-5">
+              <p className="text-[13px] text-ink-600 text-center leading-relaxed mb-5">
                 지원하기 기능은 로그인 후 사용할 수 있어요.<br />
                 카카오 또는 구글로 1초만에 가입하세요!
               </p>
-
-              {/* 버튼 */}
               <div className="flex gap-2">
                 <button
                   onClick={() => setLoginPromptOpen(false)}
-                  className="flex-1 py-3 rounded-2xl bg-gray-100 text-[#4e5968] text-[14px] font-semibold hover:bg-gray-200 transition-colors"
+                  className="flex-1 min-h-[48px] rounded-md bg-[#F2F4F6] text-ink-700 text-[14px] font-semibold hover:bg-line transition-colors"
                 >
                   취소
                 </button>
                 <button
                   onClick={() => { setLoginPromptOpen(false); navigate('/login') }}
-                  className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#3182F6] to-[#2563eb] text-white text-[14px] font-bold shadow-md shadow-blue-500/25 hover:opacity-90 transition-opacity"
+                  className="flex-1 min-h-[48px] rounded-md bg-brand hover:bg-brand-strong text-white text-[14px] font-bold shadow-[0_4px_14px_rgba(49,130,246,0.28)] transition-colors"
                 >
                   로그인하기
                 </button>
@@ -1002,14 +962,13 @@ export default function JobsPage() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body)}
     </div>
   )
 }
 
 // 복리후생 키워드 → 이모지 매핑 테이블 (부분 문자열 매칭)
-// ⚠️ 주의: 긴 키워드를 짧은 키워드보다 반드시 앞에 등록해야 올바르게 매칭됨
-// 예) '야간수당'이 '야간'보다 앞에, '4대 보험'이 '보험'보다 앞에 있어야 함
 const BENEFIT_EMOJI_MAP: [string, string][] = [
   ['식사', '🍱'], ['밥', '🍱'], ['도시락', '🍱'],
   ['셔틀', '🚌'], ['통근버스', '🚌'], ['버스', '🚌'],
@@ -1025,7 +984,6 @@ const BENEFIT_EMOJI_MAP: [string, string][] = [
   ['주말', '📆'],
 ]
 
-// 혜택 텍스트에서 이모지를 찾아 반환. 매칭 없으면 ✓
 function getBenefitEmoji(benefit: string): string {
   for (const [keyword, emoji] of BENEFIT_EMOJI_MAP) {
     if (benefit.includes(keyword)) return emoji
@@ -1035,11 +993,11 @@ function getBenefitEmoji(benefit: string): string {
 
 function FrameRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <div>{icon}</div>
-      <div>
-        <p className="text-[10px] text-[#8b95a1]">{label}</p>
-        <p className="text-[13px] font-bold text-[#191f28]">{value}</p>
+    <div className="flex items-start gap-2.5 min-w-0">
+      <div className="mt-0.5 shrink-0">{icon}</div>
+      <div className="min-w-0">
+        <p className="text-[10px] text-ink-600">{label}</p>
+        <p className="text-[13px] font-bold text-ink-900 break-keep">{value}</p>
       </div>
     </div>
   )

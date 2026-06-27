@@ -137,31 +137,31 @@ export default function InquiryPage() {
   }
 
   return (
-    <div className="relative z-[1] min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4 py-8">
+    <div className="relative z-[1] min-h-screen bg-gradient-to-br from-brand-bg via-white to-white px-4 py-8">
       <div className="max-w-lg mx-auto">
 
         {/* ── 헤더 */}
         <div className="mb-6">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+            className="flex items-center gap-2 text-ink-700 hover:text-ink-900 mb-4 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm font-medium">뒤로 가기</span>
           </button>
-          <h1 className="text-2xl font-bold text-[#191F28] mb-1">고객센터</h1>
-          <p className="text-sm text-gray-500">궁금한 점이나 불편한 점을 알려주세요. 빠르게 답변드릴게요.</p>
+          <h1 className="text-2xl font-bold text-ink-900 mb-1">고객센터</h1>
+          <p className="text-sm text-ink-600">궁금한 점이나 불편한 점을 알려주세요. 빠르게 답변드릴게요.</p>
         </div>
 
         {/* ── FAQ 섹션 */}
-        <div className="bg-white rounded-[28px] shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-gray-100/50 p-6 mb-4">
-          <h2 className="text-[15px] font-extrabold text-[#191f28] mb-4">자주 묻는 질문</h2>
+        <div className="bg-white rounded-xl shadow-card border border-line p-6 mb-4">
+          <h2 className="text-[15px] font-extrabold text-ink-900 mb-4">자주 묻는 질문</h2>
 
           {/* 검색창 */}
           <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-600 pointer-events-none" />
             <input
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2.5 border border-line rounded-xl bg-[#F7F9FC] text-sm focus:outline-none focus:ring-2 focus:ring-brand/40"
               placeholder="궁금한 내용을 검색해보세요"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -170,23 +170,23 @@ export default function InquiryPage() {
 
           {/* FAQ 목록 */}
           {filteredFaqs.length === 0 ? (
-            <p className="text-[13px] text-gray-400 text-center py-4">검색 결과가 없습니다.</p>
+            <p className="text-[13px] text-ink-600 text-center py-4">검색 결과가 없습니다.</p>
           ) : (
             <div className="flex flex-col gap-2">
               {filteredFaqs.map((faq) => (
-                <div key={faq.id} className="border border-gray-100 rounded-2xl overflow-hidden">
+                <div key={faq.id} className="border border-line rounded-2xl overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setOpenFaqId(openFaqId === faq.id ? null : faq.id)}
-                    className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left bg-white hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left bg-white hover:bg-[#F7F9FC] transition-colors"
                   >
-                    <span className="text-[13px] font-semibold text-[#191f28] leading-snug flex-1">
+                    <span className="text-[13px] font-semibold text-ink-900 leading-snug flex-1">
                       Q. {faq.title}
                     </span>
                     {openFaqId === faq.id ? (
-                      <ChevronUp className="w-4 h-4 text-[#3182f6] flex-shrink-0" />
+                      <ChevronUp className="w-4 h-4 text-brand flex-shrink-0" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <ChevronDown className="w-4 h-4 text-ink-600 flex-shrink-0" />
                     )}
                   </button>
                   <AnimatePresence initial={false}>
@@ -198,8 +198,8 @@ export default function InquiryPage() {
                         transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 pb-3 pt-0 bg-blue-50/50 border-t border-blue-100/50">
-                          <p className="text-[12px] text-[#4e5968] leading-relaxed pt-2">
+                        <div className="px-4 pb-3 pt-0 bg-brand-bg border-t border-brand-100">
+                          <p className="text-[12px] text-ink-700 leading-relaxed pt-2">
                             A. {faq.answer}
                           </p>
                         </div>
@@ -214,18 +214,18 @@ export default function InquiryPage() {
 
         {/* ── 구분선 */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-[12px] font-medium text-gray-400">직접 문의하기</span>
-          <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex-1 h-px bg-line" />
+          <span className="text-[12px] font-medium text-ink-600">직접 문의하기</span>
+          <div className="flex-1 h-px bg-line" />
         </div>
 
         {/* ── 폼 카드 */}
-        <div className="bg-white rounded-[28px] shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-gray-100/50 p-6 space-y-5">
+        <div className="bg-white rounded-xl shadow-card border border-line p-6 space-y-5">
 
           {/* 문의 유형 선택 */}
           <div>
-            <label className="block text-[13px] font-bold text-[#191f28] mb-2">
-              문의 유형 <span className="text-[#3182f6]">*</span>
+            <label className="block text-[13px] font-bold text-ink-900 mb-2">
+              문의 유형 <span className="text-brand-strong">*</span>
             </label>
             <div className="grid grid-cols-2 gap-2">
               {CATEGORIES.map((cat) => (
@@ -235,8 +235,8 @@ export default function InquiryPage() {
                   onClick={() => setCategory(cat)}
                   className={`py-2.5 px-3 rounded-2xl text-[13px] font-semibold border transition-all active:scale-[0.97] ${
                     category === cat
-                      ? 'bg-[#3182f6] text-white border-[#3182f6] shadow-[0_4px_12px_rgba(49,130,246,0.3)]'
-                      : 'bg-white text-[#4e5968] border-slate-200 hover:border-[#3182f6] hover:text-[#3182f6]'
+                      ? 'bg-brand-strong text-white border-brand-strong shadow-[0_4px_12px_rgba(27,100,218,0.3)]'
+                      : 'bg-white text-ink-700 border-line hover:border-brand hover:text-brand'
                   }`}
                 >
                   {cat}
@@ -247,8 +247,8 @@ export default function InquiryPage() {
 
           {/* 제목 입력 */}
           <div>
-            <label htmlFor="inquiry-title" className="block text-[13px] font-bold text-[#191f28] mb-2">
-              제목 <span className="text-[#3182f6]">*</span>
+            <label htmlFor="inquiry-title" className="block text-[13px] font-bold text-ink-900 mb-2">
+              제목 <span className="text-brand-strong">*</span>
             </label>
             <input
               id="inquiry-title"
@@ -258,16 +258,16 @@ export default function InquiryPage() {
               placeholder="문의 제목을 입력해주세요"
               maxLength={100}
               disabled={submitting}
-              className="w-full px-4 py-3 text-[13px] border border-slate-200 rounded-2xl outline-none bg-white focus:border-[#3182f6] focus:ring-2 focus:ring-blue-100 transition-all disabled:opacity-50 placeholder:text-slate-300"
+              className="w-full px-4 py-3 text-[13px] border border-line rounded-2xl outline-none bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all disabled:opacity-50 placeholder:text-ink-400"
             />
             {/* 글자 수 카운터 */}
-            <p className="text-[11px] text-slate-400 mt-1 text-right">{title.length}/100</p>
+            <p className="text-[11px] text-ink-600 mt-1 text-right">{title.length}/100</p>
           </div>
 
           {/* 내용 입력 */}
           <div>
-            <label htmlFor="inquiry-content" className="block text-[13px] font-bold text-[#191f28] mb-2">
-              문의 내용 <span className="text-[#3182f6]">*</span>
+            <label htmlFor="inquiry-content" className="block text-[13px] font-bold text-ink-900 mb-2">
+              문의 내용 <span className="text-brand-strong">*</span>
             </label>
             <textarea
               id="inquiry-content"
@@ -277,10 +277,10 @@ export default function InquiryPage() {
               rows={5}
               maxLength={1000}
               disabled={submitting}
-              className="w-full px-4 py-3 text-[13px] border border-slate-200 rounded-2xl outline-none bg-white focus:border-[#3182f6] focus:ring-2 focus:ring-blue-100 transition-all resize-none disabled:opacity-50 placeholder:text-slate-300"
+              className="w-full px-4 py-3 text-[13px] border border-line rounded-2xl outline-none bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all resize-none disabled:opacity-50 placeholder:text-ink-400"
             />
             {/* 글자 수 카운터 */}
-            <p className="text-[11px] text-slate-400 mt-1 text-right">{content.length}/1000</p>
+            <p className="text-[11px] text-ink-600 mt-1 text-right">{content.length}/1000</p>
           </div>
 
           {/* 에러 메시지 */}
@@ -290,7 +290,7 @@ export default function InquiryPage() {
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
-                className="text-[12px] text-red-500 font-medium"
+                className="text-[12px] text-danger font-medium"
               >
                 {error}
               </motion.p>
@@ -299,8 +299,8 @@ export default function InquiryPage() {
 
           {/* 비회원 안내 */}
           {!user && (
-            <div className="rounded-2xl bg-amber-50 border border-amber-100 px-4 py-3">
-              <p className="text-[12px] text-amber-700">
+            <div className="rounded-2xl bg-warning/10 border border-warning/20 px-4 py-3">
+              <p className="text-[12px] text-[#B45309]">
                 로그인하지 않은 경우 답변을 받으실 수 없습니다.
                 답변을 원하시면 로그인 후 문의해주세요.
               </p>
@@ -312,7 +312,7 @@ export default function InquiryPage() {
             type="button"
             onClick={handleSubmit}
             disabled={submitting || showSuccess}
-            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#3182f6] text-white text-[14px] font-bold shadow-[0_8px_24px_rgba(49,130,246,0.3)] hover:bg-[#1b64da] active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-brand-strong text-white text-[14px] font-bold shadow-[0_8px_24px_rgba(27,100,218,0.3)] hover:bg-brand-700 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {submitting ? (
               /* 제출 중 스피너 */
@@ -338,9 +338,9 @@ export default function InquiryPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 40 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#191f28] text-white shadow-2xl text-[13px] font-semibold"
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 rounded-2xl bg-ink-900 text-white shadow-2xl text-[13px] font-semibold"
           >
-            <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            <CheckCircle className="w-4 h-4 text-accent flex-shrink-0" />
             문의가 정상적으로 접수되었습니다!
           </motion.div>
         )}

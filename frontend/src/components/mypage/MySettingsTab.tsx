@@ -36,7 +36,7 @@ function Toggle({ value, onToggle, label }: {
     <button
       onClick={onToggle}
       className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-        value ? 'bg-[#3182f6]' : 'bg-slate-200'
+        value ? 'bg-brand' : 'bg-line'
       }`}
       aria-label={label}
     >
@@ -252,23 +252,23 @@ export default function MySettingsTab() {
     <div className="space-y-4">
 
       {/* ════ [프로필] 섹션 ════ */}
-      <section className="bg-white rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
+      <section className="bg-white rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-line overflow-hidden">
         <div className="px-5 pt-5 pb-4">
           {/* 섹션 헤더 */}
           <div className="flex items-center gap-2 mb-4">
-            <User className="w-4 h-4 text-[#3182f6]" />
+            <User className="w-4 h-4 text-brand" />
             <p className="text-[14px] font-extrabold text-[#191f28] tracking-tight">프로필</p>
           </div>
 
           {/* 이모지 아바타 + 닉네임 편집 */}
           <div className="flex items-center gap-4 mb-4">
             {/* 기본 이모지 아바타 (이미지 업로드는 추후 구현) */}
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-violet-100 flex items-center justify-center text-3xl flex-shrink-0 shadow-inner">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-bg to-brand-100 flex items-center justify-center text-3xl flex-shrink-0 shadow-inner">
               👤
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] text-[#8b95a1] mb-0.5">닉네임</p>
+              <p className="text-[11px] text-ink-600 mb-0.5">닉네임</p>
               {editingNickname ? (
                 /* 닉네임 편집 모드 */
                 <div className="space-y-1.5">
@@ -277,27 +277,27 @@ export default function MySettingsTab() {
                     value={nickname}
                     onChange={e => { setNickname(e.target.value); setNicknameError('') }}
                     maxLength={20}
-                    className="w-full px-3 py-2 text-[13px] border border-[#3182f6] rounded-xl outline-none bg-blue-50/30 focus:ring-2 focus:ring-blue-100"
+                    className="w-full px-3 py-2 text-[13px] border border-brand rounded-xl outline-none bg-brand-bg focus:ring-2 focus:ring-brand/20"
                     placeholder="닉네임 입력 (최대 20자)"
                     autoFocus
                     onKeyDown={e => { if (e.key === 'Enter') saveNickname() }}
                   />
                   {/* 에러 메시지 */}
                   {nicknameError && (
-                    <p className="text-[11px] text-red-500">{nicknameError}</p>
+                    <p className="text-[11px] text-danger">{nicknameError}</p>
                   )}
                   {/* 저장/취소 버튼 */}
                   <div className="flex gap-2">
                     <button
                       onClick={saveNickname}
                       disabled={nicknameLoading}
-                      className="flex-1 py-1.5 text-[12px] font-bold text-white bg-[#3182f6] rounded-xl disabled:opacity-50 active:scale-[0.97] transition-all"
+                      className="flex-1 py-1.5 text-[12px] font-bold text-white bg-brand-strong rounded-xl disabled:opacity-50 active:scale-[0.97] transition-all"
                     >
                       {nicknameLoading ? '저장 중...' : '저장'}
                     </button>
                     <button
                       onClick={() => { setEditingNickname(false); setNicknameError('') }}
-                      className="flex-1 py-1.5 text-[12px] font-semibold text-[#8b95a1] bg-slate-100 rounded-xl active:scale-[0.97] transition-all"
+                      className="flex-1 py-1.5 text-[12px] font-semibold text-ink-600 bg-[#F2F4F6] rounded-xl active:scale-[0.97] transition-all"
                     >
                       취소
                     </button>
@@ -311,7 +311,7 @@ export default function MySettingsTab() {
                   </p>
                   <button
                     onClick={() => setEditingNickname(true)}
-                    className="text-[11px] text-[#3182f6] font-semibold px-2 py-0.5 rounded-full bg-blue-50 hover:bg-blue-100 transition-colors flex-shrink-0"
+                    className="text-[11px] text-brand-strong font-semibold px-2 py-0.5 rounded-full bg-brand-bg hover:bg-brand-100 transition-colors flex-shrink-0"
                   >
                     변경
                   </button>
@@ -321,9 +321,9 @@ export default function MySettingsTab() {
           </div>
 
           {/* 이메일 (읽기 전용) */}
-          <div className="px-3 py-2.5 bg-slate-50 rounded-xl">
-            <p className="text-[11px] text-[#8b95a1] mb-0.5">이메일</p>
-            <p className="text-[13px] text-[#4e5968] font-medium truncate">
+          <div className="px-3 py-2.5 bg-[#F7F9FC] rounded-xl">
+            <p className="text-[11px] text-ink-600 mb-0.5">이메일</p>
+            <p className="text-[13px] text-ink-700 font-medium truncate">
               {user?.email ?? '-'}
             </p>
           </div>
@@ -331,29 +331,29 @@ export default function MySettingsTab() {
       </section>
 
       {/* ════ [알림 설정] 섹션 ════ */}
-      <section className="bg-white rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
+      <section className="bg-white rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-line overflow-hidden">
         <div className="px-5 pt-5 pb-1">
           <div className="flex items-center gap-2 mb-1">
-            <Bell className="w-4 h-4 text-[#3182f6]" />
+            <Bell className="w-4 h-4 text-brand" />
             <p className="text-[14px] font-extrabold text-[#191f28] tracking-tight">알림 설정</p>
           </div>
-          <p className="text-[11px] text-[#8b95a1] mb-3">기기 알림 설정에서도 허용해야 정상 작동합니다</p>
+          <p className="text-[11px] text-ink-600 mb-3">기기 알림 설정에서도 허용해야 정상 작동합니다</p>
         </div>
 
         {/* 새 채용공고 알림 토글 */}
-        <div className="px-5 py-3.5 flex items-center justify-between border-t border-slate-50">
+        <div className="px-5 py-3.5 flex items-center justify-between border-t border-line">
           <div className="flex-1 min-w-0 pr-3">
             <p className="text-[13px] font-semibold text-[#191f28]">새 채용공고 알림</p>
-            <p className="text-[11px] text-[#8b95a1] mt-0.5">맞춤 채용공고가 등록되면 알려드려요</p>
+            <p className="text-[11px] text-ink-600 mt-0.5">맞춤 채용공고가 등록되면 알려드려요</p>
             {/* 브라우저 알림 권한 거부 시 안내 문구 표시 */}
             {showPermissionDenied && (
-              <p className="text-[11px] text-red-400 mt-1 leading-tight">
+              <p className="text-[11px] text-danger mt-1 leading-tight">
                 브라우저 알림 권한이 필요합니다. 기기 설정에서 이 사이트의 알림을 허용해주세요.
               </p>
             )}
             {/* Notification API 미지원 환경 안내 */}
             {notifPermission === 'unsupported' && jobNotification && (
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-[11px] text-ink-600 mt-1">
                 현재 브라우저는 알림을 지원하지 않아요
               </p>
             )}
@@ -366,10 +366,10 @@ export default function MySettingsTab() {
         </div>
 
         {/* 출근확정 알림 토글 */}
-        <div className="px-5 py-3.5 flex items-center justify-between border-t border-slate-50">
+        <div className="px-5 py-3.5 flex items-center justify-between border-t border-line">
           <div>
             <p className="text-[13px] font-semibold text-[#191f28]">출근확정 알림</p>
-            <p className="text-[11px] text-[#8b95a1] mt-0.5">지원한 공고의 출근이 확정되면 알려드려요</p>
+            <p className="text-[11px] text-ink-600 mt-0.5">지원한 공고의 출근이 확정되면 알려드려요</p>
           </div>
           <Toggle
             value={workNotification}
@@ -380,24 +380,24 @@ export default function MySettingsTab() {
       </section>
 
       {/* ════ [앱 정보] 섹션 ════ */}
-      <section className="bg-white rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
+      <section className="bg-white rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-line overflow-hidden">
         <div className="px-5 pt-5 pb-1">
           <div className="flex items-center gap-2 mb-3">
-            <Info className="w-4 h-4 text-[#3182f6]" />
+            <Info className="w-4 h-4 text-brand" />
             <p className="text-[14px] font-extrabold text-[#191f28] tracking-tight">앱 정보</p>
           </div>
         </div>
 
         {/* 앱 버전 표시 */}
-        <div className="px-5 py-3.5 flex items-center justify-between border-t border-slate-50">
+        <div className="px-5 py-3.5 flex items-center justify-between border-t border-line">
           <p className="text-[13px] font-semibold text-[#191f28]">앱 버전</p>
-          <span className="text-[12px] text-[#8b95a1] font-mono font-medium">v{appVersion}</span>
+          <span className="text-[12px] text-ink-600 font-mono font-medium">v{appVersion}</span>
         </div>
 
         {/* 이용약관 → /terms-of-service 페이지로 이동 */}
         <button
           onClick={() => navigate('/terms-of-service')}
-          className="w-full px-5 py-3.5 flex items-center justify-between border-t border-slate-50 hover:bg-slate-50 active:bg-slate-100 transition-colors"
+          className="w-full px-5 py-3.5 flex items-center justify-between border-t border-line hover:bg-[#F7F9FC] active:bg-[#F2F4F6] transition-colors"
         >
           <p className="text-[13px] font-semibold text-[#191f28]">이용약관</p>
           <ChevronRight className="w-4 h-4 text-[#c0c8d2]" />
@@ -406,7 +406,7 @@ export default function MySettingsTab() {
         {/* 개인정보처리방침 → /privacy-policy 페이지로 이동 */}
         <button
           onClick={() => navigate('/privacy-policy')}
-          className="w-full px-5 py-3.5 flex items-center justify-between border-t border-slate-50 hover:bg-slate-50 active:bg-slate-100 transition-colors"
+          className="w-full px-5 py-3.5 flex items-center justify-between border-t border-line hover:bg-[#F7F9FC] active:bg-[#F2F4F6] transition-colors"
         >
           <p className="text-[13px] font-semibold text-[#191f28]">개인정보처리방침</p>
           <ChevronRight className="w-4 h-4 text-[#c0c8d2]" />
@@ -415,7 +415,7 @@ export default function MySettingsTab() {
         {/* 고객센터 / 문의하기 → /inquiry 인앱 문의 페이지로 이동 */}
         <button
           onClick={() => navigate('/inquiry')}
-          className="w-full px-5 py-3.5 flex items-center justify-between border-t border-slate-50 hover:bg-slate-50 active:bg-slate-100 transition-colors"
+          className="w-full px-5 py-3.5 flex items-center justify-between border-t border-line hover:bg-[#F7F9FC] active:bg-[#F2F4F6] transition-colors"
         >
           <p className="text-[13px] font-semibold text-[#191f28]">고객센터 / 문의하기</p>
           <ChevronRight className="w-4 h-4 text-[#c0c8d2]" />
@@ -423,27 +423,27 @@ export default function MySettingsTab() {
       </section>
 
       {/* ════ [계정] 섹션 ════ */}
-      <section className="bg-white rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
+      <section className="bg-white rounded-[28px] shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-line overflow-hidden">
         <div className="px-5 pt-5 pb-1">
           <div className="flex items-center gap-2 mb-3">
-            <Shield className="w-4 h-4 text-[#3182f6]" />
+            <Shield className="w-4 h-4 text-brand" />
             <p className="text-[14px] font-extrabold text-[#191f28] tracking-tight">계정</p>
           </div>
         </div>
 
         {/* 연결된 소셜 계정 표시 */}
-        <div className="px-5 py-3.5 border-t border-slate-50">
-          <p className="text-[12px] text-[#8b95a1] mb-2">연결된 소셜 계정</p>
+        <div className="px-5 py-3.5 border-t border-line">
+          <p className="text-[12px] text-ink-600 mb-2">연결된 소셜 계정</p>
           {providers.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {providers.map(provider => (
                 <span
                   key={provider}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-full text-[12px] font-semibold text-[#4e5968]"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F7F9FC] rounded-full text-[12px] font-semibold text-ink-700"
                 >
                   <span>{getProviderEmoji(provider)}</span>
                   {getProviderLabel(provider)}
-                  <Check className="w-3 h-3 text-emerald-500" />
+                  <Check className="w-3 h-3 text-accent-600" />
                 </span>
               ))}
             </div>
@@ -453,11 +453,11 @@ export default function MySettingsTab() {
         </div>
 
         {/* 로그아웃 버튼 */}
-        <div className="px-5 py-3.5 border-t border-slate-50">
+        <div className="px-5 py-3.5 border-t border-line">
           <button
             type="button"
             onClick={() => logout()}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-slate-200 text-[13px] font-semibold text-[#4e5968] hover:bg-slate-50 active:scale-[0.98] transition-all"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-line text-[13px] font-semibold text-ink-700 hover:bg-[#F7F9FC] active:scale-[0.98] transition-all"
           >
             <LogOut className="w-4 h-4" />
             로그아웃
@@ -465,11 +465,11 @@ export default function MySettingsTab() {
         </div>
 
         {/* 회원탈퇴 — 맨 하단 작은 회색 링크 스타일 */}
-        <div className="px-5 pb-5 pt-2 text-center border-t border-slate-50">
+        <div className="px-5 pb-5 pt-2 text-center border-t border-line">
           <button
             type="button"
             onClick={handleDeleteAccount}
-            className="text-[11px] text-[#c0c8d2] hover:text-red-400 transition-colors underline underline-offset-2"
+            className="text-[11px] text-[#c0c8d2] hover:text-danger transition-colors underline underline-offset-2"
           >
             회원 탈퇴
           </button>

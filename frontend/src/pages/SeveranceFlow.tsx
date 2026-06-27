@@ -408,7 +408,7 @@ export default function SeveranceFlow() {
               {/* q2 통과 시 계산 방식 선택 표시 */}
               {s.q2 === true && (
                 <>
-                  <div className="w-full h-px bg-white/40 my-2" />
+                  <div className="w-full h-px bg-line my-2" />
                   <CalcStepIcon
                     icon={<FileText className="w-7 h-7" />}
                     accentColor="blue"
@@ -578,7 +578,7 @@ export default function SeveranceFlow() {
       {s.step === 1 && !s.result && (
         <section
           aria-label="쿠팡 일용직 퇴직금 안내"
-          className="w-full max-w-[460px] mx-auto px-4 pb-8 mt-2"
+          className="w-full max-w-[520px] mx-auto px-4 pb-8 mt-2"
         >
           {/* ── 계산기 소개 ── */}
           <div className="bg-blue-50 rounded-2xl p-5 mb-4">

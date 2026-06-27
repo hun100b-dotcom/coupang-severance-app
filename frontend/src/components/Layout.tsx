@@ -15,10 +15,10 @@ export default function Layout() {
 
       {/* 페이지 콘텐츠 영역
           - pt-14: TopNav(h-14=56px) 높이만큼 상단 여백
-          - pb-[60px]: BottomNav(60px) 높이만큼 하단 여백
+          - pb-[72px]: 모바일 BottomNav(64px) + 여유 8px
+          - md:pb-10: 데스크톱은 BottomNav 없으므로 하단 여백 축소
           - min-h-screen: 짧은 페이지도 화면 전체 채우기 */}
-      {/* pb-[72px]: BottomNav 높이(64px) + 여유 8px */}
-      <main className="pt-14 pb-[72px] min-h-screen">
+      <main className="pt-14 pb-[72px] md:pb-10 min-h-screen">
         <Outlet />
       </main>
 

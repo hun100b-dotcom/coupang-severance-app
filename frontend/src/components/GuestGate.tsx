@@ -5,6 +5,7 @@
 //   <GuestGateModal />
 
 import { useState, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LogIn, X } from 'lucide-react'
@@ -23,12 +24,13 @@ interface GuestGateModalProps {
 export function GuestGateModal({ isOpen, onClose, featureName }: GuestGateModalProps) {
   const navigate = useNavigate()
 
-  return (
+  return createPortal(
+    // portal로 body 렌더 → 페이지 루트의 z-[1] 스태킹 컨텍스트 탈출(BottomNav 위 표시)
     <AnimatePresence>
       {isOpen && (
-        // 배경 딤 처리 — 클릭하면 닫힘
+        // 배경 딤 처리 — 클릭하면 닫힘. 모바일 하단은 BottomNav(64px) 높이만큼 여백 확보
         <motion.div
-          className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center px-4 pb-4 sm:pb-0"
+          className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center px-4 pb-[88px] sm:pb-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -97,7 +99,8 @@ export function GuestGateModal({ isOpen, onClose, featureName }: GuestGateModalP
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }
 

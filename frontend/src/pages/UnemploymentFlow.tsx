@@ -316,7 +316,7 @@ export default function UnemploymentFlow() {
                     placeholder="회사명을 직접 입력해 주세요"
                     value={s.companyOther}
                     onChange={e => setS(p => ({ ...p, companyOther: e.target.value }))}
-                    className="w-full px-4 py-4 rounded-2xl border border-white/60 bg-white/70 text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-sky-400/40 focus:border-sky-400 text-center"
+                    className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                   />
                 </CalcInputCard>
               )}
@@ -335,7 +335,7 @@ export default function UnemploymentFlow() {
               <CalcStepIcon
                 icon={<HelpCircle className="w-7 h-7" />}
                 accentColor="sky"
-                title={<>최근 <span className="text-sky-500">18개월 내 180일 이상</span> 고용보험에 가입되어 있었나요?</>}
+                title={<>최근 <span className="text-brand">18개월 내 180일 이상</span> 고용보험에 가입되어 있었나요?</>}
                 subtitle="실업급여 수급을 위한 기본 요건이에요"
               />
               <div className="flex flex-col gap-3">
@@ -363,7 +363,7 @@ export default function UnemploymentFlow() {
               <CalcStepIcon
                 icon={<Calendar className="w-7 h-7" />}
                 accentColor="sky"
-                title={<>최근 <span className="text-sky-500">1개월간 근로일수가 10일 미만</span>이었나요?</>}
+                title={<>최근 <span className="text-brand">1개월간 근로일수가 10일 미만</span>이었나요?</>}
                 subtitle="일용직은 실업 상태 유지 여부가 중요해요"
               />
               <div className="flex flex-col gap-3">
@@ -382,7 +382,7 @@ export default function UnemploymentFlow() {
               {/* q2 통과 시 계산 방식 선택 */}
               {s.q2 === true && (
                 <>
-                  <div className="w-full h-px bg-white/40 my-2" />
+                  <div className="w-full h-px bg-line my-2" />
                   <CalcStepIcon
                     icon={<FileText className="w-7 h-7" />}
                     accentColor="sky"
@@ -427,7 +427,7 @@ export default function UnemploymentFlow() {
 
               {/* PDF 발급 가이드 */}
               <button type="button" onClick={() => setPdfGuideOpen(true)}
-                className="text-[13px] text-[#8b95a1] underline underline-offset-2 hover:text-sky-500 transition-colors">
+                className="text-[13px] text-[#8b95a1] underline underline-offset-2 hover:text-brand transition-colors">
                 ❓ 근로내역서 PDF는 어디서 받나요?
               </button>
 
@@ -451,12 +451,12 @@ export default function UnemploymentFlow() {
                         onClick={() => setSelectedPdfCompany(prev => prev === name ? null : name)}
                         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
                           selectedPdfCompany === name
-                            ? 'bg-sky-50 border border-sky-200'
-                            : 'bg-white/50 border border-white/40 hover:bg-white/80'
+                            ? 'bg-brand-bg border border-brand-200'
+                            : 'bg-white border border-line hover:bg-[#F7F9FC]'
                         }`}>
                         <span className="shrink-0">
                           {selectedPdfCompany === name
-                            ? <Check size={14} strokeWidth={2.5} className="text-sky-500" />
+                            ? <Check size={14} strokeWidth={2.5} className="text-brand" />
                             : <span className="w-3.5 h-3.5 rounded-full border-[1.5px] border-slate-300 inline-block" />
                           }
                         </span>
@@ -473,7 +473,7 @@ export default function UnemploymentFlow() {
                   마지막 근무일 (선택)
                 </label>
                 <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
-                  className="w-full px-4 py-4 rounded-2xl border border-white/60 bg-white/70 text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-sky-400/40 focus:border-sky-400 text-center"
+                  className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                 />
               </CalcInputCard>
 
@@ -482,7 +482,7 @@ export default function UnemploymentFlow() {
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input type="checkbox" checked={s.age50}
                     onChange={e => setS(p => ({ ...p, age50: e.target.checked }))}
-                    className="w-5 h-5 rounded-md border-2 border-sky-300 text-sky-500 focus:ring-sky-400/40"
+                    className="w-5 h-5 rounded-md border-2 border-brand-200 text-brand focus:ring-brand/30"
                   />
                   <span className="text-[14px] font-semibold text-[#191f28]">
                     50세 이상이에요 <span className="text-[12px] text-[#8b95a1] font-normal">(수급일수 더 길어요)</span>
@@ -524,7 +524,7 @@ export default function UnemploymentFlow() {
                       placeholder="예: 200"
                       value={insuredDays}
                       onChange={e => setInsuredDays(e.target.value)}
-                      className="w-full px-4 py-4 rounded-2xl border border-white/60 bg-white/70 text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-sky-400/40 focus:border-sky-400 text-center"
+                      className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                     />
                   </div>
                   <div>
@@ -534,7 +534,7 @@ export default function UnemploymentFlow() {
                       placeholder="예: 150000"
                       value={avgWage}
                       onChange={e => setAvgWage(e.target.value)}
-                      className="w-full px-4 py-4 rounded-2xl border border-white/60 bg-white/70 text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-sky-400/40 focus:border-sky-400 text-center"
+                      className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                     />
                   </div>
                 </div>
@@ -545,7 +545,7 @@ export default function UnemploymentFlow() {
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input type="checkbox" checked={s.age50}
                     onChange={e => setS(p => ({ ...p, age50: e.target.checked }))}
-                    className="w-5 h-5 rounded-md border-2 border-sky-300 text-sky-500 focus:ring-sky-400/40"
+                    className="w-5 h-5 rounded-md border-2 border-brand-200 text-brand focus:ring-brand/30"
                   />
                   <span className="text-[14px] font-semibold text-[#191f28]">
                     50세 이상이에요

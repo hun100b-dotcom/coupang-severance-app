@@ -95,9 +95,11 @@ export default function NoticesBanner({ notices }: Props) {
        * - 위아래 슬라이드 전환 시 y 방향 클리핑
        * - 마키 텍스트가 배너 밖으로 흘러나오지 않도록 제한
        */}
-      <div className="mx-3 my-2 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 px-4 py-3 flex items-center gap-3 hover:from-blue-100 hover:to-indigo-100 transition-colors duration-150 overflow-hidden">
+      {/* 홈의 다른 카드와 좌우 정렬을 맞추기 위해 mx-3 my-2(자체 여백) 제거 — 컨테이너 폭 그대로 사용
+          색: 인디고 그라데이션(무지개) → 브랜드 블루 단색 + 좌측 액센트 바 */}
+      <div className="rounded-xl bg-brand-bg border border-brand-100 border-l-4 border-l-brand px-4 py-3 flex items-center gap-3 hover:bg-brand-50 transition-colors duration-150 overflow-hidden">
         {/* 메가폰 아이콘 */}
-        <Megaphone className="w-4 h-4 text-blue-500 flex-shrink-0" />
+        <Megaphone className="w-[18px] h-[18px] text-brand flex-shrink-0" />
 
         {/*
          * 텍스트 영역
@@ -139,17 +141,17 @@ export default function NoticesBanner({ notices }: Props) {
                   onAnimationEnd={handleMarqueeEnd}
                 >
                   {/* 텍스트 원본 */}
-                  <span className="text-sm font-medium text-gray-700 pr-8">
+                  <span className="text-sm font-semibold text-ink-800 pr-8">
                     {displayText}
                   </span>
                   {/* 텍스트 복사본 (seamless 루프를 위해 동일 텍스트 반복) */}
-                  <span className="text-sm font-medium text-gray-700 pr-8">
+                  <span className="text-sm font-semibold text-ink-800 pr-8">
                     {displayText}
                   </span>
                 </div>
               ) : (
                 /* 짧은 텍스트: 정적 표시, 넘치면 말줄임 */
-                <span className="text-sm font-medium text-gray-700 block truncate">
+                <span className="text-sm font-semibold text-ink-800 block truncate">
                   {displayText}
                 </span>
               )}
@@ -159,13 +161,13 @@ export default function NoticesBanner({ notices }: Props) {
 
         {/* 공지 번호 인디케이터 (공지 2개 이상일 때만 표시) */}
         {notices.length > 1 && (
-          <span className="text-xs text-blue-300 flex-shrink-0 font-medium tabular-nums">
+          <span className="text-xs text-brand-strong flex-shrink-0 font-bold tabular-nums">
             {currentIdx + 1}/{notices.length}
           </span>
         )}
 
         {/* 오른쪽 화살표 (상세 페이지 이동 힌트) */}
-        <ChevronRight className="w-4 h-4 text-blue-300 flex-shrink-0" />
+        <ChevronRight className="w-[18px] h-[18px] text-brand flex-shrink-0" />
       </div>
     </button>
   )
