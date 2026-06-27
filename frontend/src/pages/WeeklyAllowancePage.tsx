@@ -698,7 +698,7 @@ export default function WeeklyAllowancePage() {
                   </div>
                   {saveState !== 'saved' && (
                     <button type="button" onClick={handleSave} disabled={saveState === 'saving'}
-                      className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#3182f6] text-white text-xs font-bold shadow-[0_4px_12px_rgba(49,130,246,0.3)] hover:bg-[#1b64da] transition-colors disabled:opacity-60">
+                      className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#047857] text-white text-xs font-bold shadow-[0_4px_12px_rgba(6,190,123,0.28)] hover:bg-[#036848] transition-colors disabled:opacity-60">
                       {saveState === 'saving' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                       {saveState === 'saving' ? '저장중...' : saveState === 'login_required' ? '로그인 필요' : '저장'}
                     </button>
