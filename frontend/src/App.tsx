@@ -86,8 +86,18 @@ function HomeGuard() {
       </div>
     )
   }
+  // 게스트 판정 이중화 (튕김 race 방지):
+  //   랜딩의 "지금 시작하기"는 loginAsGuest()로 게스트 플래그를 켠 뒤 navigate('/home') 한다.
+  //   loginAsGuest는 localStorage에 'catch_guest_mode'를 "동기"로 기록하지만, 컨텍스트 상태
+  //   isGuest 반영은 리렌더에 의존한다. 만약 어떤 이유로 setState 반영 전 HomeGuard가 먼저
+  //   평가되면(배칭 깨짐 등) isGuest=false로 랜딩으로 튕길 수 있다. 그래서 컨텍스트 isGuest가
+  //   아직 false여도 localStorage의 동기 기록을 직접 확인해 게스트로 인정한다.
+  let guestFlag = isGuest
+  if (!guestFlag) {
+    try { guestFlag = localStorage.getItem('catch_guest_mode') === 'true' } catch { /* localStorage 차단 환경: 메모리 isGuest만 신뢰 */ }
+  }
   // 비로그인이면서 게스트 모드도 아닌 경우 → 랜딩 페이지로
-  if (!isLoggedIn && !isGuest) return <Navigate to="/" replace />
+  if (!isLoggedIn && !guestFlag) return <Navigate to="/" replace />
   // 로그인 또는 게스트 모드 → Home 컴포넌트 렌더링
   return <Home />
 }

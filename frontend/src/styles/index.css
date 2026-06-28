@@ -939,8 +939,9 @@ input:focus {
   100% { transform: translateX(-50%); }
 }
 
-/* marquee-banner: NoticesBanner 전용 (1회 실행 forwards)
-   마키 완료 후 3초 뒤 다음 공지로 전환하는 방식에 사용 */
+/* marquee-banner: NoticesBanner 전용 (무한 루프 infinite)
+   텍스트 2벌([원본][복사본]) + w-max 트랙에서 -50% = 정확히 한 벌 이동 → seamless 반복.
+   공지 전환은 이 애니메이션과 무관한 독립 타이머가 담당 (NoticesBanner.tsx 참조) */
 @keyframes marquee-banner {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
