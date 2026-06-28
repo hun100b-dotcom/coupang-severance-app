@@ -579,7 +579,7 @@ export default function Home() {
 
           {/* ── 푸터 ── */}
           <p className="text-center text-[11px] font-normal text-ink-600 leading-relaxed mt-1">
-            © 2026 CATCH by LEAF-MASTER. All rights reserved.
+            © 2026 CATCH. All rights reserved.
             <br />
             <span className="text-[10px]">이 결과는 참고용이에요. 정확한 금액은 노무사 상담을 받으세요.</span>
           </p>
