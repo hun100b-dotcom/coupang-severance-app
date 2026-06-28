@@ -537,7 +537,7 @@ def render_intro():
             st.session_state.service = "unemployment"
             st.rerun()
     st.markdown(
-        '<div class="app-footer-intro">ⓒ 2026 LEAF-MASTER. All rights reserved.</div>',
+        '<div class="app-footer-intro">ⓒ 2026 CATCH. All rights reserved.</div>',
         unsafe_allow_html=True,
     )
 

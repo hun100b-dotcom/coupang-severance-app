@@ -160,7 +160,7 @@ export default function Intro() {
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5, duration: 0.8 }}
           >
-            by LEAF-MASTER
+            CATCH
           </motion.p>
         </motion.div>
       )}

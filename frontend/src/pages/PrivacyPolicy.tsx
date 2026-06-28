@@ -323,7 +323,7 @@ export default function PrivacyPolicyPage() {
               {/* 보호책임자 정보 카드 */}
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
                 <p className="text-gray-800 space-y-1">
-                  <span className="block"><strong>성명:</strong> 백종훈</span>
+                  <span className="block"><strong>성명:</strong> CATCH 운영팀</span>
                   <span className="block"><strong>직책:</strong> 서비스 운영 책임자</span>
                   <span className="block">
                     <strong>이메일:</strong>{' '}
