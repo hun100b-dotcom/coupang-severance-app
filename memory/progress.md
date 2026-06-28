@@ -35,6 +35,15 @@
 
 ## ✅ 완료 작업 이력
 
+### 세션 17 — 2026-06-29 (내부 문서 개인 식별자 일괄 스크럽, 더블리뷰, main 배포)
+- 세션16b가 앱 가시 영역 처리 → 본 세션은 **앱 비노출이지만 레포에 남은 내부 문서**의 잔존 식별자 제거.
+- 그룹1(마케팅 7파일): product-hunt/alternativeto/privacy 초안 + marketing_kit 4종 → 영문명·이메일·"쿠팡 CFS HR 출신 종훈" 자기소개를 "물류 HR 운영자"로 일반화(효용 유지).
+- 그룹2(개발도구): EXECUTE_LEGAL_MIGRATIONS.html Vercel 개인 핸들 URL→일반 대시보드, remove_personal_name.md 리터럴→일반표기.
+- 그룹3(기억/규칙): CLAUDE.md·progress.md 평문 이메일·열거 닉네임만 정밀 제거 + §E 직업 회사명 일반화. 로직·세션규칙 무손상.
+- 더블리뷰: A 총괄 PASS / B 적대 FAIL(단 B의 MAJOR 2건=호칭 종훈·OS 슬러그 hun10은 미션 범위 밖 보존 합의 항목). 기록 `docs/dual_review/scrub_internal_docs.md`.
+- 재검증: 미션 타깃(실명·영문명·닉네임·평문 이메일) 추적 트리+커밋 메시지+감사 문서 전부 0건. 보존: 동작 git remote 핸들, 로컬 경로 OS 계정명, 단독 호칭 "종훈".
+- 배포: chore/scrub-internal-docs → main(`f0e2271..bc48673`, 커밋 571d6af). 6-step 통과: Vercel 200/Render health·docs 200/소스코드 무변경.
+
 ### 세션 16b — 2026-06-28 (개인 실명·닉네임 앱 전역 제거, 더블리뷰 PASS, main 배포)
 - 제거 대상: 개발자 개인 실명·영문명·닉네임 일체(브랜드 CATCH 외). 브랜드는 CATCH만 유지. 로직 무변경.
 - 앱 가시 3 + 백엔드/주석 2 = 5건 수정: Home.tsx 푸터(`© 2026 CATCH...`), Intro.tsx 스플래시(`CATCH`), PrivacyPolicy.tsx 보호책임자(`성명: CATCH 운영팀`), app.py Streamlit 푸터, ProfileSection.tsx 주석.
