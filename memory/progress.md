@@ -35,6 +35,14 @@
 
 ## ✅ 완료 작업 이력
 
+### 세션 16 — 2026-06-28 (후속 3건: 어드민 확인 + 랜딩 CTA 버그 + 공지 마키 버그, 더블리뷰 PASS, main 배포)
+- **#1 어드민 개편 여부**: grep(admin 42파일) + 실제 /admin 렌더 확인 → **개편 안 됨**. 새 토큰(brand/accent/ink/line) 0건, backdrop-blur 0건, 무지개(purple/violet/indigo) 0건, slate/gray 301건 = 세션10 슬레이트 라이트 테마 그대로. 무지개·글래스 잔재도 없음(이미 세션10에서 제거). 이번 리디자인은 어드민 미적용(Phase 5 보류). 별도 지시 전까지 손대지 않음.
+- **#2 랜딩 "지금 시작하기" 튕김**(LandingV1.tsx): goHome이 게스트 모드 안 켜고 /home 이동 → HomeGuard가 /로 튕기던 버그. 재현 확정(클릭→path '/'). 수정: `if(!isLoggedIn) loginAsGuest()` 후 navigate. 재검증 통과(비로그인 클릭→/home + guest=true).
+- **#3 홈 공지 마키**(NoticesBanner.tsx): 직접 진단 → translateX(-50%)가 컨테이너 자기폭 기준인데 w-max 없어 부모(205px)에 묶여 끝까지 가도 -103px만 이동(텍스트 493px 중) → 뒷부분 영영 안 보이고 까딱대다 멈춤. 수정: 마키 div에 `w-max` 추가 → 컨테이너 987px, 끝에서 -493px 정확 이동, span2=0 seamless. 모바일/데스크톱 실측 확정.
+- **검증 방법**: dev서버(preview MCP, hidden탭이라 Web Animations API로 currentTime 수동 진행시켜 기하 실측). 5173 잔여 vite 충돌 → taskkill 후 재시작.
+- **더블리뷰**: 총괄A·적대B 모두 PASS(블로커 0). B 권고 MINOR-1(로그인유저 게스트플래그 가드) 반영. 기록 `docs/dual_review/fix_landing_cta_notices_marquee.md`
+- **배포**: 브랜치 fix/landing-cta-notices → main 머지 → push(`4c7518a..99f3800`). 6-step 통과: 커밋 99f3800 / Vercel 200(0.05s) / Render health 200(53s 콜드) / docs 200 / 라이브 최신청크(LandingV1-Cmc0FcrT.js·index-Bf3Y2v01.js) 도달 / CSS해시 일치 무결성. 계산로직 무변경.
+
 ### 세션 15-4 — 2026-06-28 (디자인 개편: 마이페이지 /mypage 전체 완료, 더블리뷰 PASS)
 - 셸 + 5개 서브탭(홈/즐겨찾기/지원현황/스케줄/설정) 전부 무지개 제거·토큰화 완료
 - 셸: 중복 헤더(뒤로/로그아웃) 제거, 세그먼트 pill 탭바(라벨 상시표시+aria-label), 반응형 max-w-760
@@ -99,7 +107,7 @@
 - 카드 높이 통일(items-stretch+h-full+CTA mt-auto → 302px 균일), break-keep, tabular-nums
 - 더블리뷰: A PASS(조건부, 피처 수치라벨 white/80→white/90 수정) / B PASS(이슈 0). 기록 `docs/dual_review/redesign_calculator.md`
 - **다음 화면**: 채용정보(/jobs) + 상세 모달(텍스트 잘림 수정) — 보고 후 이어감
-- 게스트 진입(로컬): `/login` → "비로그인으로 진행하기" 버튼 → /home. (랜딩 "지금 시작하기"는 게스트 미설정 버그 — 별도 결정 대기)
+- 게스트 진입(로컬): `/login` → "비로그인으로 진행하기" 버튼 → /home. (랜딩 "지금 시작하기" 게스트 미설정 버그는 세션16에서 수정 완료)
 
 ### 세션 15 — 2026-06-27 (디자인 개편 Phase 0 + 홈 "B-fixed", 더블리뷰 PASS)
 - **브랜치**: `redesign/web-layout` (백업 태그 `pre-redesign-2026-06-27`) · **main 무수정 · Vercel 푸시 보류(로컬 확인 단계)**
