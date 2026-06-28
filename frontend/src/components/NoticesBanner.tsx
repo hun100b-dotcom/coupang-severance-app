@@ -133,7 +133,14 @@ export default function NoticesBanner({ notices }: Props) {
                  */
                 <div
                   key={`marquee-${currentIdx}`}
-                  className="flex whitespace-nowrap"
+                  // ⚠️ w-max(width:max-content) 필수!
+                  //   translateX(-50%)는 "이 컨테이너 자기 폭"을 기준으로 계산된다.
+                  //   w-max가 없으면 컨테이너 폭이 부모(좁은 창)에 묶여(예: 205px),
+                  //   -50%가 텍스트 한 벌(예: 493px)이 아니라 창 절반(102px)만 이동 →
+                  //   공지 뒷부분이 영원히 안 보이고 텍스트가 까딱대다 멈추는 버그 발생.
+                  //   w-max로 컨테이너가 [원본][복사본] 콘텐츠 폭(986px)을 갖게 하면
+                  //   -50% = 정확히 한 벌(493px) 이동 → 전체 텍스트 노출 + seamless 루프.
+                  className="flex w-max whitespace-nowrap"
                   style={{
                     animation: `marquee-banner ${marqueeDuration}s linear 1 forwards`,
                     willChange: 'transform',
