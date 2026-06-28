@@ -4,6 +4,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useAuth } from '../contexts/AuthContext'
 
 // ── 스크롤 reveal 애니메이션 공통 variants ──────────────────────────────────
 const revealVariants = {
@@ -136,6 +137,9 @@ function SectionBridge({
 
 export default function LandingV1() {
   const navigate = useNavigate()
+  // 게스트 모드 진입 함수 (비로그인 사용자가 로그인 없이 앱을 쓰도록 허용)
+  // isLoggedIn: 이미 로그인한 사용자에겐 게스트 플래그를 굳이 켜지 않기 위해 함께 가져옴
+  const { loginAsGuest, isLoggedIn } = useAuth()
 
   // ── 스크롤 감지 — NAV 배경 전환 ─────────────────────────────────────────
   const [scrolled, setScrolled] = useState(false)
@@ -164,7 +168,13 @@ export default function LandingV1() {
   const goLogin = () => navigate('/login')
 
   // ── 홈 화면으로 이동 (우상단 네비 "지금 시작하기" 버튼 전용) ─────────────
-  const goHome = () => navigate('/home')
+  // ⚠️ 버그 수정: 기존엔 navigate('/home')만 호출 → 비로그인 사용자는 HomeGuard가
+  //    게스트도 로그인도 아니라고 판단해 다시 랜딩('/')으로 튕겨냈음.
+  //    로그인 화면의 "비로그인으로 진행하기"와 동일하게 게스트 모드를 먼저 켠 뒤 이동한다.
+  const goHome = () => {
+    if (!isLoggedIn) loginAsGuest() // 비로그인일 때만 게스트 모드 활성화 (로그인 유저엔 불필요한 플래그 기록 방지)
+    navigate('/home')               // 로그인/게스트 어느 쪽이든 HomeGuard 통과 → 홈 정상 진입
+  }
 
   // ── Smooth scroll 헬퍼 함수 ───────────────────────────────────────────────
   const scrollTo = (id: string) => {
