@@ -50,7 +50,7 @@ CATCH changes that.
 
 ### Who built this and why?
 
-I'm Jonghun, a former HR recruiter at Coupang Fulfillment Services. I watched thousands of daily workers leave severance pay and unemployment benefits on the table — not because they weren't entitled, but because they didn't know or couldn't figure out the math.
+I'm the maker of CATCH, with a background in HR recruitment in Korea's logistics industry. I watched thousands of daily workers leave severance pay and unemployment benefits on the table — not because they weren't entitled, but because they didn't know or couldn't figure out the math.
 
 I built CATCH with Claude (Anthropic) to give every daily worker the power to know their rights in under 60 seconds. No signup required. Completely free.
 
@@ -68,9 +68,9 @@ I built CATCH with Claude (Anthropic) to give every daily worker the power to kn
 
 ## Hunter's First Comment (Personal Story)
 
-Hi Product Hunt! 👋 I'm Jonghun, and I built CATCH because I saw a problem up close that most people never notice.
+Hi Product Hunt! 👋 I built CATCH because I saw a problem up close that most people never notice.
 
-For 3+ years, I worked in HR recruitment at Coupang Fulfillment Services — one of Korea's largest logistics operations. Every day, I saw thousands of short-term workers cycling through our facilities: they came in, worked hard, and left. Most never asked about severance pay or unemployment benefits.
+For 3+ years, I worked in HR recruitment at one of Korea's largest logistics operations. Every day, I saw thousands of short-term workers cycling through our facilities: they came in, worked hard, and left. Most never asked about severance pay or unemployment benefits.
 
 At first I assumed they were getting everything they were owed. Then I started asking around. Turns out, most workers had no idea they were even eligible — or the process felt too complicated to bother with.
 
@@ -96,10 +96,10 @@ Would love to hear your feedback in the comments!
 
 ## Launch Checklist
 
-- [ ] Product Hunt 계정 준비 (Jonghun 계정)
+- [ ] Product Hunt 계정 준비 (운영자 계정)
 - [ ] 제품 스크린샷 5장 이상 준비 (모바일 + 데스크탑)
 - [ ] OG 이미지 (1200×630) 제작
 - [ ] 데모 영상 60초 준비 (선택사항)
 - [ ] 런치 날짜: 화~목 오전 12:01 AM PT (한국 시간 오후 4~5시) 권장
 - [ ] 커뮤니티 사전 홍보 (카카오 오픈채팅, 네이버 카페, 링크드인)
-- [ ] Maker 태그 추가 (Jonghun + Claude/Anthropic)
+- [ ] Maker 태그 추가 (운영자 + Claude/Anthropic)

@@ -36,11 +36,11 @@
 ## ✅ 완료 작업 이력
 
 ### 세션 16b — 2026-06-28 (개인 실명·닉네임 앱 전역 제거, 더블리뷰 PASS, main 배포)
-- 제거 대상: LEAF-MASTER/LEAFMASTER/백종훈/종훈/Jonghun 등. 브랜드는 CATCH만 유지. 로직 무변경.
+- 제거 대상: 개발자 개인 실명·영문명·닉네임 일체(브랜드 CATCH 외). 브랜드는 CATCH만 유지. 로직 무변경.
 - 앱 가시 3 + 백엔드/주석 2 = 5건 수정: Home.tsx 푸터(`© 2026 CATCH...`), Intro.tsx 스플래시(`CATCH`), PrivacyPolicy.tsx 보호책임자(`성명: CATCH 운영팀`), app.py Streamlit 푸터, ProfileSection.tsx 주석.
 - 더블리뷰 A·B 모두 PASS, 사용자 가시 잔존 0건(index.html meta/OG/JSON-LD, SEO 8페이지 author/publisher, robots/sitemap, backend 전부 클린). 기록 `docs/dual_review/remove_personal_name.md`
 - 배포: chore/remove-personal-name → main(`019e133..de7d7c2`). 6-step 통과: Vercel/Render 200, **라이브 75청크+엔트리 개인명 잔존 0건 실측**(Vercel 빌드 해시는 로컬과 다름이 정상).
-- **⏳ 종훈님 결정 대기**: 앱 외부 내부 문서(CLAUDE.md·memory·docs/marketing_kit·docs/launch/product-hunt-draft.md[Jonghun]·docs/privacy-policy-draft.md·루트 RUNBOOK/push.bat 등)는 앱 비노출이라 미처리. 레포 공개 계획 시 스크럽 여부 결정 필요. `.claude/worktrees`는 gitignore 로컬 사본.
+- **✅ 후속 세션 처리 완료**: 앱 외부 내부 문서(CLAUDE.md·memory·docs/marketing_kit·docs/launch·docs/privacy-policy-draft.md·EXECUTE_LEGAL_MIGRATIONS.html 등)의 개인 식별자도 일괄 스크럽 완료. 자기소개·CFS 경력은 일반화(물류 HR 운영자). 기록 `docs/dual_review/scrub_internal_docs.md`. `.claude/worktrees`는 gitignore 로컬 사본이라 배포 무관.
 
 ### 세션 16 — 2026-06-28 (후속 3건: 어드민 확인 + 랜딩 CTA 버그 + 공지 마키 버그, 더블리뷰 PASS, main 배포)
 - **#1 어드민 개편 여부**: grep(admin 42파일) + 실제 /admin 렌더 확인 → **개편 안 됨**. 새 토큰(brand/accent/ink/line) 0건, backdrop-blur 0건, 무지개(purple/violet/indigo) 0건, slate/gray 301건 = 세션10 슬레이트 라이트 테마 그대로. 무지개·글래스 잔재도 없음(이미 세션10에서 제거). 이번 리디자인은 어드민 미적용(Phase 5 보류). 별도 지시 전까지 손대지 않음.

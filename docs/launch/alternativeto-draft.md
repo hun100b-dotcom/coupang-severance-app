@@ -120,7 +120,7 @@ CATCH is a free web calculator for daily workers in South Korea to calculate sev
 
 ## AlternativeTo 등재 체크리스트
 
-- [ ] AlternativeTo 계정 생성 (hun100b@gmail.com)
+- [ ] AlternativeTo 계정 생성 (운영 이메일)
 - [ ] 앱 등재 페이지 작성 (위 내용 활용)
 - [ ] 스크린샷 3장 이상 업로드
 - [ ] 경쟁 서비스 6개를 "Alternative to" 로 태그
