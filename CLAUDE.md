@@ -8,7 +8,7 @@ CATCH (퇴직금 한번에) — 일용직 근로자 퇴직금·실업급여·주
 - 백엔드: FastAPI (Python 3.12) + pdfplumber + pandas → Render (싱가포르)
 - DB: Supabase PostgreSQL (RLS), OAuth: 카카오 + 구글
 - 프로덕션: https://catch-daily-worker.vercel.app
-- API: https://coupang-severance-api.onrender.com (/docs, /redoc)
+- API: https://coupang-severance-app.onrender.com (/docs, /redoc)
 - 디자인: Toss Blue #3182f6, Pretendard, JetBrains Mono, card-radius 20px, GlassCard backdrop-blur 25px
 - 라우팅 Layout 밖 (네비 없음): Intro, Login, Admin, Terms, AuthCallback
 - 라우팅 Layout 안 (TopNav+BottomNav 5탭): Home, Jobs, Calculator, Severance, Unemployment, WeeklyAllowance, AnnualLeave, MyPage, Report, Payment, MyBenefits, Notices
@@ -26,7 +26,7 @@ CATCH (퇴직금 한번에) — 일용직 근로자 퇴직금·실업급여·주
 - 레포 이름: **CATCH**
 - 로컬 경로: **`C:\Users\hun10\Github\coupang-severance-app`** ← 검색·탐색 금지, 이 경로 그대로 사용
 - 원격: **`https://github.com/hun100b-dotcom/coupang-severance-app.git`**
-- 종훈님 GitHub 계정: hun100b@gmail.com
+- 종훈님 GitHub 계정: (비공개 — 코드/문서에 평문 이메일 노출 금지)
 
 ### 1. 부트스트랩 자동 실행 (질문 금지)
 
@@ -219,8 +219,8 @@ CATCH (퇴직금 한번에) — 일용직 근로자 퇴직금·실업급여·주
 ## E — 사용자 프로필 (Claude 행동 지침)
 
 ### 종훈님 프로필
-- **이름**: 종훈 (hun100b@gmail.com)
-- **직업**: 쿠팡풀필먼트서비스 HR 채용팀 근무 중 (퇴사 후 독립이 목표)
+- **이름**: 종훈님 (개발자 본인)
+- **직업**: 물류업계 HR·채용팀 근무 중 (특정 사명 비표기, 퇴사 후 독립이 목표)
 - **코딩 경험**: **비전공자** — 기술 배경 없이 Claude와 함께 직접 개발 중
 - **목표**: CATCH 앱으로 일용직 근로자 권리 찾기 지원 + 퇴사 후 독립
 
