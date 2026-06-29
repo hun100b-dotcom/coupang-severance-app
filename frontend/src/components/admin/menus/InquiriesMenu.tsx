@@ -30,15 +30,18 @@ export default function InquiriesMenu() {
   const [activeInquiry, setActiveInquiry] = useState<AdminInquiry | null>(null)
   const [showTemplates, setShowTemplates] = useState(false)
 
-  const loadInquiries = useCallback(async () => {
+  const loadInquiries = useCallback(async (): Promise<AdminInquiry[]> => {
     setLoading(true)
     setApiError(null)
     try {
       const res = await getAdminInquiries({ page, limit: 20, status, category, search })
-      setInquiries(res.inquiries ?? [])
+      const list = res.inquiries ?? []
+      setInquiries(list)
       setTotal(res.total ?? 0)
+      return list
     } catch (e: unknown) {
       setApiError(e instanceof Error ? e.message : String(e))
+      return []
     } finally {
       setLoading(false)
     }
@@ -72,9 +75,12 @@ export default function InquiriesMenu() {
     }
   }
 
-  const handleUpdated = (updated: AdminInquiry) => {
-    setInquiries(prev => prev.map(i => i.id === updated.id ? updated : i))
-    setActiveInquiry(updated)
+  // 문의 쓰기(상태/답변) 성공 후: DB에서 재조회하여 화면을 진짜 DB 상태와 동기화.
+  // 과거에는 낙관적 갱신만 했기에 DB 미반영 시 새로고침하면 원복됐다.
+  const handleUpdated = async () => {
+    const list = await loadInquiries()
+    // 열려 있는 상세 패널도 최신 행으로 교체 (없어졌으면 그대로 유지)
+    setActiveInquiry(prev => prev ? (list.find(i => i.id === prev.id) ?? prev) : prev)
   }
 
   const handleBulkDone = () => {
@@ -205,6 +211,9 @@ export default function InquiriesMenu() {
       {/* 슬라이딩 상세 패널 */}
       {activeInquiry && (
         <InquiryDetailPanel
+          // key: 다른 문의로 전환 시 패널을 강제 재마운트 → 답변 textarea가
+          // 이전 문의 내용을 잔류시켜 엉뚱한 문의에 덮어쓰는 사고 방지
+          key={activeInquiry.id}
           inquiry={activeInquiry}
           templates={templates}
           onClose={() => setActiveInquiry(null)}

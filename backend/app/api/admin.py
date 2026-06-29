@@ -732,9 +732,11 @@ def patch_inquiry_answer(
     x_admin_token: Optional[str] = Header(default=None),
 ):
     _check_admin(x_admin_token)
+    now_iso = datetime.utcnow().isoformat()
+    # answered_at: 답변 시각 기록 (문의 CSV "답변일시" 컬럼 채움 — 과거 프론트 동작 복원)
     res = _sb_patch("inquiries", {"id": f"eq.{inquiry_id}"},
                     {"answer": payload.answer, "status": "answered",
-                     "updated_at": datetime.utcnow().isoformat()})
+                     "answered_at": now_iso, "updated_at": now_iso})
     if res.status_code not in (200, 204):
         raise HTTPException(status_code=res.status_code, detail="답변 등록 실패")
     _write_audit(x_admin_token or "admin", "inquiry.answer", "inquiry", inquiry_id,
@@ -752,21 +754,30 @@ def bulk_inquiry_status(
     _check_admin(x_admin_token)
     now_iso = datetime.utcnow().isoformat()
 
+    # 실패한 id를 모은다 (CPython list.append 는 GIL 하에서 스레드 안전)
+    failed: list[str] = []
+
     def patch_one(id_):
         try:
-            _sb_patch("inquiries", {"id": f"eq.{id_}"},
-                      {"status": payload.status, "updated_at": now_iso})
+            r = _sb_patch("inquiries", {"id": f"eq.{id_}"},
+                          {"status": payload.status, "updated_at": now_iso})
+            if r.status_code not in (200, 204):
+                failed.append(id_)
         except Exception:
-            pass
+            failed.append(id_)
 
     with ThreadPoolExecutor(max_workers=min(len(payload.ids), 5)) as pool:
         list(pool.map(patch_one, payload.ids))
 
     _write_audit(x_admin_token or "admin", "inquiry.status", "inquiry",
                  ",".join(payload.ids[:5]),
-                 after_val={"status": payload.status, "count": len(payload.ids)},
+                 after_val={"status": payload.status, "count": len(payload.ids),
+                            "failed": len(failed)},
                  ip=request.client.host if request.client else None)
-    return {"ok": True}
+    # 부분 실패도 무음으로 삼키지 않고 실패 id를 반환 → 프론트가 사용자에게 표시
+    return {"ok": len(failed) == 0,
+            "updated": len(payload.ids) - len(failed),
+            "failed_ids": failed}
 
 
 # ── 답변 템플릿 ───────────────────────────────────────────

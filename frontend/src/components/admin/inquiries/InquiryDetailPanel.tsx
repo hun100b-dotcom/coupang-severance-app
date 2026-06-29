@@ -6,7 +6,9 @@ interface Props {
   inquiry: AdminInquiry
   templates: InquiryTemplate[]
   onClose: () => void
-  onUpdated: (updated: AdminInquiry) => void
+  // 쓰기 성공 후 부모가 DB를 재조회(refetch)해 화면을 동기화한다.
+  // (과거의 가짜 낙관적 갱신을 제거 — DB가 진실의 원천)
+  onUpdated: () => void | Promise<void>
 }
 
 function fmt(iso: string) {
@@ -29,7 +31,8 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
     setSaving(true); setErr('')
     try {
       await patchInquiryAnswer(inquiry.id, answer.trim())
-      onUpdated({ ...inquiry, answer: answer.trim(), status: 'answered' })
+      // 성공 시에만 부모가 DB 재조회 → 화면-DB 동기화
+      await onUpdated()
     } catch {
       setErr('저장 실패. 다시 시도해주세요.')
     } finally {
@@ -38,11 +41,13 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
   }
 
   const handleStatusChange = async (status: string) => {
+    setErr('')
     try {
       await patchInquiryStatus(inquiry.id, status)
-      onUpdated({ ...inquiry, status })
+      // 성공 시에만 부모가 DB 재조회 → 화면-DB 동기화
+      await onUpdated()
     } catch {
-      setErr('상태 변경 실패.')
+      setErr('상태 변경 실패. 다시 시도해주세요.')
     }
   }
 

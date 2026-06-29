@@ -660,34 +660,22 @@ export const getAdminInquiries = async (params: {
   return { inquiries: data ?? [], total: count ?? 0 }
 }
 
-export const patchInquiryStatus = async (id: string | number, status: string) => {
-  const { error } = await supabase!
-    .from('inquiries')
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', id)
-  if (error) throw new Error(error.message)
-  return { ok: true }
-}
+// ── 문의 상태/답변 변경 — 백엔드 정상 경로(경로 B) 사용 ─────────────────
+// 과거: Supabase 직접 update(.select() 없음) → RLS가 0행을 막아도 error=null로
+//       조용히 통과(거짓 성공)했고, inquiries RLS가 특정 UUID로 하드코딩되어
+//       다른 활성 관리자 계정에서는 무음 실패가 발생했다.
+// 현재: FastAPI /admin/inquiries/* 엔드포인트는 service-role 키로 동작하여
+//       RLS와 무관하게 항상 쓰기가 반영되고, 실패 시 HTTP 에러를 던져
+//       프론트에서 catch로 잡아 사용자에게 알릴 수 있다.
+export const patchInquiryStatus = (id: string | number, status: string) =>
+  api.patch(`/admin/inquiries/${id}/status`, { status }, { headers: H() }).then(r => r.data)
 
-export const patchInquiryAnswer = async (id: string | number, answer: string) => {
-  const now = new Date().toISOString()
-  // answered_at: 최초 답변 시각, updated_at: 수정 시각
-  const { error } = await supabase!
-    .from('inquiries')
-    .update({ answer, status: 'answered', answered_at: now, updated_at: now })
-    .eq('id', id)
-  if (error) throw new Error(error.message)
-  return { ok: true }
-}
+export const patchInquiryAnswer = (id: string | number, answer: string) =>
+  api.patch(`/admin/inquiries/${id}/answer`, { answer }, { headers: H() }).then(r => r.data)
 
-export const bulkInquiryStatus = async (ids: Array<string | number>, status: string) => {
-  const { error } = await supabase!
-    .from('inquiries')
-    .update({ status, updated_at: new Date().toISOString() })
-    .in('id', ids)
-  if (error) throw new Error(error.message)
-  return { ok: true }
-}
+// 백엔드 BulkStatusPayload.ids 는 list[str] 이므로 문자열로 변환해 전송
+export const bulkInquiryStatus = (ids: Array<string | number>, status: string) =>
+  api.post('/admin/inquiries/bulk-status', { ids: ids.map(String), status }, { headers: H() }).then(r => r.data)
 
 // Templates — Supabase inquiry_templates 테이블 직접 조회
 export const getTemplates = async () => {
