@@ -64,7 +64,9 @@ export default function TopNav() {
         {/* ── 좌측: CATCH 로고 ── */}
         <button
           onClick={() => navigate('/home')}
-          className="flex items-center gap-0.5 select-none flex-shrink-0"
+          // min-h-[44px]: 로고 글자 높이(22px)만으로는 탭 영역이 작아 WCAG 2.2 최소 타깃(24px)에
+          // 미달 → 세로 탭 영역만 44px로 확보(글자는 가운데 정렬되어 시각 위치 변화 없음)
+          className="flex items-center gap-0.5 select-none flex-shrink-0 min-h-[44px]"
           aria-label="CATCH 홈으로 이동"
         >
           <span
