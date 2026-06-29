@@ -1,8 +1,10 @@
 ﻿import { useState } from 'react'
-import { bulkInquiryStatus } from '../../../lib/api'
 
 interface Props {
   selectedIds: (string | number)[]
+  // 부모가 '낙관적 일괄 변경 + 부분실패 원복 + 전체 롤백'을 수행한다.
+  // 반환된 failedCount 로 부분 실패를 표시한다.
+  onBulkStatus: (ids: (string | number)[], status: string) => Promise<{ failedCount: number }>
   onDone: () => void
 }
 
@@ -12,7 +14,7 @@ const ACTIONS = [
   { label: '종결로',     status: 'closed',    color: '#64748b' },
 ]
 
-export default function BulkActionBar({ selectedIds, onDone }: Props) {
+export default function BulkActionBar({ selectedIds, onBulkStatus, onDone }: Props) {
   // 훅 규칙: 모든 훅은 조건부 return 보다 위에서 호출해야 한다
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
@@ -21,18 +23,19 @@ export default function BulkActionBar({ selectedIds, onDone }: Props) {
 
   const handle = async (status: string) => {
     setErr(''); setBusy(true)
+    // 클릭 즉시 부모가 목록을 낙관적으로 바꿔 화면이 바로 반응한다.
+    const count = selectedIds.length
     try {
-      // 백엔드는 부분 실패 시 failed_ids 를 반환한다 (무음 은폐 방지)
-      const res = await bulkInquiryStatus(selectedIds, status)
-      const failedCount = (res?.failed_ids?.length as number | undefined) ?? 0
+      // 부모가 낙관적 반영 + persist + (부분실패/전체실패) 롤백까지 수행
+      const { failedCount } = await onBulkStatus(selectedIds, status)
       if (failedCount > 0) {
-        // 일부만 실패 → 선택을 유지한 채 에러 표시 (사용자가 재시도 가능)
-        setErr(`${failedCount}건 변경 실패 (성공 ${selectedIds.length - failedCount}건). 다시 시도해주세요.`)
+        // 일부만 실패 → 선택 유지 + 에러 표시 (실패분은 부모가 이미 원복)
+        setErr(`${failedCount}건 변경 실패 (성공 ${count - failedCount}건). 다시 시도해주세요.`)
       } else {
         onDone()
       }
     } catch (e: unknown) {
-      // 과거에는 // silent 로 실패를 삼켰다 → 이제 사용자에게 표시
+      // 전체 실패 → 부모가 전체 롤백 완료. 사용자에게 표시
       setErr(e instanceof Error ? e.message : '일괄 변경에 실패했습니다.')
     } finally {
       setBusy(false)

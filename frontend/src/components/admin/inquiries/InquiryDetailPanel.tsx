@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import type { AdminInquiry, InquiryTemplate } from '../../../types/admin'
-import { patchInquiryAnswer, patchInquiryStatus } from '../../../lib/api'
 
 interface Props {
   inquiry: AdminInquiry
   templates: InquiryTemplate[]
   onClose: () => void
-  // 쓰기 성공 후 부모가 DB를 재조회(refetch)해 화면을 동기화한다.
-  // (과거의 가짜 낙관적 갱신을 제거 — DB가 진실의 원천)
-  onUpdated: () => void | Promise<void>
+  // 상태 변경/답변 저장은 부모가 '낙관적 업데이트(즉시 반영) + 실패 시 롤백'으로
+  // 수행한다. 자식은 이 함수를 await 하기만 하면 되고, 실패(throw) 시 에러를 표시.
+  onStatusChange: (id: string | number, status: string) => Promise<void>
+  onSaveAnswer: (id: string | number, answer: string) => Promise<void>
 }
 
 function fmt(iso: string) {
@@ -21,18 +21,19 @@ const STATUS_LABEL: Record<string, string> = {
   waiting: '대기중', reviewing: '검토중', answered: '답변완료', closed: '종결',
 }
 
-export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpdated }: Props) {
+export default function InquiryDetailPanel({ inquiry, templates, onClose, onStatusChange, onSaveAnswer }: Props) {
   const [answer, setAnswer] = useState(inquiry.answer ?? '')
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
+  // 처리 중인 상태 버튼(중복 클릭 방지용). 화면 전환 자체는 부모 낙관적 갱신으로 즉각.
+  const [busyStatus, setBusyStatus] = useState<string | null>(null)
 
   const handleSaveAnswer = async () => {
     if (!answer.trim()) { setErr('답변 내용을 입력하세요.'); return }
     setSaving(true); setErr('')
     try {
-      await patchInquiryAnswer(inquiry.id, answer.trim())
-      // 성공 시에만 부모가 DB 재조회 → 화면-DB 동기화
-      await onUpdated()
+      // 부모가 즉시 UI 반영(낙관적) → 백그라운드 persist → 실패 시 롤백+throw
+      await onSaveAnswer(inquiry.id, answer.trim())
     } catch {
       setErr('저장 실패. 다시 시도해주세요.')
     } finally {
@@ -41,13 +42,15 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
   }
 
   const handleStatusChange = async (status: string) => {
-    setErr('')
+    if (busyStatus) return // 다른 상태 변경 진행 중이면 무시
+    setErr(''); setBusyStatus(status)
     try {
-      await patchInquiryStatus(inquiry.id, status)
-      // 성공 시에만 부모가 DB 재조회 → 화면-DB 동기화
-      await onUpdated()
+      // 클릭 즉시 하이라이트가 부모 낙관적 갱신으로 이동, persist 는 백그라운드
+      await onStatusChange(inquiry.id, status)
     } catch {
       setErr('상태 변경 실패. 다시 시도해주세요.')
+    } finally {
+      setBusyStatus(null)
     }
   }
 
@@ -107,25 +110,31 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
         <div style={{ marginBottom: 16 }}>
           <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: 8 }}>상태 변경</p>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {STATUSES.map(s => (
-              <button
-                key={s}
-                onClick={() => handleStatusChange(s)}
-                style={{
-                  padding: '5px 12px',
-                  borderRadius: 999,
-                  border: 'none',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  background: inquiry.status === s ? '#3182f6' : '#f1f5f9',
-                  color: inquiry.status === s ? '#fff' : '#64748b',
-                  transition: 'all 0.15s',
-                }}
-              >
-                {STATUS_LABEL[s]}
-              </button>
-            ))}
+            {STATUSES.map(s => {
+              const isBusy = busyStatus === s
+              return (
+                <button
+                  key={s}
+                  onClick={() => handleStatusChange(s)}
+                  disabled={busyStatus !== null}
+                  style={{
+                    padding: '5px 12px',
+                    borderRadius: 999,
+                    border: 'none',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    cursor: busyStatus !== null ? 'wait' : 'pointer',
+                    background: inquiry.status === s ? '#3182f6' : '#f1f5f9',
+                    color: inquiry.status === s ? '#fff' : '#64748b',
+                    transition: 'all 0.15s',
+                    // 진행 중 버튼만 살짝 흐리게 (스피너 대체). 화면 전환은 이미 즉각 반영됨
+                    opacity: busyStatus !== null && !isBusy ? 0.6 : 1,
+                  }}
+                >
+                  {STATUS_LABEL[s]}
+                </button>
+              )
+            })}
           </div>
         </div>
 
@@ -199,7 +208,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onUpda
             width: '100%',
             padding: '12px',
             background: saving ? 'rgba(49,130,246,0.4)' : '#3182f6',
-            color: '#0f172a',
+            color: '#fff',
             border: 'none',
             borderRadius: 10,
             fontSize: '0.88rem',
