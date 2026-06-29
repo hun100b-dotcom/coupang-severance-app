@@ -35,6 +35,16 @@
 
 ## ✅ 완료 작업 이력
 
+### 세션 19 — 2026-06-29 (라이브 품질 폴리시 패스: 디자인 디테일 3묶음, 더블리뷰 6연속 PASS, main 배포)
+- **목적**: 이미 배포된 사용자 화면을 디자인/레이아웃 디테일만 한 번 더 다듬기(어드민 제외, 계산 로직 무변경). 화면별 로컬 렌더 실측 → 개선 → 더블리뷰(A총괄+B적대) → 묶음 커밋.
+- **검증 함정 재확인**: preview 탭이 `document.hidden=true`라 Framer 입장 애니메이션이 rAF 정지로 `initial`(예 translateX(40px), opacity:0)에 동결 → 좌표 이탈은 측정 아티팩트. transform 없는 정적 요소만 신뢰. (세션16 기록과 동일)
+- **전수 훑기 결과**: 무지개색 0건, 데스크톱 1280 오버플로 0, 빈상태/스켈레톤 이미 양호(NoticesPage 확인). 진짜 정적 320px 이슈는 2개뿐.
+- **#1 모바일 내비 (커밋 cc48d03)**: BottomNav 5탭 `minWidth 72px×5=360>320`이라 가로스크롤(스크롤바 숨김)로 "마이페이지" 잘림 → `minWidth 56px`·padding 4px·flex-shrink-0 제거로 320px 균등분배(실측 각 64px, 무스크롤). 최장 라벨 48px. + TopNav/BottomNav 글래스(bg-white/95~97+blur)→솔리드 bg-white 통일. B 지적(인라인 minWidth가 min-w-0 무력화=죽은코드) 반영. A·B PASS.
+- **#2 로그인 (커밋 a57ad1a)**: `<GoogleLogin width={360}>` 고정 → 320px 좌우 ~20px 잘림+카카오(w-full) 너비 불일치. 래퍼 ref 측정→`width={googleBtnWidth}`(클램프 200~400) + useLayoutEffect(첫 페인트 전 확정, 깜빡임 제거). 실측 320px Google=카카오 232px, 375px 둘다 293px 정렬. 인증 로직 무변경. A·B PASS(B의 깜빡임 MEDIUM→useLayoutEffect로 반영).
+- **#3 접근성 (커밋 e9d0e55)**: 레거시 버튼 `.btn-primary/.btn-secondary/.choice-btn/.pdf-guide-trigger`가 `outline:none`만 있고 대체 표시 없음 → `:focus-visible` 링 복원(WCAG 2.4.7, 마우스 회귀 0). + TopNav 로고 탭 타깃 22→44px(WCAG 2.5.8). reach: components/Button.tsx가 해당 클래스 사용. A·B PASS.
+- **무효/보류**: P2-1 채용 히어로 장식원 → 부모 카드 이미 overflow-hidden(시각 누출 없음). P3 가이드/약관 slate·gray→토큰은 파일당 50건+ 광범위 리팩터라 "멀쩡한 코드 광범위 변경 금지" 규칙상 보류(무지개 0이라 시각 일관성은 이미 양호).
+- **검증**: 각 묶음 npm run build(tsc) 통과, 콘솔 에러 0, 푸시 로컬HEAD==origin/main 일치. 더블리뷰 기록 `docs/dual_review/polish_{nav_320,login_google,a11y_focus_target}.md`. ※ Vercel 라이브 육안은 봇 챌린지 한계로 푸시 확정+빌드 성공으로 갈음.
+
 ### 세션 18 — 2026-06-29 (긴급: 비로그인/게스트 /admin 영구 하얀 화면 근본 수정, 더블리뷰 PASS, main 배포)
 - **증상**: 비로그인/게스트가 /admin 진입 시 영구 하얀 화면(리다이렉트 X, 콘솔 에러 없는 조용한 null 렌더).
 - **근본 원인(증거 확정)**: `AdminPage.tsx` 관리자 확인 useEffect가 `if (loading || !isLoggedIn || !user?.email) return` 로 비로그인 시 `adminChecked`를 영원히 false로 둠 → 렌더 가드 `if (loading || !adminChecked) return null`에서 하얀 화면 정지 + 리다이렉트 effect(`adminChecked && !isAdmin`)도 영영 미발동.
