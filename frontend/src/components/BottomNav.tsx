@@ -92,7 +92,7 @@ export default function BottomNav() {
   return (
     <nav
       // 데스크톱(md+)은 상단 가로 내비(TopNav)가 메인이므로 하단탭 숨김
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/97 backdrop-blur-md border-t border-line"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-line"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="max-w-[500px] mx-auto">
@@ -110,8 +110,9 @@ export default function BottomNav() {
                 key={tab.id}
                 ref={(el) => { tabRefs.current[index] = el }}
                 onClick={() => handleTabClick(tab)}
-                className="flex flex-col items-center justify-center relative transition-colors flex-shrink-0 flex-1"
-                style={{ minWidth: '72px', paddingLeft: '6px', paddingRight: '6px' }}
+                className="flex flex-col items-center justify-center relative transition-colors flex-1"
+                // minWidth 56px = 320px 화면에서 5탭이 가로 스크롤 없이 균등 분배되는 하한(56×5=280<320)
+                style={{ minWidth: '56px', paddingLeft: '4px', paddingRight: '4px' }}
                 aria-label={tab.label}
                 aria-current={active ? 'page' : undefined}
               >
