@@ -677,32 +677,22 @@ export const patchInquiryAnswer = (id: string | number, answer: string) =>
 export const bulkInquiryStatus = (ids: Array<string | number>, status: string) =>
   api.post('/admin/inquiries/bulk-status', { ids: ids.map(String), status }, { headers: H() }).then(r => r.data)
 
-// Templates — Supabase inquiry_templates 테이블 직접 조회
-export const getTemplates = async () => {
-  const { data, error } = await supabase!
-    .from('inquiry_templates')
-    .select('*')
-    .order('use_count', { ascending: false })
-  if (error) throw new Error(error.message)
-  return { templates: data ?? [] }
-}
+// Templates — 백엔드 경로(경로 B)로 통일.
+// 조회/생성/삭제를 모두 백엔드(service-role)로 맞춰, inquiry_templates RLS(is_admin)
+// 상태와 무관하게 "생성은 됐는데 목록엔 안 뜨는" 불일치를 방지한다.
+export const getTemplates = () =>
+  api.get('/admin/templates', { headers: H() }).then(r => r.data)
 
-export const createTemplate = async (body: { title: string; content: string; category?: string }) => {
-  const { error } = await supabase!
-    .from('inquiry_templates')
-    .insert({ ...body, category: body.category ?? '기타' })
-  if (error) throw new Error(error.message)
-  return { ok: true }
-}
+// 템플릿 생성/삭제도 백엔드 정상 경로(경로 B, service-role)로 통일.
+// 과거 Supabase 직접 호출은 .select() 없이 delete 해서 RLS 0행 차단을 무음으로
+// 흘렸다. 백엔드는 status_code 검사로 실패 시 HTTP 에러를 던진다.
+export const createTemplate = (body: { title: string; content: string; category?: string }) =>
+  api.post('/admin/templates',
+    { title: body.title, content: body.content, category: body.category ?? '기타' },
+    { headers: H() }).then(r => r.data)
 
-export const deleteTemplate = async (id: string) => {
-  const { error } = await supabase!
-    .from('inquiry_templates')
-    .delete()
-    .eq('id', id)
-  if (error) throw new Error(error.message)
-  return { ok: true }
-}
+export const deleteTemplate = (id: string) =>
+  api.delete(`/admin/templates/${id}`, { headers: H() }).then(r => r.data)
 
 // Settings
 export const getSettings = () =>

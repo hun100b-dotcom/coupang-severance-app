@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { patchSetting } from '../../../lib/api'
 import type { SystemSettings } from '../../../types/admin'
 
 interface Props {
@@ -7,14 +7,10 @@ interface Props {
   onRefresh: () => void
 }
 
-// Supabase에 직접 upsert (백엔드 경유 없이) — RLS: is_admin()으로 인증된 관리자만 가능
-async function upsertSetting(key: string, value: string) {
-  if (!supabase) throw new Error('Supabase 미연결')
-  const { error } = await supabase
-    .from('system_settings')
-    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' })
-  if (error) throw error
-}
+// 설정 저장은 백엔드 PATCH /admin/settings(경로 B, service-role)로 통일한다.
+// 과거에는 CMS만 supabase 직접 upsert(경로 A, RLS 의존)라, 토큰은 맞아도 RLS가
+// 막으면 조용히 무반영되는 인증 경로 이원화 문제가 있었다. 다른 설정(법정변수 등)과
+// 동일하게 백엔드 경로를 쓰면 RLS와 무관하게 저장되고 실패 시 HTTP 에러로 잡힌다.
 
 export default function CmsSettings({ settings, onRefresh }: Props) {
   const [annoText, setAnnoText] = useState(settings['announcement_text'] ?? '')
@@ -26,20 +22,27 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
 
   const save = async () => {
     setSaving(true); setMsg(null)
-    try {
-      await Promise.all([
-        upsertSetting('announcement_text',    annoText),
-        upsertSetting('announcement_enabled', String(annoEnabled)),
-        upsertSetting('popup_banner_text',    bannerText),
-        upsertSetting('popup_banner_enabled', String(bannerEnabled)),
-      ])
+    // 4개 키는 독립 HTTP 요청이라 일부만 실패할 수 있다. Promise.all 은 첫 실패에서
+    // 전체를 reject 해 "이미 저장된 키"를 가린 채 '전체 실패'로 오표시 → 부분반영 무음.
+    // allSettled 로 키별 성공/실패를 분리 집계해 정확히 보고한다.
+    const entries: [string, string][] = [
+      ['announcement_text',    annoText],
+      ['announcement_enabled', String(annoEnabled)],
+      ['popup_banner_text',    bannerText],
+      ['popup_banner_enabled', String(bannerEnabled)],
+    ]
+    const results = await Promise.allSettled(entries.map(([k, v]) => patchSetting(k, v)))
+    const failedKeys = entries.filter((_, i) => results[i].status === 'rejected').map(([k]) => k)
+    setSaving(false)
+    // 성공한 키도 있으니 항상 재조회로 화면-DB 동기화
+    onRefresh()
+    if (failedKeys.length === 0) {
       setMsg({ text: '✅ 저장 완료. 홈 화면에 즉시 반영됩니다.', ok: true })
-      onRefresh()
-    } catch (e: unknown) {
-      const err = e instanceof Error ? e.message : String(e)
-      setMsg({ text: `❌ 저장 실패: ${err}`, ok: false })
-    } finally {
-      setSaving(false)
+    } else {
+      setMsg({
+        text: `❌ 일부 저장 실패: ${failedKeys.join(', ')} (${entries.length - failedKeys.length}/${entries.length} 저장됨). 다시 저장해주세요.`,
+        ok: false,
+      })
     }
   }
 
@@ -61,7 +64,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
     <div style={cardStyle}>
       <p style={titleStyle}>공지/배너 CMS</p>
       <p style={{ fontSize: '0.72rem', color: '#64748b', marginBottom: 16, marginTop: -8 }}>
-        저장 즉시 홈 화면에 반영 (Supabase 직접 연동)
+        저장 즉시 홈 화면에 반영 (백엔드 경유 저장)
       </p>
 
       {/* 긴급 공지 배너 */}

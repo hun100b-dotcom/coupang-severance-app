@@ -25,15 +25,17 @@ export default function NoticesMenu() {
   const [editTarget, setEditTarget] = useState<Notice | null>(null)
   const [form, setForm] = useState<NoticeForm>(defaultForm)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Supabase에서 공지사항 전체 목록 조회 (우선순위 내림차순)
   const fetchNotices = async () => {
     if (!supabase) return
     setLoading(true)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('notices')
       .select('*')
       .order('priority', { ascending: false })
+    if (error) setError(error.message)
     setNotices(data ?? [])
     setLoading(false)
   }
@@ -44,12 +46,14 @@ export default function NoticesMenu() {
   const openCreate = () => {
     setEditTarget(null)
     setForm(defaultForm)
+    setError(null)
     setModalOpen(true)
   }
 
   // 기존 공지 수정 모달 열기 — 기존 값을 폼에 채워줌
   const openEdit = (n: Notice) => {
     setEditTarget(n)
+    setError(null)
     setForm({
       title: n.title ?? '',        // title 컬럼이 비어있을 경우 빈 문자열 처리
       content: n.content,
@@ -59,40 +63,62 @@ export default function NoticesMenu() {
     setModalOpen(true)
   }
 
+  // 모달 닫기 (취소/오버레이) — 닫을 때 에러도 함께 비워 유령 배너 방지
+  const closeModal = () => { setModalOpen(false); setError(null) }
+
   // 공지 저장 (추가 or 수정)
+  // ★ .select() 필수: update/delete 는 RLS USING 으로 권한 없는 행이 "안 보임"
+  //   처리되어 error=null + 0행으로 조용히 통과(거짓 성공)한다. insert 는 WITH CHECK
+  //   위반 시 error 를 던지므로 throw 로 잡힌다. 두 경우 모두 사용자에게 표시.
   const handleSave = async () => {
     // 제목 또는 본문 중 하나라도 비어있으면 저장 차단
     if (!supabase || !form.title.trim() || !form.content.trim()) return
-    setSaving(true)
-    if (editTarget) {
-      // 기존 공지 수정
-      await supabase.from('notices').update({
-        title: form.title.trim(),
-        content: form.content.trim(),
-        priority: form.priority,
-        is_active: form.is_active,
-        updated_at: new Date().toISOString(),
-      }).eq('id', editTarget.id)
-    } else {
-      // 새 공지 추가
-      await supabase.from('notices').insert({
-        title: form.title.trim(),
-        content: form.content.trim(),
-        priority: form.priority,
-        is_active: form.is_active,
-      })
+    setSaving(true); setError(null)
+    try {
+      if (editTarget) {
+        // 기존 공지 수정
+        const { data, error } = await supabase.from('notices').update({
+          title: form.title.trim(),
+          content: form.content.trim(),
+          priority: form.priority,
+          is_active: form.is_active,
+          updated_at: new Date().toISOString(),
+        }).eq('id', editTarget.id).select('id')
+        if (error) throw error
+        if (!data || data.length === 0) throw new Error('변경된 행이 없습니다 — 관리자 권한(RLS)을 확인하세요.')
+      } else {
+        // 새 공지 추가
+        const { data, error } = await supabase.from('notices').insert({
+          title: form.title.trim(),
+          content: form.content.trim(),
+          priority: form.priority,
+          is_active: form.is_active,
+        }).select('id')
+        if (error) throw error
+        if (!data || data.length === 0) throw new Error('추가된 행이 없습니다 — 관리자 권한(RLS)을 확인하세요.')
+      }
+      setModalOpen(false)
+      fetchNotices()
+    } catch (e: unknown) {
+      // 실패 시 모달을 닫지 않고 에러를 표시 → 입력 내용 보존
+      setError(e instanceof Error ? e.message : '공지 저장에 실패했습니다.')
+    } finally {
+      setSaving(false)
     }
-    setSaving(false)
-    setModalOpen(false)
-    fetchNotices()
   }
 
   // 활성/비활성 토글
   const handleToggleActive = async (n: Notice) => {
     if (!supabase) return
-    await supabase.from('notices')
+    setError(null)
+    const { data, error } = await supabase.from('notices')
       .update({ is_active: !n.is_active, updated_at: new Date().toISOString() })
-      .eq('id', n.id)
+      .eq('id', n.id).select('id')
+    if (error || !data || data.length === 0) {
+      setError(error?.message ?? '상태 변경 실패 — 관리자 권한(RLS)을 확인하세요.')
+      fetchNotices()  // 화면을 DB 진실과 재동기화 (옛 상태 잔류 방지)
+      return
+    }
     fetchNotices()
   }
 
@@ -101,7 +127,13 @@ export default function NoticesMenu() {
     const preview = (n.title || n.content).slice(0, 20)
     if (!window.confirm(`"${preview}..." 공지를 삭제할까요?`)) return
     if (!supabase) return
-    await supabase.from('notices').delete().eq('id', n.id)
+    setError(null)
+    const { data, error } = await supabase.from('notices').delete().eq('id', n.id).select('id')
+    if (error || !data || data.length === 0) {
+      setError(error?.message ?? '삭제 실패 — 관리자 권한(RLS)을 확인하세요.')
+      fetchNotices()  // 화면을 DB 진실과 재동기화
+      return
+    }
     fetchNotices()
   }
 
@@ -162,6 +194,17 @@ export default function NoticesMenu() {
           + 새 공지 추가
         </button>
       </div>
+
+      {/* ── 에러 배너 (목록/저장/토글/삭제 실패) ──────────────────────────────── */}
+      {error && (
+        <div style={{
+          background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
+          borderRadius: 10, padding: '12px 16px', marginBottom: 16,
+          color: '#cc2233', fontSize: '0.82rem', fontWeight: 600,
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
 
       {/* ── 공지 목록 테이블 ─────────────────────────────────────────────────── */}
       {loading ? (
@@ -268,7 +311,7 @@ export default function NoticesMenu() {
       {/* ── 공지 추가/수정 모달 ──────────────────────────────────────────────── */}
       {modalOpen && (
         <div
-          onClick={() => setModalOpen(false)}
+          onClick={closeModal}
           style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -370,10 +413,17 @@ export default function NoticesMenu() {
               </label>
             </div>
 
+            {/* 저장 실패 에러 (모달 내부 — 오버레이가 상단 배너를 가리므로) */}
+            {error && (
+              <p style={{ fontSize: '0.78rem', color: '#cc2233', marginBottom: 12, fontWeight: 600 }}>
+                ⚠️ {error}
+              </p>
+            )}
+
             {/* ── 취소/저장 버튼 ── */}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button
-                onClick={() => setModalOpen(false)}
+                onClick={closeModal}
                 style={{
                   padding: '9px 20px', borderRadius: 10,
                   border: '1px solid #e2e8f0',

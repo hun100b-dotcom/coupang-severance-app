@@ -15,14 +15,18 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
   const [content, setContent] = useState('')
   const [category, setCategory] = useState(CATEGORIES[0])
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleCreate = async () => {
     if (!title.trim() || !content.trim()) return
-    setSaving(true)
+    setSaving(true); setError(null)
     try {
       await createTemplate({ title: title.trim(), content: content.trim(), category })
       setTitle(''); setContent(''); setShowForm(false)
       onRefresh()
+    } catch (e: unknown) {
+      // 과거에는 catch 없이 finally만 있어 실패가 조용히 묻혔다 → 이제 표시
+      setError(e instanceof Error ? e.message : '템플릿 저장에 실패했습니다.')
     } finally {
       setSaving(false)
     }
@@ -30,8 +34,13 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
 
   const handleDelete = async (id: string) => {
     if (!confirm('이 템플릿을 삭제하시겠습니까?')) return
-    await deleteTemplate(id)
-    onRefresh()
+    setError(null)
+    try {
+      await deleteTemplate(id)
+      onRefresh()
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : '템플릿 삭제에 실패했습니다.')
+    }
   }
 
   return (
@@ -46,7 +55,7 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
           답변 템플릿 ({templates.length}개)
         </p>
         <button
-          onClick={() => setShowForm(f => !f)}
+          onClick={() => { setShowForm(f => !f); setError(null) }}
           style={{
             padding: '5px 12px',
             borderRadius: 8,
@@ -61,6 +70,13 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
           + 추가
         </button>
       </div>
+
+      {/* 에러 표시 (생성/삭제 실패) */}
+      {error && (
+        <p style={{ fontSize: '0.78rem', color: '#cc2233', marginBottom: 10, fontWeight: 600 }}>
+          ⚠️ {error}
+        </p>
+      )}
 
       {showForm && (
         <div style={{ marginBottom: 16, padding: 14, background: 'rgba(0,0,0,0.2)', borderRadius: 10 }}>
@@ -88,7 +104,7 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
             <button onClick={handleCreate} disabled={saving} style={btnPrimaryStyle}>
               {saving ? '저장 중...' : '저장'}
             </button>
-            <button onClick={() => setShowForm(false)} style={btnSecondaryStyle}>취소</button>
+            <button onClick={() => { setShowForm(false); setError(null) }} style={btnSecondaryStyle}>취소</button>
           </div>
         </div>
       )}

@@ -17,14 +17,18 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
   const [ipAddr, setIpAddr] = useState('')
   const [reason, setReason] = useState('')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleBlock = async () => {
     if (!ipAddr.trim()) return
-    setSaving(true)
+    setSaving(true); setError(null)
     try {
       await blockIp({ ip_address: ipAddr.trim(), reason: reason.trim() || null })
       setIpAddr(''); setReason(''); setShowForm(false)
       onRefresh()
+    } catch (e: unknown) {
+      // 과거에는 finally만 있어 실패가 조용히 묻혔다 → 이제 표시
+      setError(e instanceof Error ? e.message : 'IP 차단에 실패했습니다.')
     } finally {
       setSaving(false)
     }
@@ -32,16 +36,28 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
 
   const handleUnblock = async (id: string) => {
     if (!confirm('이 IP 차단을 해제하시겠습니까?')) return
-    await unblockIp(id)
-    onRefresh()
+    setError(null)
+    try {
+      await unblockIp(id)
+      onRefresh()
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'IP 차단 해제에 실패했습니다.')
+    }
   }
 
   return (
     <div style={cardStyle}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
         <p style={{ ...titleStyle, flex: 1 }}>IP 차단 관리 ({ips.length}개)</p>
-        <button onClick={() => setShowForm(f => !f)} style={btnStyle}>+ IP 차단</button>
+        <button onClick={() => { setShowForm(f => !f); setError(null) }} style={btnStyle}>+ IP 차단</button>
       </div>
+
+      {/* 에러 표시 (차단/해제 실패) */}
+      {error && (
+        <p style={{ fontSize: '0.78rem', color: '#cc2233', marginBottom: 12, fontWeight: 600 }}>
+          ⚠️ {error}
+        </p>
+      )}
 
       {showForm && (
         <div style={{ marginBottom: 14, padding: 14, background: 'rgba(240,68,82,0.06)', borderRadius: 10, border: '1px solid rgba(240,68,82,0.15)' }}>
@@ -51,7 +67,7 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
             <button onClick={handleBlock} disabled={saving} style={{ ...btnStyle, background: '#cc2233' }}>
               {saving ? '처리 중...' : '차단 적용'}
             </button>
-            <button onClick={() => setShowForm(false)} style={{ ...btnStyle, background: '#f1f5f9', color: '#64748b' }}>취소</button>
+            <button onClick={() => { setShowForm(false); setError(null) }} style={{ ...btnStyle, background: '#f1f5f9', color: '#64748b' }}>취소</button>
           </div>
         </div>
       )}
