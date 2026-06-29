@@ -6,6 +6,28 @@
 
 ---
 
+## 🛠️ 어드민 전수조사 FIX (2026-06-29, main 푸시 완료)
+
+> 근거: `docs/audit/admin_function_audit_2026-06-29.md`. 공통 병폐 = 프론트가 Supabase 직접 호출 시 `.select()` 누락 → RLS 0행 차단이 `error=null`로 무음 통과(거짓 성공). 처치 = 백엔드 service-role 경로 통일 또는 `.select()`+검증+에러표시+refetch. 각 묶음 더블리뷰(A총괄+B적대) → `docs/dual_review/fix*.md`.
+
+**커밋(main):** `aeea6a9`(#1 문의) · `f28d7da`(#2 지원자) · `ccc39b1`(#3/#5/#6/#9 설정·공지·템플릿·IP) · `2ea30ba`(#7/#8 감사로그) · `6d33860`(#4 설계서)
+
+- #1 문의: 쓰기 3종 → 백엔드 `/admin/inquiries/*`(RLS 우회). 라이브 즉시 복구.
+- #2 지원자: `.select('id')`+변경행 검증. RLS 정책 `admin_accounts.id=auth.uid()`(랜덤PK라 항상 거짓) 버그 발견 + CHECK에 `reviewing` 누락 발견.
+- #3/#5/#6/#9: CMS·템플릿 백엔드 통일, 공지 `.select()`+에러, allSettled 부분반영, 에러처리.
+- #7/#8: 감사로그 조회/기록 백엔드 통일 + CSV + end필터 서버사이드.
+- #4 회원 마스킹: PII 클라 직전송 + 평문 보안키 = 보안 아님. **설계서만**(`docs/security/member_pii_masking_redesign_2026-06-29.md`), 별도 /plan→/sprint 권고.
+
+### ⚠️ DB 적용 대기 마이그레이션 3건 (Supabase SQL Editor 1회 실행 필요 — 이 세션엔 MCP 미연결로 파일만 커밋)
+| 파일 | 효과 | 적용 안 하면 |
+|---|---|---|
+| `20260629_fix_inquiries_rls_is_admin.sql` | inquiries RLS 하드코딩 UUID → is_admin() | 문의는 백엔드 경로로 이미 복구돼 무관(정합성용) |
+| `20260629_fix_job_applications_admin_rls.sql` | 깨진 admin RLS → is_admin() + CHECK reviewing | **지원자 확정/거절/검토 기능이 동작 안 함**(거짓성공 대신 에러만 표시) ← 우선 적용 |
+| `20260629_audit_logs_schema.sql` | audit_logs 스키마 IaC 고정 | 백엔드 경로라 동작은 함(컬럼 불일치 무음 예방용) |
+> 적용 전 각 파일의 "적용 전 1회 확인" SQL로 라이브 정책명/컬럼 점검. **Vercel `VITE_ADMIN_SECRET`이 백엔드 기본 토큰과 일치해야 경로 B 동작**(기존 Settings 동작으로 경험적 확인).
+
+---
+
 ## 🎨 웹 레이아웃 전면 리디자인 (redesign/web-layout 브랜치, 2026-06-28 완료, 미푸시)
 
 > 디자인 방향 "B고정" = 프리미엄 + 섹션 분리. 색: **블루 메인 + 그린(채용/재직수당) + 회색 + 의미색(danger/warning). 무지개 금지**. 토큰: tailwind `brand/accent/ink/line/page`. 모든 화면 더블리뷰(총괄A+적대B) + Playwright 실측 후 로컬 커밋(푸시 X), main 무수정, 계산 로직 무변경(UI만).
