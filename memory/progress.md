@@ -35,6 +35,15 @@
 
 ## ✅ 완료 작업 이력
 
+### 세션 18 — 2026-06-29 (긴급: 비로그인/게스트 /admin 영구 하얀 화면 근본 수정, 더블리뷰 PASS, main 배포)
+- **증상**: 비로그인/게스트가 /admin 진입 시 영구 하얀 화면(리다이렉트 X, 콘솔 에러 없는 조용한 null 렌더).
+- **근본 원인(증거 확정)**: `AdminPage.tsx` 관리자 확인 useEffect가 `if (loading || !isLoggedIn || !user?.email) return` 로 비로그인 시 `adminChecked`를 영원히 false로 둠 → 렌더 가드 `if (loading || !adminChecked) return null`에서 하얀 화면 정지 + 리다이렉트 effect(`adminChecked && !isAdmin`)도 영영 미발동.
+- **인과**: 이 패턴은 오래된 커밋 **a5ffa53**("DB 기반 관리자 권한 체크")의 **사전 존재 버그**. 최근 리디자인/스크럽/마키(fc19a38) 커밋은 admin 인증 로직 무관(`git log -L` 확인). 최근 **게스트 모드**가 비로그인 /admin 도달을 쉽게 만들어 잠복 버그 노출. 이전 세션이 "admin을 렌더 안 해봤다"는 기록과 일치.
+- **수정**: ① loading 가드와 비로그인 분기 분리 → 비로그인/게스트 settled 시 `setAdminChecked(true)`로 리다이렉트 발동 보장 ② 리다이렉트 목적지 비로그인→/login(관리자 로그인 유도)/로그인-비관리자→/home, `replace:true`, deps에 `isLoggedIn` 추가.
+- **로컬 검증(preview MCP, dev 5173)**: 수정 전 비로그인 /admin=하얀화면 실측 → 수정 후 /login 리다이렉트. 가짜 슈퍼어드민 세션 주입 시 어드민 UI(사이드바+슈퍼관리자 뱃지) 정상 렌더(회귀 없음). 비로그인 경로 신규 콘솔 에러 0. npm run build(tsc) 통과. ※ 잔여 Vite(5173/5174) 정리 후 프리뷰 정상 바인딩.
+- **더블리뷰**: A 총괄 PASS / B 적대 PASS(7개 공격포인트 CRITICAL/HIGH 재현 실패). 기록 `docs/dual_review/fix_admin_white_screen.md`.
+- **배포**: main 푸시 `fc19a38..d3f7825`(커밋 d3f7825). 로컬 HEAD==원격 HEAD 일치. Render /health 200. 계산 로직 무변경. ※ Vercel 라이브 육안 확인은 봇 챌린지 한계로 푸시 확정+빌드 성공으로 갈음(라이브 검증은 종훈님 브라우저 권장).
+
 ### 세션 17 — 2026-06-29 (내부 문서 개인 식별자 일괄 스크럽, 더블리뷰, main 배포)
 - 세션16b가 앱 가시 영역 처리 → 본 세션은 **앱 비노출이지만 레포에 남은 내부 문서**의 잔존 식별자 제거.
 - 그룹1(마케팅 7파일): product-hunt/alternativeto/privacy 초안 + marketing_kit 4종 → 영문명·이메일·"쿠팡 CFS HR 출신 종훈" 자기소개를 "물류 HR 운영자"로 일반화(효용 유지).
