@@ -2,7 +2,7 @@
 // Supabase OAuth를 통해 해당 제공자 로그인 화면으로 이동
 // Google: @react-oauth/google + supabase.auth.signInWithIdToken 사용 (Supabase URL 노출 없음)
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google'
 import { useAuth } from '../contexts/AuthContext'
@@ -28,6 +28,25 @@ export default function LoginPage() {
   const { isLoggedIn, loading, needsOnboarding, loginAsGuest } = useAuth()
   const [loadingProvider, setLoadingProvider] = useState<Provider | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  // ── Google 로그인 버튼 폭 반응형 처리 ──
+  // @react-oauth/google의 GoogleLogin은 고정 px 폭만 지원(width 100% 자동맞춤 불가).
+  // 360px 고정이면 320px 초소형 화면에서 버튼 배경이 좌우로 잘리고, 카카오(w-full) 버튼과 폭도 어긋난다.
+  // → 감싸는 컨테이너 폭을 측정해 그 값으로 버튼 폭을 맞춰 잘림 없이 카카오 버튼과 동일 너비로 정렬한다.
+  const googleWrapRef = useRef<HTMLDivElement>(null)
+  const [googleBtnWidth, setGoogleBtnWidth] = useState(320)
+  // useLayoutEffect: 첫 페인트 "전"에 실제 폭을 측정·확정해, GSI 버튼이 320 기본값으로
+  // 한 번 그려졌다가 측정값으로 다시 그려지는 깜빡임(레이아웃 시프트)을 방지한다.
+  useLayoutEffect(() => {
+    const measure = () => {
+      const w = googleWrapRef.current?.offsetWidth
+      // GSI 버튼 허용 최대폭 400, 너무 좁으면 깨지므로 하한 200으로 클램프
+      if (w) setGoogleBtnWidth(Math.min(400, Math.max(200, Math.floor(w))))
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [])
 
   // ── 약관 동의 상태 ──
   const [terms, setTerms] = useState(false)       // [필수] 이용약관
@@ -278,7 +297,7 @@ export default function LoginPage() {
             </button>
 
             {/* Google 로그인 — Google Identity Services 사용 (Supabase URL 노출 없음) */}
-            <div className={`w-full flex justify-center ${!terms || !privacy ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div ref={googleWrapRef} className={`w-full flex justify-center ${!terms || !privacy ? 'opacity-50 pointer-events-none' : ''}`}>
               {loadingProvider === 'google' ? (
                 <div className="w-full h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center text-sm text-gray-500">
                   Google로 로그인 중...
@@ -288,7 +307,7 @@ export default function LoginPage() {
                   onSuccess={handleGoogleCredential}
                   onError={() => setErrorMsg('Google 로그인에 실패했습니다. 다시 시도해 주세요.')}
                   size="large"
-                  width={360}
+                  width={googleBtnWidth}
                   shape="pill"
                   text="continue_with"
                   theme="outline"
