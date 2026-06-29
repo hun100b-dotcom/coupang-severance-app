@@ -80,7 +80,15 @@ export default function AdminPage() {
 
   // DB admin_accounts 테이블에서 관리자 여부 확인
   useEffect(() => {
-    if (loading || !isLoggedIn || !user?.email) return
+    if (loading) return  // 세션 확인이 끝날 때까지 대기 (이 동안 화면은 의도적으로 null)
+    // 비로그인(게스트 모드 포함)이면 관리자 확인 절차 자체를 진행할 수 없습니다.
+    // ⚠️ 과거 버그(하얀 화면의 근본 원인): 여기서 그냥 return 하면 adminChecked가
+    //   영원히 false로 남아, 아래 `if (loading || !adminChecked) return null` 에서
+    //   화면이 null(=하얀 화면)로 멈추고, 리다이렉트 effect(adminChecked && !isAdmin)도
+    //   발동하지 못했습니다. 그래서 비로그인/게스트로 /admin 진입 시 영구 하얀 화면이 떴습니다.
+    // ✅ 해결: 확인 절차를 "완료(true)"로 표시해, 아래 리다이렉트 effect가
+    //   로그인/홈 페이지로 안전하게 내보내도록 합니다.
+    if (!isLoggedIn || !user?.email) { setAdminChecked(true); return }
     const email = user.email
 
     if (email === SUPER_ADMIN_EMAIL) {
@@ -121,8 +129,13 @@ export default function AdminPage() {
   }, [isAdmin, adminRole])
 
   useEffect(() => {
-    if (adminChecked && !isAdmin) navigate('/home')
-  }, [adminChecked, isAdmin, navigate])
+    if (!adminChecked || isAdmin) return
+    // 관리자 확인이 끝났는데 권한이 없는 경우 적절한 페이지로 내보냅니다.
+    //   - 비로그인(게스트 포함) → 로그인 페이지로 보내 관리자 로그인을 유도
+    //   - 로그인했지만 관리자 권한이 없음 → 홈으로
+    // replace:true 로 히스토리를 덮어써 뒤로가기 시 /admin 으로 되돌아오는 루프를 막습니다.
+    navigate(isLoggedIn ? '/home' : '/login', { replace: true })
+  }, [adminChecked, isAdmin, isLoggedIn, navigate])
 
   useEffect(() => {
     if (!supabase) return
