@@ -8,6 +8,7 @@ NOTE: 모든 엔드포인트는 sync def + httpx.Client() 사용.
 
 from __future__ import annotations
 
+import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
@@ -18,6 +19,7 @@ from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel
 
 router = APIRouter()
+_audit_logger = logging.getLogger("admin.audit")
 
 # ── 프로젝트 고정 상수 (Supabase 프로젝트 ID 기반) ──────────
 _PROJECT_ID      = "hmjxrqhcwjyfkvlcejfc"
@@ -123,9 +125,10 @@ def _write_audit(
     after_val: Any = None,
     ip: Optional[str] = None,
 ) -> None:
-    """감사 로그 기록 — 오류 조용히 무시"""
+    """감사 로그 기록 — 관리자 작업을 막지 않도록 예외는 삼키되,
+    실패(예외 또는 비정상 status)는 서버 로그로 남겨 '무음 누락'을 탐지 가능하게 한다."""
     try:
-        httpx.post(
+        res = httpx.post(
             f"{SUPABASE_URL}/rest/v1/audit_logs",
             headers=_supabase_headers(),
             json={
@@ -139,8 +142,14 @@ def _write_audit(
             },
             timeout=5,
         )
-    except Exception:
-        pass
+        if res.status_code not in (200, 201, 204):
+            # RLS는 service-role로 우회되지만 컬럼 불일치/제약 위반 등은 여기서 잡힌다
+            _audit_logger.warning(
+                "감사로그 기록 실패 status=%s action=%s body=%s",
+                res.status_code, action, res.text[:200],
+            )
+    except Exception as e:
+        _audit_logger.warning("감사로그 기록 예외 action=%s err=%s", action, e)
 
 
 # ── Debug ─────────────────────────────────────────────────
@@ -933,6 +942,7 @@ def list_audit_logs(
     page: int = 1,
     limit: int = 50,
     action: str = "",
+    email: str = "",
     start: str = "",
     end: str = "",
     x_admin_token: Optional[str] = Header(default=None),
@@ -946,17 +956,60 @@ def list_audit_logs(
     }
     if action:
         params["action"] = f"eq.{action}"
+    # 관리자 이메일 부분 검색 (AuditMenu email 필터 지원)
+    # PostgREST 메타문자(* , ( ) %)를 제거해 와일드카드 오매칭/쿼리 깨짐 방지
+    if email:
+        safe_email = email
+        for ch in ("*", ",", "(", ")", "%"):
+            safe_email = safe_email.replace(ch, "")
+        if safe_email:
+            params["admin_email"] = f"ilike.*{safe_email}*"
+    # created_at 범위 — start/end 둘 다 서버사이드 필터로 적용.
+    # httpx 는 리스트 값을 같은 키의 반복 쿼리(created_at=gte.X&created_at=lte.Y)로
+    # 인코딩하고, PostgREST 는 같은 컬럼의 다중 필터를 AND 로 결합한다.
+    # → 과거 end in-memory 처리로 인한 total(=현재 페이지 길이) 왜곡을 제거.
+    ca: list[str] = []
     if start:
-        params["created_at"] = f"gte.{start}T00:00:00Z"
+        ca.append(f"gte.{start}T00:00:00Z")
+    if end:
+        ca.append(f"lte.{end}T23:59:59Z")
+    if len(ca) == 1:
+        params["created_at"] = ca[0]
+    elif len(ca) == 2:
+        params["created_at"] = ca  # 리스트 → 반복 쿼리 → AND
 
     res = _sb_get("audit_logs", params, count=True)
-    rows  = res.json() if res.status_code == 200 else []
+    rows  = res.json() if res.status_code in (200, 206) else []
     total = _count_header(res)
 
-    # end 필터는 in-memory (PostgREST 중복 키 우회)
-    if end:
-        end_dt = f"{end}T23:59:59Z"
-        rows  = [r for r in rows if (r.get("created_at") or "") <= end_dt]
-        total = len(rows)
-
     return {"logs": rows, "total": total}
+
+
+# 클라이언트(프론트)에서 발생하는 행동(접속/조회/공지·계정 CRUD 등)을 감사로그에 기록.
+# 과거에는 프론트가 audit_logs 에 supabase 직접 INSERT(RLS is_admin 의존) 하여
+# 미등록 관리자 행동이 누락될 수 있었다. 백엔드 service-role 로 기록하면
+# RLS 와 무관하게 항상 남고, IP 도 서버에서 캡처한다.
+class ClientAuditPayload(BaseModel):
+    admin_email: str
+    action: str
+    target_type: Optional[str] = None
+    target_id: Optional[str] = None
+    # dict 뿐 아니라 배열/원시값도 허용 (강제 캐스팅 호출부의 422 무음 누락 방지).
+    # _write_audit 는 어떤 JSON 값이든 직렬화하므로 안전.
+    after_val: Optional[Any] = None
+    before_val: Optional[Any] = None
+
+
+@router.post("/admin/audit-log")
+def write_client_audit(
+    payload: ClientAuditPayload,
+    request: Request,
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    _check_admin(x_admin_token)
+    _write_audit(
+        payload.admin_email, payload.action, payload.target_type, payload.target_id,
+        before_val=payload.before_val, after_val=payload.after_val,
+        ip=request.client.host if request.client else None,
+    )
+    return {"ok": True}

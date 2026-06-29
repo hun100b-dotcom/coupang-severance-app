@@ -709,3 +709,13 @@ export const unblockIp = (id: string) =>
 // Logs
 export const getAuditLogs = (params: object) =>
   api.get('/admin/logs', { params, headers: H() }).then(r => r.data)
+
+// 클라이언트 행동 감사 기록 — 백엔드 service-role 경로(RLS 무관, IP 서버 캡처)
+export const postAuditLog = (body: {
+  admin_email: string
+  action: string
+  target_type?: string | null
+  target_id?: string | null
+  after_val?: Record<string, unknown> | null
+  before_val?: Record<string, unknown> | null
+}) => api.post('/admin/audit-log', body, { headers: H() }).then(r => r.data)

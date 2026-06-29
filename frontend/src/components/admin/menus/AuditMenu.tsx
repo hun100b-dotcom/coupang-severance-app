@@ -1,6 +1,7 @@
 // AuditMenu.tsx — 관리자 감사 로그 (audit_logs 테이블)
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { getAuditLogs } from '../../../lib/api'
+import { exportCsv } from '../../../utils/exportCsv'
 
 /**
  * before/after 두 JSON 객체를 비교해서 변경된 키를 찾아 하이라이트
@@ -204,36 +205,49 @@ export default function AuditMenu() {
   const [endDate, setEndDate] = useState('')
   const [page, setPage] = useState(1)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const [error, setError] = useState<string | null>(null)
 
+  // 감사로그 조회는 백엔드 GET /admin/logs(경로 B, service-role)로 통일.
+  // audit_logs RLS 상태와 무관하게 항상 조회되고, 실패 시 에러를 표시한다.
   const fetchLogs = useCallback(async () => {
-    if (!supabase) return
     setLoading(true)
+    setError(null)
     try {
-      let query = supabase
-        .from('audit_logs')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-
-      if (emailFilter.trim()) query = query.ilike('admin_email', `%${emailFilter.trim()}%`)
-      if (actionFilter.trim()) query = query.eq('action', actionFilter.trim())
-      if (startDate) query = query.gte('created_at', `${startDate}T00:00:00`)
-      if (endDate) query = query.lte('created_at', `${endDate}T23:59:59`)
-
-      const from = (page - 1) * PAGE_SIZE
-      query = query.range(from, from + PAGE_SIZE - 1)
-
-      const { data, error, count } = await query
-      if (error) throw error
-      setLogs(data ?? [])
-      setTotal(count ?? 0)
-    } catch (err) {
-      console.error('감사 로그 불러오기 실패:', err)
+      const res = await getAuditLogs({
+        page,
+        limit: PAGE_SIZE,
+        action: actionFilter.trim(),
+        email: emailFilter.trim(),
+        start: startDate,
+        end: endDate,
+      })
+      setLogs(res.logs ?? [])
+      setTotal(res.total ?? 0)
+    } catch (err: unknown) {
+      // 과거에는 console.error 만 찍어 빈 화면이 "로그 없음"과 구분 안 됐다 → 이제 표시
+      setError(err instanceof Error ? err.message : '감사 로그를 불러오지 못했습니다.')
+      setLogs([])
     } finally {
       setLoading(false)
     }
   }, [emailFilter, actionFilter, startDate, endDate, page])
 
   useEffect(() => { fetchLogs() }, [fetchLogs])
+
+  // CSV 내보내기 (현재 페이지 기준 — 최대 PAGE_SIZE건)
+  const handleExport = () => {
+    if (logs.length === 0) { alert('내보낼 로그가 없습니다.'); return }
+    exportCsv(logs.map(l => ({
+      시간:     l.created_at,
+      관리자:   l.admin_email,
+      액션:     actionLabel(l.action),
+      대상유형: l.target_type ?? '',
+      대상ID:   l.target_id ?? '',
+      IP:       l.ip_address ?? '',
+      변경전:   l.before_val ? JSON.stringify(l.before_val) : '',
+      변경후:   l.after_val ? JSON.stringify(l.after_val) : '',
+    })), `audit_logs_${new Date().toISOString().slice(0, 10)}.csv`)
+  }
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
@@ -249,8 +263,22 @@ export default function AuditMenu() {
             관리자 행동 감사 기록 (총 {total.toLocaleString()}건)
           </p>
         </div>
-        <button onClick={fetchLogs} style={{ ...outlineBtn, marginLeft: 'auto' }}>↻ 새로고침</button>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+          <button onClick={handleExport} style={outlineBtn}>📥 CSV (현재 페이지)</button>
+          <button onClick={fetchLogs} style={outlineBtn}>↻ 새로고침</button>
+        </div>
       </div>
+
+      {/* 에러 표시 (조회 실패 — 빈 화면이 "로그 없음"으로 오인되지 않도록) */}
+      {error && (
+        <div style={{
+          background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
+          borderRadius: 10, padding: '12px 16px', marginBottom: 16,
+          color: '#cc2233', fontSize: '0.82rem', fontWeight: 600,
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
 
       {/* 필터 */}
       <div style={{

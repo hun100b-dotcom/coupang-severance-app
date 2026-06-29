@@ -2,6 +2,7 @@
 // 개인정보의 안전성 확보조치 기준 제7조: 관리자의 개인정보 접근 기록 보관
 
 import { supabase } from './supabase'
+import { postAuditLog } from './api'
 
 // 감사 로그에 기록할 수 있는 모든 액션 타입 목록
 type AdminAction =
@@ -32,7 +33,10 @@ type AdminAction =
 
 /**
  * 관리자 행동 감사 로그 기록
- * audit_logs 테이블에 직접 INSERT (RLS: is_admin() 필수)
+ * 백엔드 POST /admin/audit-log (service-role)로 기록한다.
+ * 과거에는 audit_logs 에 supabase 직접 INSERT(RLS is_admin 의존)라, 세션 이메일이
+ * admin_accounts 에 없으면 미등록 관리자 행동이 누락됐다. 백엔드 경로는 RLS 와
+ * 무관하게 항상 기록하고 IP 도 서버에서 캡처한다.
  *
  * @param action    - 수행한 액션 타입 (AdminAction)
  * @param targetType - 대상 리소스 종류 (예: 'job_posting', 'inquiry')
@@ -53,16 +57,15 @@ export async function logAdminAction(
     const { data: { user } } = await supabase.auth.getUser()
     if (!user?.email) return
 
-    await supabase.from('audit_logs').insert({
+    await postAuditLog({
       admin_email: user.email,
       action,
       target_type: targetType ?? null,
       target_id:   targetId  ?? null,
       before_val:  beforeVal ?? null, // 변경 전 스냅샷 (없으면 null)
       after_val:   afterVal  ?? null, // 변경 후 스냅샷 또는 상세 정보
-      ip_address:  null,              // 보안 정책상 현재 미수집 (향후 백엔드로 이동 예정)
     })
   } catch {
-    // 로그 기록 실패는 관리자 작업을 방해하지 않도록 조용히 처리
+    // 로그 기록 실패는 관리자 작업을 방해하지 않도록 조용히 처리(best-effort)
   }
 }
