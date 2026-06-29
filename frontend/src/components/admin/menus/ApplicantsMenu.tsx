@@ -199,17 +199,24 @@ export default function ApplicantsMenu() {
       const payload: Record<string, unknown> = { status: newStatus }
       if (newStatus === 'confirmed' && workDate) payload.work_date = workDate
 
-      const { error } = await supabase
+      // ★ .select() 필수: 이게 없으면 RLS가 0행을 막아도 error=null 로 조용히
+      //   통과해 "성공 토스트는 떠도 DB는 안 바뀌는" 거짓 성공이 발생한다.
+      const { data: updated, error } = await supabase
         .from('job_applications')
         .update(payload)
         .eq('id', appId)
+        .select('id')
       if (error) throw error
+      if (!updated || updated.length === 0) {
+        // 변경된 행이 0 → RLS 차단 또는 대상 부재. 거짓 성공 대신 실패로 보고.
+        throw new Error('변경된 행이 없습니다 — 관리자 권한(RLS)을 확인하세요.')
+      }
 
-      // 출근확정 / 거절 시 사용자에게 알림 발송
+      // 출근확정 / 거절 시 사용자에게 알림 발송 (실패해도 상태변경 자체는 롤백 안 함)
       if (newStatus === 'confirmed' || newStatus === 'rejected') {
         const app = applicants.find(a => a.id === appId)
         if (app?.user_id && supabase) {
-          await supabase.from('notifications').insert({
+          const { error: notifErr } = await supabase.from('notifications').insert({
             user_id: app.user_id,
             type:    newStatus === 'confirmed' ? 'application_confirmed' : 'application_rejected',
             title:   newStatus === 'confirmed' ? '출근이 확정됐어요! 🎉' : '지원이 거절됐습니다',
@@ -218,6 +225,8 @@ export default function ApplicantsMenu() {
               : '아쉽지만 이번 공고는 어렵게 됐습니다. 다른 공고를 확인해보세요.',
             metadata: { application_id: appId, job_posting_id: app.job_posting_id },
           })
+          // 알림 실패는 상태변경을 무효화하지 않되, 무음으로 삼키지 않고 콘솔 경고
+          if (notifErr) console.warn('[알림 발송 실패] 상태변경은 완료됨:', notifErr.message)
         }
       }
 
@@ -246,11 +255,17 @@ export default function ApplicantsMenu() {
     setBulkUpdating(true)
     try {
       const ids = [...selectedIds]
-      const { error } = await supabase
+      // ★ .select() 로 실제 변경된 행을 받아 RLS 0행 차단/부분 반영을 감지
+      const { data: updated, error } = await supabase
         .from('job_applications')
         .update({ status: newStatus })
         .in('id', ids)
+        .select('id')
       if (error) throw error
+      const changed = updated?.length ?? 0
+      if (changed === 0) {
+        throw new Error('변경된 행이 없습니다 — 관리자 권한(RLS)을 확인하세요.')
+      }
 
       // 확정/거절 시 알림 일괄 발송
       if (newStatus === 'confirmed' || newStatus === 'rejected') {
@@ -267,12 +282,24 @@ export default function ApplicantsMenu() {
             metadata: { job_posting_id: a.job_posting_id },
           }))
         if (notifications.length > 0 && supabase) {
-          await supabase.from('notifications').insert(notifications)
+          const { error: notifErr } = await supabase.from('notifications').insert(notifications)
+          if (notifErr) console.warn('[일괄 알림 발송 실패] 상태변경은 완료됨:', notifErr.message)
         }
       }
 
-      await fetchApplicants()
-      setToast({ msg: `✅ ${ids.length}명 ${STATUS_LABEL[newStatus]} 처리됐습니다.`, type: 'success' })
+      // 실제 변경된 id 집합 → 실패한 id 계산 (부분 반영 추적)
+      const updatedIds = new Set((updated ?? []).map(u => u.id))
+      const failedIds = ids.filter(id => !updatedIds.has(id))
+
+      await fetchApplicants()  // 내부에서 selectedIds 를 비운다
+      // 부분 반영(일부 행만 변경)도 무음으로 넘기지 않고 사용자에게 알림
+      if (failedIds.length > 0) {
+        // 실패한 건만 다시 선택해 재시도를 쉽게 (fetchApplicants 이후에 호출해야 유지됨)
+        setSelectedIds(new Set(failedIds))
+        setToast({ msg: `⚠️ ${changed}/${ids.length}명만 변경됨 — 실패 ${failedIds.length}건을 다시 선택했습니다.`, type: 'error' })
+      } else {
+        setToast({ msg: `✅ ${changed}명 ${STATUS_LABEL[newStatus]} 처리됐습니다.`, type: 'success' })
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : '대량 처리에 실패했습니다.'
       setToast({ msg: '❌ ' + msg, type: 'error' })
