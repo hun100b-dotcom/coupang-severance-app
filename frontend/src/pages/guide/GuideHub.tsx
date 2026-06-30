@@ -63,7 +63,7 @@ export default function GuideHub() {
   }, [])
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-gradient-to-b from-brand-bg via-white to-white">
+    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-10 bg-up-page">
       {/* ── SEO 메타태그: title, description, canonical, JSON-LD 구조화 데이터 ── */}
       <PageMeta
         title="노동법 가이드 — 퇴직금·실업급여·주휴수당·연차수당 완전 정리 | CATCH"
@@ -72,32 +72,32 @@ export default function GuideHub() {
         jsonLd={BREADCRUMB_SCHEMA}
       />
 
-      <div className="w-full max-w-[760px] flex flex-col gap-6">
+      <div className="w-full max-w-[840px] flex flex-col gap-7 md:gap-8">
 
-        {/* ── 히어로 섹션 (TopNav가 Layout에서 제공되므로 자체 네비 제거) ── */}
+        {/* ── 히어로 섹션 (홈 톤 계승: 파랑→진파랑 그래디언트, 큰 헤드라인) ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="rounded-3xl bg-gradient-to-br from-brand to-brand-strong p-8 text-white overflow-hidden relative"
+          className="rounded-3xl bg-gradient-to-br from-brand to-brand-strong p-8 md:p-10 text-white overflow-hidden relative"
         >
           {/* 배경 장식 */}
           <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl -z-10" />
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -z-10" />
 
-          <div className="relative z-10 flex items-start gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+          <div className="relative z-10 flex items-start gap-3 mb-5">
+            <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center">
               <BookOpen className="w-5 h-5" />
             </div>
           </div>
 
-          <h1 className="text-3xl font-black mb-3 tracking-tight">CATCH 노동법 가이드</h1>
-          <p className="text-white/85 text-sm leading-relaxed">
+          <h1 className="text-[28px] md:text-[36px] font-black mb-3 tracking-tight leading-tight">CATCH 노동법 가이드</h1>
+          <p className="text-white/90 text-[15px] md:text-base leading-relaxed">
             일용직 근로자를 위한 핵심 노동법 정보를 한눈에 확인하세요.
           </p>
         </motion.div>
 
-        {/* ── 가이드 카드 그리드 ── */}
+        {/* ── 가이드 카드 그리드 (솔리드 흰 카드 + 헤어라인, 색 구분은 아이콘 칩) ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {GUIDES.map((guide, i) => {
             const Icon = guide.icon
@@ -112,23 +112,23 @@ export default function GuideHub() {
               >
                 <Link
                   to={guide.href}
-                  className={`flex flex-col h-full ${guide.color} rounded-2xl p-5 transition-all hover:shadow-lg hover:shadow-float`}
+                  className="flex flex-col h-full bg-up-surface border border-up-hair rounded-2xl p-6 shadow-card transition-all hover:border-brand-200 hover:shadow-float"
                 >
-                  {/* 아이콘 */}
-                  <div className={`w-10 h-10 rounded-xl ${guide.accentColor} bg-white mb-3 flex items-center justify-center`}>
+                  {/* 아이콘 칩 (가이드별 색 구분: 블루/그린) */}
+                  <div className={`w-11 h-11 rounded-xl ${guide.color} ${guide.accentColor} mb-4 flex items-center justify-center`}>
                     <Icon className="w-5 h-5" />
                   </div>
 
                   {/* 내용 */}
-                  <h3 className="text-base font-bold text-gray-900 mb-2 flex-1">
+                  <h3 className="text-[17px] font-bold text-up-navy mb-2">
                     {guide.title}
                   </h3>
-                  <p className="text-xs text-gray-600 mb-4 flex-1">
+                  <p className="text-[14px] text-up-sub leading-relaxed mb-5 flex-1">
                     {guide.description}
                   </p>
 
                   {/* 링크 */}
-                  <div className={`flex items-center gap-2 ${guide.accentColor} text-sm font-semibold`}>
+                  <div className={`flex items-center gap-1.5 ${guide.accentColor} text-[14px] font-semibold`}>
                     자세히 보기
                     <ChevronRight className="w-4 h-4" />
                   </div>
@@ -138,16 +138,16 @@ export default function GuideHub() {
           })}
         </div>
 
-        {/* ── 하단 CTA ── */}
+        {/* ── 하단 CTA (홈 톤 계승: 브랜드 그래디언트, 흰 텍스트 AA) ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
-          className="pt-2 pb-4"
+          className="pt-1 pb-4"
         >
           <button
             onClick={() => navigate('/severance')}
-            className="w-full bg-gradient-to-r from-brand to-brand-strong text-white rounded-2xl py-4 font-bold text-base flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+            className="w-full bg-gradient-to-r from-brand to-brand-strong text-white rounded-2xl min-h-[56px] py-4 font-bold text-base flex items-center justify-center gap-2 hover:shadow-float transition-all active:scale-[0.99]"
           >
             <Calculator className="w-5 h-5" />
             지금 바로 계산해보기
