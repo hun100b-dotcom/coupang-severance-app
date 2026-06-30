@@ -14,7 +14,7 @@ export default function PrivacyPolicyPage() {
         {/* 뒤로가기 버튼 */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-6"
+          className="flex items-center gap-2 text-up-sub hover:text-up-navy transition-colors mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
           <span className="text-sm font-medium">뒤로가기</span>
@@ -22,13 +22,13 @@ export default function PrivacyPolicyPage() {
 
         {/* 타이틀 영역 */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">개인정보 처리방침</h1>
+          <h1 className="text-2xl font-bold text-up-navy mb-1">개인정보 처리방침</h1>
           {/* 시행일 표시 */}
-          <p className="text-sm text-gray-500">시행일: 2026년 4월 11일 (최종 개정)</p>
+          <p className="text-sm text-up-sub">시행일: 2026년 4월 11일 (최종 개정)</p>
         </div>
 
         {/* 처리방침 서문 */}
-        <p className="text-sm text-gray-600 leading-relaxed mb-8 bg-gray-50 rounded-xl p-4">
+        <p className="text-sm text-up-sub leading-relaxed mb-8 bg-gray-50 rounded-xl p-4">
           CATCH(이하 "회사")는 개인정보보호법 제30조에 따라 정보주체의 개인정보를 보호하고
           이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 다음과 같이 개인정보 처리방침을
           수립·공개합니다.
@@ -39,10 +39,10 @@ export default function PrivacyPolicyPage() {
 
           {/* 제1조: 수집하는 개인정보 항목 */}
           <div className="py-6 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 mb-3 text-base">
+            <h2 className="font-semibold text-up-navy mb-3 text-base">
               제1조 (수집하는 개인정보 항목)
             </h2>
-            <div className="text-sm text-gray-800 leading-relaxed space-y-3">
+            <div className="text-sm text-up-body leading-relaxed space-y-3">
               <p>회사는 서비스 제공을 위해 다음과 같은 개인정보를 수집합니다:</p>
 
               {/* 필수 수집 항목 테이블 */}
@@ -50,12 +50,12 @@ export default function PrivacyPolicyPage() {
                 <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="text-left py-2 px-3 font-semibold text-gray-700 border-b border-gray-200">구분</th>
-                      <th className="text-left py-2 px-3 font-semibold text-gray-700 border-b border-gray-200">항목</th>
-                      <th className="text-left py-2 px-3 font-semibold text-gray-700 border-b border-gray-200">수집 방법</th>
+                      <th className="text-left py-2 px-3 font-semibold text-up-body border-b border-gray-200">구분</th>
+                      <th className="text-left py-2 px-3 font-semibold text-up-body border-b border-gray-200">항목</th>
+                      <th className="text-left py-2 px-3 font-semibold text-up-body border-b border-gray-200">수집 방법</th>
                     </tr>
                   </thead>
-                  <tbody className="text-gray-700">
+                  <tbody className="text-up-body">
                     <tr className="border-b border-gray-100">
                       <td className="py-2 px-3 font-medium">필수</td>
                       <td className="py-2 px-3">이메일 주소, 닉네임, 소셜 로그인 식별자(카카오 ID / 구글 UID)</td>
@@ -73,14 +73,14 @@ export default function PrivacyPolicyPage() {
                     </tr>
                     <tr>
                       {/* 채용 지원 시 추가 수집 — 지원 폼 동의 기반 (2026-04-11 추가) */}
-                      <td className="py-2 px-3 font-medium">채용 지원 시<br/><span className="text-xs text-gray-500">(동의 시에만)</span></td>
-                      <td className="py-2 px-3">성명, 생년월일, 성별, 휴대폰번호<br/><span className="text-xs text-gray-500">※ 주민등록번호 미수집</span></td>
+                      <td className="py-2 px-3 font-medium">채용 지원 시<br/><span className="text-xs text-up-sub">(동의 시에만)</span></td>
+                      <td className="py-2 px-3">성명, 생년월일, 성별, 휴대폰번호<br/><span className="text-xs text-up-sub">※ 주민등록번호 미수집</span></td>
                       <td className="py-2 px-3">채용 지원 폼 직접 입력<br/>(개인정보 동의 후 수집)</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <p className="text-gray-600 text-xs">
+              <p className="text-up-sub text-xs">
                 * 회사는 민감정보(주민등록번호, 건강정보, 신용정보 등)를 수집하지 않습니다.
               </p>
             </div>
@@ -88,10 +88,10 @@ export default function PrivacyPolicyPage() {
 
           {/* 제2조: 개인정보 수집 및 이용 목적 */}
           <div className="py-6 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 mb-3 text-base">
+            <h2 className="font-semibold text-up-navy mb-3 text-base">
               제2조 (개인정보 수집 및 이용 목적)
             </h2>
-            <div className="text-sm text-gray-800 leading-relaxed space-y-3">
+            <div className="text-sm text-up-body leading-relaxed space-y-3">
               <p>
                 회사는 수집한 개인정보를 다음 목적으로만 이용합니다. 목적이 변경될 경우
                 개인정보보호법 제18조에 따라 별도 동의를 받습니다.
@@ -109,10 +109,10 @@ export default function PrivacyPolicyPage() {
 
           {/* 제3조: 개인정보 보유 및 이용 기간 */}
           <div className="py-6 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 mb-3 text-base">
+            <h2 className="font-semibold text-up-navy mb-3 text-base">
               제3조 (개인정보 보유 및 이용 기간)
             </h2>
-            <div className="text-sm text-gray-800 leading-relaxed space-y-3">
+            <div className="text-sm text-up-body leading-relaxed space-y-3">
               <p>
                 회사는 개인정보 수집 시 동의 받은 보유기간 내에서 처리하며, 해당 기간 경과 후
                 지체 없이 파기합니다.
@@ -121,11 +121,11 @@ export default function PrivacyPolicyPage() {
                 <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="text-left py-2 px-3 font-semibold text-gray-700 border-b border-gray-200">항목</th>
-                      <th className="text-left py-2 px-3 font-semibold text-gray-700 border-b border-gray-200">보유 기간</th>
+                      <th className="text-left py-2 px-3 font-semibold text-up-body border-b border-gray-200">항목</th>
+                      <th className="text-left py-2 px-3 font-semibold text-up-body border-b border-gray-200">보유 기간</th>
                     </tr>
                   </thead>
-                  <tbody className="text-gray-700">
+                  <tbody className="text-up-body">
                     <tr className="border-b border-gray-100">
                       <td className="py-2 px-3">회원 정보 (이메일, 닉네임, 소셜 ID)</td>
                       <td className="py-2 px-3">회원 탈퇴 시까지</td>
@@ -144,8 +144,8 @@ export default function PrivacyPolicyPage() {
                     </tr>
                     <tr className="border-b border-gray-100">
                       {/* 채용 지원 정보 보유기간 — 2026-04-11 추가 */}
-                      <td className="py-2 px-3">채용 지원 정보<br/><span className="text-xs text-gray-500">(성명·생년월일·성별·휴대폰)</span></td>
-                      <td className="py-2 px-3">채용 종료 후 6개월 이내 파기<br/><span className="text-xs text-gray-500">(합격·불합격 여부 무관)</span></td>
+                      <td className="py-2 px-3">채용 지원 정보<br/><span className="text-xs text-up-sub">(성명·생년월일·성별·휴대폰)</span></td>
+                      <td className="py-2 px-3">채용 종료 후 6개월 이내 파기<br/><span className="text-xs text-up-sub">(합격·불합격 여부 무관)</span></td>
                     </tr>
                     <tr>
                       <td className="py-2 px-3">관련 법령상 보존 의무 정보</td>
@@ -159,14 +159,14 @@ export default function PrivacyPolicyPage() {
 
           {/* 제4조: 개인정보 제3자 제공 */}
           <div className="py-6 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 mb-3 text-base">
+            <h2 className="font-semibold text-up-navy mb-3 text-base">
               제4조 (개인정보 제3자 제공)
             </h2>
-            <div className="text-sm text-gray-800 leading-relaxed space-y-3">
+            <div className="text-sm text-up-body leading-relaxed space-y-3">
               {/* 원칙 강조 박스 */}
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
                 <p className="font-semibold text-blue-800 mb-1">원칙: 제3자 제공 없음</p>
-                <p className="text-gray-700">
+                <p className="text-up-body">
                   회사는 이용자의 개인정보를 원칙적으로 제3자에게 제공하지 않습니다.
                 </p>
               </div>
@@ -188,7 +188,7 @@ export default function PrivacyPolicyPage() {
                   보유 기간은 채용 종료 후 6개월입니다.
                 </li>
               </ol>
-              <p className="text-gray-600 text-xs">
+              <p className="text-up-sub text-xs">
                 * 법령에 의한 제공 시 이용자에게 해당 사실을 법적으로 허용된 범위 내에서 통지합니다.
               </p>
             </div>
@@ -196,10 +196,10 @@ export default function PrivacyPolicyPage() {
 
           {/* 제5조: 개인정보 처리 위탁 */}
           <div className="py-6 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 mb-3 text-base">
+            <h2 className="font-semibold text-up-navy mb-3 text-base">
               제5조 (개인정보 처리 위탁)
             </h2>
-            <div className="text-sm text-gray-800 leading-relaxed space-y-3">
+            <div className="text-sm text-up-body leading-relaxed space-y-3">
               <p>
                 회사는 서비스 제공을 위해 다음과 같이 개인정보 처리 업무를 위탁하고 있습니다.
                 위탁 계약 시 개인정보보호법 제26조에 따른 사항을 계약서에 명시합니다.
@@ -208,13 +208,13 @@ export default function PrivacyPolicyPage() {
                 <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="text-left py-2 px-3 font-semibold text-gray-700 border-b border-gray-200">수탁자</th>
-                      <th className="text-left py-2 px-3 font-semibold text-gray-700 border-b border-gray-200">소재 국가</th>
-                      <th className="text-left py-2 px-3 font-semibold text-gray-700 border-b border-gray-200">위탁 업무</th>
-                      <th className="text-left py-2 px-3 font-semibold text-gray-700 border-b border-gray-200">위탁 기간</th>
+                      <th className="text-left py-2 px-3 font-semibold text-up-body border-b border-gray-200">수탁자</th>
+                      <th className="text-left py-2 px-3 font-semibold text-up-body border-b border-gray-200">소재 국가</th>
+                      <th className="text-left py-2 px-3 font-semibold text-up-body border-b border-gray-200">위탁 업무</th>
+                      <th className="text-left py-2 px-3 font-semibold text-up-body border-b border-gray-200">위탁 기간</th>
                     </tr>
                   </thead>
-                  <tbody className="text-gray-700">
+                  <tbody className="text-up-body">
                     <tr className="border-b border-gray-100">
                       {/* Supabase — 미국 서버 명시 (요구사항) */}
                       <td className="py-2 px-3 font-medium">Supabase Inc.</td>
@@ -237,7 +237,7 @@ export default function PrivacyPolicyPage() {
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-up-sub">
                 * 위 수탁자들은 미국 소재 기업으로, 이용자의 개인정보가 미국 서버에 저장될 수 있습니다.
                 개인정보보호법 제28조의8에 따라 국외 이전 사실을 고지합니다.
               </p>
@@ -246,10 +246,10 @@ export default function PrivacyPolicyPage() {
 
           {/* 제6조: 이용자의 권리 */}
           <div className="py-6 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 mb-3 text-base">
+            <h2 className="font-semibold text-up-navy mb-3 text-base">
               제6조 (이용자의 권리)
             </h2>
-            <div className="text-sm text-gray-800 leading-relaxed space-y-3">
+            <div className="text-sm text-up-body leading-relaxed space-y-3">
               <p>
                 이용자(정보주체)는 언제든지 다음의 개인정보 보호 관련 권리를 행사할 수 있습니다:
               </p>
@@ -274,7 +274,7 @@ export default function PrivacyPolicyPage() {
                 권리 행사는 서비스 내 마이페이지 또는 아래 개인정보 보호책임자에게 이메일로 요청할 수 있습니다.
                 회사는 요청 접수 후 10일 이내에 처리 결과를 회신합니다.
               </p>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-up-sub">
                 * 만 14세 미만 아동의 경우 법정대리인이 권리를 행사할 수 있습니다.
               </p>
             </div>
@@ -282,10 +282,10 @@ export default function PrivacyPolicyPage() {
 
           {/* 제7조: 쿠키 및 자동 수집 정보 */}
           <div className="py-6 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 mb-3 text-base">
+            <h2 className="font-semibold text-up-navy mb-3 text-base">
               제7조 (쿠키 및 자동 수집 정보)
             </h2>
-            <div className="text-sm text-gray-800 leading-relaxed space-y-3">
+            <div className="text-sm text-up-body leading-relaxed space-y-3">
               <ol className="list-decimal pl-5 space-y-2">
                 <li>
                   <strong>쿠키 사용 목적:</strong> 회사는 소셜 로그인(OAuth 2.0) 세션 유지를 위해
@@ -312,17 +312,17 @@ export default function PrivacyPolicyPage() {
 
           {/* 제8조: 개인정보 보호책임자 */}
           <div className="py-6 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 mb-3 text-base">
+            <h2 className="font-semibold text-up-navy mb-3 text-base">
               제8조 (개인정보 보호책임자)
             </h2>
-            <div className="text-sm text-gray-800 leading-relaxed space-y-3">
+            <div className="text-sm text-up-body leading-relaxed space-y-3">
               <p>
                 회사는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 관련 불만 처리 및
                 피해 구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다:
               </p>
               {/* 보호책임자 정보 카드 */}
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                <p className="text-gray-800 space-y-1">
+                <p className="text-up-body space-y-1">
                   <span className="block"><strong>성명:</strong> CATCH 운영팀</span>
                   <span className="block"><strong>직책:</strong> 서비스 운영 책임자</span>
                   <span className="block">
@@ -336,7 +336,7 @@ export default function PrivacyPolicyPage() {
               <p>
                 개인정보 보호 관련 불만 또는 피해 구제를 위해 아래 기관에 도움을 요청할 수 있습니다:
               </p>
-              <ul className="list-disc pl-5 space-y-1 text-gray-700">
+              <ul className="list-disc pl-5 space-y-1 text-up-body">
                 <li>개인정보침해신고센터: privacy.kisa.or.kr / 국번없이 118</li>
                 <li>개인정보 분쟁조정위원회: www.kopico.go.kr / 1833-6972</li>
                 <li>대검찰청 사이버수사과: www.spo.go.kr / 02-3480-3573</li>
@@ -347,10 +347,10 @@ export default function PrivacyPolicyPage() {
 
           {/* 제9조: 개인정보 안전성 확보 조치 */}
           <div className="py-6 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-900 mb-3 text-base">
+            <h2 className="font-semibold text-up-navy mb-3 text-base">
               제9조 (개인정보 안전성 확보 조치)
             </h2>
-            <div className="text-sm text-gray-800 leading-relaxed">
+            <div className="text-sm text-up-body leading-relaxed">
               <ul className="list-disc pl-5 space-y-2">
                 <li>
                   <strong>접근 제어:</strong> Supabase Row Level Security(RLS) 정책을 통해
@@ -368,10 +368,10 @@ export default function PrivacyPolicyPage() {
 
           {/* 시행일 및 변경 안내 */}
           <div className="py-6">
-            <h2 className="font-semibold text-gray-900 mb-3 text-base">
+            <h2 className="font-semibold text-up-navy mb-3 text-base">
               부칙 (시행일)
             </h2>
-            <div className="text-sm text-gray-800 leading-relaxed space-y-2">
+            <div className="text-sm text-up-body leading-relaxed space-y-2">
               <p>본 개인정보 처리방침은 <strong>2025년 1월 1일</strong>부터 시행됩니다.</p>
               <p>
                 개인정보 처리방침이 변경되는 경우 서비스 공지사항을 통해 최소 7일 전에 안내합니다.
@@ -384,7 +384,7 @@ export default function PrivacyPolicyPage() {
 
         {/* 하단 문의처 안내 */}
         <div className="mt-4 pt-6 border-t border-gray-100">
-          <p className="text-sm text-gray-500 leading-relaxed">
+          <p className="text-sm text-up-sub leading-relaxed">
             개인정보 처리방침 관련 문의:{' '}
             <a href="mailto:catchmasterdmin@gmail.com" className="text-blue-600 underline">
               catchmasterdmin@gmail.com

@@ -114,7 +114,7 @@ export default function DailyWorker28Days() {
 
       <div className="min-h-screen bg-[#F2F4F6] pb-20">
         {/* ── 헤더 히어로 ── */}
-        <div className="bg-gradient-to-br from-[#0f172a] to-[#1e40af] px-4 pt-12 pb-10 text-white">
+        <div className="bg-gradient-to-br from-[#1A2434] to-[#1e40af] px-4 pt-12 pb-10 text-white">
           <motion.div
             className="max-w-lg mx-auto"
             initial={{ opacity: 0, y: 20 }}
@@ -154,11 +154,11 @@ export default function DailyWorker28Days() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <h2 className="text-base font-bold text-up-navy mb-3 flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-blue-500" />
               28일 블록이란 무엇인가?
             </h2>
-            <p className="text-sm text-gray-700 leading-relaxed mb-3">
+            <p className="text-sm text-up-body leading-relaxed mb-3">
               쿠팡·CFS는 급여를 <strong>28일(4주) 단위</strong>로 지급합니다. 퇴직금 적격 근무일을
               계산할 때, 마지막 근무일에서 역순으로 28일씩 블록을 나눕니다.
               각 블록에서 <strong>실제 근무일이 8일 이상이면 "적격 블록"</strong>으로 인정됩니다.
@@ -176,7 +176,7 @@ export default function DailyWorker28Days() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <h2 className="text-base font-bold text-gray-900 mb-4">블록 계산 예시</h2>
+            <h2 className="text-base font-bold text-up-navy mb-4">블록 계산 예시</h2>
             <div className="space-y-2">
               {BLOCK_EXAMPLE.map((b) => (
                 <div
@@ -186,8 +186,8 @@ export default function DailyWorker28Days() {
                   }`}
                 >
                   <div>
-                    <p className="font-semibold text-gray-900">{b.block}</p>
-                    <p className="text-xs text-gray-500">{b.days}</p>
+                    <p className="font-semibold text-up-navy">{b.block}</p>
+                    <p className="text-xs text-up-sub">{b.days}</p>
                   </div>
                   <div className="text-right">
                     <p className="font-bold">{b.workDays}일 근무</p>
@@ -199,7 +199,7 @@ export default function DailyWorker28Days() {
                 </div>
               ))}
             </div>
-            <p className="text-xs text-gray-500 mt-3">
+            <p className="text-xs text-up-sub mt-3">
               위 예시에서 Block 3(근무 6일)은 비적격 → 퇴직금 계산에서 제외됩니다.
             </p>
           </motion.section>
@@ -211,8 +211,8 @@ export default function DailyWorker28Days() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <h2 className="text-base font-bold text-gray-900 mb-3">퇴직금 계산 전체 공식</h2>
-            <div className="space-y-2 text-sm text-gray-700">
+            <h2 className="text-base font-bold text-up-navy mb-3">퇴직금 계산 전체 공식</h2>
+            <div className="space-y-2 text-sm text-up-body">
               <div className="flex gap-3">
                 <span className="w-5 h-5 rounded-full bg-[#3182f6] text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">1</span>
                 <p>적격 블록 일수 합산 = <strong>qualifying_days</strong></p>
@@ -226,7 +226,7 @@ export default function DailyWorker28Days() {
                 <p>퇴직금 = <strong>(1일 평균임금 × 30) × (qualifying_days ÷ 365)</strong></p>
               </div>
             </div>
-            <div className="mt-4 bg-gray-50 rounded-xl p-3 font-mono text-xs text-gray-700">
+            <div className="mt-4 bg-gray-50 rounded-xl p-3 font-mono text-xs text-up-body">
               예시: qualifying_days=420일, 1일 평균임금 77,000원<br />
               → 77,000 × 30 × (420 ÷ 365) ≒ <span className="font-bold text-green-700">266만 원</span>
             </div>
@@ -239,8 +239,8 @@ export default function DailyWorker28Days() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-gray-500" />
+            <h2 className="text-base font-bold text-up-navy mb-4 flex items-center gap-2">
+              <HelpCircle className="w-4 h-4 text-up-sub" />
               자주 묻는 질문
             </h2>
             <div className="space-y-4">
@@ -259,8 +259,8 @@ export default function DailyWorker28Days() {
                 },
               ].map((faq, i) => (
                 <div key={i} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                  <p className="text-sm font-semibold text-gray-900 mb-1">Q. {faq.q}</p>
-                  <p className="text-sm text-gray-600">A. {faq.a}</p>
+                  <p className="text-sm font-semibold text-up-navy mb-1">Q. {faq.q}</p>
+                  <p className="text-sm text-up-sub">A. {faq.a}</p>
                 </div>
               ))}
             </div>
@@ -274,7 +274,7 @@ export default function DailyWorker28Days() {
           >
             <button
               onClick={() => navigate('/severance')}
-              className="w-full bg-[#1e40af] text-white font-bold py-4 rounded-2xl text-base shadow-lg hover:bg-[#1d4ed8] transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-[#1e40af] text-white font-bold py-4 rounded-2xl text-base shadow-lg hover:bg-[#1751B5] transition-colors flex items-center justify-center gap-2"
             >
               <Calculator className="w-5 h-5" />
               28일 블록 자동 계산하기

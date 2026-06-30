@@ -162,7 +162,7 @@ export default function CoupangCfsSeverance() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <h2 className="text-base font-bold text-up-navy mb-4 flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-green-500" />
               CFS 퇴직금 수급 조건
             </h2>
@@ -173,11 +173,11 @@ export default function CoupangCfsSeverance() {
                     ? <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                     : <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                   }
-                  <p className="text-sm text-gray-700">{c.text}</p>
+                  <p className="text-sm text-up-body">{c.text}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-4 bg-slate-50 rounded-xl p-3 text-xs text-slate-600">
+            <div className="mt-4 bg-slate-50 rounded-xl p-3 text-xs text-up-sub">
               <strong>⚖️ 법적 근거:</strong> 근로자퇴직급여보장법 제4조. CFS 소속 일용직도 동일 적용.
               재판 진행과 무관하게 근로자의 청구권은 별개로 보호됩니다.
             </div>
@@ -190,7 +190,7 @@ export default function CoupangCfsSeverance() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <h2 className="text-base font-bold text-up-navy mb-4 flex items-center gap-2">
               <FileText className="w-4 h-4 text-blue-500" />
               CFS 퇴직금 계산 4단계
             </h2>
@@ -201,8 +201,8 @@ export default function CoupangCfsSeverance() {
                     {s.step}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">{s.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{s.desc}</p>
+                    <p className="text-sm font-semibold text-up-navy">{s.title}</p>
+                    <p className="text-xs text-up-sub mt-0.5">{s.desc}</p>
                   </div>
                 </div>
               ))}
@@ -216,15 +216,15 @@ export default function CoupangCfsSeverance() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <h2 className="text-base font-bold text-gray-900 mb-3">
+            <h2 className="text-base font-bold text-up-navy mb-3">
               CFS 28일 블록 — 왜 중요한가?
             </h2>
-            <p className="text-sm text-gray-700 leading-relaxed mb-3">
+            <p className="text-sm text-up-body leading-relaxed mb-3">
               CFS는 급여를 <strong>28일(4주) 주기</strong>로 지급합니다.
               일반 월급제 계산(30일 기준)으로는 블록 경계에서 근무일 계산 오류가 발생합니다.
               정확한 퇴직금은 반드시 <strong>28일 단위 블록 알고리즘</strong>을 적용해야 합니다.
             </p>
-            <div className="bg-gray-50 rounded-xl p-3 font-mono text-xs text-gray-700 space-y-1">
+            <div className="bg-gray-50 rounded-xl p-3 font-mono text-xs text-up-body space-y-1">
               <p>퇴직금 = (1일 평균임금 × 30) × (적격근무일수 ÷ 365)</p>
               <p className="text-green-700 font-bold">예: 적격일수 450일, 평균일급 80,000원</p>
               <p className="text-green-700">→ 80,000 × 30 × (450÷365) ≒ <strong>295만 원</strong></p>
@@ -277,8 +277,8 @@ export default function CoupangCfsSeverance() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45 }}
           >
-            <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-gray-500" />
+            <h2 className="text-base font-bold text-up-navy mb-4 flex items-center gap-2">
+              <HelpCircle className="w-4 h-4 text-up-sub" />
               자주 묻는 질문
             </h2>
             <div className="space-y-4">
@@ -297,8 +297,8 @@ export default function CoupangCfsSeverance() {
                 },
               ].map((faq, i) => (
                 <div key={i} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                  <p className="text-sm font-semibold text-gray-900 mb-1">Q. {faq.q}</p>
-                  <p className="text-sm text-gray-600">A. {faq.a}</p>
+                  <p className="text-sm font-semibold text-up-navy mb-1">Q. {faq.q}</p>
+                  <p className="text-sm text-up-sub">A. {faq.a}</p>
                 </div>
               ))}
             </div>

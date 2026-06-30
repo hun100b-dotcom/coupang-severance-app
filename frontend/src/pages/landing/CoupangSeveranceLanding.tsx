@@ -169,14 +169,14 @@ export default function CoupangSeveranceLanding() {
                     ? <CheckCircle size={18} className="text-[#3182f6] flex-shrink-0 mt-0.5" />
                     : <AlertTriangle size={18} className="text-[#F04452] flex-shrink-0 mt-0.5" />
                   }
-                  <span className={`text-sm leading-relaxed ${item.ok ? 'text-[#333D4B]' : 'text-[#8B95A1]'}`}>
+                  <span className={`text-sm leading-relaxed ${item.ok ? 'text-[#333D4B]' : 'text-[#565D6A]'}`}>
                     {item.text}
                   </span>
                 </li>
               ))}
             </ul>
             <div className="mt-4 p-3 bg-[#F2F4F6] rounded-xl">
-              <p className="text-xs text-[#8B95A1] leading-relaxed">
+              <p className="text-xs text-[#565D6A] leading-relaxed">
                 💡 쿠팡·CFS는 공백 3개월 미만이면 하나의 연속 근로로 인정됩니다.
                 여러 계약이 이어졌어도 합산 1년 이상이면 퇴직금이 발생합니다.
               </p>
@@ -199,14 +199,14 @@ export default function CoupangSeveranceLanding() {
               <p className="text-sm font-mono text-[#1a6ff4] leading-relaxed">
                 퇴직금 = (1일 평균임금 × 30일) × (재직일수 ÷ 365)
               </p>
-              <p className="text-xs text-[#8B95A1] mt-2">
+              <p className="text-xs text-[#565D6A] mt-2">
                 1일 평균임금 = 최근 3개월 급여 합계 ÷ 90일
               </p>
             </div>
 
             {/* 예시 계산 */}
             <div className="space-y-2">
-              <p className="text-xs font-bold text-[#8B95A1] uppercase tracking-wide">예시 계산</p>
+              <p className="text-xs font-bold text-[#565D6A] uppercase tracking-wide">예시 계산</p>
               <div className="flex justify-between items-center py-2 border-b border-[#F2F4F6]">
                 <span className="text-sm text-[#333D4B]">월 평균 급여</span>
                 <span className="text-sm font-bold text-[#191F28]">250만 원</span>
@@ -240,7 +240,7 @@ export default function CoupangSeveranceLanding() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-[#191F28]">{s.title}</p>
-                    <p className="text-xs text-[#8B95A1] mt-0.5">{s.desc}</p>
+                    <p className="text-xs text-[#565D6A] mt-0.5">{s.desc}</p>
                   </div>
                 </div>
               ))}
@@ -268,7 +268,7 @@ export default function CoupangSeveranceLanding() {
                   <div className="text-[#3182f6] flex-shrink-0 mt-0.5">{item.icon}</div>
                   <div>
                     <p className="text-sm font-bold text-[#191F28]">{item.title}</p>
-                    <p className="text-xs text-[#8B95A1] mt-0.5">{item.desc}</p>
+                    <p className="text-xs text-[#565D6A] mt-0.5">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -289,7 +289,7 @@ export default function CoupangSeveranceLanding() {
               {FAQ_SCHEMA.mainEntity.map((q, i) => (
                 <div key={i} className="border-b border-[#F2F4F6] last:border-0 pb-4 last:pb-0">
                   <p className="text-sm font-bold text-[#333D4B] mb-1.5">Q. {q.name}</p>
-                  <p className="text-xs text-[#8B95A1] leading-relaxed">{q.acceptedAnswer.text}</p>
+                  <p className="text-xs text-[#565D6A] leading-relaxed">{q.acceptedAnswer.text}</p>
                 </div>
               ))}
             </div>
@@ -310,7 +310,7 @@ export default function CoupangSeveranceLanding() {
               지금 무료로 계산하기
               <ChevronRight size={18} />
             </button>
-            <p className="text-center text-xs text-[#8B95A1] mt-3">
+            <p className="text-center text-xs text-[#565D6A] mt-3">
               완전 무료 · 회원가입 없이도 계산 가능
             </p>
           </motion.div>

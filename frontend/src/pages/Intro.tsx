@@ -155,7 +155,7 @@ export default function Intro() {
 
           {/* 하단 브랜드 */}
           <motion.p
-            className="absolute bottom-8 text-[11px] text-[#8B95A1]/70 font-medium tracking-wide"
+            className="absolute bottom-8 text-[11px] text-[#565D6A]/70 font-medium tracking-wide"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5, duration: 0.8 }}
