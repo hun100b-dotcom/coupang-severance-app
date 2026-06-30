@@ -119,7 +119,7 @@ export default function AdminPage() {
           .from('admin_accounts')
           .select('role, is_active')
           .eq('email', email)
-          .single()
+          .maybeSingle()  // 행 없을 때 406(PGRST116) 콘솔오염 방지(비관리자 진입 시)
         if (data?.is_active) setAdminRole(data.role)
       } catch { /* 관리자 아님 */ }
       setAdminChecked(true)
@@ -153,7 +153,7 @@ export default function AdminPage() {
           .from('system_settings')
           .select('value')
           .eq('key', 'permission_levels')
-          .single()
+          .maybeSingle()  // 행 없을 때 406(PGRST116) 콘솔오염 방지
         if (data?.value) setPermLevels({ ...DEFAULT_PERMS, ...JSON.parse(data.value) })
       } catch { /* 기본값 유지 */ }
     })()

@@ -72,11 +72,12 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
   const fetchPermLevels = useCallback(async () => {
     if (!supabase) return
     try {
+      // maybeSingle: 행이 없을 때 .single() 의 406(PGRST116) 콘솔오염 대신 data=null 반환
       const { data } = await supabase
         .from('system_settings')
         .select('value')
         .eq('key', 'permission_levels')
-        .single()
+        .maybeSingle()
       if (data?.value) {
         const parsed = JSON.parse(data.value)
         setPermLevels(parsed)
@@ -120,7 +121,8 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
         })
         if (error) throw error
       } else if (modal && typeof modal === 'object') {
-        const { error } = await supabase
+        // ★ .select() 로 변경행 확인 — 0행이면 RLS(is_super_admin) 무음 거짓성공 대신 실패
+        const { data: updated, error } = await supabase
           .from('admin_accounts')
           .update({
             email: form.email.trim().toLowerCase(),
@@ -130,7 +132,9 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
             updated_at: new Date().toISOString(),
           })
           .eq('id', modal.id)
+          .select('id')
         if (error) throw error
+        if (!updated || updated.length === 0) throw new Error('변경된 행이 없습니다 — 슈퍼 관리자 권한(RLS)을 확인하세요.')
       }
       await fetchAccounts()
       setModal(null)
@@ -148,8 +152,10 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
     if (!isSuperAdmin) { alert('슈퍼 관리자만 계정을 삭제할 수 있습니다.'); return }
     if (!confirm(`'${account.email}' 계정을 삭제하시겠습니까?`)) return
     try {
-      const { error } = await supabase.from('admin_accounts').delete().eq('id', account.id)
+      // ★ .select() 로 삭제행 확인 — 0행이면 RLS(is_super_admin) 무음 거짓성공 대신 실패
+      const { data: deleted, error } = await supabase.from('admin_accounts').delete().eq('id', account.id).select('id')
       if (error) throw error
+      if (!deleted || deleted.length === 0) throw new Error('삭제된 행이 없습니다 — 슈퍼 관리자 권한(RLS)을 확인하세요.')
       await fetchAccounts()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : JSON.stringify(err)

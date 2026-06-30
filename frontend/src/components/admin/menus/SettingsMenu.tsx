@@ -56,7 +56,7 @@ function PermissionLevelsSection({ onSaved }: { onSaved: () => void }) {
     async function load() {
       try {
         const { data } = await (await import('../../../lib/supabase')).supabase!
-          .from('system_settings').select('value').eq('key', 'permission_levels').single()
+          .from('system_settings').select('value').eq('key', 'permission_levels').maybeSingle()
         if (data?.value) setLevels(JSON.parse(data.value))
       } catch { /* 기본값 사용 */ }
       finally { setLoading(false) }

@@ -119,7 +119,7 @@ export default function ApplicantsMenu() {
           .from('admin_accounts')
           .select('role, is_active')
           .eq('email', email)
-          .single()
+          .maybeSingle()  // 행 없을 때 406(PGRST116) 콘솔오염 방지
         if (row?.is_active && row.role === 'super_admin') setIsSuperAdmin(true)
       } catch { /* 슈퍼관리자 아님 */ }
     })()

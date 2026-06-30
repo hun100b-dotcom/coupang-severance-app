@@ -293,8 +293,11 @@ export default function JobPostingsMenu() {
       }
 
       if (editTarget) {
-        const { error } = await supabase.from('job_postings').update(payload).eq('id', editTarget.id)
+        // ★ .select() 필수: update 는 RLS 로 권한 없는 행이 0행 처리되어도 error=null 로
+        //   조용히 통과(거짓 성공)한다. 변경행을 받아 0행이면 명시적으로 실패 처리한다.
+        const { data: updated, error } = await supabase.from('job_postings').update(payload).eq('id', editTarget.id).select('id')
         if (error) throw error
+        if (!updated || updated.length === 0) throw new Error('변경된 행이 없습니다 — 관리자 권한(RLS)을 확인하세요.')
         await logAdminAction('job_update', 'job_posting', editTarget.id, payload as Record<string, unknown>, {
           company_name: editTarget.company_name,
           center_name:  editTarget.center_name,
@@ -339,12 +342,15 @@ export default function JobPostingsMenu() {
   const handleChangeSection = async (job: JobPosting, newSection: 'today-urgent' | 'tomorrow-urgent' | 'always') => {
     if (!supabase || (job.section as string) === newSection) return
     const isUrgent = newSection === 'today-urgent' || newSection === 'tomorrow-urgent'
-    const { error } = await supabase
+    // ★ .select() 로 변경행 확인 — 0행이면 RLS 무음 거짓성공 대신 실패로 처리
+    const { data: changed, error } = await supabase
       .from('job_postings')
       .update({ section: newSection, is_urgent: isUrgent })
       .eq('id', job.id)
-    if (error) {
-      setToast({ msg: '❌ 섹션 변경 실패', type: 'error' })
+      .select('id')
+    if (error || !changed || changed.length === 0) {
+      setToast({ msg: '❌ 섹션 변경 실패 — 관리자 권한(RLS)을 확인하세요.', type: 'error' })
+      fetchJobs()  // 화면을 DB 진실과 재동기화(옛 섹션 잔류 방지)
     } else {
       await logAdminAction('job_section_change', 'job_posting', job.id,
         { section: newSection, is_urgent: isUrgent },
@@ -364,9 +370,11 @@ export default function JobPostingsMenu() {
   const handleDelete = async (job: JobPosting) => {
     if (!window.confirm(`"${job.company_name} ${job.center_name}" 공고를 삭제할까요?`)) return
     if (!supabase) return
-    const { error } = await supabase.from('job_postings').update({ status: 'deleted' }).eq('id', job.id)
-    if (error) {
-      setToast({ msg: '❌ 삭제 실패: ' + error.message, type: 'error' })
+    // ★ .select() 로 변경행 확인 — 0행이면 RLS 무음 거짓성공 대신 실패로 처리
+    const { data: deleted, error } = await supabase.from('job_postings').update({ status: 'deleted' }).eq('id', job.id).select('id')
+    if (error || !deleted || deleted.length === 0) {
+      setToast({ msg: '❌ 삭제 실패: ' + (error?.message ?? '관리자 권한(RLS)을 확인하세요.'), type: 'error' })
+      fetchJobs()  // 화면을 DB 진실과 재동기화
     } else {
       await logAdminAction('job_delete', 'job_posting', job.id,
         { status: 'deleted' },
