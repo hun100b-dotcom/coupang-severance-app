@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { UP } from '../shared/adminTheme'
 import { getSettings, getBlockedIps, patchSetting } from '../../../lib/api'
 import type { SystemSettings, BlockedIp } from '../../../types/admin'
 import DiscordSettings from '../settings/DiscordSettings'
@@ -28,15 +29,15 @@ const FEATURE_KEYS = [
 
 const DEFAULT_PERM_LEVELS: PermLevels = {
   super_admin: {
-    label: '슈퍼 관리자', color: '#f04040',
+    label: '슈퍼 관리자', color: UP.danger,
     permissions: Object.fromEntries(FEATURE_KEYS.map(f => [f.key, true])),
   },
   admin: {
-    label: '관리자', color: '#3182f6',
+    label: '관리자', color: UP.brand,
     permissions: { dashboard:true,target:true,inquiries:true,notices:true,members:true,accounts:false,settings:false,audit_logs:false,server_logs:false },
   },
   viewer: {
-    label: '뷰어', color: '#6b7280',
+    label: '뷰어', color: UP.sub,
     permissions: { dashboard:true,target:false,inquiries:true,notices:false,members:false,accounts:false,settings:false,audit_logs:false,server_logs:false },
   },
 }
@@ -100,25 +101,25 @@ function PermissionLevelsSection({ onSaved }: { onSaved: () => void }) {
     if (levels[key]) { alert('이미 존재하는 키입니다.'); return }
     const updated = {
       ...levels,
-      [key]: { label: key, color: '#6b7280', permissions: Object.fromEntries(FEATURE_KEYS.map(f => [f.key, false])) }
+      [key]: { label: key, color: UP.sub, permissions: Object.fromEntries(FEATURE_KEYS.map(f => [f.key, false])) }
     }
     await saveLevels(updated)
     setNewKey('')
   }
 
-  if (loading) return <div style={cardSt}><p style={titleSt}>권한 레벨 관리</p><p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>로딩 중...</p></div>
+  if (loading) return <div style={cardSt}><p style={titleSt}>권한 레벨 관리</p><p style={{ fontSize: '0.8rem', color: UP.caption }}>로딩 중...</p></div>
 
   return (
     <div style={cardSt}>
-      <p style={titleSt}>권한 레벨 관리 <span style={{ fontSize: '0.7rem', color: '#f04040', fontWeight: 700, marginLeft: 8 }}>● 최고관리자 전용</span></p>
-      <p style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: 16, lineHeight: 1.5 }}>
+      <p style={titleSt}>권한 레벨 관리 <span style={{ fontSize: '0.7rem', color: UP.danger, fontWeight: 700, marginLeft: 8 }}>● 최고관리자 전용</span></p>
+      <p style={{ fontSize: '0.78rem', color: UP.sub, marginBottom: 16, lineHeight: 1.5 }}>
         각 권한 레벨의 이름, 색상, 접근 가능 메뉴를 설정합니다. 변경사항은 관리자 계정 메뉴에 즉시 반영됩니다.
       </p>
 
       {Object.entries(levels).map(([key, lv]) => (
         <div key={key} style={{
           marginBottom: 10, padding: '12px 14px', borderRadius: 10,
-          background: '#f8fafc', border: '1px solid #e2e8f0',
+          background: UP.sunken, border: `1px solid ${UP.hair}`,
         }}>
           {editKey === key && editForm ? (
             <div>
@@ -130,7 +131,7 @@ function PermissionLevelsSection({ onSaved }: { onSaved: () => void }) {
                   style={{ ...inputSm, flex: '1 1 120px' }}
                 />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <label style={{ fontSize: '0.72rem', color: '#64748b' }}>색상</label>
+                  <label style={{ fontSize: '0.72rem', color: UP.sub }}>색상</label>
                   <input
                     type="color"
                     value={editForm.color}
@@ -141,7 +142,7 @@ function PermissionLevelsSection({ onSaved }: { onSaved: () => void }) {
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
                 {FEATURE_KEYS.map(f => (
-                  <label key={f.key} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', color: '#475569', cursor: 'pointer' }}>
+                  <label key={f.key} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', color: UP.body, cursor: 'pointer' }}>
                     <input
                       type="checkbox"
                       checked={!!editForm.permissions[f.key]}
@@ -159,8 +160,8 @@ function PermissionLevelsSection({ onSaved }: { onSaved: () => void }) {
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <span style={{ fontSize: '0.8rem', fontWeight: 700, color: lv.color, background: `${lv.color}18`, padding: '2px 10px', borderRadius: 999 }}>{lv.label}</span>
-              <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>{key}</span>
-              <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+              <span style={{ fontSize: '0.72rem', color: UP.caption }}>{key}</span>
+              <span style={{ fontSize: '0.7rem', color: UP.sub }}>
                 {Object.entries(lv.permissions).filter(([,v]) => v).map(([k]) => k).join(', ') || '권한 없음'}
               </span>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
@@ -184,7 +185,7 @@ function PermissionLevelsSection({ onSaved }: { onSaved: () => void }) {
         />
         <button onClick={addLevel} disabled={saving} style={btnSmPrimary}>+ 추가</button>
       </div>
-      {msg && <p style={{ fontSize: '0.78rem', color: msg.includes('실패') ? '#f04052' : '#00c48c', marginTop: 8 }}>{msg}</p>}
+      {msg && <p style={{ fontSize: '0.78rem', color: msg.includes('실패') ? UP.danger : UP.green, marginTop: 8 }}>{msg}</p>}
     </div>
   )
 }
@@ -225,16 +226,16 @@ function MaskingKeySection() {
 
   return (
     <div style={cardSt}>
-      <p style={titleSt}>개인정보 마스킹 해제 보안키 <span style={{ fontSize: '0.7rem', color: '#f04040', fontWeight: 700, marginLeft: 8 }}>● 최고관리자 전용</span></p>
-      <p style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: 14, lineHeight: 1.5 }}>
+      <p style={titleSt}>개인정보 마스킹 해제 보안키 <span style={{ fontSize: '0.7rem', color: UP.danger, fontWeight: 700, marginLeft: 8 }}>● 최고관리자 전용</span></p>
+      <p style={{ fontSize: '0.78rem', color: UP.sub, marginBottom: 14, lineHeight: 1.5 }}>
         회원 관리 탭에서 이메일/ID 마스킹을 해제할 때 필요한 보안키입니다. 최고관리자만 설정·조회 가능합니다.
       </p>
 
       {!loading && (
-        <div style={{ marginBottom: 14, padding: '10px 12px', borderRadius: 8, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-          <div style={{ fontSize: '0.72rem', color: '#64748b', marginBottom: 4 }}>현재 보안키</div>
+        <div style={{ marginBottom: 14, padding: '10px 12px', borderRadius: 8, background: UP.sunken, border: `1px solid ${UP.hair}` }}>
+          <div style={{ fontSize: '0.72rem', color: UP.sub, marginBottom: 4 }}>현재 보안키</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <code style={{ fontSize: '0.88rem', color: revealed ? '#22c55e' : '#94a3b8', letterSpacing: '0.1em' }}>
+            <code style={{ fontSize: '0.88rem', color: revealed ? UP.green : UP.caption, letterSpacing: '0.1em' }}>
               {currentKey ? (revealed ? currentKey : '●'.repeat(Math.min(currentKey.length, 12))) : '(미설정)'}
             </code>
             {currentKey && (
@@ -246,7 +247,7 @@ function MaskingKeySection() {
         </div>
       )}
 
-      <label style={{ fontSize: '0.75rem', color: '#64748b', display: 'block', marginBottom: 6 }}>
+      <label style={{ fontSize: '0.75rem', color: UP.sub, display: 'block', marginBottom: 6 }}>
         새 보안키 {currentKey ? '(변경)' : '(설정)'}
       </label>
       <div style={{ display: 'flex', gap: 8 }}>
@@ -259,7 +260,7 @@ function MaskingKeySection() {
         />
         <button onClick={save} disabled={saving} style={btnSmPrimary}>{saving ? '저장 중...' : '저장'}</button>
       </div>
-      {msg && <p style={{ fontSize: '0.78rem', color: msg.includes('실패') ? '#f04052' : '#00c48c', marginTop: 8 }}>{msg}</p>}
+      {msg && <p style={{ fontSize: '0.78rem', color: msg.includes('실패') ? UP.danger : UP.green, marginTop: 8 }}>{msg}</p>}
     </div>
   )
 }
@@ -294,15 +295,15 @@ export default function SettingsMenu({ isSuperAdmin }: Props) {
 
   useEffect(() => { reload() }, [])
 
-  if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: '#64748b', fontSize: '0.88rem' }}>설정 로딩 중...</div>
+  if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: UP.sub, fontSize: '0.88rem' }}>설정 로딩 중...</div>
 
   if (error || !settings) {
     return (
       <div style={{ padding: '20px' }}>
-        <div style={{ background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)', borderRadius: 12, padding: '20px', color: '#ff6b6b' }}>
+        <div style={{ background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)', borderRadius: 12, padding: '20px', color: UP.danger }}>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>⚠️ 설정 로드 실패</div>
-          <div style={{ fontSize: '0.82rem', color: '#475569', marginBottom: 12 }}>{error || '데이터를 불러오지 못했습니다.'}</div>
-          <button onClick={reload} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: '#3182f6', color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700 }}>재시도</button>
+          <div style={{ fontSize: '0.82rem', color: UP.body, marginBottom: 12 }}>{error || '데이터를 불러오지 못했습니다.'}</div>
+          <button onClick={reload} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: UP.brand, color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700 }}>재시도</button>
         </div>
       </div>
     )
@@ -311,8 +312,8 @@ export default function SettingsMenu({ isSuperAdmin }: Props) {
   return (
     <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
       <div style={{ marginBottom: 20 }}>
-        <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Settings</h2>
-        <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 2 }}>운영 제어 · Discord · CMS · 법정 변수 · IP 보안</p>
+        <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: UP.navy, margin: 0 }}>Settings</h2>
+        <p style={{ fontSize: '0.75rem', color: UP.sub, marginTop: 2 }}>운영 제어 · Discord · CMS · 법정 변수 · IP 보안</p>
       </div>
 
       <div style={{ maxWidth: 700 }}>
@@ -325,12 +326,12 @@ export default function SettingsMenu({ isSuperAdmin }: Props) {
         {/* 슈퍼어드민 전용 섹션 */}
         {isSuperAdmin && (
           <>
-            <div style={{ margin: '24px 0 14px', borderTop: '1px solid #e2e8f0', paddingTop: 20 }}>
+            <div style={{ margin: '24px 0 14px', borderTop: `1px solid ${UP.hair}`, paddingTop: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <div style={{ width: 3, height: 16, background: '#f04040', borderRadius: 2 }} />
-                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#f04040' }}>최고관리자 전용 설정</span>
+                <div style={{ width: 3, height: 16, background: UP.danger, borderRadius: 2 }} />
+                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: UP.danger }}>최고관리자 전용 설정</span>
               </div>
-              <p style={{ fontSize: '0.72rem', color: '#94a3b8' }}>catchmasterdmin@gmail.com 계정에서만 표시됩니다.</p>
+              <p style={{ fontSize: '0.72rem', color: UP.caption }}>catchmasterdmin@gmail.com 계정에서만 표시됩니다.</p>
             </div>
             <MaskingKeySection />
             <PermissionLevelsSection onSaved={() => {}} />
@@ -341,9 +342,9 @@ export default function SettingsMenu({ isSuperAdmin }: Props) {
   )
 }
 
-const cardSt: React.CSSProperties = { background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 14, padding: '20px', marginBottom: 16 }
-const titleSt: React.CSSProperties = { fontSize: '0.88rem', fontWeight: 700, color: '#475569', marginBottom: 14 }
-const inputSm: React.CSSProperties = { padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#fff', color: '#0f172a', fontSize: '0.83rem', outline: 'none' }
-const btnSmPrimary: React.CSSProperties = { padding: '6px 14px', borderRadius: 8, border: 'none', background: '#3182f6', color: '#fff', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 700 }
-const btnSmOutline: React.CSSProperties = { padding: '6px 12px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#475569', fontSize: '0.78rem', cursor: 'pointer' }
-const btnSmDanger: React.CSSProperties = { padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(240,64,64,0.2)', background: 'rgba(240,64,64,0.08)', color: '#f04052', fontSize: '0.78rem', cursor: 'pointer' }
+const cardSt: React.CSSProperties = { background: UP.sunken, border: `1px solid ${UP.hair}`, borderRadius: 14, padding: '20px', marginBottom: 16 }
+const titleSt: React.CSSProperties = { fontSize: '0.88rem', fontWeight: 700, color: UP.body, marginBottom: 14 }
+const inputSm: React.CSSProperties = { padding: '8px 10px', borderRadius: 8, border: `1px solid ${UP.hair}`, background: '#fff', color: UP.navy, fontSize: '0.83rem', outline: 'none' }
+const btnSmPrimary: React.CSSProperties = { padding: '6px 14px', borderRadius: 8, border: 'none', background: UP.brand, color: '#fff', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 700 }
+const btnSmOutline: React.CSSProperties = { padding: '6px 12px', borderRadius: 8, border: `1px solid ${UP.hair}`, background: UP.sunken, color: UP.body, fontSize: '0.78rem', cursor: 'pointer' }
+const btnSmDanger: React.CSSProperties = { padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(240,64,64,0.2)', background: 'rgba(240,64,64,0.08)', color: UP.danger, fontSize: '0.78rem', cursor: 'pointer' }

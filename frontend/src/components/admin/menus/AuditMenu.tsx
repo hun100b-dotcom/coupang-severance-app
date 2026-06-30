@@ -1,5 +1,6 @@
 // AuditMenu.tsx — 관리자 감사 로그 (audit_logs 테이블)
 import { useState, useEffect, useCallback } from 'react'
+import { UP } from '../shared/adminTheme'
 import { getAuditLogs } from '../../../lib/api'
 import { exportCsv } from '../../../utils/exportCsv'
 
@@ -38,10 +39,10 @@ function DiffView({
 
   // 상태별 색상
   const STATUS_COLOR: Record<string, string> = {
-    added:   '#22c55e',
-    removed: '#ef4444',
-    changed: '#fbbf24',
-    same:    '#64748b',
+    added:   UP.green,
+    removed: UP.danger,
+    changed: UP.amber,
+    same:    UP.sub,
   }
   const STATUS_LABEL: Record<string, string> = {
     added:   '+ 추가',
@@ -55,7 +56,7 @@ function DiffView({
       {/* BEFORE 패널 */}
       {before && (
         <div style={{ flex: 1, minWidth: 200 }}>
-          <div style={{ fontSize: '0.68rem', color: '#ef4444', fontWeight: 700, marginBottom: 4 }}>BEFORE</div>
+          <div style={{ fontSize: '0.68rem', color: UP.danger, fontWeight: 700, marginBottom: 4 }}>BEFORE</div>
           <div style={{
             background: 'rgba(239,68,68,0.05)',
             borderRadius: 8, padding: '8px 10px',
@@ -83,7 +84,7 @@ function DiffView({
       {/* AFTER 패널 */}
       {after && (
         <div style={{ flex: 1, minWidth: 200 }}>
-          <div style={{ fontSize: '0.68rem', color: '#22c55e', fontWeight: 700, marginBottom: 4 }}>AFTER</div>
+          <div style={{ fontSize: '0.68rem', color: UP.green, fontWeight: 700, marginBottom: 4 }}>AFTER</div>
           <div style={{
             background: 'rgba(34,197,94,0.05)',
             borderRadius: 8, padding: '8px 10px',
@@ -126,28 +127,28 @@ interface AuditLogRow {
 const PAGE_SIZE = 50
 
 const ACTION_COLOR: Record<string, string> = {
-  'inquiry.answer':   '#00c48c',
-  'inquiry.status':   '#3182f6',
-  'settings.update':  '#f59e0b',
-  'ip.block':         '#ef4444',
-  'ip.unblock':       '#6b7280',
-  'template.create':  '#8b5cf6',
-  'template.delete':  '#ec4899',
-  'admin.login':      '#06b6d4',
-  'admin.view_dashboard': '#60a5fa',
-  'admin.view_target':    '#34d399',
-  'admin.view_inquiries': '#fbbf24',
-  'admin.view_members':   '#a78bfa',
-  'admin.view_settings':  '#f97316',
-  'admin.view_logs':      '#94a3b8',
-  'unmask_members':   '#ef4444',
-  'answer_inquiry':   '#00c48c',
-  'create_notice':    '#22c55e',
-  'update_notice':    '#f59e0b',
-  'delete_notice':    '#ef4444',
-  'create_account':   '#22c55e',
-  'update_account':   '#f59e0b',
-  'delete_account':   '#ef4444',
+  'inquiry.answer':   UP.green,
+  'inquiry.status':   UP.brand,
+  'settings.update':  UP.amber,
+  'ip.block':         UP.danger,
+  'ip.unblock':       UP.sub,
+  'template.create':  UP.strong,
+  'template.delete':  UP.strong,
+  'admin.login':      UP.brand,
+  'admin.view_dashboard': UP.brand,
+  'admin.view_target':    UP.green,
+  'admin.view_inquiries': UP.amber,
+  'admin.view_members':   UP.strong,
+  'admin.view_settings':  UP.amber,
+  'admin.view_logs':      UP.caption,
+  'unmask_members':   UP.danger,
+  'answer_inquiry':   UP.green,
+  'create_notice':    UP.green,
+  'update_notice':    UP.amber,
+  'delete_notice':    UP.danger,
+  'create_account':   UP.green,
+  'update_account':   UP.amber,
+  'delete_account':   UP.danger,
 }
 
 function actionLabel(action: string) {
@@ -256,10 +257,10 @@ export default function AuditMenu() {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: UP.navy, margin: 0 }}>
             Audit Logs
           </h2>
-          <p style={{ fontSize: '0.78rem', color: '#64748b', marginTop: 2 }}>
+          <p style={{ fontSize: '0.78rem', color: UP.sub, marginTop: 2 }}>
             관리자 행동 감사 기록 (총 {total.toLocaleString()}건)
           </p>
         </div>
@@ -274,7 +275,7 @@ export default function AuditMenu() {
         <div style={{
           background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
           borderRadius: 10, padding: '12px 16px', marginBottom: 16,
-          color: '#cc2233', fontSize: '0.82rem', fontWeight: 600,
+          color: UP.danger, fontSize: '0.82rem', fontWeight: 600,
         }}>
           ⚠️ {error}
         </div>
@@ -284,7 +285,7 @@ export default function AuditMenu() {
       <div style={{
         display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16,
         padding: '14px', borderRadius: 12,
-        background: '#fff', border: '1px solid #e2e8f0',
+        background: '#fff', border: `1px solid ${UP.hair}`,
       }}>
         <input
           type="text" placeholder="관리자 이메일 검색..."
@@ -313,41 +314,41 @@ export default function AuditMenu() {
 
       {/* 로그 목록 */}
       <div style={{
-        background: '#fff', border: '1px solid #e2e8f0',
+        background: '#fff', border: `1px solid ${UP.hair}`,
         borderRadius: 14, overflow: 'hidden',
       }}>
         {loading ? (
-          <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0' }}>로딩 중...</p>
+          <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0' }}>로딩 중...</p>
         ) : logs.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0' }}>조회된 로그가 없습니다.</p>
+          <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0' }}>조회된 로그가 없습니다.</p>
         ) : (
           <>
             {/* PC 테이블 헤더 */}
             <div className="hidden md:grid" style={{
               gridTemplateColumns: '140px 1fr 130px 100px 100px 50px',
-              padding: '10px 16px', borderBottom: '1px solid #f1f5f9',
-              fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8',
+              padding: '10px 16px', borderBottom: `1px solid ${UP.hairSoft}`,
+              fontSize: '0.7rem', fontWeight: 700, color: UP.caption,
               textTransform: 'uppercase', letterSpacing: '0.05em',
             }}>
               <span>시간</span><span>관리자</span><span>액션</span><span>대상</span><span>IP</span><span>상세</span>
             </div>
 
             {logs.map(log => {
-              const color = ACTION_COLOR[log.action] ?? '#60a5fa'
+              const color = ACTION_COLOR[log.action] ?? UP.brand
               const hasDetail = log.before_val || log.after_val
               return (
                 <div key={log.id}>
                   {/* PC 행 */}
                   <div className="hidden md:grid" style={{
                     gridTemplateColumns: '140px 1fr 130px 100px 100px 50px',
-                    padding: '10px 16px', borderBottom: '1px solid #f1f5f9',
+                    padding: '10px 16px', borderBottom: `1px solid ${UP.hairSoft}`,
                     alignItems: 'center', fontSize: '0.82rem',
                   }}>
-                    <span style={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.73rem' }}
+                    <span style={{ color: UP.sub, fontFamily: 'monospace', fontSize: '0.73rem' }}
                       title={fmtDateTime(log.created_at)}>
                       {fmtRelative(log.created_at)}
                     </span>
-                    <span style={{ color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ color: UP.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {log.admin_email}
                     </span>
                     <span style={{
@@ -357,11 +358,11 @@ export default function AuditMenu() {
                     }}>
                       {actionLabel(log.action)}
                     </span>
-                    <span style={{ color: '#64748b', fontSize: '0.73rem' }}>
+                    <span style={{ color: UP.sub, fontSize: '0.73rem' }}>
                       {log.target_type ?? '-'}
                       {log.target_id ? ` #${log.target_id.length > 8 ? log.target_id.slice(0, 8) : log.target_id}` : ''}
                     </span>
-                    <span style={{ color: '#94a3b8', fontSize: '0.73rem', fontFamily: 'monospace' }}>
+                    <span style={{ color: UP.caption, fontSize: '0.73rem', fontFamily: 'monospace' }}>
                       {log.ip_address ?? '-'}
                     </span>
                     {hasDetail ? (
@@ -370,7 +371,7 @@ export default function AuditMenu() {
                         {expanded[log.id] ? '▲' : '▼'}
                       </button>
                     ) : (
-                      <span style={{ color: '#cbd5e1', fontSize: '0.72rem' }}>-</span>
+                      <span style={{ color: UP.caption, fontSize: '0.72rem' }}>-</span>
                     )}
                   </div>
 
@@ -378,7 +379,7 @@ export default function AuditMenu() {
                   {expanded[log.id] && hasDetail && (
                     <div className="hidden md:block" style={{
                       padding: '8px 16px 12px',
-                      borderBottom: '1px solid #f1f5f9',
+                      borderBottom: `1px solid ${UP.hairSoft}`,
                       background: 'rgba(49,130,246,0.04)',
                     }}>
                       <DiffView before={log.before_val} after={log.after_val} />
@@ -386,16 +387,16 @@ export default function AuditMenu() {
                   )}
 
                   {/* 모바일 카드 */}
-                  <div className="md:hidden" style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9' }}>
+                  <div className="md:hidden" style={{ padding: '12px 16px', borderBottom: `1px solid ${UP.hairSoft}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                       <span style={{ fontSize: '0.7rem', fontWeight: 700, color, background: `${color}18`, padding: '2px 7px', borderRadius: 999 }}>
                         {actionLabel(log.action)}
                       </span>
-                      <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{fmtRelative(log.created_at)}</span>
+                      <span style={{ fontSize: '0.7rem', color: UP.sub }}>{fmtRelative(log.created_at)}</span>
                     </div>
-                    <div style={{ fontSize: '0.82rem', color: '#0f172a', marginBottom: 2, wordBreak: 'break-all' }}>{log.admin_email}</div>
+                    <div style={{ fontSize: '0.82rem', color: UP.navy, marginBottom: 2, wordBreak: 'break-all' }}>{log.admin_email}</div>
                     {log.target_type && (
-                      <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                      <div style={{ fontSize: '0.72rem', color: UP.sub }}>
                         대상: {log.target_type} {log.target_id ? `· #${log.target_id.slice(0, 8)}` : ''}
                       </div>
                     )}
@@ -424,7 +425,7 @@ export default function AuditMenu() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
             style={{ ...outlineBtn, opacity: page === 1 ? 0.4 : 1 }}>← 이전</button>
-          <span style={{ color: '#64748b', fontSize: '0.82rem', padding: '7px 12px' }}>
+          <span style={{ color: UP.sub, fontSize: '0.82rem', padding: '7px 12px' }}>
             {page} / {totalPages}
           </span>
           <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
@@ -436,15 +437,15 @@ export default function AuditMenu() {
 }
 
 const outlineBtn: React.CSSProperties = {
-  padding: '7px 14px', borderRadius: 8, border: '1px solid #e2e8f0',
-  background: '#f8fafc', color: '#475569',
+  padding: '7px 14px', borderRadius: 8, border: `1px solid ${UP.hair}`,
+  background: UP.sunken, color: UP.body,
   fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600,
 }
 const primaryBtn: React.CSSProperties = {
   padding: '7px 16px', borderRadius: 8, border: 'none',
-  background: '#3182f6', color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700,
+  background: UP.brand, color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700,
 }
 const filterInput: React.CSSProperties = {
-  padding: '8px 12px', borderRadius: 8, border: '1px solid #e2e8f0',
-  background: '#fff', color: '#0f172a', fontSize: '0.82rem', outline: 'none',
+  padding: '8px 12px', borderRadius: 8, border: `1px solid ${UP.hair}`,
+  background: '#fff', color: UP.navy, fontSize: '0.82rem', outline: 'none',
 }

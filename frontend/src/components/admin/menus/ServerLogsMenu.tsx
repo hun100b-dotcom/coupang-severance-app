@@ -1,6 +1,7 @@
 // ServerLogsMenu.tsx — 서버/시스템 로그 (실시간 연동)
 // system_logs: DB 트리거 기반 자동 기록 + Supabase Realtime 구독
 import { useCallback, useEffect, useState, useRef } from 'react'
+import { UP } from '../shared/adminTheme'
 import { supabase } from '../../../lib/supabase'
 import { getAuditLogs } from '../../../lib/api'
 import type { AuditLog } from '../../../types/admin'
@@ -17,13 +18,13 @@ interface SystemLog {
 }
 
 const TYPE_META: Record<string, { color: string; bg: string; label: string; icon: string }> = {
-  DEPLOY:    { color: '#22c55e', bg: 'rgba(34,197,94,0.12)',   label: 'DEPLOY',    icon: '🚀' },
-  FIX:       { color: '#f08c00', bg: 'rgba(240,140,0,0.12)',   label: 'FIX',       icon: '🔧' },
-  ERROR:     { color: '#f04040', bg: 'rgba(240,64,64,0.12)',   label: 'ERROR',     icon: '❌' },
-  SECURITY:  { color: '#a78bfa', bg: 'rgba(167,139,250,0.12)', label: 'SECURITY',  icon: '🔒' },
-  MIGRATION: { color: '#00c48c', bg: 'rgba(0,196,140,0.12)',   label: 'MIGRATION', icon: '📦' },
-  INFO:      { color: '#60a5fa', bg: 'rgba(96,165,250,0.12)',  label: 'INFO',      icon: 'ℹ️' },
-  WARNING:   { color: '#fbbf24', bg: 'rgba(251,191,36,0.12)',  label: 'WARNING',   icon: '⚠️' },
+  DEPLOY:    { color: UP.green, bg: 'rgba(34,197,94,0.12)',   label: 'DEPLOY',    icon: '🚀' },
+  FIX:       { color: UP.amber, bg: 'rgba(240,140,0,0.12)',   label: 'FIX',       icon: '🔧' },
+  ERROR:     { color: UP.danger, bg: 'rgba(240,64,64,0.12)',   label: 'ERROR',     icon: '❌' },
+  SECURITY:  { color: UP.strong, bg: 'rgba(167,139,250,0.12)', label: 'SECURITY',  icon: '🔒' },
+  MIGRATION: { color: UP.green, bg: 'rgba(0,196,140,0.12)',   label: 'MIGRATION', icon: '📦' },
+  INFO:      { color: UP.brand, bg: 'rgba(96,165,250,0.12)',  label: 'INFO',      icon: 'ℹ️' },
+  WARNING:   { color: UP.amber, bg: 'rgba(251,191,36,0.12)',  label: 'WARNING',   icon: '⚠️' },
 }
 
 function fmtDate(iso: string) {
@@ -154,8 +155,8 @@ export default function ServerLogsMenu() {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 18, gap: 10, flexWrap: 'wrap' }}>
         <div>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Server Logs</h2>
-          <p style={{ fontSize: '0.73rem', color: '#64748b', marginTop: 2 }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: UP.navy, margin: 0 }}>Server Logs</h2>
+          <p style={{ fontSize: '0.73rem', color: UP.sub, marginTop: 2 }}>
             배포 이력 · 시스템 이벤트 · 관리자 작업 로그
           </p>
         </div>
@@ -166,14 +167,14 @@ export default function ServerLogsMenu() {
             style={{
               padding: '5px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
               fontSize: '0.73rem', fontWeight: 700,
-              background: isLive ? 'rgba(34,197,94,0.15)' : '#f8fafc',
-              color: isLive ? '#22c55e' : '#94a3b8',
+              background: isLive ? 'rgba(34,197,94,0.15)' : UP.sunken,
+              color: isLive ? UP.green : UP.caption,
               transition: 'all 0.15s',
             }}
           >
             <span style={{
               display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
-              background: isLive ? '#22c55e' : '#94a3b8',
+              background: isLive ? UP.green : UP.caption,
               marginRight: 5, verticalAlign: 'middle',
               animation: isLive ? 'pulse 1.5s ease-in-out infinite' : 'none',
             }} />
@@ -190,15 +191,15 @@ export default function ServerLogsMenu() {
       </div>
 
       {/* 탭 */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: '#f8fafc', borderRadius: 10, padding: 4, width: 'fit-content' }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: UP.sunken, borderRadius: 10, padding: 4, width: 'fit-content' }}>
         {[
           { key: 'system', label: '시스템 / 배포 로그', icon: '🔧' },
           { key: 'audit',  label: '관리자 작업 로그',   icon: '📋' },
         ].map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key as 'system' | 'audit')} style={{
             padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
-            background: activeTab === tab.key ? '#3182f6' : 'transparent',
-            color: activeTab === tab.key ? '#fff' : '#64748b',
+            background: activeTab === tab.key ? UP.brand : 'transparent',
+            color: activeTab === tab.key ? '#fff' : UP.sub,
             fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.15s',
           }}>
             {tab.icon} {tab.label}
@@ -231,14 +232,14 @@ export default function ServerLogsMenu() {
                   </span>
                 )
               })}
-              <span style={{ fontSize: '0.73rem', color: '#94a3b8' }}>
+              <span style={{ fontSize: '0.73rem', color: UP.caption }}>
                 총 {sysTotal}건
               </span>
             </div>
           </div>
 
           <div style={{
-            background: '#fff', border: '1px solid #e2e8f0',
+            background: '#fff', border: `1px solid ${UP.hair}`,
             borderRadius: 12, overflow: 'hidden',
           }}>
             {/* 컬럼 헤더 */}
@@ -246,9 +247,9 @@ export default function ServerLogsMenu() {
               gridTemplateColumns: '80px 1fr 80px 140px',
               gap: 8, padding: '8px 16px',
               background: '#fff',
-              borderBottom: '1px solid #f1f5f9',
+              borderBottom: `1px solid ${UP.hairSoft}`,
               fontSize: '0.68rem', fontWeight: 700,
-              color: '#94a3b8',
+              color: UP.caption,
               textTransform: 'uppercase', letterSpacing: '0.04em',
             }}>
               <span>타입</span><span>내용</span><span>버전</span><span>일시</span>
@@ -257,15 +258,15 @@ export default function ServerLogsMenu() {
             {sysLoading ? (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
                 <div style={{
-                  width: 24, height: 24, border: '2px solid #e2e8f0',
-                  borderTopColor: '#3182f6', borderRadius: '50%',
+                  width: 24, height: 24, border: `2px solid ${UP.hair}`,
+                  borderTopColor: UP.brand, borderRadius: '50%',
                   animation: 'spin 0.8s linear infinite', margin: '0 auto 12px',
                 }} />
                 <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-                <p style={{ color: '#94a3b8', fontSize: '0.82rem' }}>로딩 중...</p>
+                <p style={{ color: UP.caption, fontSize: '0.82rem' }}>로딩 중...</p>
               </div>
             ) : sysLogs.length === 0 ? (
-              <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0', fontSize: '0.85rem' }}>로그 없음</p>
+              <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>로그 없음</p>
             ) : sysLogs.map(log => {
               const meta = TYPE_META[log.type] ?? TYPE_META.INFO
               const isNew = newLogIds.has(log.id)
@@ -290,7 +291,7 @@ export default function ServerLogsMenu() {
                   <div className="hidden md:grid" style={{
                     gridTemplateColumns: '80px 1fr 80px 100px 40px',
                     gap: 8, padding: '10px 16px',
-                    borderBottom: isExpanded ? 'none' : '1px solid #f1f5f9',
+                    borderBottom: isExpanded ? 'none' : `1px solid ${UP.hairSoft}`,
                     alignItems: 'start',
                     background: isNew ? 'rgba(34,197,94,0.06)' : 'transparent',
                     transition: 'background 0.5s',
@@ -307,7 +308,7 @@ export default function ServerLogsMenu() {
                     </span>
                     <div>
                       <div style={{
-                        fontSize: '0.82rem', color: '#0f172a',
+                        fontSize: '0.82rem', color: UP.navy,
                         fontWeight: 500, lineHeight: 1.4,
                         display: 'flex', alignItems: 'center', gap: 6,
                       }}>
@@ -315,29 +316,29 @@ export default function ServerLogsMenu() {
                         {isNew && (
                           <span style={{
                             fontSize: '0.58rem', fontWeight: 800,
-                            color: '#22c55e', background: 'rgba(34,197,94,0.15)',
+                            color: UP.green, background: 'rgba(34,197,94,0.15)',
                             padding: '1px 5px', borderRadius: 4,
                           }}>NEW</span>
                         )}
                       </div>
                       {log.detail?.desc && (
-                        <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 2 }}>{log.detail.desc}</div>
+                        <div style={{ fontSize: '0.72rem', color: UP.sub, marginTop: 2 }}>{log.detail.desc}</div>
                       )}
                       {sourceLabel && (
-                        <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: 1 }}>via {sourceLabel}</div>
+                        <div style={{ fontSize: '0.65rem', color: UP.caption, marginTop: 1 }}>via {sourceLabel}</div>
                       )}
                     </div>
-                    <span style={{ fontSize: '0.72rem', color: log.app_version ? '#60a5fa' : '#94a3b8' }}>
+                    <span style={{ fontSize: '0.72rem', color: log.app_version ? UP.brand : UP.caption }}>
                       {log.app_version ?? '—'}
                     </span>
-                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}
+                    <span style={{ fontSize: '0.7rem', color: UP.sub }}
                       title={fmtDate(log.created_at)}>
                       {fmtRelative(log.created_at)}
                     </span>
                     {/* 아코디언 펼침 버튼 — detail 추가 필드가 있을 때만 표시 */}
                     {hasExtra ? (
                       <span style={{
-                        fontSize: '0.7rem', color: '#64748b',
+                        fontSize: '0.7rem', color: UP.sub,
                         userSelect: 'none', textAlign: 'center', paddingTop: 2,
                       }}>
                         {isExpanded ? '▲' : '▼'}
@@ -351,14 +352,14 @@ export default function ServerLogsMenu() {
                   {isExpanded && hasExtra && (
                     <div className="hidden md:block" style={{
                       padding: '8px 16px 12px',
-                      borderBottom: '1px solid #f1f5f9',
+                      borderBottom: `1px solid ${UP.hairSoft}`,
                       background: 'rgba(49,130,246,0.04)',
                     }}>
-                      <div style={{ fontSize: '0.68rem', color: '#60a5fa', fontWeight: 700, marginBottom: 4 }}>
+                      <div style={{ fontSize: '0.68rem', color: UP.brand, fontWeight: 700, marginBottom: 4 }}>
                         DETAIL
                       </div>
                       <pre style={{
-                        fontSize: '0.72rem', color: '#475569',
+                        fontSize: '0.72rem', color: UP.body,
                         fontFamily: 'JetBrains Mono, monospace',
                         whiteSpace: 'pre-wrap', wordBreak: 'break-all',
                         margin: 0,
@@ -373,7 +374,7 @@ export default function ServerLogsMenu() {
                   {/* 모바일 카드 */}
                   <div className="md:hidden" style={{
                     padding: '12px 16px',
-                    borderBottom: '1px solid #f1f5f9',
+                    borderBottom: `1px solid ${UP.hairSoft}`,
                     background: isNew ? 'rgba(34,197,94,0.06)' : 'transparent',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -385,17 +386,17 @@ export default function ServerLogsMenu() {
                       }}>
                         {meta.icon} {meta.label}
                       </span>
-                      <span style={{ fontSize: '0.68rem', color: '#64748b' }}>{fmtRelative(log.created_at)}</span>
+                      <span style={{ fontSize: '0.68rem', color: UP.sub }}>{fmtRelative(log.created_at)}</span>
                     </div>
-                    <div style={{ fontSize: '0.82rem', color: '#0f172a', fontWeight: 500, lineHeight: 1.4 }}>
+                    <div style={{ fontSize: '0.82rem', color: UP.navy, fontWeight: 500, lineHeight: 1.4 }}>
                       {log.title}
-                      {isNew && <span style={{ fontSize: '0.58rem', fontWeight: 800, color: '#22c55e', marginLeft: 6 }}>NEW</span>}
+                      {isNew && <span style={{ fontSize: '0.58rem', fontWeight: 800, color: UP.green, marginLeft: 6 }}>NEW</span>}
                     </div>
                     {log.detail?.desc && (
-                      <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 2 }}>{log.detail.desc}</div>
+                      <div style={{ fontSize: '0.72rem', color: UP.sub, marginTop: 2 }}>{log.detail.desc}</div>
                     )}
                     {log.app_version && (
-                      <span style={{ fontSize: '0.68rem', color: '#60a5fa', marginTop: 2, display: 'inline-block' }}>{log.app_version}</span>
+                      <span style={{ fontSize: '0.68rem', color: UP.brand, marginTop: 2, display: 'inline-block' }}>{log.app_version}</span>
                     )}
                     {/* 모바일 아코디언 버튼 */}
                     {hasExtra && (
@@ -408,7 +409,7 @@ export default function ServerLogsMenu() {
                         {isExpanded && (
                           <pre style={{
                             marginTop: 6, fontSize: '0.68rem',
-                            color: '#64748b',
+                            color: UP.sub,
                             fontFamily: 'JetBrains Mono, monospace',
                             whiteSpace: 'pre-wrap', wordBreak: 'break-all',
                             background: 'rgba(49,130,246,0.05)', borderRadius: 8, padding: 8,
@@ -428,7 +429,7 @@ export default function ServerLogsMenu() {
           {totalSysPages > 1 && (
             <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 12 }}>
               <button onClick={() => setSysPage(p => Math.max(1, p - 1))} disabled={sysPage === 1} style={outlineBtn}>‹</button>
-              <span style={{ fontSize: '0.8rem', color: '#64748b', alignSelf: 'center' }}>{sysPage} / {totalSysPages}</span>
+              <span style={{ fontSize: '0.8rem', color: UP.sub, alignSelf: 'center' }}>{sysPage} / {totalSysPages}</span>
               <button onClick={() => setSysPage(p => Math.min(totalSysPages, p + 1))} disabled={sysPage === totalSysPages} style={outlineBtn}>›</button>
             </div>
           )}
@@ -447,9 +448,9 @@ export default function ServerLogsMenu() {
             <button onClick={() => { setAuditAction(''); setAuditStart(''); setAuditEnd(''); setAuditPage(1) }} style={outlineBtn}>초기화</button>
           </div>
 
-          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14, overflow: 'hidden' }}>
+          <div style={{ background: '#fff', border: `1px solid ${UP.hair}`, borderRadius: 12, padding: 14, overflow: 'hidden' }}>
             {auditLoading ? (
-              <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0', fontSize: '0.85rem' }}>로딩 중...</p>
+              <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>로딩 중...</p>
             ) : (
               <AuditLogTable logs={auditLogs} total={auditTotal} page={auditPage} onPageChange={setAuditPage} />
             )}
@@ -462,14 +463,14 @@ export default function ServerLogsMenu() {
 
 const outlineBtn: React.CSSProperties = {
   padding: '6px 12px', borderRadius: 8,
-  border: '1px solid #e2e8f0',
-  background: '#f8fafc',
-  color: '#475569', fontSize: '0.78rem', cursor: 'pointer',
+  border: `1px solid ${UP.hair}`,
+  background: UP.sunken,
+  color: UP.body, fontSize: '0.78rem', cursor: 'pointer',
 }
 const selectSt: React.CSSProperties = {
-  background: '#f8fafc',
-  border: '1px solid #e2e8f0',
+  background: UP.sunken,
+  border: `1px solid ${UP.hair}`,
   borderRadius: 8, padding: '6px 10px',
-  fontSize: '0.82rem', color: '#475569',
+  fontSize: '0.82rem', color: UP.body,
   outline: 'none', cursor: 'pointer',
 }

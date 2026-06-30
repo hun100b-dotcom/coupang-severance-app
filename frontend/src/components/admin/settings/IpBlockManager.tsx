@@ -1,5 +1,6 @@
 ﻿import { useState } from 'react'
 import type { BlockedIp } from '../../../types/admin'
+import { UP } from '../shared/adminTheme'
 import { blockIp, unblockIp } from '../../../lib/api'
 
 interface Props {
@@ -54,7 +55,7 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
 
       {/* 에러 표시 (차단/해제 실패) */}
       {error && (
-        <p style={{ fontSize: '0.78rem', color: '#cc2233', marginBottom: 12, fontWeight: 600 }}>
+        <p style={{ fontSize: '0.78rem', color: UP.danger, marginBottom: 12, fontWeight: 600 }}>
           ⚠️ {error}
         </p>
       )}
@@ -64,16 +65,16 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
           <input value={ipAddr} onChange={e => setIpAddr(e.target.value)} placeholder="IP 주소 (예: 1.2.3.4)" style={{ ...inputStyle, marginBottom: 8 }} />
           <input value={reason} onChange={e => setReason(e.target.value)} placeholder="차단 사유 (선택)" style={inputStyle} />
           <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-            <button onClick={handleBlock} disabled={saving} style={{ ...btnStyle, background: '#cc2233' }}>
+            <button onClick={handleBlock} disabled={saving} style={{ ...btnStyle, background: UP.danger }}>
               {saving ? '처리 중...' : '차단 적용'}
             </button>
-            <button onClick={() => { setShowForm(false); setError(null) }} style={{ ...btnStyle, background: '#f1f5f9', color: '#64748b' }}>취소</button>
+            <button onClick={() => { setShowForm(false); setError(null) }} style={{ ...btnStyle, background: UP.hairSoft, color: UP.sub }}>취소</button>
           </div>
         </div>
       )}
 
       {ips.length === 0 && !showForm && (
-        <p style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', padding: '16px 0' }}>
+        <p style={{ fontSize: '0.82rem', color: UP.sub, textAlign: 'center', padding: '16px 0' }}>
           차단된 IP가 없습니다.
         </p>
       )}
@@ -81,10 +82,10 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {ips.map(ip => (
           <div key={ip.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(240,68,82,0.05)', borderRadius: 8, border: '1px solid rgba(240,68,82,0.1)' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#cc2233', flex: 1 }}>{ip.ip_address}</span>
-            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{ip.reason ?? '사유 없음'}</span>
-            <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>~{fmt(ip.expires_at)}</span>
-            <button onClick={() => handleUnblock(ip.id)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '0.82rem' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: UP.danger, flex: 1 }}>{ip.ip_address}</span>
+            <span style={{ fontSize: '0.75rem', color: UP.sub }}>{ip.reason ?? '사유 없음'}</span>
+            <span style={{ fontSize: '0.72rem', color: UP.caption }}>~{fmt(ip.expires_at)}</span>
+            <button onClick={() => handleUnblock(ip.id)} style={{ background: 'none', border: 'none', color: UP.sub, cursor: 'pointer', fontSize: '0.82rem' }}>
               해제
             </button>
           </div>
@@ -95,19 +96,19 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: '#f8fafc',
-  border: '1px solid #e2e8f0',
+  background: UP.sunken,
+  border: `1px solid ${UP.hair}`,
   borderRadius: 14, padding: '20px', marginBottom: 16,
 }
 const titleStyle: React.CSSProperties = {
-  fontSize: '0.88rem', fontWeight: 700, color: '#475569',
+  fontSize: '0.88rem', fontWeight: 700, color: UP.body,
 }
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0',
-  borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: '#0f172a',
+  width: '100%', background: UP.sunken, border: `1px solid ${UP.hair}`,
+  borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: UP.navy,
   outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
 }
 const btnStyle: React.CSSProperties = {
-  padding: '6px 14px', borderRadius: 8, border: 'none', background: '#3182f6',
+  padding: '6px 14px', borderRadius: 8, border: 'none', background: UP.brand,
   color: '#fff', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
 }

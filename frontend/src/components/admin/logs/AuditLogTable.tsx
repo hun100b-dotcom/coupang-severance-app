@@ -1,5 +1,6 @@
 ﻿import type { AuditLog } from '../../../types/admin'
 import { exportCsv } from '../../../utils/exportCsv'
+import { UP } from '../shared/adminTheme'
 import { exportXlsx } from '../../../utils/exportXlsx'
 
 interface Props {
@@ -10,13 +11,13 @@ interface Props {
 }
 
 const ACTION_COLOR: Record<string, string> = {
-  'inquiry.answer':   '#00c48c',
-  'inquiry.status':   '#3182f6',
-  'settings.update':  '#f08c00',
-  'ip.block':         '#cc2233',
-  'ip.unblock':       '#94a3b8',
-  'template.create':  '#6c5ce7',
-  'template.delete':  '#fd79a8',
+  'inquiry.answer':   UP.green,
+  'inquiry.status':   UP.brand,
+  'settings.update':  UP.amber,
+  'ip.block':         UP.danger,
+  'ip.unblock':       UP.caption,
+  'template.create':  UP.strong,
+  'template.delete':  UP.danger,
 }
 
 function fmt(iso: string) {
@@ -52,7 +53,7 @@ export default function AuditLogTable({ logs, total, page, onPageChange }: Props
   return (
     <div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        <span style={{ fontSize: '0.82rem', color: '#64748b', flex: 1 }}>
+        <span style={{ fontSize: '0.82rem', color: UP.sub, flex: 1 }}>
           전체 {total}건
         </span>
         <button onClick={handleExportCsv} style={exportBtn}>CSV 다운로드</button>
@@ -62,9 +63,9 @@ export default function AuditLogTable({ logs, total, page, onPageChange }: Props
       <div style={{ overflow: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+            <tr style={{ borderBottom: `1px solid ${UP.hairSoft}` }}>
               {['시간', '관리자', '행동', '대상', 'IP'].map(h => (
-                <th key={h} style={{ padding: '8px 10px', textAlign: 'left', color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                <th key={h} style={{ padding: '8px 10px', textAlign: 'left', color: UP.sub, fontWeight: 600, whiteSpace: 'nowrap' }}>
                   {h}
                 </th>
               ))}
@@ -72,15 +73,15 @@ export default function AuditLogTable({ logs, total, page, onPageChange }: Props
           </thead>
           <tbody>
             {logs.map(log => (
-              <tr key={log.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '8px 10px', color: '#64748b', whiteSpace: 'nowrap' }}>{fmt(log.created_at)}</td>
-                <td style={{ padding: '8px 10px', color: '#475569', whiteSpace: 'nowrap' }}>{log.admin_email.split('@')[0]}</td>
+              <tr key={log.id} style={{ borderBottom: `1px solid ${UP.hairSoft}` }}>
+                <td style={{ padding: '8px 10px', color: UP.sub, whiteSpace: 'nowrap' }}>{fmt(log.created_at)}</td>
+                <td style={{ padding: '8px 10px', color: UP.body, whiteSpace: 'nowrap' }}>{log.admin_email.split('@')[0]}</td>
                 <td style={{ padding: '8px 10px' }}>
                   <span style={{
                     fontSize: '0.72rem',
                     fontWeight: 700,
-                    color: ACTION_COLOR[log.action] ?? '#64748b',
-                    background: `${ACTION_COLOR[log.action] ?? '#64748b'}18`,
+                    color: ACTION_COLOR[log.action] ?? UP.sub,
+                    background: `${ACTION_COLOR[log.action] ?? UP.sub}18`,
                     padding: '2px 8px',
                     borderRadius: 999,
                     whiteSpace: 'nowrap',
@@ -88,10 +89,10 @@ export default function AuditLogTable({ logs, total, page, onPageChange }: Props
                     {log.action}
                   </span>
                 </td>
-                <td style={{ padding: '8px 10px', color: '#64748b', whiteSpace: 'nowrap' }}>
+                <td style={{ padding: '8px 10px', color: UP.sub, whiteSpace: 'nowrap' }}>
                   {log.target_type} {log.target_id ? `#${log.target_id.slice(0, 8)}` : ''}
                 </td>
-                <td style={{ padding: '8px 10px', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+                <td style={{ padding: '8px 10px', color: UP.caption, whiteSpace: 'nowrap' }}>
                   {log.ip_address ?? '-'}
                 </td>
               </tr>
@@ -99,7 +100,7 @@ export default function AuditLogTable({ logs, total, page, onPageChange }: Props
           </tbody>
         </table>
         {logs.length === 0 && (
-          <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0', fontSize: '0.85rem' }}>
+          <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>
             로그가 없습니다.
           </p>
         )}
@@ -115,8 +116,8 @@ export default function AuditLogTable({ logs, total, page, onPageChange }: Props
                 padding: '4px 10px',
                 borderRadius: 6,
                 border: 'none',
-                background: p === page ? '#3182f6' : '#f1f5f9',
-                color: p === page ? '#fff' : '#64748b',
+                background: p === page ? UP.brand : UP.hairSoft,
+                color: p === page ? '#fff' : UP.sub,
                 fontSize: '0.78rem',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -132,7 +133,7 @@ export default function AuditLogTable({ logs, total, page, onPageChange }: Props
 }
 
 const exportBtn: React.CSSProperties = {
-  padding: '5px 12px', borderRadius: 7, border: '1px solid #e2e8f0',
-  background: '#f8fafc', color: '#475569',
+  padding: '5px 12px', borderRadius: 7, border: `1px solid ${UP.hair}`,
+  background: UP.sunken, color: UP.body,
   fontSize: '0.75rem', cursor: 'pointer',
 }
