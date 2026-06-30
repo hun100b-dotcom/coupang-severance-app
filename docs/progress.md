@@ -16,7 +16,7 @@ PDF 급여명세서 업로드로 정밀 계산하거나, 수동 입력으로 간
 카카오·Google 소셜 로그인 지원, 계산 결과 저장·공유 기능 포함.
 
 - **프로덕션**: https://catch-daily-worker.vercel.app
-- **API 문서**: https://coupang-severance-api.onrender.com/docs
+- **API 문서**: https://coupang-severance-app.onrender.com/docs
 - **슈퍼어드민**: catchmasterdmin@gmail.com
 
 ---
@@ -235,7 +235,7 @@ c7f0189  fix(mobile)+test(e2e): CalcLayout/ApplyFormModal 반응형 + E2E 3종
 
 **인프라 상태**
 - 프로덕션: ✅ https://catch-daily-worker.vercel.app (최신 커밋 c44990b 반영)
-- API: ✅ https://coupang-severance-api.onrender.com
+- API: ✅ https://coupang-severance-app.onrender.com
 - 콜드스타트 방지: ✅ GitHub Actions 크론 (15분 주기 핑)
 - OG 메타태그: ✅ 카카오/슬랙 공유 대응
 - JSON-LD 구조화 데이터: ✅ WebApplication + FAQ/HowTo 스키마
@@ -265,7 +265,7 @@ c7f0189  fix(mobile)+test(e2e): CalcLayout/ApplyFormModal 반응형 + E2E 3종
 
 ### 환경변수 주의
 - 개발 환경: `VITE_API_URL` = 빈 문자열 (Vite 프록시 `/api/*` → `localhost:8000`)
-- 프로덕션: `VITE_API_URL` = `https://coupang-severance-api.onrender.com`
+- 프로덕션: `VITE_API_URL` = `https://coupang-severance-app.onrender.com`
 - OAuth 콜백 URL은 Supabase URL(`*.supabase.co/auth/v1/callback`)이며 앱 도메인 아님
 
 ### 미완료 태스크
