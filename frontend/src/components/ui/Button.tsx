@@ -19,9 +19,10 @@ const VARIANT: Record<Variant, string> = {
 
 const SIZE: Record<Size, string> = {
   // 접근성: 최소 터치 타겟 44px 확보 (md/lg는 자동 충족, sm은 min-h로 보장)
+  // Phase 3 업스케일: 주 CTA(lg) 54→56px, 폰트 16→17px (홈에서 검증된 큼직한 CTA 톤)
   sm: 'min-h-[40px] px-3 text-[14px] rounded-md',
   md: 'min-h-[48px] px-5 text-[15px] rounded-md',
-  lg: 'min-h-[54px] px-6 text-[16px] rounded-lg',
+  lg: 'min-h-[56px] px-6 text-[17px] rounded-lg',
 }
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {

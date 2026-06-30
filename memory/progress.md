@@ -6,6 +6,21 @@
 
 ---
 
+## 🎨 업비트풍 리디자인 — 분석+워크트리 단계 (redesign/upbit-home, 2026-06-30, 로컬 커밋·미푸시)
+
+> 종훈님 목표: 홈+전역 웹디자인을 **업비트 "홈"** 비주얼 언어로 재정립. 거래소(시세표/차트/주문창) UI는 차용 대상 아님. **순서 = 정밀분석 → 전문가 워크트리 먼저 보고 → 종훈님 승인 후 시안 코딩.** main 무수정·계산로직 불변.
+
+**산출물(커밋, redesign/upbit-home 브랜치):**
+- `docs/design/upbit_home_analysis.md` — upbit.com/home **라이브 실측**(크롬확장 getComputedStyle): 컨테이너 1360px·헤더80px·히어로36px/700(lh1.5)·CTA #0062DF radius**4px**·텍스트위계(본문#333/헤딩#1A2434/보조#565D6A/캡션#8E929B/비활성#BEC1C6)·배경(page#E9ECF1/구획#F2F5FA/카드흰)·등락 빨강#DD3C44·파랑#003597. 디자인원리 5개(절제색·또렷위계·평평면+헤어라인·숫자우선·수직정렬).
+- `docs/design/upbit_redesign_worktree.md` — **Phase 0~5 실행 분해**(토큰정의→홈완성→전역전환→화면순차→마감) + 게이트 + 리스크레지스터 + 종훈님 결정사항 5개(배경강도·radius4vs8·숫자mono·밀도vs가독성·롤아웃범위).
+- 선행 홈 프로토타입 `Home.tsx`(탐색·검증용, 기존 로직 100% 보존): 지표스트립·계산기5행리스트·채용행·공지사이드·남색가이드. tsc0·320/375/1280 오버플로0(실제 320px grid-cols-1 누락 잘림버그 1건 발견·수정).
+- 더블리뷰 `docs/dual_review/upbit_home_{A,B}.md`: A=조건부PASS, B=FAIL(공통: 회색 #8B95A1 본문 AA미달→#565D6A로, 임금색 brand→strong, 뱃지대비, 공지 FOUC, center_name/benefits 정보회귀). → **교훈을 워크트리 Phase2 체크리스트에 선반영**.
+- 백업: 태그 `pre-upbit-redesign-2026-06-30`.
+
+**다음:** ▶ 종훈님 **워크트리 승인** → Phase1(토큰확정) → Phase2(홈 완성형, 리뷰교훈 클리어) → 승인 후 전역. 로컬 dev **5173** 라이브(게스트 진입).
+
+---
+
 ## 🛠️ 어드민 전수조사 FIX (2026-06-29, main 푸시 완료)
 
 > 근거: `docs/audit/admin_function_audit_2026-06-29.md`. 공통 병폐 = 프론트가 Supabase 직접 호출 시 `.select()` 누락 → RLS 0행 차단이 `error=null`로 무음 통과(거짓 성공). 처치 = 백엔드 service-role 경로 통일 또는 `.select()`+검증+에러표시+refetch. 각 묶음 더블리뷰(A총괄+B적대) → `docs/dual_review/fix*.md`.

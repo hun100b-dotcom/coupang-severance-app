@@ -59,7 +59,7 @@ export default function TopNav() {
   return (
     // 상단 고정 바: 흰 배경 + 토큰 보더 + z-50
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-line">
-      <div className="w-full max-w-[1080px] mx-auto px-4 md:px-6 h-14 flex items-center justify-between gap-4">
+      <div className="w-full max-w-content mx-auto px-5 md:px-8 h-14 flex items-center justify-between gap-4">
 
         {/* ── 좌측: CATCH 로고 ── */}
         <button

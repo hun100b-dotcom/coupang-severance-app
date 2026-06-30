@@ -8,6 +8,14 @@
       "port": 5173,
       "autoPort": true,
       "cwd": "frontend"
+    },
+    {
+      "name": "frontend-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview", "--", "--port", "4173"],
+      "port": 4173,
+      "autoPort": true,
+      "cwd": "frontend"
     }
   ]
 }

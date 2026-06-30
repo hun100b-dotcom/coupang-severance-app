@@ -43,7 +43,25 @@
   --glass-bg-strong: rgba(255, 255, 255, 0.8);
   --glass-bg-medium: rgba(255, 255, 255, 0.6);
   --glass-bg-light: rgba(255, 255, 255, 0.4);
+
+  /* ── 업비트풍 토큰 (Phase 3 전역화) — non-tailwind 인라인 스타일에서도 참조 ── */
+  --up-page:    #EEF1F5; /* 페이지 배경(옅은 청회색) */
+  --up-surface: #FFFFFF;
+  --up-sunken:  #F2F5FA;
+  --up-navy:    #1A2434; /* 헤딩 */
+  --up-body:    #333D4B; /* 본문 */
+  --up-sub:     #565D6A; /* 보조(AA 6.7:1) */
+  --up-caption: #8E929B; /* 캡션(비필수) */
+  --up-hair:    #E1E4EA; /* 헤어라인 */
+  --up-brand:   #3182F6;
+  --up-strong:  #1B64DA; /* 금액·CTA */
+  --up-green:   #047857; /* 채용(AA용 진한 그린) */
+  --up-danger:  #F04452; /* 긴급 전용 */
 }
+
+/* ── 숫자 자릿수 정렬 유틸 (금액·통계는 mono + tabular-nums 권장) ──
+   업비트풍 "데이터를 다루는 곳" 인상: 숫자가 자릿수 단위로 또박또박 정렬됨 */
+.tnum { font-variant-numeric: tabular-nums; }
 
 *, *::before, *::after {
   box-sizing: border-box;
