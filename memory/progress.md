@@ -6,6 +6,28 @@
 
 ---
 
+## 🔒 보안 하드닝 V1~V6 (2026-06-30, main 푸시 완료 `6e785f1`)
+
+> 근거: `docs/CATCH_전체보고_및_보안진단_2026-06-30.md`. 라이브 Supabase Advisor 실측 기반 V1~V6 조치. 원칙 = "잠그기 전 코드 경로 영향 확인"(grep으로 미사용 실증 후 차단). 더블리뷰 A·B(자체+독립 에이전트) 모두 PASS·BLOCKER 0 → `docs/dual_review/security_hardening_{A,B}.md`.
+
+**코드(직접 푸시):** V5 방문자탭 평문 PII → 백엔드 서버측 마스킹 (`/admin/profiles/masked-lookup` + `lookupMaskedProfiles` + VisitorTab). 빌드 통과, 계산로직 무변경.
+
+**⚠️ DB 적용 대기 마이그레이션 5건 (이 세션 MCP 미연결 → 파일만 커밋, Dispatch가 적용):**
+| 순서 | 파일 | 효과 |
+|---|---|---|
+| 선행 | (확인) `is_admin()` 존재(004 기적용) — V2/V3 전제 | — |
+| 1 | `20260630_v1_user_profiles_anon_revoke.sql` | 🔴 user_profiles 뷰 anon 권한회수+security_invoker (회원 이메일 비로그인 노출 차단) |
+| 2 | `20260630_v6_function_search_path.sql` | public 함수 search_path 고정 |
+| 3 | `20260630_v4_revoke_securitydefiner_exec.sql` | 트리거/내부 함수 anon EXECUTE 회수 |
+| 4 | `20260630_v2_admin_audit_logs_insert_admin.sql` | admin_audit_logs INSERT is_admin() (미사용 테이블) |
+| 5 | `20260630_v3_notifications_insert_restrict.sql` | notifications INSERT 본인 or is_admin() |
+> 각 파일에 "적용 전 확인 SQL" + 롤백 주석 포함. 멱등·가역. 적용 후 Advisor 재실행 + anon curl 실증 권장.
+
+**범위 분리(미조치):** 지원자관리(ApplicantsMenu) 평문 PII — 운영상 평문 필요·reveal 흐름 큰 작업 → 별도 트랙 과제 `task_fd41d399`(회원탭식 마스킹+보안키 reveal 재설계).
+**범위 밖 발견(기존 버그):** MyPage가 notifications `is_read`를 `read`로 잘못 참조(에이전트 A 적출, 이번 변경 무관).
+
+---
+
 ## 🎨 업비트풍 리디자인 — 분석+워크트리 단계 (redesign/upbit-home, 2026-06-30, 로컬 커밋·미푸시)
 
 > 종훈님 목표: 홈+전역 웹디자인을 **업비트 "홈"** 비주얼 언어로 재정립. 거래소(시세표/차트/주문창) UI는 차용 대상 아님. **순서 = 정밀분석 → 전문가 워크트리 먼저 보고 → 종훈님 승인 후 시안 코딩.** main 무수정·계산로직 불변.
