@@ -1,5 +1,5 @@
 // LandingV1 — 밝은 파스텔 테마 (전면 업그레이드 v2)
-// 색상: Primary #2563eb (깊은 파랑), Accent #1d4ed8 (딥블루), BG #f0f7ff→#eaf2fe
+// 색상: Primary #1B64DA (깊은 파랑), Accent #1751B5 (딥블루), BG #f0f7ff→#eaf2fe
 
 import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -91,14 +91,14 @@ function SectionBridge({
   }
 
   // 다크 배경에서는 흰색, 밝은 배경에서는 강한 파랑으로 화살표 강조
-  const arrowColor = isDark ? '#ffffff' : '#2563eb'
+  const arrowColor = isDark ? '#ffffff' : '#1B64DA'
   // 텍스트 pill 배경: 배경색에 무관하게 가독성 확보
   // isDark=true(어두운 배경)이면 반투명 흰색 pill, 밝은 배경이면 반투명 파랑 pill
   // 글래스 제거: 라이트 배경에선 솔리드 흰색 pill(블러 없이도 가독), 다크 배경에선 솔리드 진파랑 pill
   const pillBg = isDark ? '#1B64DA' : '#ffffff'
   const pillBorder = isDark ? '1px solid rgba(255,255,255,0.25)' : '1px solid rgba(37,99,235,0.15)'
-  const textColor = isDark ? '#ffffff' : '#1e3a5f'
-  const subTextColor = isDark ? 'rgba(255,255,255,0.75)' : '#475569'
+  const textColor = isDark ? '#ffffff' : '#1A2434'
+  const subTextColor = isDark ? 'rgba(255,255,255,0.75)' : '#565D6A'
 
   return (
     <motion.div
@@ -188,7 +188,7 @@ export default function LandingV1() {
       style={{
         fontFamily: "'Noto Sans KR', sans-serif",
         background: 'linear-gradient(135deg, #f0f7ff 0%, #eaf2fe 100%)',
-        color: '#0f172a',
+        color: '#1A2434',
         position: 'relative',
         zIndex: 1,
       }}
@@ -204,7 +204,7 @@ export default function LandingV1() {
           transition: 'background 0.3s, box-shadow 0.3s, backdrop-filter 0.3s, border-color 0.3s',
         }}
       >
-        <span className="text-[22px] font-black tracking-tight" style={{ color: '#2563eb' }}>
+        <span className="text-[22px] font-black tracking-tight" style={{ color: '#1B64DA' }}>
           CATCH
         </span>
         {/* 우상단 "지금 시작하기" 버튼 — 로그인 없이 바로 홈으로 이동 */}
@@ -212,7 +212,7 @@ export default function LandingV1() {
           onClick={goHome}
           className="px-[22px] py-[10px] rounded-[12px] text-sm font-bold text-white transition-all hover:scale-[1.04] hover:-translate-y-0.5"
           style={{
-            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+            background: 'linear-gradient(135deg, #1B64DA, #1751B5)',
             boxShadow: '0 4px 16px rgba(37,99,235,0.25)',
           }}
         >
@@ -272,7 +272,7 @@ export default function LandingV1() {
           <Reveal>
             <p
               className="text-sm font-bold tracking-[2px] uppercase mb-6"
-              style={{ color: '#2563eb', letterSpacing: '3px' }}
+              style={{ color: '#1B64DA', letterSpacing: '3px' }}
             >
               For 긱워커 · 일용직 · 단기알바
             </p>
@@ -286,7 +286,7 @@ export default function LandingV1() {
                 style={{
                   fontSize: 'clamp(1.8rem, 4vw, 3rem)',
                   fontWeight: 600,
-                  color: '#475569',
+                  color: '#565D6A',
                 }}
               >
                 당신이 받아야 할 돈,
@@ -296,7 +296,7 @@ export default function LandingV1() {
                 style={{
                   fontSize: 'clamp(2.5rem, 6vw, 5rem)',
                   fontWeight: 800,
-                  color: '#0f172a',
+                  color: '#1A2434',
                 }}
               >
                 아직 거기 있습니다.
@@ -305,7 +305,7 @@ export default function LandingV1() {
             {/* 서브타이틀 */}
             <p
               className="font-bold mb-6"
-              style={{ fontSize: 'clamp(18px, 3vw, 26px)', color: '#2563eb' }}
+              style={{ fontSize: 'clamp(18px, 3vw, 26px)', color: '#1B64DA' }}
             >
               CATCH와 함께 찾아보세요
             </p>
@@ -322,7 +322,7 @@ export default function LandingV1() {
                     borderRadius: '999px',
                     padding: '4px 12px',
                     fontSize: '0.8rem',
-                    color: '#2563eb',
+                    color: '#1B64DA',
                     fontWeight: 600,
                     border: '1px solid rgba(37,99,235,0.15)',
                   }}
@@ -337,7 +337,7 @@ export default function LandingV1() {
             {/* 설명 텍스트 */}
             <p
               className="leading-[1.7] mb-10 max-w-[540px]"
-              style={{ fontSize: 'clamp(16px, 2.5vw, 19px)', color: '#475569' }}
+              style={{ fontSize: 'clamp(16px, 2.5vw, 19px)', color: '#565D6A' }}
             >
               퇴직금·실업급여·주휴수당·연차수당—
               <br />
@@ -355,7 +355,7 @@ export default function LandingV1() {
                 style={{
                   padding: '14px 28px',
                   fontSize: 16,
-                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                  background: 'linear-gradient(135deg, #1B64DA, #1751B5)',
                   boxShadow: '0 8px 32px rgba(37,99,235,0.30)',
                 }}
               >
@@ -368,7 +368,7 @@ export default function LandingV1() {
                 style={{
                   padding: '14px 28px',
                   fontSize: 16,
-                  background: 'linear-gradient(135deg, #047857, #03664a)',
+                  background: 'linear-gradient(135deg, #047857, #047857)',
                   boxShadow: '0 8px 32px rgba(4,120,87,0.28)',
                 }}
               >
@@ -397,13 +397,13 @@ export default function LandingV1() {
                   }}
                 >
                   <div className="text-2xl mb-1">{card.icon}</div>
-                  <div className="text-[22px] font-black" style={{ color: '#0f172a', letterSpacing: '-0.5px' }}>
+                  <div className="text-[22px] font-black" style={{ color: '#1A2434', letterSpacing: '-0.5px' }}>
                     {card.stat}
                   </div>
-                  <div className="text-[12px] mt-1" style={{ color: '#64748b' }}>{card.desc}</div>
+                  <div className="text-[12px] mt-1" style={{ color: '#565D6A' }}>{card.desc}</div>
                   {/* 출처 표기 (공식 통계에만 표시) */}
                   {card.source && (
-                    <div style={{ fontSize: '0.65rem', color: '#6b7280', marginTop: 2 }}>{card.source}</div>
+                    <div style={{ fontSize: '0.65rem', color: '#565D6A', marginTop: 2 }}>{card.source}</div>
                   )}
                 </div>
               ))}
@@ -448,7 +448,7 @@ export default function LandingV1() {
               style={{
                 background: 'rgba(239,68,68,0.10)',
                 border: '1px solid rgba(239,68,68,0.25)',
-                color: '#dc2626',
+                color: '#F04452',
               }}
             >
               ⚠️ 지금 이 순간에도
@@ -458,16 +458,16 @@ export default function LandingV1() {
           <Reveal delay={0.05}>
             <h2
               className="font-extrabold leading-[1.25] mb-4"
-              style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, color: '#0f172a' }}
+              style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, color: '#1A2434' }}
             >
               정보의 소외,
               <br />
-              <span style={{ color: '#2563eb' }}>당신만의 문제가 아닙니다</span>
+              <span style={{ color: '#1B64DA' }}>당신만의 문제가 아닙니다</span>
             </h2>
           </Reveal>
 
           <Reveal delay={0.1}>
-            <p className="text-[17px] leading-[1.7] max-w-[600px] mb-8" style={{ color: '#475569' }}>
+            <p className="text-[17px] leading-[1.7] max-w-[600px] mb-8" style={{ color: '#565D6A' }}>
               대한민국 일용직·단기근로자의 80%는 자신이 받을 수 있는 급여를 정확히 모릅니다.
               복잡한 법 조항과 어려운 계산식 때문에 매년 수천억 원의 권리가 증발하고 있습니다.
             </p>
@@ -478,7 +478,7 @@ export default function LandingV1() {
               className="relative mb-12 rounded-[16px] overflow-hidden"
               style={{
                 background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-                borderLeft: '5px solid #2563eb',
+                borderLeft: '5px solid #1B64DA',
                 boxShadow: '0 4px 24px rgba(37,99,235,0.12)',
                 padding: '32px 36px 32px 40px',
               }}
@@ -500,18 +500,18 @@ export default function LandingV1() {
               {/* 인용 본문 — 200만 원 강조 */}
               <p
                 className="relative z-[1] text-[18px] leading-[1.8] font-medium"
-                style={{ color: '#1e293b' }}
+                style={{ color: '#1A2434' }}
               >
                 1년 이상 쿠팡 물류센터에서 일했는데 퇴직금이 있는지도 몰랐어요.
                 <br />
                 CATCH로 계산해보니{' '}
-                <span className="font-black text-[22px]" style={{ color: '#2563eb' }}>
+                <span className="font-black text-[22px]" style={{ color: '#1B64DA' }}>
                   200만 원
                 </span>
                 이 나왔습니다.
               </p>
               {/* 출처 표기 */}
-              <p className="mt-3 text-[13px] font-semibold" style={{ color: '#64748b' }}>
+              <p className="mt-3 text-[13px] font-semibold" style={{ color: '#565D6A' }}>
                 — 쿠팡 물류센터 근무 경험자
               </p>
             </blockquote>
@@ -533,21 +533,21 @@ export default function LandingV1() {
                 style={{
                   background: '#ffffff',
                   border: '1px solid rgba(239,68,68,0.15)',
-                  borderLeft: '4px solid #ef4444',
+                  borderLeft: '4px solid #F04452',
                   boxShadow: '0 4px 24px rgba(239,68,68,0.06)',
                 }}
               >
                 <div
                   className="font-black tracking-tight whitespace-nowrap"
-                  style={{ fontSize: 18, color: '#dc2626', letterSpacing: '-1px', minWidth: 60 }}
+                  style={{ fontSize: 18, color: '#F04452', letterSpacing: '-1px', minWidth: 60 }}
                 >
                   1조 7,845억
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[14px] leading-[1.5] break-words" style={{ color: '#475569' }}>
+                  <div className="text-[14px] leading-[1.5] break-words" style={{ color: '#565D6A' }}>
                     2023년 임금체불 총액
                   </div>
-                  <div className="text-[12px] mt-1" style={{ color: '#6b7280' }}>
+                  <div className="text-[12px] mt-1" style={{ color: '#565D6A' }}>
                     이 중 40%가 퇴직급여 미지급
                   </div>
                 </div>
@@ -562,28 +562,28 @@ export default function LandingV1() {
                 style={{
                   background: '#ffffff',
                   border: '1px solid rgba(239,68,68,0.15)',
-                  borderLeft: '4px solid #ef4444',
+                  borderLeft: '4px solid #F04452',
                   boxShadow: '0 4px 24px rgba(239,68,68,0.06)',
                 }}
               >
                 {/* 카드 제목 */}
-                <div className="text-[14px] font-bold mb-3" style={{ color: '#dc2626' }}>
+                <div className="text-[14px] font-bold mb-3" style={{ color: '#F04452' }}>
                   ⚠️ 실업급여, 아는 사람만 받는다
                 </div>
                 {/* 수치 + 서브텍스트 */}
                 <div className="flex items-baseline gap-3 mb-2">
                   <div
                     className="font-black tracking-tight"
-                    style={{ fontSize: 26, color: '#dc2626', letterSpacing: '-1px' }}
+                    style={{ fontSize: 26, color: '#F04452', letterSpacing: '-1px' }}
                   >
                     525만 명+
                   </div>
-                  <div className="text-[12px]" style={{ color: '#6b7280' }}>
+                  <div className="text-[12px]" style={{ color: '#565D6A' }}>
                     임시·일용직 근로자 규모 (통계청 2023)
                   </div>
                 </div>
                 {/* 설명 */}
-                <div className="text-[13px] leading-[1.65]" style={{ color: '#64748b' }}>
+                <div className="text-[13px] leading-[1.65]" style={{ color: '#565D6A' }}>
                   복잡한 수급 조건과 신청 방법을 몰라 포기하는 일용직 근로자가 많습니다.
                   CATCH가 내 자격 여부를 1분 안에 알려드립니다.
                 </div>
@@ -598,28 +598,28 @@ export default function LandingV1() {
                 style={{
                   background: '#ffffff',
                   border: '1px solid rgba(239,68,68,0.15)',
-                  borderLeft: '4px solid #ef4444',
+                  borderLeft: '4px solid #F04452',
                   boxShadow: '0 4px 24px rgba(239,68,68,0.06)',
                 }}
               >
                 {/* 카드 제목 */}
-                <div className="text-[14px] font-bold mb-3" style={{ color: '#dc2626' }}>
+                <div className="text-[14px] font-bold mb-3" style={{ color: '#F04452' }}>
                   ⚠️ 잘못 계산하면 내 돈이 줄어든다
                 </div>
                 {/* 수치 + 서브텍스트 */}
                 <div className="flex items-baseline gap-3 mb-2">
                   <div
                     className="font-black tracking-tight"
-                    style={{ fontSize: 26, color: '#dc2626', letterSpacing: '-1px' }}
+                    style={{ fontSize: 26, color: '#F04452', letterSpacing: '-1px' }}
                   >
                     3년
                   </div>
-                  <div className="text-[12px]" style={{ color: '#6b7280' }}>
+                  <div className="text-[12px]" style={{ color: '#565D6A' }}>
                     퇴직금 청구권 소멸시효
                   </div>
                 </div>
                 {/* 설명 */}
-                <div className="text-[13px] leading-[1.65]" style={{ color: '#64748b' }}>
+                <div className="text-[13px] leading-[1.65]" style={{ color: '#565D6A' }}>
                   퇴직금은 퇴직 후 3년 이내 청구하지 않으면 소멸합니다.
                   몰라서 못 받은 퇴직금, CATCH로 지금 바로 확인하세요.
                 </div>
@@ -654,7 +654,7 @@ export default function LandingV1() {
                   style={{
                     background: 'rgba(37,99,235,0.08)',
                     border: '1px solid rgba(37,99,235,0.15)',
-                    color: '#2563eb',
+                    color: '#1B64DA',
                   }}
                 >
                   솔루션
@@ -662,14 +662,14 @@ export default function LandingV1() {
               </Reveal>
               <Reveal delay={0.05}>
                 <h2
-                  className="font-extrabold leading-[1.25] mb-5 text-gray-900"
-                  style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, color: '#0f172a' }}
+                  className="font-extrabold leading-[1.25] mb-5 text-up-navy"
+                  style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, color: '#1A2434' }}
                 >
                   CATCH가 해결합니다
                 </h2>
               </Reveal>
               <Reveal delay={0.1}>
-                <p className="text-[17px] leading-[1.7] mb-8 text-gray-700" style={{ color: '#374151' }}>
+                <p className="text-[17px] leading-[1.7] mb-8 text-up-body" style={{ color: '#333D4B' }}>
                   복잡한 노동법을 몰라도 됩니다. PDF 한 장이면 충분합니다.
                   <br />
                   4가지 수당을 하나의 앱에서 모두 계산하세요.
@@ -682,7 +682,7 @@ export default function LandingV1() {
                   style={{
                     padding: '16px 32px',
                     fontSize: 16,
-                    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                    background: 'linear-gradient(135deg, #1B64DA, #1751B5)',
                     boxShadow: '0 6px 24px rgba(37,99,235,0.25)',
                   }}
                 >
@@ -739,7 +739,7 @@ export default function LandingV1() {
                     {/* 상단 hover 라인 */}
                     <div
                       className="absolute top-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ background: 'linear-gradient(90deg, #2563eb, #1d4ed8)' }}
+                      style={{ background: 'linear-gradient(90deg, #1B64DA, #1751B5)' }}
                     />
                     {/* 아이콘 */}
                     <div
@@ -756,19 +756,19 @@ export default function LandingV1() {
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <span
                           className="text-white text-[11px] font-bold"
-                          style={{ color: '#2563eb', fontSize: 13, fontWeight: 700 }}
+                          style={{ color: '#1B64DA', fontSize: 13, fontWeight: 700 }}
                         >
                           ✓
                         </span>
-                        <h3 className="text-[15px] font-bold" style={{ color: '#0f172a' }}>{card.title}</h3>
+                        <h3 className="text-[15px] font-bold" style={{ color: '#1A2434' }}>{card.title}</h3>
                         <span
                           className="px-2 py-0.5 rounded-[6px] text-[11px] font-semibold"
-                          style={{ background: 'rgba(37,99,235,0.08)', color: '#2563eb' }}
+                          style={{ background: 'rgba(37,99,235,0.08)', color: '#1B64DA' }}
                         >
                           {card.badge}
                         </span>
                       </div>
-                      <p className="text-[13px] leading-[1.6]" style={{ color: '#64748b' }}>
+                      <p className="text-[13px] leading-[1.6]" style={{ color: '#565D6A' }}>
                         {card.desc}
                       </p>
                     </div>
@@ -818,14 +818,14 @@ export default function LandingV1() {
                 style={{
                   background: 'rgba(37,99,235,0.08)',
                   border: '1px solid rgba(37,99,235,0.15)',
-                  color: '#2563eb',
+                  color: '#1B64DA',
                 }}
               >
                 사용 방법
               </span>
               <h2
                 className="font-extrabold leading-[1.25]"
-                style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, color: '#0f172a' }}
+                style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, color: '#1A2434' }}
               >
                 3단계로 끝납니다
               </h2>
@@ -851,23 +851,23 @@ export default function LandingV1() {
                           style={{
                             width: 48,
                             height: 48,
-                            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                            background: 'linear-gradient(135deg, #1B64DA, #1751B5)',
                             boxShadow: '0 0 0 8px rgba(37,99,235,0.10)',
                           }}
                         >
                           {step.num}
                         </div>
                       </motion.div>
-                      <h3 className="text-[17px] font-bold mb-2" style={{ color: '#0f172a' }}>{step.title}</h3>
-                      <p className="text-[14px] leading-[1.65] whitespace-pre-line" style={{ color: '#475569' }}>
+                      <h3 className="text-[17px] font-bold mb-2" style={{ color: '#1A2434' }}>{step.title}</h3>
+                      <p className="text-[14px] leading-[1.65] whitespace-pre-line" style={{ color: '#565D6A' }}>
                         {step.desc}
                       </p>
                     </div>
                   </Reveal>
                   {/* 세로 연결 화살표 — 마지막 단계 이후엔 숨김 */}
-                  {/* color #6b7280: 밝은 배경에서도 읽히는 gray-500 */}
+                  {/* color #565D6A: 밝은 배경에서도 읽히는 gray-500 */}
                   {i < 2 && (
-                    <div style={{ color: '#6b7280', fontSize: 24, lineHeight: 1, marginBottom: 4 }}>↓</div>
+                    <div style={{ color: '#565D6A', fontSize: 24, lineHeight: 1, marginBottom: 4 }}>↓</div>
                   )}
                 </div>
               ))}
@@ -891,26 +891,26 @@ export default function LandingV1() {
                           style={{
                             width: 48,
                             height: 48,
-                            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                            background: 'linear-gradient(135deg, #1B64DA, #1751B5)',
                             boxShadow: '0 0 0 8px rgba(37,99,235,0.10)',
                           }}
                         >
                           {step.num}
                         </div>
                       </motion.div>
-                      <h3 className="text-[17px] font-bold mb-2" style={{ color: '#0f172a' }}>{step.title}</h3>
-                      <p className="text-[14px] leading-[1.65] whitespace-pre-line" style={{ color: '#475569' }}>
+                      <h3 className="text-[17px] font-bold mb-2" style={{ color: '#1A2434' }}>{step.title}</h3>
+                      <p className="text-[14px] leading-[1.65] whitespace-pre-line" style={{ color: '#565D6A' }}>
                         {step.desc}
                       </p>
                     </div>
                   </Reveal>
 
                   {/* 화살표 — 마지막 단계 이후엔 숨김 */}
-                  {/* color #6b7280: 밝은 배경에서도 읽히는 gray-500 */}
+                  {/* color #565D6A: 밝은 배경에서도 읽히는 gray-500 */}
                   {i < 2 && (
                     <div
                       className="flex items-start pt-[38px] px-1 flex-shrink-0"
-                      style={{ color: '#6b7280', fontSize: 28, fontWeight: 300 }}
+                      style={{ color: '#565D6A', fontSize: 28, fontWeight: 300 }}
                     >
                       →
                     </div>
@@ -948,7 +948,7 @@ export default function LandingV1() {
                 style={{
                   background: 'rgba(37,99,235,0.08)',
                   border: '1px solid rgba(37,99,235,0.15)',
-                  color: '#2563eb',
+                  color: '#1B64DA',
                 }}
               >
                 왜 CATCH인가
@@ -963,11 +963,11 @@ export default function LandingV1() {
                 {/* 타이틀 */}
                 <h2
                   className="font-extrabold leading-[1.25] mb-10"
-                  style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, color: '#0f172a' }}
+                  style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 800, color: '#1A2434' }}
                 >
                   일용직 근로의 동반자,
                   <br />
-                  <span style={{ color: '#2563eb' }}>CATCH</span>
+                  <span style={{ color: '#1B64DA' }}>CATCH</span>
                 </h2>
               </Reveal>
 
@@ -984,13 +984,13 @@ export default function LandingV1() {
                     <li className="flex gap-4 items-start">
                       <div
                         className="w-7 h-7 rounded-[8px] flex items-center justify-center text-[14px] flex-shrink-0 mt-0.5 text-white"
-                        style={{ background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}
+                        style={{ background: 'linear-gradient(135deg, #1B64DA, #1751B5)' }}
                       >
                         ✓
                       </div>
                       <div>
-                        <strong className="block text-[16px] font-bold mb-1" style={{ color: '#0f172a' }}>{item.title}</strong>
-                        <span className="text-[14px] leading-[1.6]" style={{ color: '#475569' }}>
+                        <strong className="block text-[16px] font-bold mb-1" style={{ color: '#1A2434' }}>{item.title}</strong>
+                        <span className="text-[14px] leading-[1.6]" style={{ color: '#565D6A' }}>
                           {item.desc}
                         </span>
                       </div>
@@ -1014,14 +1014,14 @@ export default function LandingV1() {
                 {/* 대형 숫자 강조 */}
                 <div
                   className="font-black leading-none mb-3"
-                  style={{ fontSize: 80, color: '#2563eb', letterSpacing: '-3px' }}
+                  style={{ fontSize: 80, color: '#1B64DA', letterSpacing: '-3px' }}
                 >
                   365+
                 </div>
-                <p className="text-[18px] mb-10" style={{ color: '#475569' }}>
+                <p className="text-[18px] mb-10" style={{ color: '#565D6A' }}>
                   근무일 이상이면 퇴직금 수령 가능
                 </p>
-                <div className="mx-auto mb-9 rounded-full" style={{ width: 40, height: 3, background: 'linear-gradient(90deg, #2563eb, #1d4ed8)' }} />
+                <div className="mx-auto mb-9 rounded-full" style={{ width: 40, height: 3, background: 'linear-gradient(90deg, #1B64DA, #1751B5)' }} />
                 <div className="grid grid-cols-2 gap-5">
                   {[
                     { num: '4개', label: '계산 서비스' },
@@ -1038,8 +1038,8 @@ export default function LandingV1() {
                         border: '1px solid rgba(37,99,235,0.10)',
                       }}
                     >
-                      <div className="text-[28px] font-black mb-1" style={{ color: '#0f172a' }}>{stat.num}</div>
-                      <div className="text-[12px]" style={{ color: '#64748b' }}>{stat.label}</div>
+                      <div className="text-[28px] font-black mb-1" style={{ color: '#1A2434' }}>{stat.num}</div>
+                      <div className="text-[12px]" style={{ color: '#565D6A' }}>{stat.label}</div>
                     </div>
                   ))}
                 </div>
@@ -1088,7 +1088,7 @@ export default function LandingV1() {
                 style={{
                   background: 'rgba(37,99,235,0.08)',
                   border: '1px solid rgba(37,99,235,0.20)',
-                  color: '#2563eb',
+                  color: '#1B64DA',
                 }}
               >
                 📅 NEW
@@ -1101,21 +1101,21 @@ export default function LandingV1() {
             <div className="text-center mb-4">
               <p
                 className="text-[12px] font-bold tracking-[2px] uppercase mb-3"
-                style={{ color: '#2563eb', letterSpacing: '3px' }}
+                style={{ color: '#1B64DA', letterSpacing: '3px' }}
               >
                 스케줄 관리 서비스
               </p>
-              <h2 className="font-extrabold leading-[1.2]" style={{ fontSize: 'clamp(28px, 5vw, 44px)', color: '#0f172a' }}>
+              <h2 className="font-extrabold leading-[1.2]" style={{ fontSize: 'clamp(28px, 5vw, 44px)', color: '#1A2434' }}>
                 근무 일정 관리하고
                 <br />
-                <span style={{ color: '#2563eb' }}>채용정보</span>까지 한번에
+                <span style={{ color: '#1B64DA' }}>채용정보</span>까지 한번에
               </h2>
             </div>
           </Reveal>
 
           {/* 서브타이틀 */}
           <Reveal delay={0.1}>
-            <p className="text-center text-[17px] leading-[1.7] mb-[60px]" style={{ color: '#475569' }}>
+            <p className="text-center text-[17px] leading-[1.7] mb-[60px]" style={{ color: '#565D6A' }}>
               출근 스케줄 확정, 근무지원, 긴급·추가모집 알림까지 CATCH 하나로
             </p>
           </Reveal>
@@ -1130,25 +1130,25 @@ export default function LandingV1() {
           >
             {[
               {
-                iconBg: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+                iconBg: 'linear-gradient(135deg, #1B64DA, #3182F6)',
                 emoji: '📋',
                 title: '근무 스케줄 확정',
                 desc: '예정된 근무 일정을 한눈에 확인하고 출근 여부를 빠르게 확정하세요',
               },
               {
-                iconBg: 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
+                iconBg: 'linear-gradient(135deg, #1751B5, #3182F6)',
                 emoji: '✅',
                 title: '근무지원 관리',
                 desc: '새로운 근무지 지원 현황과 결과를 실시간으로 확인하세요',
               },
               {
-                iconBg: 'linear-gradient(135deg, #059669, #10b981)',
+                iconBg: 'linear-gradient(135deg, #047857, #047857)',
                 emoji: '🔔',
                 title: '채용 알림',
                 desc: '쿠팡·컬리 등 주요 물류센터 채용공고를 한눈에 확인하고 바로 지원하세요',
               },
               {
-                iconBg: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                iconBg: 'linear-gradient(135deg, #F04452, #F04452)',
                 emoji: '🔥',
                 title: '긴급·추가 모집 알림',
                 desc: '오늘 긴급모집, 추가모집, 내일 긴급모집 등 실시간 채용 정보를 놓치지 마세요',
@@ -1175,10 +1175,10 @@ export default function LandingV1() {
                   >
                     {card.emoji}
                   </div>
-                  <h3 className="text-[17px] font-bold mb-3" style={{ color: '#0f172a' }}>
+                  <h3 className="text-[17px] font-bold mb-3" style={{ color: '#1A2434' }}>
                     {card.title}
                   </h3>
-                  <p className="text-[14px] leading-[1.65]" style={{ color: '#64748b' }}>
+                  <p className="text-[14px] leading-[1.65]" style={{ color: '#565D6A' }}>
                     {card.desc}
                   </p>
                 </div>
@@ -1192,7 +1192,7 @@ export default function LandingV1() {
             <div
               className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-[16px] p-4 sm:p-8"
               style={{
-                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                background: 'linear-gradient(135deg, #1B64DA, #1751B5)',
               }}
             >
               <div className="flex items-center gap-3">
@@ -1206,7 +1206,7 @@ export default function LandingV1() {
                 className="flex-shrink-0 px-5 py-2.5 rounded-[10px] text-[14px] font-bold transition-all hover:scale-[1.04]"
                 style={{
                   background: '#ffffff',
-                  color: '#2563eb',
+                  color: '#1B64DA',
                   whiteSpace: 'nowrap',
                 }}
               >
@@ -1257,7 +1257,7 @@ export default function LandingV1() {
               style={{
                 background: 'rgba(37,99,235,0.08)',
                 border: '1px solid rgba(37,99,235,0.15)',
-                color: '#2563eb',
+                color: '#1B64DA',
               }}
             >
               지금 시작하기
@@ -1266,17 +1266,17 @@ export default function LandingV1() {
 
           <Reveal delay={0.1}>
             <h2
-              className="font-extrabold leading-[1.2] mb-5 text-gray-900"
-              style={{ fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 800, color: '#111827' }}
+              className="font-extrabold leading-[1.2] mb-5 text-up-navy"
+              style={{ fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 800, color: '#1A2434' }}
             >
               당신이 받아야 할 돈,
               <br />
-              <span style={{ color: '#2563eb' }}>CATCH가 찾아드립니다</span>
+              <span style={{ color: '#1B64DA' }}>CATCH가 찾아드립니다</span>
             </h2>
           </Reveal>
 
           <Reveal delay={0.2}>
-            <p className="text-[18px] leading-[1.7] mb-12 text-gray-700" style={{ color: '#374151' }}>
+            <p className="text-[18px] leading-[1.7] mb-12 text-up-body" style={{ color: '#333D4B' }}>
               무료로, 지금 바로. 5초 로그인 후 계산 시작.
             </p>
           </Reveal>
@@ -1321,8 +1321,8 @@ export default function LandingV1() {
 
           {/* 안심 문구 */}
           <Reveal delay={0.4}>
-            {/* color #6b7280: 밝은 배경에서도 읽히는 gray-500 (기존 #94a3b8 은 대비 부족) */}
-            <p className="mt-7 text-[13px]" style={{ color: '#6b7280' }}>
+            {/* color #565D6A: 밝은 배경에서도 읽히는 gray-500 (기존 #8E929B 은 대비 부족) */}
+            <p className="mt-7 text-[13px]" style={{ color: '#565D6A' }}>
               신용카드 불필요 · 즉시 시작 · 언제든 탈퇴 가능
             </p>
           </Reveal>
@@ -1340,8 +1340,8 @@ export default function LandingV1() {
         }}
       >
         <div className="max-w-[1100px] mx-auto px-6">
-          <div className="text-[20px] font-black mb-3" style={{ color: '#2563eb' }}>CATCH</div>
-          <div className="text-[13px]" style={{ color: '#475569' }}>© 2026 CATCH — 퇴직금 한번에. All rights reserved.</div>
+          <div className="text-[20px] font-black mb-3" style={{ color: '#1B64DA' }}>CATCH</div>
+          <div className="text-[13px]" style={{ color: '#565D6A' }}>© 2026 CATCH — 퇴직금 한번에. All rights reserved.</div>
         </div>
       </footer>
     </div>

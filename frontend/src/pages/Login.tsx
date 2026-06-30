@@ -216,7 +216,7 @@ export default function LoginPage() {
               onChange={handleAllAgree}
               className="w-4 h-4 accent-blue-600"
             />
-            <span className="text-sm font-semibold text-gray-800">전체 동의</span>
+            <span className="text-sm font-semibold text-up-body">전체 동의</span>
           </label>
 
           {/* 필수 1: 이용약관 동의 */}
@@ -227,7 +227,7 @@ export default function LoginPage() {
               onChange={e => setTerms(e.target.checked)}
               className="w-4 h-4 accent-blue-600"
             />
-            <span className="text-sm text-gray-700">[필수] 이용약관 동의</span>
+            <span className="text-sm text-up-body">[필수] 이용약관 동의</span>
             {/* 이용약관 페이지로 이동 (label 버블링 방지) */}
             <button
               type="button"
@@ -246,7 +246,7 @@ export default function LoginPage() {
               onChange={e => setPrivacy(e.target.checked)}
               className="w-4 h-4 accent-blue-600"
             />
-            <span className="text-sm text-gray-700 leading-tight">[필수] 개인정보 수집·이용 및 국외이전 동의</span>
+            <span className="text-sm text-up-body leading-tight">[필수] 개인정보 수집·이용 및 국외이전 동의</span>
             {/* 개인정보처리방침 페이지로 이동 */}
             <button
               type="button"
@@ -265,7 +265,7 @@ export default function LoginPage() {
               onChange={e => setMarketing(e.target.checked)}
               className="w-4 h-4 accent-blue-600"
             />
-            <span className="text-sm text-gray-700">[선택] 마케팅 정보 수신 동의</span>
+            <span className="text-sm text-up-body">[선택] 마케팅 정보 수신 동의</span>
           </label>
         </div>
 
@@ -299,7 +299,7 @@ export default function LoginPage() {
             {/* Google 로그인 — Google Identity Services 사용 (Supabase URL 노출 없음) */}
             <div ref={googleWrapRef} className={`w-full flex justify-center ${!terms || !privacy ? 'opacity-50 pointer-events-none' : ''}`}>
               {loadingProvider === 'google' ? (
-                <div className="w-full h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center text-sm text-gray-500">
+                <div className="w-full h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center text-sm text-up-sub">
                   Google로 로그인 중...
                 </div>
               ) : (

@@ -20,7 +20,7 @@ export default function TermsOfServicePage() {
       id: '제1조',
       title: '서비스 소개 및 목적',
       content: (
-        <div className="space-y-3 text-gray-800 leading-relaxed">
+        <div className="space-y-3 text-up-body leading-relaxed">
           <p>
             CATCH는 물류·유통 업계 일용직 근로자를 위한 퇴직금·실업급여 계산 및 채용정보 제공 서비스입니다.
           </p>
@@ -31,7 +31,7 @@ export default function TermsOfServicePage() {
       id: '제2조',
       title: '이용계약의 체결',
       content: (
-        <div className="space-y-3 text-gray-800 leading-relaxed">
+        <div className="space-y-3 text-up-body leading-relaxed">
           <ol className="list-decimal pl-5 space-y-2">
             <li>
               이용계약은 이용자가 본 약관에 동의하고 서비스 회원가입을 완료한 시점에 성립합니다.
@@ -57,7 +57,7 @@ export default function TermsOfServicePage() {
       id: '제3조',
       title: '서비스 이용',
       content: (
-        <div className="space-y-3 text-gray-800 leading-relaxed">
+        <div className="space-y-3 text-up-body leading-relaxed">
           <p>서비스는 다음의 기능을 무료로 제공합니다:</p>
           <ul className="list-disc pl-5 space-y-2">
             <li>
@@ -74,7 +74,7 @@ export default function TermsOfServicePage() {
             <li><strong>계산 이력 저장·조회:</strong> 회원에 한해 계산 결과를 저장하고 언제든지 조회할 수 있습니다.</li>
             <li><strong>1:1 문의:</strong> 회원은 서비스 이용 관련 문의를 제출할 수 있습니다.</li>
           </ul>
-          <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+          <p className="text-sm text-up-sub bg-gray-50 rounded-lg p-3">
             서비스는 사전 통보 없이 기능을 추가하거나 변경할 수 있습니다. 중요 변경사항은 공지사항을 통해 안내합니다.
           </p>
         </div>
@@ -84,7 +84,7 @@ export default function TermsOfServicePage() {
       id: '제4조',
       title: '회원의 의무',
       content: (
-        <div className="space-y-3 text-gray-800 leading-relaxed">
+        <div className="space-y-3 text-up-body leading-relaxed">
           <p>이용자는 다음 각 호의 행위를 해서는 안 됩니다:</p>
           <ol className="list-decimal pl-5 space-y-2">
             <li>타인의 계정 정보를 도용하거나 타인을 사칭하는 행위</li>
@@ -106,7 +106,7 @@ export default function TermsOfServicePage() {
       id: '제5조',
       title: '서비스 제공의 중단',
       content: (
-        <div className="space-y-3 text-gray-800 leading-relaxed">
+        <div className="space-y-3 text-up-body leading-relaxed">
           <p>서비스는 다음 각 호의 경우 서비스 제공을 일시적으로 중단할 수 있습니다:</p>
           <ol className="list-decimal pl-5 space-y-2">
             <li>시스템 점검, 보수, 교체 등 정기·비정기 유지보수 작업</li>
@@ -130,7 +130,7 @@ export default function TermsOfServicePage() {
       id: '제6조',
       title: '정보의 정확성',
       content: (
-        <div className="space-y-3 text-gray-800 leading-relaxed">
+        <div className="space-y-3 text-up-body leading-relaxed">
           <ol className="list-decimal pl-5 space-y-2">
             <li>
               이용자는 서비스 이용 시 정확한 정보를 입력할 의무가 있습니다. 부정확한 정보 입력으로
@@ -162,7 +162,7 @@ export default function TermsOfServicePage() {
             <p className="font-semibold text-amber-800 mb-3 text-base">
               ⚠️ 중요: 계산 결과의 법적 효력에 관한 고지
             </p>
-            <ol className="list-decimal pl-5 space-y-2 text-gray-800 leading-relaxed">
+            <ol className="list-decimal pl-5 space-y-2 text-up-body leading-relaxed">
               <li>
                 <strong>
                   본 서비스의 모든 계산 결과(퇴직금·실업급여·주휴수당·연차수당 예상액)는
@@ -183,7 +183,7 @@ export default function TermsOfServicePage() {
               </li>
             </ol>
           </div>
-          <div className="text-gray-800 leading-relaxed space-y-2">
+          <div className="text-up-body leading-relaxed space-y-2">
             <p>그 외 다음 각 호의 경우 서비스는 법적 책임을 부담하지 않습니다:</p>
             <ol className="list-decimal pl-5 space-y-2">
               <li>이용자가 게재한 정보, 자료, 사실 등의 신뢰도·정확성 등으로 인해 발생한 손해</li>
@@ -199,7 +199,7 @@ export default function TermsOfServicePage() {
       id: '제8조',
       title: '지식재산권',
       content: (
-        <div className="space-y-3 text-gray-800 leading-relaxed">
+        <div className="space-y-3 text-up-body leading-relaxed">
           <ol className="list-decimal pl-5 space-y-2">
             <li>
               서비스가 제공하는 모든 콘텐츠(텍스트, 이미지, 로고, UI 디자인, 계산 알고리즘 등)의
@@ -225,7 +225,7 @@ export default function TermsOfServicePage() {
       id: '제9조',
       title: '분쟁해결',
       content: (
-        <div className="space-y-3 text-gray-800 leading-relaxed">
+        <div className="space-y-3 text-up-body leading-relaxed">
           <ol className="list-decimal pl-5 space-y-2">
             <li>
               서비스 이용과 관련하여 서비스와 이용자 사이에 분쟁이 발생한 경우, 양측은 원만한
@@ -247,7 +247,7 @@ export default function TermsOfServicePage() {
       id: '제10조',
       title: '약관의 변경',
       content: (
-        <div className="space-y-3 text-gray-800 leading-relaxed">
+        <div className="space-y-3 text-up-body leading-relaxed">
           <ol className="list-decimal pl-5 space-y-2">
             <li>
               서비스는 필요한 경우 관련 법령에 위배되지 않는 범위 내에서 본 약관을 개정할 수 있습니다.
@@ -278,7 +278,7 @@ export default function TermsOfServicePage() {
         {/* 뒤로가기 버튼 */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-6"
+          className="flex items-center gap-2 text-up-sub hover:text-up-navy transition-colors mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
           <span className="text-sm font-medium">뒤로가기</span>
@@ -286,13 +286,13 @@ export default function TermsOfServicePage() {
 
         {/* 타이틀 영역 */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">서비스 이용약관</h1>
+          <h1 className="text-2xl font-bold text-up-navy mb-1">서비스 이용약관</h1>
           {/* 시행일 표시 */}
-          <p className="text-sm text-gray-500">시행일: 2026년 4월 5일</p>
+          <p className="text-sm text-up-sub">시행일: 2026년 4월 5일</p>
         </div>
 
         {/* 약관 서문 */}
-        <p className="text-sm text-gray-600 leading-relaxed mb-8 bg-gray-50 rounded-xl p-4">
+        <p className="text-sm text-up-sub leading-relaxed mb-8 bg-gray-50 rounded-xl p-4">
           CATCH(이하 "회사")는 일용직 근로자의 퇴직금·실업급여·주휴수당·연차수당 계산 및
           채용정보 제공 서비스를 운영합니다. 본 약관은 회사와 이용자 간의 서비스 이용에 관한
           기본적인 사항을 규정합니다. 서비스 이용 전 반드시 본 약관을 확인하시기 바랍니다.
@@ -307,7 +307,7 @@ export default function TermsOfServicePage() {
               className={`py-6 ${index < sections.length - 1 ? 'border-b border-gray-100' : ''}`}
             >
               {/* 조항 제목 */}
-              <h2 className="font-semibold text-gray-900 mb-3 text-base">
+              <h2 className="font-semibold text-up-navy mb-3 text-base">
                 {section.id} ({section.title})
               </h2>
               {/* 조항 내용 */}
@@ -320,7 +320,7 @@ export default function TermsOfServicePage() {
 
         {/* 하단 시행일 안내 */}
         <div className="mt-8 pt-6 border-t border-gray-100">
-          <p className="text-sm text-gray-500 leading-relaxed">
+          <p className="text-sm text-up-sub leading-relaxed">
             본 약관은 <strong>2026년 4월 5일</strong>부터 시행됩니다.<br />
             이전 버전의 약관은 서비스 내 공지사항에서 확인할 수 있습니다.
           </p>

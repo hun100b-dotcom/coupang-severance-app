@@ -216,7 +216,7 @@ export default function DayWorkerSeveranceGuide() {
                         {r.subtitle}
                       </span>
                     </div>
-                    <p className="text-xs text-[#8B95A1] mb-2">{r.desc}</p>
+                    <p className="text-xs text-[#565D6A] mb-2">{r.desc}</p>
                     <button
                       onClick={() => navigate(r.action)}
                       className="text-xs font-bold flex items-center gap-1"
@@ -246,14 +246,14 @@ export default function DayWorkerSeveranceGuide() {
                 <div key={i} className="flex items-center justify-between py-2 border-b border-[#F2F4F6] last:border-0">
                   <div>
                     <p className="text-sm text-[#333D4B]">{c.label}</p>
-                    {c.note && <p className="text-xs text-[#8B95A1]">{c.note}</p>}
+                    {c.note && <p className="text-xs text-[#565D6A]">{c.note}</p>}
                   </div>
                   <span className="text-sm font-bold text-[#3182f6]">{c.amount}</span>
                 </div>
               ))}
             </div>
             <div className="mt-4 p-3 bg-[#F2F4F6] rounded-xl">
-              <p className="text-xs text-[#8B95A1] leading-relaxed">
+              <p className="text-xs text-[#565D6A] leading-relaxed">
                 💡 실제 금액은 근무일 패턴·공백 기간·수당 내역에 따라 달라집니다.
                 CATCH 계산기에서 정확하게 계산해보세요.
               </p>
@@ -303,7 +303,7 @@ export default function DayWorkerSeveranceGuide() {
               {FAQ_SCHEMA.mainEntity.map((q, i) => (
                 <div key={i} className="border-b border-[#F2F4F6] last:border-0 pb-4 last:pb-0">
                   <p className="text-sm font-bold text-[#333D4B] mb-1.5">Q. {q.name}</p>
-                  <p className="text-xs text-[#8B95A1] leading-relaxed">{q.acceptedAnswer.text}</p>
+                  <p className="text-xs text-[#565D6A] leading-relaxed">{q.acceptedAnswer.text}</p>
                 </div>
               ))}
             </div>
@@ -331,7 +331,7 @@ export default function DayWorkerSeveranceGuide() {
               <ShieldCheck size={18} />
               실업급여 수급 자격 확인하기
             </button>
-            <p className="text-center text-xs text-[#8B95A1]">
+            <p className="text-center text-xs text-[#565D6A]">
               완전 무료 · 회원가입 없이도 계산 가능
             </p>
           </motion.div>

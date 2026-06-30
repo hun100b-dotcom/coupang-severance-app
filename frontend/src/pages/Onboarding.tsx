@@ -269,14 +269,14 @@ export default function OnboardingPage() {
           {/* 개인정보 수집 안내 */}
           <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
             <p className="font-semibold text-sm text-[#191F28] mb-3">개인정보 수집 안내</p>
-            <ul className="text-xs text-gray-700 space-y-1.5 leading-relaxed">
+            <ul className="text-xs text-up-body space-y-1.5 leading-relaxed">
               <li>• <span className="font-semibold">수집 목적:</span> 퇴직금 계산 결과 저장 및 1:1 상담 제공</li>
               <li>• <span className="font-semibold">수집 항목:</span> 이메일, 실명, 생년월일, <strong>성별</strong>, 핸드폰번호</li>
               <li>• <span className="font-semibold">보유 기간:</span> 회원 탈퇴 시까지 (탈퇴 후 즉시 파기)</li>
               <li>• <span className="font-semibold">거부 권리:</span> 동의를 거부할 수 있으나, 서비스 이용이 제한됩니다.</li>
             </ul>
             {/* 온보딩 화면은 푸터 없음 → 본문 내부에 처리방침 링크 직접 제공 */}
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-up-sub mt-2">
               자세한 내용은{' '}
               <a href="/terms/privacy" target="_blank" className="text-[#3182F6] underline">
                 개인정보처리방침
@@ -322,7 +322,7 @@ export default function OnboardingPage() {
             </label>
 
             <div className="border-t border-gray-200 pt-3 mt-4">
-              <p className="text-xs text-gray-500 mb-2">선택 동의 (마케팅 정보 수신)</p>
+              <p className="text-xs text-up-sub mb-2">선택 동의 (마케팅 정보 수신)</p>
               <label className="flex items-start gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
@@ -330,7 +330,7 @@ export default function OnboardingPage() {
                   onChange={(e) => setAgreeMarketingSMS(e.target.checked)}
                   className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-500 mt-0.5"
                 />
-                <span className="text-sm text-gray-600 group-hover:text-blue-600 transition-colors">
+                <span className="text-sm text-up-sub group-hover:text-blue-600 transition-colors">
                   [선택] SMS/문자 마케팅 수신 동의
                 </span>
               </label>
@@ -341,7 +341,7 @@ export default function OnboardingPage() {
                   onChange={(e) => setAgreeMarketingEmail(e.target.checked)}
                   className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-500 mt-0.5"
                 />
-                <span className="text-sm text-gray-600 group-hover:text-blue-600 transition-colors">
+                <span className="text-sm text-up-sub group-hover:text-blue-600 transition-colors">
                   [선택] 이메일 마케팅 수신 동의
                 </span>
               </label>
@@ -352,7 +352,7 @@ export default function OnboardingPage() {
                   onChange={(e) => setAgreeMarketingPhone(e.target.checked)}
                   className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-500 mt-0.5"
                 />
-                <span className="text-sm text-gray-600 group-hover:text-blue-600 transition-colors">
+                <span className="text-sm text-up-sub group-hover:text-blue-600 transition-colors">
                   [선택] 전화(음성) 마케팅 수신 동의
                 </span>
               </label>

@@ -183,7 +183,7 @@ export default function CoupangUnemploymentLanding() {
               {CONDITIONS_NO.map((c, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <XCircle size={16} className="text-[#F04452] flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-[#8B95A1]">{c}</span>
+                  <span className="text-sm text-[#565D6A]">{c}</span>
                 </li>
               ))}
             </ul>
@@ -204,14 +204,14 @@ export default function CoupangUnemploymentLanding() {
               <p className="text-sm font-mono text-[#0f8456] leading-relaxed">
                 1일 실업급여 = 기초일액 × 60%
               </p>
-              <p className="text-xs text-[#8B95A1] mt-2">
+              <p className="text-xs text-[#565D6A] mt-2">
                 기초일액 = 퇴직 전 3개월 평균임금
               </p>
             </div>
 
             {/* 2026년 상·하한액 */}
             <div className="space-y-2">
-              <p className="text-xs font-bold text-[#8B95A1] uppercase tracking-wide">2026년 기준</p>
+              <p className="text-xs font-bold text-[#565D6A] uppercase tracking-wide">2026년 기준</p>
               <div className="flex justify-between items-center py-2 border-b border-[#F2F4F6]">
                 <span className="text-sm text-[#333D4B]">1일 상한액</span>
                 <span className="text-sm font-bold text-[#191F28]">68,100원</span>
@@ -227,7 +227,7 @@ export default function CoupangUnemploymentLanding() {
             </div>
 
             <div className="mt-4 p-3 bg-[#F2F4F6] rounded-xl">
-              <p className="text-xs text-[#8B95A1] leading-relaxed">
+              <p className="text-xs text-[#565D6A] leading-relaxed">
                 <AlertTriangle size={12} className="inline mr-1" />
                 정확한 금액은 나이·피보험기간·임금에 따라 달라집니다.
                 CATCH 계산기에서 내 상황에 맞게 계산해보세요.
@@ -253,7 +253,7 @@ export default function CoupangUnemploymentLanding() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-[#191F28]">{s.title}</p>
-                    <p className="text-xs text-[#8B95A1] mt-0.5">{s.desc}</p>
+                    <p className="text-xs text-[#565D6A] mt-0.5">{s.desc}</p>
                   </div>
                 </div>
               ))}
@@ -274,7 +274,7 @@ export default function CoupangUnemploymentLanding() {
               {FAQ_SCHEMA.mainEntity.map((q, i) => (
                 <div key={i} className="border-b border-[#F2F4F6] last:border-0 pb-4 last:pb-0">
                   <p className="text-sm font-bold text-[#333D4B] mb-1.5">Q. {q.name}</p>
-                  <p className="text-xs text-[#8B95A1] leading-relaxed">{q.acceptedAnswer.text}</p>
+                  <p className="text-xs text-[#565D6A] leading-relaxed">{q.acceptedAnswer.text}</p>
                 </div>
               ))}
             </div>
@@ -302,7 +302,7 @@ export default function CoupangUnemploymentLanding() {
               <Briefcase size={18} />
               퇴직금도 같이 계산하기
             </button>
-            <p className="text-center text-xs text-[#8B95A1]">
+            <p className="text-center text-xs text-[#565D6A]">
               완전 무료 · 회원가입 없이도 계산 가능
             </p>
           </motion.div>
