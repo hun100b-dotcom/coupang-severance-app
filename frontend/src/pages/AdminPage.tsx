@@ -19,6 +19,7 @@ import JobPostingsMenu from '../components/admin/menus/JobPostingsMenu'
 import ApplicantsMenu from '../components/admin/menus/ApplicantsMenu'
 import ConfirmedMenu from '../components/admin/menus/ConfirmedMenu'
 import RecruitSummaryMenu from '../components/admin/menus/RecruitSummaryMenu'
+import SecurityMenu from '../components/admin/menus/SecurityMenu'
 
 interface PermLevel { label: string; color: string; permissions: Record<string, boolean> }
 
@@ -29,7 +30,7 @@ const DEFAULT_PERMS: Record<string, PermLevel> = {
       dashboard: true, target: true,
       job_postings: true, applicants: true, confirmed: true, recruit_summary: true,
       inquiries: true, notices: true, members: true, accounts: true,
-      settings: true, audit_logs: true, server_logs: true,
+      settings: true, audit_logs: true, server_logs: true, security: true,
     },
   },
   admin: {
@@ -38,7 +39,7 @@ const DEFAULT_PERMS: Record<string, PermLevel> = {
       dashboard: true, target: true,
       job_postings: true, applicants: true, confirmed: true, recruit_summary: true,
       inquiries: true, notices: true, members: true, accounts: false,
-      settings: false, audit_logs: false, server_logs: false,
+      settings: false, audit_logs: false, server_logs: false, security: false,
     },
   },
   viewer: {
@@ -47,33 +48,39 @@ const DEFAULT_PERMS: Record<string, PermLevel> = {
       dashboard: true, target: false,
       job_postings: false, applicants: false, confirmed: false, recruit_summary: false,
       inquiries: true, notices: false, members: false, accounts: false,
-      settings: false, audit_logs: false, server_logs: false,
+      settings: false, audit_logs: false, server_logs: false, security: false,
     },
   },
 }
 
-// 모바일 드롭다운용 평탄화 메뉴 목록
-const FLAT_MENUS: { key: AdminMenu; label: string }[] = [
-  { key: 'dashboard',       label: '📊 대시보드' },
-  { key: 'target',          label: '🎯 타겟 분석' },
-  { key: 'job_postings',    label: '💼 채용공고' },
-  { key: 'applicants',      label: '📋 지원자 관리' },
-  { key: 'confirmed',       label: '✅ 확정인원' },
-  { key: 'recruit_summary', label: '📈 채용 Summary' },
-  { key: 'notices',         label: '📢 공지사항' },
-  { key: 'inquiries',       label: '💬 문의' },
-  { key: 'members',         label: '👥 회원 관리' },
-  { key: 'accounts',        label: '🔑 관리자 계정' },
-  { key: 'settings',        label: '⚙️ 설정' },
-  { key: 'audit_logs',      label: '🔍 Audit Logs' },
-  { key: 'server_logs',     label: '🖥️ 서버 로그' },
-]
+// 메뉴별 메타(상단바 타이틀/모바일 드롭다운 라벨 공통 출처)
+const MENU_META: Record<AdminMenu, { title: string; icon: string }> = {
+  dashboard:       { title: '대시보드',       icon: '📊' },
+  target:          { title: 'Target 분석',    icon: '🎯' },
+  job_postings:    { title: '채용공고',        icon: '💼' },
+  applicants:      { title: '지원자 관리',     icon: '📋' },
+  confirmed:       { title: '채용현황',        icon: '📈' },
+  recruit_summary: { title: '채용 Summary',    icon: '📊' },
+  notices:         { title: '공지사항',        icon: '📢' },
+  inquiries:       { title: '문의',           icon: '💬' },
+  members:         { title: '회원 관리',       icon: '👥' },
+  accounts:        { title: '관리자 계정',     icon: '🔑' },
+  security:        { title: '보안 현황',       icon: '🛡️' },
+  server_logs:     { title: '서버 로그',       icon: '🖥️' },
+  audit_logs:      { title: 'Audit Logs',     icon: '🔍' },
+  settings:        { title: '설정',           icon: '⚙️' },
+}
+
+// 모바일 드롭다운용 평탄화 메뉴 목록(MENU_META 기반)
+const FLAT_MENUS: { key: AdminMenu; label: string }[] = (Object.keys(MENU_META) as AdminMenu[])
+  .map(key => ({ key, label: `${MENU_META[key].icon} ${MENU_META[key].title}` }))
 
 export default function AdminPage() {
   const { user, isLoggedIn, loading, logout } = useAuth()
   const navigate = useNavigate()
 
   const [activeMenu, setActiveMenu] = useState<AdminMenu>('dashboard')
+  const [collapsed, setCollapsed] = useState(false)   // 데스크탑 사이드바 접기 상태
   const [permLevels, setPermLevels] = useState<Record<string, PermLevel>>(DEFAULT_PERMS)
   const [adminRole, setAdminRole] = useState<string | null>(null)
   const [adminChecked, setAdminChecked] = useState(false)
@@ -186,6 +193,7 @@ export default function AdminPage() {
       case 'settings':        return <SettingsMenu isSuperAdmin={isSuperAdmin} />
       case 'audit_logs':      return <AuditLogsMenu />
       case 'server_logs':     return <ServerLogsMenu />
+      case 'security':        return <SecurityMenu />
       default: return null
     }
   }
@@ -279,27 +287,102 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {/* 데스크탑: 사이드바 + 메인 콘텐츠 */}
+      {/* 데스크탑: 사이드바 + (상단바 + 메인 콘텐츠) */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <div className="hidden md:block" style={{ flexShrink: 0 }}>
           <AdminSidebar
             active={activeMenu}
             onChange={handleMenuChange}
-            adminEmail={user?.email ?? ''}
-            isSuperAdmin={isSuperAdmin}
-            onLogout={handleLogout}
+            collapsed={collapsed}
           />
         </div>
 
-        {/* 메인 콘텐츠 영역 */}
-        <main style={{
-          flex: 1,
-          overflow: 'auto',
-          minHeight: 0,
-          background: UP.page,
-        }}>
-          {renderMenu()}
-        </main>
+        {/* 우측 컬럼: 상단바 + 콘텐츠 */}
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+          {/* ── 데스크탑 상단바 ── */}
+          <header
+            className="hidden md:flex"
+            style={{
+              alignItems: 'center',
+              gap: 12,
+              height: 56,
+              padding: '0 22px',
+              background: UP.surface,
+              borderBottom: `1px solid ${UP.hair}`,
+              flexShrink: 0,
+            }}
+          >
+            {/* 사이드바 접기 토글 */}
+            <button
+              onClick={() => setCollapsed(c => !c)}
+              title={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
+              style={{
+                width: 34, height: 34, flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: 8, border: `1px solid ${UP.hair}`,
+                background: UP.surface, color: UP.sub, cursor: 'pointer', fontSize: '1rem',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = UP.sunken }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = UP.surface }}
+            >
+              ☰
+            </button>
+
+            {/* 현재 섹션 (브레드크럼) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
+              <span style={{ fontSize: '1.05rem', flexShrink: 0 }}>{MENU_META[activeMenu].icon}</span>
+              <span style={{ fontSize: '0.62rem', color: UP.caption, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>
+                Admin
+              </span>
+              <span style={{ color: UP.hair, flexShrink: 0 }}>/</span>
+              <span style={{
+                fontSize: '0.95rem', fontWeight: 800, color: UP.navy,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {MENU_META[activeMenu].title}
+              </span>
+            </div>
+
+            {/* 우측: 관리자 신원 + 역할 배지 + 로그아웃 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+              <span className="hidden lg:inline" style={{
+                fontSize: '0.78rem', color: UP.sub, maxWidth: 200,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {user?.email}
+              </span>
+              <span style={{
+                fontSize: '0.66rem', fontWeight: 800, color: currentRoleColor,
+                background: `${currentRoleColor}14`, border: `1px solid ${currentRoleColor}33`,
+                padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap',
+              }}>
+                ✦ {currentRoleLabel}
+              </span>
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: '6px 14px', borderRadius: 8,
+                  border: `1px solid ${UP.dangerLine}`, background: UP.dangerBg, color: UP.danger,
+                  fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FBDDDF' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = UP.dangerBg }}
+              >
+                로그아웃
+              </button>
+            </div>
+          </header>
+
+          {/* 메인 콘텐츠 영역 */}
+          <main style={{
+            flex: 1,
+            overflow: 'auto',
+            minHeight: 0,
+            background: UP.page,
+          }}>
+            {renderMenu()}
+          </main>
+        </div>
       </div>
     </div>
   )
