@@ -263,7 +263,7 @@ export default function ServerLogsMenu() {
                   animation: 'spin 0.8s linear infinite', margin: '0 auto 12px',
                 }} />
                 <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-                <p style={{ color: UP.caption, fontSize: '0.82rem' }}>로딩 중...</p>
+                <p style={{ color: UP.sub, fontSize: '0.82rem' }}>로딩 중...</p>
               </div>
             ) : sysLogs.length === 0 ? (
               <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>로그 없음</p>
