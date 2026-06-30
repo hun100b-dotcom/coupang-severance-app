@@ -301,8 +301,8 @@ export default function MyApplicationsTab({ userId }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-5 h-5 animate-spin text-[#3182f6]" />
-        <span className="ml-2 text-[13px] text-[#8b95a1]">불러오는 중...</span>
+        <Loader2 className="w-5 h-5 animate-spin text-up-strong" />
+        <span className="ml-2 text-[13px] text-up-sub">불러오는 중...</span>
       </div>
     )
   }
@@ -313,10 +313,10 @@ export default function MyApplicationsTab({ userId }: Props) {
         <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
           <AlertCircle className="w-8 h-8 text-red-300" />
         </div>
-        <p className="text-[14px] font-bold text-[#4e5968]">{fetchError}</p>
+        <p className="text-[14px] font-bold text-up-body">{fetchError}</p>
         <button
           onClick={() => { setLoading(true); fetchApplications() }}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#3182f6] text-white text-[13px] font-bold"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-brand-strong text-white text-[13px] font-bold"
         >
           <RefreshCw className="w-4 h-4" />
           다시 시도
@@ -369,7 +369,7 @@ export default function MyApplicationsTab({ userId }: Props) {
       </AnimatePresence>
 
       {/* ── LMS형 필터 탭 (언더라인 슬라이딩 인디케이터) ── */}
-      <div className="relative border-b border-slate-100 -mx-1">
+      <div className="relative border-b border-up-hair -mx-1">
         <div className="flex overflow-x-auto px-1">
           {FILTER_TABS.map((tab, idx) => {
             const count = tabCount(tab.key)
@@ -379,7 +379,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                 ref={el => { tabsRef.current[idx] = el }}
                 onClick={() => setFilter(tab.key)}
                 className={`flex items-center gap-1.5 px-4 py-3 text-[13px] font-bold whitespace-nowrap shrink-0 transition-colors ${
-                  filter === tab.key ? 'text-[#3182f6]' : 'text-[#8b95a1]'
+                  filter === tab.key ? 'text-up-strong' : 'text-up-sub'
                 }`}
               >
                 {tab.label}
@@ -387,8 +387,8 @@ export default function MyApplicationsTab({ userId }: Props) {
                 {count > 0 && (
                   <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
                     filter === tab.key
-                      ? 'bg-blue-100 text-[#3182f6]'
-                      : 'bg-slate-100 text-[#8b95a1]'
+                      ? 'bg-brand-bg text-up-strong'
+                      : 'bg-up-sunken text-up-sub'
                   }`}>
                     {count}
                   </span>
@@ -399,7 +399,7 @@ export default function MyApplicationsTab({ userId }: Props) {
         </div>
         {/* 슬라이딩 언더라인 (Framer Motion) */}
         <motion.div
-          className="absolute bottom-0 h-0.5 bg-[#3182f6] rounded-full"
+          className="absolute bottom-0 h-0.5 bg-brand-strong rounded-full"
           animate={indicatorStyle}
           transition={{ type: 'spring', stiffness: 400, damping: 35 }}
         />
@@ -409,15 +409,15 @@ export default function MyApplicationsTab({ userId }: Props) {
       {filtered.length === 0 ? (
         /* 빈 상태 UI */
         <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center">
-            <CheckCircle2 className="w-8 h-8 text-blue-200" />
+          <div className="w-16 h-16 rounded-full bg-brand-bg flex items-center justify-center">
+            <CheckCircle2 className="w-8 h-8 text-brand-200" />
           </div>
-          <p className="text-[15px] font-bold text-[#4e5968]">
+          <p className="text-[15px] font-bold text-up-body">
             {filter === 'all'
               ? '아직 지원한 공고가 없어요'
               : `${FILTER_TABS.find(t => t.key === filter)?.label} 내역이 없어요`}
           </p>
-          <p className="text-[13px] text-[#8b95a1]">채용정보 탭에서 지원해보세요</p>
+          <p className="text-[13px] text-up-sub">채용정보 탭에서 지원해보세요</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
@@ -432,17 +432,17 @@ export default function MyApplicationsTab({ userId }: Props) {
             return (
               <div
                 key={app.id}
-                className="rounded-[24px] p-4 border shadow-[0_4px_16px_rgba(0,0,0,0.04)]"
+                className="rounded-2xl p-4 border shadow-[0_4px_16px_rgba(0,0,0,0.04)]"
                 style={{ background: cfg.cardBg, borderColor: cfg.cardBorder }}
               >
                 {/* 헤더: 회사명 + D-day 배지 + 상태 배지 */}
                 <div className="flex items-start justify-between mb-2 gap-2">
                   <div className="flex-1 min-w-0">
-                    <span className="text-[15px] font-extrabold text-[#191f28]">
+                    <span className="text-[15px] font-extrabold text-up-navy">
                       {job?.company_name ?? '공고 정보 없음'}
                     </span>
                     {job?.center_name && (
-                      <p className="text-[12px] text-[#8b95a1] mt-0.5">{job.center_name}</p>
+                      <p className="text-[12px] text-up-sub mt-0.5">{job.center_name}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
@@ -467,10 +467,10 @@ export default function MyApplicationsTab({ userId }: Props) {
 
                 {/* 위치 + 근무시간 */}
                 {job && (
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-[#8b95a1] mb-3">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-up-sub mb-3">
                     {job.region && (
                       <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-[#3182f6] shrink-0" />
+                        <MapPin className="w-3 h-3 text-up-strong shrink-0" />
                         {job.region}
                       </span>
                     )}
@@ -488,15 +488,15 @@ export default function MyApplicationsTab({ userId }: Props) {
                   <div className="flex items-center gap-2 mb-3">
                     {job.daily_wage > 0 && (
                       <div className="flex items-center gap-1 bg-white/60 px-3 py-1.5 rounded-xl">
-                        <span className="text-[11px] text-[#8b95a1]">일급</span>
-                        <span className="text-[14px] font-black text-[#3182f6]">
+                        <span className="text-[11px] text-up-sub">일급</span>
+                        <span className="text-[14px] font-black text-up-strong font-mono tabular-nums break-keep">
                           {job.daily_wage.toLocaleString('ko-KR')}원
                         </span>
                       </div>
                     )}
                     <div className="flex items-center gap-1 bg-white/60 px-3 py-1.5 rounded-xl">
-                      <span className="text-[11px] text-[#8b95a1]">시급</span>
-                      <span className="text-[13px] font-bold text-[#4e5968]">
+                      <span className="text-[11px] text-up-sub">시급</span>
+                      <span className="text-[13px] font-bold text-up-body font-mono tabular-nums break-keep">
                         {job.hourly_wage.toLocaleString('ko-KR')}원
                       </span>
                     </div>
@@ -504,7 +504,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                 )}
 
                 {/* 지원일 + 출근 예정일/완료 */}
-                <div className="flex items-center justify-between text-[12px] text-[#8b95a1] mb-2">
+                <div className="flex items-center justify-between text-[12px] text-up-sub mb-2">
                   <span>지원일 {fmtDate(app.applied_at)}</span>
                   {app.work_date && app.status === 'confirmed' && (
                     <span className="flex items-center gap-1 font-bold text-emerald-600">
@@ -513,7 +513,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                     </span>
                   )}
                   {app.status === 'completed' && (
-                    <span className="flex items-center gap-1 font-bold text-gray-500">
+                    <span className="flex items-center gap-1 font-bold text-up-sub">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                       완료
                     </span>
@@ -532,7 +532,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                   {/* 지원서 상세보기 */}
                   <button
                     onClick={() => openDetail(app)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-2xl bg-white/70 border border-white/80 text-[12px] text-[#4e5968] font-medium"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-2xl bg-white border border-up-hair text-[12px] text-up-body font-medium"
                   >
                     <Eye className="w-3.5 h-3.5" />
                     지원서 보기
@@ -541,7 +541,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                   {canCancel && (
                     <button
                       onClick={() => setCancelTarget(app)}
-                      className="flex items-center justify-center gap-1 px-4 py-2 rounded-2xl bg-white/70 border border-white/80 text-[12px] text-red-500 font-bold"
+                      className="flex items-center justify-center gap-1 px-4 py-2 rounded-2xl bg-white border border-up-hair text-[12px] text-up-danger font-bold"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                       취소
@@ -559,7 +559,7 @@ export default function MyApplicationsTab({ userId }: Props) {
         <div className="mt-1">
           <button
             onClick={() => setShowCancelled(v => !v)}
-            className="flex items-center gap-1.5 text-[12px] text-[#8b95a1] font-medium px-1 py-1"
+            className="flex items-center gap-1.5 text-[12px] text-up-sub font-medium px-1 py-1"
           >
             {showCancelled
               ? <ChevronUp className="w-4 h-4" />
@@ -582,16 +582,16 @@ export default function MyApplicationsTab({ userId }: Props) {
                     return (
                       <div
                         key={app.id}
-                        className="rounded-[20px] p-3 border"
+                        className="rounded-2xl p-3 border"
                         style={{ background: cfg.cardBg, borderColor: cfg.cardBorder }}
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <span className="text-[13px] font-bold text-[#4e5968]">
+                            <span className="text-[13px] font-bold text-up-body">
                               {job?.company_name ?? '공고 정보 없음'}
                             </span>
                             {job?.center_name && (
-                              <p className="text-[11px] text-[#8b95a1]">{job.center_name}</p>
+                              <p className="text-[11px] text-up-sub">{job.center_name}</p>
                             )}
                           </div>
                           <span
@@ -601,7 +601,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                             {cfg.label}
                           </span>
                         </div>
-                        <p className="text-[11px] text-[#8b95a1] mt-1">
+                        <p className="text-[11px] text-up-sub mt-1">
                           지원일 {fmtDate(app.applied_at)}
                         </p>
                       </div>
@@ -635,26 +635,26 @@ export default function MyApplicationsTab({ userId }: Props) {
               className="fixed bottom-0 left-0 right-0 z-[401] bg-white rounded-t-3xl px-5 pt-5 pb-10"
             >
               {/* 핸들바 */}
-              <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
-              <p className="text-[17px] font-extrabold text-[#191f28] mb-1">
+              <div className="w-10 h-1 bg-up-hair rounded-full mx-auto mb-5" />
+              <p className="text-[17px] font-extrabold text-up-navy mb-1">
                 지원을 취소할까요?
               </p>
-              <p className="text-[13px] text-[#8b95a1] mb-6">
-                <span className="font-bold text-[#4e5968]">
+              <p className="text-[13px] text-up-sub mb-6">
+                <span className="font-bold text-up-body">
                   {cancelTarget.job_postings?.company_name}
                 </span>에 제출한 지원서가 삭제됩니다.
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => !cancelling && setCancelTarget(null)}
-                  className="flex-1 py-3.5 rounded-2xl border border-gray-200 text-[14px] font-bold text-[#4e5968]"
+                  className="flex-1 py-3.5 rounded-2xl border border-up-hair text-[14px] font-bold text-up-body"
                 >
                   돌아가기
                 </button>
                 <button
                   onClick={handleCancel}
                   disabled={cancelling}
-                  className="flex-[1.2] py-3.5 rounded-2xl bg-red-500 text-white text-[14px] font-bold flex items-center justify-center gap-2 disabled:opacity-60"
+                  className="flex-[1.2] py-3.5 rounded-2xl bg-up-danger text-white text-[14px] font-bold flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                   {cancelling && <Loader2 className="w-4 h-4 animate-spin" />}
                   {cancelling ? '취소 중...' : '지원 취소'}
@@ -685,10 +685,10 @@ export default function MyApplicationsTab({ userId }: Props) {
               onClick={e => e.stopPropagation()}
             >
               {/* 모달 헤더 */}
-              <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between z-10">
+              <div className="sticky top-0 bg-white border-b border-up-hair px-5 py-4 flex items-center justify-between z-10">
                 <div>
-                  <h2 className="text-[16px] font-bold text-[#191f28]">지원서 상세</h2>
-                  <p className="text-[11px] text-[#8b95a1] mt-0.5">
+                  <h2 className="text-[16px] font-bold text-up-navy">지원서 상세</h2>
+                  <p className="text-[11px] text-up-sub mt-0.5">
                     {job?.company_name} {job?.center_name}
                   </p>
                 </div>
@@ -700,8 +700,8 @@ export default function MyApplicationsTab({ userId }: Props) {
                       title={statusLock ?? undefined}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-bold transition-colors ${
                         canEdit
-                          ? 'bg-blue-50 text-[#3182f6] hover:bg-blue-100'
-                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          ? 'bg-brand-bg text-up-strong hover:bg-brand-bg'
+                          : 'bg-up-sunken text-up-sub cursor-not-allowed'
                       }`}
                     >
                       <Pencil className="w-3.5 h-3.5" />
@@ -710,9 +710,9 @@ export default function MyApplicationsTab({ userId }: Props) {
                   )}
                   <button
                     onClick={() => setSelectedApp(null)}
-                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-up-sunken transition-colors"
                   >
-                    <XIcon className="w-5 h-5 text-gray-600" />
+                    <XIcon className="w-5 h-5 text-up-body" />
                   </button>
                 </div>
               </div>
@@ -729,19 +729,19 @@ export default function MyApplicationsTab({ userId }: Props) {
                 {/* 수정 에러 */}
                 {editError && (
                   <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-                    <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                    <AlertCircle className="w-4 h-4 text-up-danger shrink-0" />
                     <p className="text-[12px] text-red-700">{editError}</p>
                   </div>
                 )}
                 {/* 공고 정보 */}
                 {job && (
-                  <div className="bg-gray-50 rounded-2xl p-4">
-                    <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2">공고 정보</p>
-                    <div className="space-y-1 text-[12px] text-[#4e5968]">
-                      <p><span className="text-gray-400">회사</span> · {job.company_name} {job.center_name}</p>
-                      {job.region && <p><span className="text-gray-400">지역</span> · {job.region}</p>}
-                      {job.work_hours && <p><span className="text-gray-400">근무시간</span> · {job.work_hours}</p>}
-                      <p className="text-[#3182f6] font-bold">
+                  <div className="bg-up-sunken rounded-2xl p-4">
+                    <p className="text-[11px] font-bold text-up-sub uppercase tracking-wide mb-2">공고 정보</p>
+                    <div className="space-y-1 text-[12px] text-up-body">
+                      <p><span className="text-up-sub">회사</span> · {job.company_name} {job.center_name}</p>
+                      {job.region && <p><span className="text-up-sub">지역</span> · {job.region}</p>}
+                      {job.work_hours && <p><span className="text-up-sub">근무시간</span> · {job.work_hours}</p>}
+                      <p className="text-up-strong font-bold">
                         시급 {job.hourly_wage.toLocaleString('ko-KR')}원
                         {job.daily_wage > 0 && ` · 일급 ${job.daily_wage.toLocaleString('ko-KR')}원`}
                       </p>
@@ -750,52 +750,52 @@ export default function MyApplicationsTab({ userId }: Props) {
                 )}
                 {/* 지원자 인적사항 */}
                 <div>
-                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-3">지원자 정보</p>
+                  <p className="text-[11px] font-bold text-up-sub uppercase tracking-wide mb-3">지원자 정보</p>
                   {editMode ? (
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1">성명</label>
+                        <label className="block text-[12px] font-medium text-up-body mb-1">성명</label>
                         <input
                           type="text"
                           value={editForm.applicant_name}
                           onChange={e => setEditForm(f => ({ ...f, applicant_name: e.target.value }))}
-                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2.5 rounded-xl border border-up-hair bg-up-sunken text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                         />
                       </div>
                       <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1">생년월일</label>
+                        <label className="block text-[12px] font-medium text-up-body mb-1">생년월일</label>
                         <div className="flex gap-2 items-end">
                           <div className="flex-[3] min-w-[80px]">
                             <input
                               type="text" inputMode="numeric" placeholder="1990" maxLength={4}
                               value={editForm.birth_year}
                               onChange={e => setEditForm(f => ({ ...f, birth_year: e.target.value.replace(/\D/g, '') }))}
-                              className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full px-3 py-2 rounded-xl border border-up-hair bg-up-sunken text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                             />
-                            <span className="text-[10px] text-gray-400 block text-center mt-0.5">년</span>
+                            <span className="text-[10px] text-up-sub block text-center mt-0.5">년</span>
                           </div>
                           <div className="w-[54px]">
                             <input
                               type="text" inputMode="numeric" placeholder="1" maxLength={2}
                               value={editForm.birth_month}
                               onChange={e => setEditForm(f => ({ ...f, birth_month: e.target.value.replace(/\D/g, '') }))}
-                              className="w-full text-center py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full text-center py-2 rounded-xl border border-up-hair bg-up-sunken text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                             />
-                            <span className="text-[10px] text-gray-400 block text-center mt-0.5">월</span>
+                            <span className="text-[10px] text-up-sub block text-center mt-0.5">월</span>
                           </div>
                           <div className="w-[54px]">
                             <input
                               type="text" inputMode="numeric" placeholder="1" maxLength={2}
                               value={editForm.birth_day}
                               onChange={e => setEditForm(f => ({ ...f, birth_day: e.target.value.replace(/\D/g, '') }))}
-                              className="w-full text-center py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full text-center py-2 rounded-xl border border-up-hair bg-up-sunken text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                             />
-                            <span className="text-[10px] text-gray-400 block text-center mt-0.5">일</span>
+                            <span className="text-[10px] text-up-sub block text-center mt-0.5">일</span>
                           </div>
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1">성별</label>
+                        <label className="block text-[12px] font-medium text-up-body mb-1">성별</label>
                         <div className="flex gap-2">
                           {(['male', 'female'] as const).map(g => (
                             <button
@@ -803,8 +803,8 @@ export default function MyApplicationsTab({ userId }: Props) {
                               onClick={() => setEditForm(f => ({ ...f, applicant_gender: g }))}
                               className={`flex-1 py-2 rounded-xl border text-sm font-medium transition-colors ${
                                 editForm.applicant_gender === g
-                                  ? 'bg-blue-500 border-blue-500 text-white'
-                                  : 'bg-gray-50 border-gray-200 text-gray-700'
+                                  ? 'bg-brand-bg0 border-brand text-white'
+                                  : 'bg-up-sunken border-up-hair text-up-body'
                               }`}
                             >
                               {g === 'male' ? '남성' : '여성'}
@@ -813,40 +813,40 @@ export default function MyApplicationsTab({ userId }: Props) {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1">휴대폰 번호</label>
+                        <label className="block text-[12px] font-medium text-up-body mb-1">휴대폰 번호</label>
                         <input
                           type="tel"
                           value={editForm.applicant_phone}
                           onChange={e => setEditForm(f => ({ ...f, applicant_phone: e.target.value }))}
-                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2.5 rounded-xl border border-up-hair bg-up-sunken text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                         />
                       </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[12px]">
-                      <div><span className="text-gray-400">성명</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.applicant_name ?? '—'}</span></div>
-                      <div><span className="text-gray-400">생년월일</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.applicant_birth ?? '—'}</span></div>
-                      <div><span className="text-gray-400">성별</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.applicant_gender === 'male' ? '남성' : selectedApp.applicant_gender === 'female' ? '여성' : '—'}</span></div>
-                      <div><span className="text-gray-400">휴대폰</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.applicant_phone ?? '—'}</span></div>
+                      <div><span className="text-up-sub">성명</span><br /><span className="font-semibold text-up-navy">{selectedApp.applicant_name ?? '—'}</span></div>
+                      <div><span className="text-up-sub">생년월일</span><br /><span className="font-semibold text-up-navy">{selectedApp.applicant_birth ?? '—'}</span></div>
+                      <div><span className="text-up-sub">성별</span><br /><span className="font-semibold text-up-navy">{selectedApp.applicant_gender === 'male' ? '남성' : selectedApp.applicant_gender === 'female' ? '여성' : '—'}</span></div>
+                      <div><span className="text-up-sub">휴대폰</span><br /><span className="font-semibold text-up-navy">{selectedApp.applicant_phone ?? '—'}</span></div>
                     </div>
                   )}
                 </div>
                 {/* 근무 관련 정보 */}
                 <div>
-                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-3">근무 관련</p>
+                  <p className="text-[11px] font-bold text-up-sub uppercase tracking-wide mb-3">근무 관련</p>
                   {editMode ? (
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1">지원 업무</label>
+                        <label className="block text-[12px] font-medium text-up-body mb-1">지원 업무</label>
                         <input
                           type="text"
                           value={editForm.applied_task}
                           onChange={e => setEditForm(f => ({ ...f, applied_task: e.target.value }))}
-                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2.5 rounded-xl border border-up-hair bg-up-sunken text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                         />
                       </div>
                       <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1">90일 이내 근무 경험</label>
+                        <label className="block text-[12px] font-medium text-up-body mb-1">90일 이내 근무 경험</label>
                         <div className="flex gap-2">
                           {([true, false] as const).map(v => (
                             <button
@@ -854,8 +854,8 @@ export default function MyApplicationsTab({ userId }: Props) {
                               onClick={() => setEditForm(f => ({ ...f, prior_experience_90d: v }))}
                               className={`flex-1 py-2 rounded-xl border text-sm font-medium transition-colors ${
                                 editForm.prior_experience_90d === v
-                                  ? 'bg-blue-500 border-blue-500 text-white'
-                                  : 'bg-gray-50 border-gray-200 text-gray-700'
+                                  ? 'bg-brand-bg0 border-brand text-white'
+                                  : 'bg-up-sunken border-up-hair text-up-body'
                               }`}
                             >
                               {v ? '있음' : '없음'}
@@ -864,7 +864,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1">희망 출근 시간대</label>
+                        <label className="block text-[12px] font-medium text-up-body mb-1">희망 출근 시간대</label>
                         <div className="flex gap-2 flex-wrap">
                           {(['morning', 'afternoon', 'night', 'any'] as const).map(s => (
                             <button
@@ -872,8 +872,8 @@ export default function MyApplicationsTab({ userId }: Props) {
                               onClick={() => setEditForm(f => ({ ...f, preferred_shift: s }))}
                               className={`px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${
                                 editForm.preferred_shift === s
-                                  ? 'bg-blue-500 border-blue-500 text-white'
-                                  : 'bg-gray-50 border-gray-200 text-gray-700'
+                                  ? 'bg-brand-bg0 border-brand text-white'
+                                  : 'bg-up-sunken border-up-hair text-up-body'
                               }`}
                             >
                               {SHIFT_LABEL[s]}
@@ -882,7 +882,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1">교통 수단</label>
+                        <label className="block text-[12px] font-medium text-up-body mb-1">교통 수단</label>
                         <div className="flex gap-2">
                           {(['car', 'public', 'shuttle'] as const).map(t => (
                             <button
@@ -890,8 +890,8 @@ export default function MyApplicationsTab({ userId }: Props) {
                               onClick={() => setEditForm(f => ({ ...f, transportation: t }))}
                               className={`flex-1 py-2 rounded-xl border text-[12px] font-medium transition-colors ${
                                 editForm.transportation === t
-                                  ? 'bg-blue-500 border-blue-500 text-white'
-                                  : 'bg-gray-50 border-gray-200 text-gray-700'
+                                  ? 'bg-brand-bg0 border-brand text-white'
+                                  : 'bg-up-sunken border-up-hair text-up-body'
                               }`}
                             >
                               {TRANSPORT_LABEL[t]}
@@ -900,62 +900,62 @@ export default function MyApplicationsTab({ userId }: Props) {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1">안전화 사이즈</label>
+                        <label className="block text-[12px] font-medium text-up-body mb-1">안전화 사이즈</label>
                         <input
                           type="text"
                           value={editForm.shoe_size}
                           onChange={e => setEditForm(f => ({ ...f, shoe_size: e.target.value }))}
                           placeholder="예: 270"
-                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2.5 rounded-xl border border-up-hair bg-up-sunken text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                         />
                       </div>
                       <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1">특이사항</label>
+                        <label className="block text-[12px] font-medium text-up-body mb-1">특이사항</label>
                         <textarea
                           value={editForm.notes}
                           onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
                           rows={3}
-                          className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                          className="w-full px-3 py-2 rounded-xl border border-up-hair bg-up-sunken text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1">비상 연락처</label>
+                        <label className="block text-[12px] font-medium text-up-body mb-1">비상 연락처</label>
                         <input
                           type="tel"
                           value={editForm.emergency_contact}
                           onChange={e => setEditForm(f => ({ ...f, emergency_contact: e.target.value }))}
-                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2.5 rounded-xl border border-up-hair bg-up-sunken text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                         />
                       </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[12px]">
-                      <div><span className="text-gray-400">지원 업무</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.applied_task ?? '—'}</span></div>
-                      <div><span className="text-gray-400">근무 경험 (90일)</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.prior_experience_90d === true ? '있음' : selectedApp.prior_experience_90d === false ? '없음' : '—'}</span></div>
-                      <div><span className="text-gray-400">희망 시간대</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.preferred_shift ? SHIFT_LABEL[selectedApp.preferred_shift] : '—'}</span></div>
-                      <div><span className="text-gray-400">교통 수단</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.transportation ? TRANSPORT_LABEL[selectedApp.transportation] : '—'}</span></div>
-                      <div><span className="text-gray-400">안전화 사이즈</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.shoe_size ? `${selectedApp.shoe_size}mm` : '—'}</span></div>
-                      <div><span className="text-gray-400">비상 연락처</span><br /><span className="font-semibold text-[#191f28]">{selectedApp.emergency_contact ?? '—'}</span></div>
+                      <div><span className="text-up-sub">지원 업무</span><br /><span className="font-semibold text-up-navy">{selectedApp.applied_task ?? '—'}</span></div>
+                      <div><span className="text-up-sub">근무 경험 (90일)</span><br /><span className="font-semibold text-up-navy">{selectedApp.prior_experience_90d === true ? '있음' : selectedApp.prior_experience_90d === false ? '없음' : '—'}</span></div>
+                      <div><span className="text-up-sub">희망 시간대</span><br /><span className="font-semibold text-up-navy">{selectedApp.preferred_shift ? SHIFT_LABEL[selectedApp.preferred_shift] : '—'}</span></div>
+                      <div><span className="text-up-sub">교통 수단</span><br /><span className="font-semibold text-up-navy">{selectedApp.transportation ? TRANSPORT_LABEL[selectedApp.transportation] : '—'}</span></div>
+                      <div><span className="text-up-sub">안전화 사이즈</span><br /><span className="font-semibold text-up-navy">{selectedApp.shoe_size ? `${selectedApp.shoe_size}mm` : '—'}</span></div>
+                      <div><span className="text-up-sub">비상 연락처</span><br /><span className="font-semibold text-up-navy">{selectedApp.emergency_contact ?? '—'}</span></div>
                       {selectedApp.notes && (
                         <div className="col-span-2">
-                          <span className="text-gray-400">특이사항</span><br />
-                          <span className="font-semibold text-[#191f28]">{selectedApp.notes}</span>
+                          <span className="text-up-sub">특이사항</span><br />
+                          <span className="font-semibold text-up-navy">{selectedApp.notes}</span>
                         </div>
                       )}
                     </div>
                   )}
                 </div>
                 {/* 지원 정보 (동의 여부 + 일시) */}
-                <div className="bg-gray-50 rounded-2xl p-4 text-[12px]">
-                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2">지원 정보</p>
-                  <div className="grid grid-cols-2 gap-y-1 text-[#4e5968]">
-                    <span className="text-gray-400">지원 일시</span>
+                <div className="bg-up-sunken rounded-2xl p-4 text-[12px]">
+                  <p className="text-[11px] font-bold text-up-sub uppercase tracking-wide mb-2">지원 정보</p>
+                  <div className="grid grid-cols-2 gap-y-1 text-up-body">
+                    <span className="text-up-sub">지원 일시</span>
                     <span>
                       {new Date(selectedApp.applied_at).toLocaleString('ko-KR', {
                         month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
                       })}
                     </span>
-                    <span className="text-gray-400">제3자 제공 동의</span>
+                    <span className="text-up-sub">제3자 제공 동의</span>
                     <span>{selectedApp.consent_third_party ? '✅ 동의함' : '❌ 미동의'}</span>
                   </div>
                 </div>
@@ -964,14 +964,14 @@ export default function MyApplicationsTab({ userId }: Props) {
                   <div className="flex gap-2 pt-2 pb-4">
                     <button
                       onClick={() => { setEditMode(false); setEditError(null) }}
-                      className="flex-1 py-3 rounded-2xl border border-gray-200 text-[14px] font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                      className="flex-1 py-3 rounded-2xl border border-up-hair text-[14px] font-bold text-up-body hover:bg-up-sunken transition-colors"
                     >
                       취소
                     </button>
                     <button
                       onClick={handleEditSave}
                       disabled={editSaving}
-                      className="flex-[2] py-3 rounded-2xl bg-[#3182f6] text-white text-[14px] font-bold flex items-center justify-center gap-2 disabled:opacity-60 transition-opacity"
+                      className="flex-[2] py-3 rounded-2xl bg-brand-strong text-white text-[14px] font-bold flex items-center justify-center gap-2 disabled:opacity-60 transition-opacity"
                     >
                       {editSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                       {editSaving ? '저장 중...' : '수정 완료'}
