@@ -2,6 +2,7 @@
 // 흰 배경 + slate-200 테두리 + 파란 액티브 left-border
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { UP, numeric } from './shared/adminTheme'
 
 export type AdminMenu =
   | 'dashboard' | 'target'
@@ -163,10 +164,10 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
 
   return (
     <aside style={{
-      width: 220,
+      width: 232,
       minHeight: '100vh',
-      background: '#fff',
-      borderRight: '1px solid #e2e8f0',  // slate-200 구분선
+      background: UP.surface,
+      borderRight: `1px solid ${UP.hair}`,  // 헤어라인 구분선
       display: 'flex',
       flexDirection: 'column',
       flexShrink: 0,
@@ -175,16 +176,16 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
       {/* ── 로고 + 프로필 ── */}
       <div style={{
         padding: '20px 20px 16px',
-        borderBottom: '1px solid #f1f5f9',
+        borderBottom: `1px solid ${UP.hairSoft}`,
       }}>
         {/* CATCH Admin 로고 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
           <span style={{ fontSize: '1.2rem' }}>⚡</span>
           <div>
-            <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            <div style={{ fontSize: '0.65rem', color: UP.caption, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
               Admin OS
             </div>
-            <div style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', lineHeight: 1 }}>
+            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: UP.navy, letterSpacing: '-0.02em', lineHeight: 1 }}>
               CATCH
             </div>
           </div>
@@ -192,8 +193,8 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
 
         {/* 이메일 */}
         <div style={{
-          fontSize: '0.68rem',
-          color: '#64748b',
+          fontSize: '0.7rem',
+          color: UP.sub,
           wordBreak: 'break-all',
           lineHeight: 1.4,
           marginBottom: 6,
@@ -235,20 +236,20 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
                   alignItems: 'center',
                   gap: 9,
                   width: '100%',
-                  padding: '9px 12px',
+                  padding: '10px 12px',
                   marginBottom: 2,
                   borderRadius: 8,
                   border: 'none',
-                  background: isActive ? '#eff6ff' : 'transparent',
-                  color: isActive ? '#1d4ed8' : '#475569',
-                  fontSize: '0.85rem',
+                  background: isActive ? UP.brandBg : 'transparent',
+                  color: isActive ? UP.strong : UP.body,
+                  fontSize: '0.875rem',
                   fontWeight: isActive ? 700 : 500,
                   cursor: 'pointer',
                   textAlign: 'left',
                   transition: 'all 0.12s',
                   position: 'relative',
                   // 활성 시 왼쪽 파란 바
-                  borderLeft: isActive ? '3px solid #3182f6' : '3px solid transparent',
+                  borderLeft: isActive ? `3px solid ${UP.brand}` : '3px solid transparent',
                 }}
               >
                 <span style={{ fontSize: '0.95rem', flexShrink: 0 }}>{group.groupIcon}</span>
@@ -272,7 +273,7 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
                   borderRadius: 8,
                   border: 'none',
                   background: 'transparent',
-                  color: '#94a3b8',
+                  color: UP.caption,
                   fontSize: '0.65rem',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -289,7 +290,7 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
                   transition: 'transform 0.2s',
                   transform: isOpen ? 'rotate(180deg)' : 'none',
                   display: 'inline-block',
-                  color: '#cbd5e1',
+                  color: UP.caption,
                 }}>▾</span>
               </button>
 
@@ -311,15 +312,15 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
                           marginBottom: 1,
                           borderRadius: 8,
                           border: 'none',
-                          background: isActive ? '#eff6ff' : 'transparent',
-                          color: isActive ? '#1d4ed8' : '#64748b',
-                          fontSize: '0.83rem',
-                          fontWeight: isActive ? 700 : 400,
+                          background: isActive ? UP.brandBg : 'transparent',
+                          color: isActive ? UP.strong : UP.sub,
+                          fontSize: '0.845rem',
+                          fontWeight: isActive ? 700 : 500,
                           cursor: 'pointer',
                           textAlign: 'left',
                           transition: 'all 0.12s',
                           position: 'relative',
-                          borderLeft: isActive ? '3px solid #3182f6' : '3px solid transparent',
+                          borderLeft: isActive ? `3px solid ${UP.brand}` : '3px solid transparent',
                         }}
                       >
                         <span style={{ fontSize: '0.75rem', flexShrink: 0 }}>{item.icon}</span>
@@ -328,12 +329,13 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
                         {/* 문의 대기 배지 */}
                         {item.badge && waitingCount > 0 && (
                           <span style={{
-                            background: '#f59e0b',
+                            background: UP.amber,
                             color: '#fff',
                             borderRadius: 999,
                             padding: '1px 6px',
                             fontSize: '0.62rem',
                             fontWeight: 800,
+                            ...numeric,
                           }}>
                             {waitingCount}
                           </span>
@@ -341,7 +343,7 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
 
                         {/* 슈퍼어드민 전용 빨간 점 */}
                         {item.superOnly && (
-                          <span style={{ fontSize: '0.45rem', color: '#e11d48', opacity: 0.8 }}>●</span>
+                          <span style={{ fontSize: '0.45rem', color: UP.danger, opacity: 0.85 }}>●</span>
                         )}
                       </button>
                     )
@@ -356,25 +358,25 @@ export default function AdminSidebar({ active, onChange, adminEmail, isSuperAdmi
       {/* ── 로그아웃 ── */}
       <div style={{
         padding: '12px 10px',
-        borderTop: '1px solid #f1f5f9',
+        borderTop: `1px solid ${UP.hairSoft}`,
       }}>
         <button
           onClick={onLogout}
           style={{
             width: '100%',
-            padding: '9px 12px',
+            padding: '10px 12px',
             borderRadius: 8,
-            border: '1px solid #fecdd3',
-            background: '#fff1f2',
-            color: '#e11d48',
-            fontSize: '0.83rem',
+            border: `1px solid ${UP.dangerLine}`,
+            background: UP.dangerBg,
+            color: UP.danger,
+            fontSize: '0.845rem',
             fontWeight: 700,
             cursor: 'pointer',
             textAlign: 'left',
             transition: 'background 0.12s',
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#ffe4e6' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#fff1f2' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FBDDDF' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = UP.dangerBg }}
         >
           🚪 로그아웃
         </button>

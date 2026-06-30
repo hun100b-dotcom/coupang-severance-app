@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { logAdminAction } from '../lib/adminAuditLog'
 import AdminSidebar, { type AdminMenu, SUPER_ADMIN_EMAIL } from '../components/admin/AdminSidebar'
+import { UP } from '../components/admin/shared/adminTheme'
 import DashboardMenu from '../components/admin/menus/DashboardMenu'
 import TargetMenu from '../components/admin/menus/TargetMenu'
 import InquiriesMenu from '../components/admin/menus/InquiriesMenu'
@@ -194,8 +195,8 @@ export default function AdminPage() {
       display: 'flex',
       flexDirection: 'column',
       minHeight: '100vh',
-      background: '#f8fafc',   // slate-50 라이트 배경
-      color: '#0f172a',        // slate-900 텍스트
+      background: UP.page,      // 옅은 청회색 페이지 배경
+      color: UP.body,           // 기본 본문 잉크
       position: 'fixed',
       inset: 0,
       zIndex: 100,
@@ -209,15 +210,15 @@ export default function AdminPage() {
           alignItems: 'center',
           gap: 8,
           padding: '10px 12px',
-          background: '#fff',
-          borderBottom: '1px solid #e2e8f0',
+          background: UP.surface,
+          borderBottom: `1px solid ${UP.hair}`,
           flexShrink: 0,
         }}
       >
         {/* CATCH Admin 로고 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 0 }}>
           <span style={{ fontSize: '1.1rem' }}>⚡</span>
-          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#3182f6', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: UP.strong, whiteSpace: 'nowrap' }}>
             CATCH
           </span>
         </div>
@@ -230,9 +231,9 @@ export default function AdminPage() {
             flex: 1,
             padding: '7px 10px',
             borderRadius: 8,
-            border: '1px solid #e2e8f0',
-            background: '#f8fafc',
-            color: '#0f172a',
+            border: `1px solid ${UP.hair}`,
+            background: UP.sunken,
+            color: UP.navy,
             fontSize: '0.85rem',
             fontWeight: 600,
             outline: 'none',
@@ -265,9 +266,9 @@ export default function AdminPage() {
           style={{
             padding: '6px 10px',
             borderRadius: 8,
-            border: '1px solid #fecdd3',
-            background: '#fff1f2',
-            color: '#e11d48',
+            border: `1px solid ${UP.dangerLine}`,
+            background: UP.dangerBg,
+            color: UP.danger,
             fontSize: '0.78rem',
             fontWeight: 700,
             cursor: 'pointer',
@@ -295,7 +296,7 @@ export default function AdminPage() {
           flex: 1,
           overflow: 'auto',
           minHeight: 0,
-          background: '#f8fafc',
+          background: UP.page,
         }}>
           {renderMenu()}
         </main>
@@ -314,14 +315,14 @@ function AccessDenied({ label }: { label: string }) {
         width: 56,
         height: 56,
         borderRadius: '50%',
-        background: '#fff1f2',
-        border: '1px solid #fecdd3',
+        background: UP.dangerBg,
+        border: `1px solid ${UP.dangerLine}`,
         marginBottom: 16,
       }}>
         <span style={{ fontSize: '1.6rem' }}>🔒</span>
       </div>
-      <div style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: 8 }}>접근 제한</div>
-      <div style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: 1.6 }}>{label}</div>
+      <div style={{ fontSize: '1rem', fontWeight: 700, color: UP.navy, marginBottom: 8 }}>접근 제한</div>
+      <div style={{ fontSize: '0.85rem', color: UP.sub, lineHeight: 1.6 }}>{label}</div>
     </div>
   )
 }

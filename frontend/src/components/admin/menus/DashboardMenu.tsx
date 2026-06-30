@@ -6,6 +6,7 @@
 
 import { useState, lazy, Suspense } from 'react'
 import DashboardSubTabs, { type DashboardSubTab } from '../DashboardSubTabs'
+import { UP } from '../shared/adminTheme'
 
 // 탭별 콘텐츠 컴포넌트를 lazy로 로딩 (대시보드가 무거우므로 코드 분할)
 const OverviewTab   = lazy(() => import('../tabs/OverviewTab'))
@@ -20,14 +21,14 @@ function TabLoading() {
     <div style={{ padding: '60px 40px', textAlign: 'center' }}>
       <div style={{
         width: 32, height: 32,
-        border: '3px solid #e2e8f0',
-        borderTopColor: '#3182f6',
+        border: `3px solid ${UP.hair}`,
+        borderTopColor: UP.brand,
         borderRadius: '50%',
         animation: 'spin 0.8s linear infinite',
         margin: '0 auto 16px',
       }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-      <p style={{ color: '#64748b', fontSize: '0.85rem' }}>탭 로딩 중...</p>
+      <p style={{ color: UP.sub, fontSize: '0.85rem' }}>탭 로딩 중...</p>
     </div>
   )
 }

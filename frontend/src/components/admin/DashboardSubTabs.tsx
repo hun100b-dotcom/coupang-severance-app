@@ -1,4 +1,6 @@
-// 대시보드 서브탭 네비게이션 — 라이트 모드 전환 (캐치퀀트봇 스타일)
+// 대시보드 서브탭 네비게이션 — 업비트 톤 (헤어라인 + 활성 언더라인)
+import { UP } from './shared/adminTheme'
+
 export type DashboardSubTab = 'overview' | 'visitors' | 'calc_stats' | 'recruit' | 'target'
 
 const TABS: { key: DashboardSubTab; icon: string; label: string; desc: string }[] = [
@@ -20,10 +22,10 @@ export default function DashboardSubTabs({ activeTab, onTabChange }: Props) {
       display: 'flex',
       gap: 0,
       padding: '0 24px',
-      borderBottom: '1px solid #e2e8f0',
+      borderBottom: `1px solid ${UP.hair}`,
       overflowX: 'auto',
       scrollbarWidth: 'none',
-      background: '#fff',
+      background: UP.surface,
       flexShrink: 0,
     }}>
       {TABS.map(tab => {
@@ -43,21 +45,21 @@ export default function DashboardSubTabs({ activeTab, onTabChange }: Props) {
               cursor: 'pointer',
               flexShrink: 0,
               position: 'relative',
-              color: isActive ? '#1d4ed8' : '#64748b',
+              color: isActive ? UP.strong : UP.sub,
               transition: 'color 0.12s',
             }}
           >
             <span style={{ fontSize: '0.95rem' }}>{tab.icon}</span>
             <span style={{
-              fontSize: '0.73rem',
+              fontSize: '0.75rem',
               fontWeight: isActive ? 700 : 500,
               lineHeight: 1,
             }}>
               {tab.label}
             </span>
             <span style={{
-              fontSize: '0.58rem',
-              color: isActive ? '#3182f6' : '#94a3b8',
+              fontSize: '0.6rem',
+              color: isActive ? UP.brand : UP.caption,
               lineHeight: 1,
             }}>
               {tab.desc}
@@ -72,7 +74,7 @@ export default function DashboardSubTabs({ activeTab, onTabChange }: Props) {
                 right: '10%',
                 height: 2,
                 borderRadius: '2px 2px 0 0',
-                background: '#3182f6',
+                background: UP.brand,
               }} />
             )}
           </button>
