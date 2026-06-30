@@ -1,6 +1,7 @@
 ﻿// 어드민 — 지원자 관리 전용 메뉴 (Phase C)
 // 기능: LMS형 필터(사업장/공고/근무일자/업무/사용자ID/사용자명), 상태변경, 대량 처리, CSV 내보내기
 import { useEffect, useState, useCallback } from 'react'
+import { UP } from '../shared/adminTheme'
 import { supabase } from '../../../lib/supabase'
 
 // ── 지원자 한 행의 타입 ──
@@ -35,12 +36,12 @@ const STATUS_LABEL: Record<string, string> = {
 
 // 상태별 색상
 const statusColor = (status: string) => {
-  if (status === 'confirmed') return { bg: 'rgba(49,200,100,0.18)', color: '#3fc878' }
-  if (status === 'reviewing') return { bg: 'rgba(255,180,0,0.18)',  color: '#ffb400' }
-  if (status === 'completed') return { bg: '#f1f5f9', color: '#64748b' }
-  if (status === 'cancelled') return { bg: 'rgba(240,68,82,0.18)',  color: '#f04452' }
-  if (status === 'rejected')  return { bg: 'rgba(240,68,82,0.25)',  color: '#ff4d4d' }
-  return { bg: 'rgba(49,130,246,0.18)', color: '#3182f6' }  // applied
+  if (status === 'confirmed') return { bg: 'rgba(49,200,100,0.18)', color: UP.green }
+  if (status === 'reviewing') return { bg: 'rgba(255,180,0,0.18)',  color: UP.amber }
+  if (status === 'completed') return { bg: UP.hairSoft, color: UP.sub }
+  if (status === 'cancelled') return { bg: 'rgba(240,68,82,0.18)',  color: UP.danger }
+  if (status === 'rejected')  return { bg: 'rgba(240,68,82,0.25)',  color: UP.danger }
+  return { bg: 'rgba(49,130,246,0.18)', color: UP.brand }  // applied
 }
 
 // 휴대폰 번호 마스킹
@@ -53,14 +54,14 @@ function maskPhone(phone: string): string {
 // 공통 셀렉트/인풋 스타일 (라이트 모드)
 const filterSelectStyle: React.CSSProperties = {
   padding: '6px 10px', borderRadius: 8,
-  border: '1px solid #e2e8f0',
-  background: '#fff', color: '#0f172a',
+  border: `1px solid ${UP.hair}`,
+  background: '#fff', color: UP.navy,
   fontSize: '0.82rem', cursor: 'pointer', outline: 'none',
 }
 const filterInputStyle: React.CSSProperties = {
   padding: '6px 10px', borderRadius: 8,
-  border: '1px solid #e2e8f0',
-  background: '#fff', color: '#0f172a',
+  border: `1px solid ${UP.hair}`,
+  background: '#fff', color: UP.navy,
   fontSize: '0.82rem', outline: 'none',
   minWidth: 110,
 }
@@ -351,11 +352,11 @@ export default function ApplicantsMenu() {
 
   // 테이블 스타일 상수 (라이트 모드)
   const cellStyle: React.CSSProperties = {
-    padding: '10px 12px', borderBottom: '1px solid #f1f5f9',
-    fontSize: '0.83rem', color: '#334155', verticalAlign: 'middle',
+    padding: '10px 12px', borderBottom: `1px solid ${UP.hairSoft}`,
+    fontSize: '0.83rem', color: UP.body, verticalAlign: 'middle',
   }
   const thStyle: React.CSSProperties = {
-    ...cellStyle, color: '#64748b', fontWeight: 600,
+    ...cellStyle, color: UP.sub, fontWeight: 600,
     fontSize: '0.75rem', textTransform: 'uppercase' as const, letterSpacing: '0.05em',
   }
 
@@ -367,7 +368,7 @@ export default function ApplicantsMenu() {
           zIndex: 9999, minWidth: 280, maxWidth: 420, padding: '12px 20px', borderRadius: 12,
           background: toast.type === 'success' ? 'rgba(49,200,100,0.95)' : 'rgba(240,68,82,0.95)',
           color: '#fff', fontWeight: 700, fontSize: '0.9rem',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)',
+          boxShadow: '0 8px 32px rgba(16,24,40,0.18)', backdropFilter: 'blur(8px)',
           textAlign: 'center', pointerEvents: 'none',
         }}>
           {toast.msg}
@@ -378,15 +379,15 @@ export default function ApplicantsMenu() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
         <div>
           {/* 흰색 타이틀 */}
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px', color: '#0f172a' }}>👥 지원자 관리</h2>
-          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px', color: UP.navy }}>👥 지원자 관리</h2>
+          <p style={{ fontSize: '0.8rem', color: UP.sub, margin: 0 }}>
             지원자 상태를 검토중 → 출근확정 순으로 처리하세요. 총 {displayApplicants.length}명
           </p>
         </div>
         <button onClick={handleExportCsv}
           style={{
-            padding: '7px 16px', borderRadius: 10, border: '1px solid #bbf7d0',
-            background: '#f0fdf4', color: '#059669',
+            padding: '7px 16px', borderRadius: 10, border: `1px solid ${UP.greenLine}`,
+            background: UP.greenBg, color: UP.green,
             fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
           }}>
           📥 CSV 다운로드
@@ -478,8 +479,8 @@ export default function ApplicantsMenu() {
           <button
             onClick={() => { setShiftFilter(''); setTaskFilter(''); setPhoneFilter(''); setNameFilter('') }}
             style={{
-              padding: '5px 10px', borderRadius: 8, border: '1px solid #e2e8f0',
-              background: '#f8fafc', color: '#64748b',
+              padding: '5px 10px', borderRadius: 8, border: `1px solid ${UP.hair}`,
+              background: UP.sunken, color: UP.sub,
               fontSize: '0.75rem', cursor: 'pointer',
             }}
           >
@@ -494,8 +495,8 @@ export default function ApplicantsMenu() {
           <button key={s} onClick={() => setStatusFilter(s)}
             style={{
               padding: '4px 12px', borderRadius: 999, border: 'none',
-              background: statusFilter === s ? '#3182f6' : '#f1f5f9',
-              color: statusFilter === s ? '#fff' : '#64748b',
+              background: statusFilter === s ? UP.brand : UP.hairSoft,
+              color: statusFilter === s ? '#fff' : UP.sub,
               fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
             }}>
             {s === 'all' ? '전체' : STATUS_LABEL[s]}
@@ -511,14 +512,14 @@ export default function ApplicantsMenu() {
           background: 'rgba(49,130,246,0.12)', border: '1px solid rgba(49,130,246,0.25)',
           flexWrap: 'wrap',
         }}>
-          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#3182f6' }}>
+          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: UP.brand }}>
             {selectedIds.size}명 선택됨
           </span>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={() => handleBulkUpdate('reviewing')} disabled={bulkUpdating}
               style={{
                 padding: '6px 16px', borderRadius: 8, border: 'none',
-                background: 'rgba(255,180,0,0.15)', color: '#ffb400',
+                background: 'rgba(255,180,0,0.15)', color: UP.amber,
                 fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
                 opacity: bulkUpdating ? 0.5 : 1,
               }}>
@@ -527,7 +528,7 @@ export default function ApplicantsMenu() {
             <button onClick={() => handleBulkUpdate('confirmed')} disabled={bulkUpdating}
               style={{
                 padding: '6px 16px', borderRadius: 8, border: 'none',
-                background: 'rgba(49,200,100,0.15)', color: '#3fc878',
+                background: 'rgba(49,200,100,0.15)', color: UP.green,
                 fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
                 opacity: bulkUpdating ? 0.5 : 1,
               }}>
@@ -536,7 +537,7 @@ export default function ApplicantsMenu() {
             <button onClick={() => handleBulkUpdate('rejected')} disabled={bulkUpdating}
               style={{
                 padding: '6px 16px', borderRadius: 8, border: 'none',
-                background: 'rgba(240,68,82,0.15)', color: '#f04452',
+                background: 'rgba(240,68,82,0.15)', color: UP.danger,
                 fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
                 opacity: bulkUpdating ? 0.5 : 1,
               }}>
@@ -545,8 +546,8 @@ export default function ApplicantsMenu() {
           </div>
           <button onClick={() => setSelectedIds(new Set())}
             style={{
-              marginLeft: 'auto', padding: '4px 10px', borderRadius: 6, border: '1px solid #e2e8f0',
-              background: '#f8fafc', color: '#64748b',
+              marginLeft: 'auto', padding: '4px 10px', borderRadius: 6, border: `1px solid ${UP.hair}`,
+              background: UP.sunken, color: UP.sub,
               fontSize: '0.75rem', cursor: 'pointer',
             }}>
             선택 해제
@@ -559,12 +560,12 @@ export default function ApplicantsMenu() {
         <div style={{
           background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
           borderRadius: 10, padding: '12px 16px', marginBottom: 12,
-          color: '#ff6b6b', fontSize: '0.82rem',
+          color: UP.danger, fontSize: '0.82rem',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <span>⚠️ {error}</span>
           <button onClick={() => { setError(null); fetchApplicants() }}
-            style={{ background: 'none', border: 'none', color: '#ff6b6b', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}>
+            style={{ background: 'none', border: 'none', color: UP.danger, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}>
             다시 시도 ↻
           </button>
         </div>
@@ -572,13 +573,13 @@ export default function ApplicantsMenu() {
 
       {/* 지원자 테이블 */}
       {loading ? (
-        <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>불러오는 중...</p>
+        <p style={{ color: UP.caption, fontSize: '0.85rem' }}>불러오는 중...</p>
       ) : (
-        <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+        <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', border: `1px solid ${UP.hair}` }}>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 820 }}>
               <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                <tr style={{ background: UP.sunken, borderBottom: `1px solid ${UP.hair}` }}>
                   {/* 전체 선택 체크박스 */}
                   <th style={{ ...thStyle, width: 40, textAlign: 'center' }}>
                     <input
@@ -599,7 +600,7 @@ export default function ApplicantsMenu() {
               <tbody>
                 {displayApplicants.length === 0 && (
                   <tr>
-                    <td colSpan={7} style={{ ...cellStyle, textAlign: 'center', color: '#94a3b8' }}>
+                    <td colSpan={7} style={{ ...cellStyle, textAlign: 'center', color: UP.caption }}>
                       지원자가 없습니다.
                     </td>
                   </tr>
@@ -632,7 +633,7 @@ export default function ApplicantsMenu() {
                         <div style={{ fontWeight: 600, fontSize: '0.82rem' }}>
                           {app.profiles?.full_name ?? '이름 없음'}
                         </div>
-                        <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: 1 }}>
+                        <div style={{ fontSize: '0.7rem', color: UP.sub, marginTop: 1 }}>
                           {app.profiles?.email ?? '-'}
                         </div>
                       </td>
@@ -641,27 +642,27 @@ export default function ApplicantsMenu() {
                       <td style={cellStyle}>
                         {app.applicant_name ? (
                           <>
-                            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0f172a' }}>
+                            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: UP.navy }}>
                               {app.applicant_name}
-                              <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: 4 }}>
+                              <span style={{ fontSize: '0.7rem', color: UP.sub, marginLeft: 4 }}>
                                 {app.applicant_gender === 'male' ? '남' : app.applicant_gender === 'female' ? '여' : ''}
                               </span>
                             </div>
-                            <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: 1 }}>
+                            <div style={{ fontSize: '0.7rem', color: UP.sub, marginTop: 1 }}>
                               {app.applicant_birth ? app.applicant_birth.slice(0, 10) : '-'}
                               {' · '}
                               {app.applicant_phone ? maskPhone(app.applicant_phone) : '-'}
                             </div>
                           </>
                         ) : (
-                          <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>미입력</span>
+                          <span style={{ fontSize: '0.75rem', color: UP.caption }}>미입력</span>
                         )}
                       </td>
 
                       {/* 공고 정보 */}
                       <td style={cellStyle}>
                         <div style={{ fontWeight: 600 }}>{app.job_postings?.company_name ?? '-'}</div>
-                        <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                        <div style={{ fontSize: '0.72rem', color: UP.sub }}>
                           {app.job_postings?.center_name ?? ''}
                         </div>
                       </td>
@@ -682,7 +683,7 @@ export default function ApplicantsMenu() {
                         </span>
                         {/* 출근 예정일 표시 (확정 이후) */}
                         {app.work_date && (app.status === 'confirmed' || app.status === 'completed') && (
-                          <div style={{ fontSize: '0.65rem', color: '#64748b', marginTop: 2 }}>
+                          <div style={{ fontSize: '0.65rem', color: UP.sub, marginTop: 2 }}>
                             {app.work_date}
                           </div>
                         )}
@@ -696,7 +697,7 @@ export default function ApplicantsMenu() {
                           {app.status === 'applied' && (
                             <>
                               <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'reviewing')}
-                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(255,180,0,0.15)', color: '#ffb400', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(255,180,0,0.15)', color: UP.amber, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                                 🔍 검토
                               </button>
                               <button disabled={isUpdating}
@@ -705,11 +706,11 @@ export default function ApplicantsMenu() {
                                   const workDate = window.prompt('출근 예정일 (YYYY-MM-DD)', today)
                                   if (workDate !== null) handleUpdateStatus(app.id, 'confirmed', workDate)
                                 }}
-                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(49,200,100,0.15)', color: '#3fc878', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(49,200,100,0.15)', color: UP.green, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                                 ✓ 확정
                               </button>
                               <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'rejected')}
-                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(240,68,82,0.15)', color: '#f04452', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(240,68,82,0.15)', color: UP.danger, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                                 ✕ 거절
                               </button>
                             </>
@@ -724,11 +725,11 @@ export default function ApplicantsMenu() {
                                   const workDate = window.prompt('출근 예정일 (YYYY-MM-DD)', today)
                                   if (workDate !== null) handleUpdateStatus(app.id, 'confirmed', workDate)
                                 }}
-                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(49,200,100,0.15)', color: '#3fc878', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(49,200,100,0.15)', color: UP.green, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                                 ✓ 확정
                               </button>
                               <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'rejected')}
-                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(240,68,82,0.15)', color: '#f04452', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(240,68,82,0.15)', color: UP.danger, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                                 ✕ 거절
                               </button>
                             </>
@@ -737,7 +738,7 @@ export default function ApplicantsMenu() {
                           {/* confirmed → completed */}
                           {app.status === 'confirmed' && (
                             <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'completed')}
-                              style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: '#f1f5f9', color: '#475569', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                              style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: UP.hairSoft, color: UP.body, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                               출근완료
                             </button>
                           )}
@@ -745,14 +746,14 @@ export default function ApplicantsMenu() {
                           {/* confirmed/reviewing → cancelled */}
                           {(app.status === 'confirmed' || app.status === 'reviewing') && (
                             <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'cancelled')}
-                              style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: '#f1f5f9', color: '#64748b', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                              style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: UP.hairSoft, color: UP.sub, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                               취소
                             </button>
                           )}
 
                           {/* 최종 처리된 상태 표시 */}
                           {(app.status === 'completed' || app.status === 'cancelled' || app.status === 'rejected') && (
-                            <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>처리완료</span>
+                            <span style={{ fontSize: '0.72rem', color: UP.caption }}>처리완료</span>
                           )}
                         </div>
                       </td>
