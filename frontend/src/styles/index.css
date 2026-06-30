@@ -427,8 +427,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 /* 금액 히어로 숫자 — 숫자와 단위(원)를 분리해서 사용 */
 .num-hero {
-  font-family: 'Inter', 'Pretendard', sans-serif;
-  font-size: clamp(1.9rem, 5vw, 2.5rem);
+  font-family: 'JetBrains Mono', 'Inter', 'Pretendard', sans-serif;
+  font-size: clamp(2rem, 5.4vw, 2.75rem);
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1.1;
@@ -436,6 +436,9 @@ h1, h2, h3, h4, h5, h6 {
   align-items: baseline;
   gap: 3px;
   flex-wrap: wrap;
+  /* 업비트풍: 자릿수 정렬 — 금액 숫자 폭 고정 */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
 }
 .num-hero .num-digits {
   /* 흰 배경 대비 AA(4.5↑) + ReportDetail 금액과 일관 — 진한 브랜드 블루 */

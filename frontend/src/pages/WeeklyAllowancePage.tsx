@@ -347,7 +347,7 @@ export default function WeeklyAllowancePage() {
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
                       <Info className="w-7 h-7 text-[#047857]" />
                     </div>
-                    <p className="text-[22px] font-extrabold text-[#191f28] tracking-tight leading-tight">
+                    <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       쿠팡에서 어떤 형태로<br />일하셨나요?
                     </p>
                     <p className="text-[13px] text-[#8b95a1] mt-1.5">근무 형태를 선택해 주세요</p>
@@ -365,7 +365,7 @@ export default function WeeklyAllowancePage() {
                     ))}
                   </div>
                   <button type="button" onClick={() => setSurveyStep(1)} disabled={!stepReady[0]}
-                    className={`w-full py-4 rounded-2xl text-sm font-bold tracking-tight transition-all flex items-center justify-center gap-2 mt-1 ${
+                    className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 mt-1 ${
                       stepReady[0]
                         ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
                         : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
@@ -385,7 +385,7 @@ export default function WeeklyAllowancePage() {
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
                       <Calendar className="w-7 h-7 text-[#047857]" />
                     </div>
-                    <p className="text-[22px] font-extrabold text-[#191f28] tracking-tight leading-tight">
+                    <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       주당 며칠 근무하셨나요?
                     </p>
                     <p className="text-[13px] text-[#8b95a1] mt-1.5">소정근로일 기준으로 선택해 주세요</p>
@@ -409,7 +409,7 @@ export default function WeeklyAllowancePage() {
                     </div>
                   )}
                   <button type="button" onClick={() => setSurveyStep(2)} disabled={!stepReady[1]}
-                    className={`w-full py-4 rounded-2xl text-sm font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       stepReady[1]
                         ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
                         : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
@@ -429,7 +429,7 @@ export default function WeeklyAllowancePage() {
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
                       <Calculator className="w-7 h-7 text-[#047857]" />
                     </div>
-                    <p className="text-[22px] font-extrabold text-[#191f28] tracking-tight leading-tight">
+                    <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       하루 평균 몇 시간<br />근무하셨나요?
                     </p>
                     <p className="text-[13px] text-[#8b95a1] mt-1.5">소수점 입력 가능 (예: 7.5)</p>
@@ -456,7 +456,7 @@ export default function WeeklyAllowancePage() {
                     )}
                   </div>
                   <button type="button" onClick={() => setSurveyStep(3)} disabled={!stepReady[2]}
-                    className={`w-full py-4 rounded-2xl text-sm font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       stepReady[2]
                         ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
                         : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
@@ -476,7 +476,7 @@ export default function WeeklyAllowancePage() {
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
                       <span className="text-2xl font-extrabold text-[#047857]">₩</span>
                     </div>
-                    <p className="text-[22px] font-extrabold text-[#191f28] tracking-tight leading-tight">
+                    <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       시급은 얼마인가요?
                     </p>
                     <p className="text-[13px] text-[#8b95a1] mt-1.5">2026년 최저시급 10,320원</p>
@@ -504,7 +504,7 @@ export default function WeeklyAllowancePage() {
                     )}
                   </div>
                   <button type="button" onClick={() => setSurveyStep(4)} disabled={!stepReady[3]}
-                    className={`w-full py-4 rounded-2xl text-sm font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       stepReady[3]
                         ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
                         : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
@@ -524,7 +524,7 @@ export default function WeeklyAllowancePage() {
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
                       <CheckCircle2 className="w-7 h-7 text-[#047857]" />
                     </div>
-                    <p className="text-[22px] font-extrabold text-[#191f28] tracking-tight leading-tight">
+                    <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       해당 주에 결근 없이<br />개근하셨나요?
                     </p>
                     <p className="text-[13px] text-[#8b95a1] mt-1.5">지각·조퇴는 결근이 아니에요</p>
@@ -553,7 +553,7 @@ export default function WeeklyAllowancePage() {
                   </div>
                   <button type="button"
                     onClick={() => setStep('mode')} disabled={!stepReady[4]}
-                    className={`w-full py-4 rounded-2xl text-sm font-bold tracking-tight transition-all flex items-center justify-center gap-2 mt-1 ${
+                    className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 mt-1 ${
                       stepReady[4]
                         ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
                         : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
@@ -657,7 +657,7 @@ export default function WeeklyAllowancePage() {
                 {simpleResult.eligible && (
                   <div className="rounded-2xl bg-accent-bg border border-accent/20 px-5 py-5 text-center">
                     <p className="text-[11px] font-semibold text-[#047857] mb-1">이번 주 주휴수당</p>
-                    <p className="text-[36px] font-extrabold text-[#047857] tracking-tight">
+                    <p className="text-[clamp(32px,8.5vw,40px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none">
                       {formatWon(simpleResult.allowance)}
                     </p>
                   </div>
@@ -788,7 +788,7 @@ export default function WeeklyAllowancePage() {
                   )}
 
                   <button type="button" onClick={runPrecise} disabled={!canRunPrecise}
-                    className={`w-full py-4 rounded-2xl text-sm font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       canRunPrecise
                         ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
                         : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
@@ -808,7 +808,7 @@ export default function WeeklyAllowancePage() {
                     </div>
                     <div className="rounded-2xl bg-accent-bg border border-accent/20 px-5 py-4 text-center mb-3">
                       <p className="text-[11px] font-semibold text-[#047857] mb-1">총 주휴수당 합계</p>
-                      <p className="text-[36px] font-extrabold text-[#047857] tracking-tight">
+                      <p className="text-[clamp(32px,8.5vw,40px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none">
                         {formatWon(pdfResult.total_allowance)}
                       </p>
                     </div>

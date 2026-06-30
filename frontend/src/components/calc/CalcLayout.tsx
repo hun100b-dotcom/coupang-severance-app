@@ -73,23 +73,23 @@ export function CalcHeader({
   const pct = progress ? Math.round((progress.current / progress.total) * 100) : 0
 
   return (
-    <header className="sticky top-14 z-30 w-full max-w-[520px] py-3 mb-1">
-      {/* 네비 바 */}
-      <div className="flex items-center gap-2 px-2 py-2 rounded-xl bg-white border border-line shadow-card">
+    <header className="sticky top-14 z-30 w-full max-w-[560px] py-3 mb-1">
+      {/* 네비 바 (업비트풍 업스케일: 헤어라인 보더 + 약간 큰 타이틀) */}
+      <div className="flex items-center gap-2 px-2 py-2.5 rounded-xl bg-white border border-up-hair shadow-card">
         <button type="button" onClick={onBack}
-          className="flex items-center justify-center w-10 h-10 rounded-md hover:bg-[#F2F4F6] transition-colors active:scale-95"
+          className="flex items-center justify-center w-10 h-10 rounded-md hover:bg-up-sunken transition-colors active:scale-95"
           aria-label="뒤로 가기">
-          <ChevronLeft className="w-5 h-5 text-ink-900" />
+          <ChevronLeft className="w-5 h-5 text-up-navy" />
         </button>
         <div className="flex items-center gap-2 min-w-0">
           <div className={`w-8 h-8 rounded-md ${a.bg100} flex items-center justify-center flex-shrink-0`}>
             <span className={a.text600}>{icon}</span>
           </div>
-          <h1 className="text-[17px] font-extrabold text-ink-900 tracking-tight truncate">{title}</h1>
+          <h1 className="text-[18px] font-extrabold text-up-navy tracking-tight truncate">{title}</h1>
         </div>
         {showProgress && progress && (
           <div className="ml-auto pr-1">
-            <span className={`text-[12px] font-bold ${a.text600} tabular-nums`}>
+            <span className={`text-[13px] font-bold ${a.text600} font-mono tabular-nums`}>
               {progress.current}/{progress.total}
             </span>
           </div>
@@ -124,7 +124,7 @@ export function CalcStepCard({ motionKey, children, className = '' }: CalcStepCa
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -40 }}
       transition={{ duration: 0.28 }}
-      className={`flex flex-col gap-4 rounded-xl bg-white border border-line shadow-card p-5 sm:p-6 min-w-0 ${className}`}
+      className={`flex flex-col gap-5 rounded-xl bg-white border border-up-hair shadow-card p-6 sm:p-7 min-w-0 ${className}`}
     >
       {children}
     </motion.div>
@@ -143,15 +143,15 @@ export function CalcStepIcon({ icon, accentColor, title, subtitle }: CalcStepIco
   const a = ACCENT[accentColor]
   return (
     <div className="text-center pt-1 pb-1">
-      <div className={`w-16 h-16 rounded-2xl ${a.bg100} flex items-center justify-center mx-auto mb-3`}>
+      <div className={`w-16 h-16 rounded-2xl ${a.bg100} flex items-center justify-center mx-auto mb-3.5`}>
         <span className={a.text600}>{icon}</span>
       </div>
-      {/* clamp: 모바일에서 줄바꿈 방지 — 글자 키움(20~24px) */}
-      <p className="text-[clamp(20px,5.5vw,24px)] font-extrabold text-ink-900 tracking-tight leading-tight break-keep">
+      {/* clamp: 모바일 줄바꿈 방지 — 업비트풍 업스케일(21~26px), 헤딩 잉크 */}
+      <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight break-keep">
         {title}
       </p>
       {subtitle && (
-        <p className="text-[14px] text-ink-600 mt-2 break-keep">{subtitle}</p>
+        <p className="text-[15px] text-up-sub mt-2.5 break-keep">{subtitle}</p>
       )}
     </div>
   )
@@ -176,14 +176,14 @@ export function CalcChoiceButton({
       className={`w-full px-5 py-5 rounded-lg text-left transition-all active:scale-[0.98] border ${
         selected
           ? `${a.btn} text-white ${a.border400} ${a.shadow}`
-          : 'bg-white border-line text-ink-900 hover:bg-[#F7F9FC] hover:border-brand-200'
+          : 'bg-white border-up-hair text-up-navy hover:bg-up-sunken hover:border-brand-200'
       }`}>
       <p className="font-bold text-[16px]">
         {icon && <span className="mr-1.5">{icon}</span>}
         {children}
       </p>
       {sub && (
-        <p className={`text-[13px] mt-1 ${selected ? 'text-white/95' : 'text-ink-600'}`}>
+        <p className={`text-[13px] mt-1 ${selected ? 'text-white/95' : 'text-up-sub'}`}>
           {sub}
         </p>
       )}
@@ -203,15 +203,15 @@ export function CalcNextButton({
   disabled, accentColor, children, onClick,
 }: CalcNextButtonProps) {
   const a = ACCENT[accentColor]
-  // min-h 52px → 터치 타겟 충분
+  // 업비트풍 업스케일: 높이 56px·16px 폰트 — 큼직한 주 CTA
   return (
     <button type="button" onClick={onClick} disabled={disabled}
-      className={`w-full min-h-[52px] rounded-lg text-[15px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
+      className={`w-full min-h-[56px] rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
         disabled
-          ? 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
+          ? 'bg-up-sunken text-ink-400 border border-up-hair cursor-not-allowed'
           : `${a.btn} text-white ${a.shadow} hover:opacity-95 active:scale-[0.98]`
       }`}>
-      {children ?? '다음'} <ChevronRight className="w-4 h-4" />
+      {children ?? '다음'} <ChevronRight className="w-[18px] h-[18px]" />
     </button>
   )
 }
@@ -225,7 +225,7 @@ interface CalcBackButtonProps {
 export function CalcBackButton({ onClick, children }: CalcBackButtonProps) {
   return (
     <button type="button" onClick={onClick}
-      className="w-full min-h-[48px] rounded-lg text-[14px] font-semibold text-ink-600 bg-[#F2F4F6] border border-line hover:bg-line transition-all active:scale-[0.98]">
+      className="w-full min-h-[48px] rounded-lg text-[14px] font-semibold text-up-sub bg-up-sunken border border-up-hair hover:bg-up-hair transition-all active:scale-[0.98]">
       {children ?? '← 이전으로'}
     </button>
   )
@@ -239,7 +239,7 @@ interface CalcInputCardProps {
 
 export function CalcInputCard({ children, className = '' }: CalcInputCardProps) {
   return (
-    <div className={`rounded-xl bg-[#F7F9FC] border border-line px-5 py-5 ${className}`}>
+    <div className={`rounded-xl bg-up-sunken border border-up-hair px-5 py-5 ${className}`}>
       {children}
     </div>
   )
@@ -287,7 +287,7 @@ export function CalcModeSelector({
 
       {/* 계산 방식 선택 버튼 — 간편 */}
       <button type="button" onClick={onSimple}
-        className="w-full px-5 py-5 rounded-lg text-left transition-all active:scale-[0.98] border bg-white border-line hover:bg-[#F7F9FC] hover:border-brand-200">
+        className="w-full px-5 py-5 rounded-lg text-left transition-all active:scale-[0.98] border bg-white border-up-hair hover:bg-up-sunken hover:border-brand-200">
         <div className="flex items-center gap-3">
           <div className={`w-12 h-12 rounded-lg ${a.bg100} flex items-center justify-center shrink-0`}>
             <Calculator className={`w-6 h-6 ${a.text600}`} />
@@ -304,7 +304,7 @@ export function CalcModeSelector({
 
       {/* PDF */}
       <button type="button" onClick={onPdf}
-        className="w-full px-5 py-5 rounded-lg text-left transition-all active:scale-[0.98] border bg-white border-line hover:bg-[#F7F9FC] hover:border-brand-200">
+        className="w-full px-5 py-5 rounded-lg text-left transition-all active:scale-[0.98] border bg-white border-up-hair hover:bg-up-sunken hover:border-brand-200">
         <div className="flex items-center gap-3">
           <div className={`w-12 h-12 rounded-lg ${a.bg100} flex items-center justify-center shrink-0`}>
             <FileText className={`w-6 h-6 ${a.text600}`} />
@@ -355,7 +355,7 @@ interface CalcContentAreaProps {
 
 export function CalcContentArea({ children }: CalcContentAreaProps) {
   return (
-    <div className="w-full max-w-[520px] flex flex-col gap-4">
+    <div className="w-full max-w-[560px] flex flex-col gap-5">
       {children}
     </div>
   )
