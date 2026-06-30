@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { UP } from '../shared/adminTheme'
 import {
   getAdminInquiries, getTemplates,
   patchInquiryStatus, patchInquiryAnswer, bulkInquiryStatus,
@@ -191,8 +192,8 @@ export default function InquiriesMenu() {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20, gap: 12 }}>
         <div>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Inquiries CRM</h2>
-          <p style={{ fontSize: '0.78rem', color: '#64748b', marginTop: 2 }}>전체 {total}건</p>
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: UP.navy, margin: 0 }}>Inquiries CRM</h2>
+          <p style={{ fontSize: '0.78rem', color: UP.sub, marginTop: 2 }}>전체 {total}건</p>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           <button onClick={() => setShowTemplates(s => !s)} style={outlineBtn}>
@@ -214,9 +215,9 @@ export default function InquiriesMenu() {
               onChange={e => { setSearch(e.target.value); setPage(1) }}
               placeholder="내용 검색..."
               style={{
-                flex: 1, minWidth: 140, background: '#f8fafc',
-                border: '1px solid #e2e8f0', borderRadius: 8,
-                padding: '6px 12px', fontSize: '0.82rem', color: '#0f172a',
+                flex: 1, minWidth: 140, background: UP.sunken,
+                border: `1px solid ${UP.hair}`, borderRadius: 8,
+                padding: '6px 12px', fontSize: '0.82rem', color: UP.navy,
                 outline: 'none', fontFamily: 'inherit',
               }}
             />
@@ -241,7 +242,7 @@ export default function InquiriesMenu() {
 
           {/* 에러 표시 */}
           {apiError && (
-            <div style={{ background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)', borderRadius: 10, padding: '14px 18px', marginBottom: 12, color: '#ff6b6b', fontSize: '0.82rem' }}>
+            <div style={{ background: UP.dangerBg, border: `1px solid ${UP.dangerLine}`, borderRadius: 10, padding: '14px 18px', marginBottom: 12, color: UP.danger, fontSize: '0.82rem' }}>
               ⚠️ {apiError}
               {' '}
               {/* 에러 유형에 따라 다른 안내 메시지 표시 */}
@@ -256,11 +257,11 @@ export default function InquiriesMenu() {
           {/* 테이블 */}
           <div style={{
             background: '#fff',
-            border: '1px solid #e2e8f0',
+            border: `1px solid ${UP.hair}`,
             borderRadius: 14, overflow: 'hidden', marginBottom: 14,
           }}>
             {loading ? (
-              <p style={{ textAlign: 'center', color: '#64748b', padding: '32px 0', fontSize: '0.85rem' }}>
+              <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>
                 로딩 중...
               </p>
             ) : (
@@ -281,8 +282,8 @@ export default function InquiriesMenu() {
               {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => i + 1).map(p => (
                 <button key={p} onClick={() => setPage(p)} style={{
                   padding: '4px 10px', borderRadius: 6, border: 'none',
-                  background: p === page ? '#3182f6' : '#f1f5f9',
-                  color: p === page ? '#fff' : '#64748b',
+                  background: p === page ? UP.brand : UP.hairSoft,
+                  color: p === page ? '#fff' : UP.sub,
                   fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
                 }}>{p}</button>
               ))}
@@ -309,13 +310,13 @@ export default function InquiriesMenu() {
 }
 
 const outlineBtn: React.CSSProperties = {
-  padding: '6px 12px', borderRadius: 8, border: '1px solid #e2e8f0',
-  background: '#f8fafc', color: '#475569',
+  padding: '6px 12px', borderRadius: 8, border: `1px solid ${UP.hair}`,
+  background: UP.sunken, color: UP.body,
   fontSize: '0.78rem', cursor: 'pointer',
 }
 
 const selectStyle: React.CSSProperties = {
-  background: '#f8fafc', border: '1px solid #e2e8f0',
+  background: UP.sunken, border: `1px solid ${UP.hair}`,
   borderRadius: 8, padding: '6px 10px', fontSize: '0.82rem',
-  color: '#475569', outline: 'none', cursor: 'pointer',
+  color: UP.body, outline: 'none', cursor: 'pointer',
 }

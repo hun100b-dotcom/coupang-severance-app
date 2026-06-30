@@ -1,4 +1,5 @@
 ﻿import type { AdminInquiry } from '../../../types/admin'
+import { UP } from '../shared/adminTheme'
 
 interface Props {
   inquiries: AdminInquiry[]
@@ -10,11 +11,12 @@ interface Props {
   activeId?: string | number
 }
 
+// 상태 색 — up.* 토큰 (대시보드 RecentActivity와 동일 위계)
 const STATUS_COLOR: Record<string, string> = {
-  waiting:   '#f08c00',
-  reviewing: '#3182f6',
-  answered:  '#00a876',
-  closed:    '#94a3b8',
+  waiting:   UP.amber,
+  reviewing: UP.strong,
+  answered:  UP.green,
+  closed:    UP.sub,
 }
 const STATUS_LABEL: Record<string, string> = {
   waiting:   '대기중',
@@ -35,7 +37,7 @@ export default function InquiryTable({ inquiries, selected, onToggle, onToggleAl
     <div style={{ overflow: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
         <thead>
-          <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+          <tr style={{ borderBottom: `1px solid ${UP.hairSoft}` }}>
             <th style={{ padding: 0, textAlign: 'left', width: 44 }}>
               {/* 전체선택: 본문 셀과 동일하게 label 로 44x44 히트영역 확보 */}
               <label style={{
@@ -50,10 +52,10 @@ export default function InquiryTable({ inquiries, selected, onToggle, onToggleAl
                 />
               </label>
             </th>
-            <th style={{ padding: '10px 8px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>상태</th>
-            <th style={{ padding: '10px 8px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>카테고리</th>
-            <th style={{ padding: '10px 8px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>내용</th>
-            <th style={{ padding: '10px 8px', textAlign: 'left', color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>접수일시</th>
+            <th style={{ padding: '10px 8px', textAlign: 'left', color: UP.sub, fontWeight: 600 }}>상태</th>
+            <th style={{ padding: '10px 8px', textAlign: 'left', color: UP.sub, fontWeight: 600 }}>카테고리</th>
+            <th style={{ padding: '10px 8px', textAlign: 'left', color: UP.sub, fontWeight: 600 }}>내용</th>
+            <th style={{ padding: '10px 8px', textAlign: 'left', color: UP.sub, fontWeight: 600, whiteSpace: 'nowrap' }}>접수일시</th>
           </tr>
         </thead>
         <tbody>
@@ -64,8 +66,8 @@ export default function InquiryTable({ inquiries, selected, onToggle, onToggleAl
                 key={inq.id}
                 onClick={() => onSelect(inq)}
                 style={{
-                  borderBottom: '1px solid #f1f5f9',
-                  background: isActive ? 'rgba(49,130,246,0.1)' : 'transparent',
+                  borderBottom: `1px solid ${UP.hairSoft}`,
+                  background: isActive ? UP.brandBg : 'transparent',
                   cursor: 'pointer',
                   transition: 'background 0.1s',
                 }}
@@ -104,7 +106,7 @@ export default function InquiryTable({ inquiries, selected, onToggle, onToggleAl
                   <span style={{
                     fontSize: '0.72rem',
                     fontWeight: 700,
-                    color: STATUS_COLOR[inq.status] ?? '#94a3b8',
+                    color: STATUS_COLOR[inq.status] ?? UP.caption,
                     background: `${STATUS_COLOR[inq.status]}18`,
                     padding: '2px 8px',
                     borderRadius: 999,
@@ -113,12 +115,12 @@ export default function InquiryTable({ inquiries, selected, onToggle, onToggleAl
                     {STATUS_LABEL[inq.status] ?? inq.status}
                   </span>
                 </td>
-                <td style={{ padding: '10px 8px', color: '#64748b', whiteSpace: 'nowrap' }}>
+                <td style={{ padding: '10px 8px', color: UP.sub, whiteSpace: 'nowrap' }}>
                   {inq.category}
                 </td>
                 <td style={{
                   padding: '10px 8px',
-                  color: '#0f172a',
+                  color: UP.navy,
                   maxWidth: 300,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -126,7 +128,7 @@ export default function InquiryTable({ inquiries, selected, onToggle, onToggleAl
                 }}>
                   {inq.title ?? inq.content.slice(0, 60)}
                 </td>
-                <td style={{ padding: '10px 8px', color: '#64748b', whiteSpace: 'nowrap' }}>
+                <td style={{ padding: '10px 8px', color: UP.sub, whiteSpace: 'nowrap' }}>
                   {fmt(inq.created_at)}
                 </td>
               </tr>
@@ -135,7 +137,7 @@ export default function InquiryTable({ inquiries, selected, onToggle, onToggleAl
         </tbody>
       </table>
       {inquiries.length === 0 && (
-        <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0', fontSize: '0.85rem' }}>
+        <p style={{ textAlign: 'center', color: UP.caption, padding: '32px 0', fontSize: '0.85rem' }}>
           문의가 없습니다.
         </p>
       )}
