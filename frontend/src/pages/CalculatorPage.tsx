@@ -158,13 +158,13 @@ export default function CalculatorPage() {
                         ))}
                       </div>
 
-                      {/* CTA — 그룹 색 버튼, 카드 하단 고정 */}
+                      {/* CTA — 그룹 색 버튼, 카드 하단 고정 (업비트풍 업스케일: 56px·16px) */}
                       <span
-                        className="mt-5 inline-flex items-center justify-center gap-2 w-full min-h-[48px] rounded-md text-white font-bold text-[15px] transition-transform active:scale-[0.98]"
+                        className="mt-5 inline-flex items-center justify-center gap-2 w-full min-h-[56px] rounded-lg text-white font-bold text-[16px] transition-transform active:scale-[0.98]"
                         style={{ background: group.accent }}
                       >
                         계산하기
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-[18px] h-[18px]" />
                       </span>
                     </CardButton>
                   </motion.div>

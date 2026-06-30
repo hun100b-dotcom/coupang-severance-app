@@ -341,7 +341,7 @@ export default function SeveranceFlow() {
                     placeholder="회사명을 직접 입력해 주세요"
                     value={s.companyOther}
                     onChange={e => setS(p => ({ ...p, companyOther: e.target.value }))}
-                    className="w-full px-4 py-4 rounded-2xl border border-white/60 bg-white/70 text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 text-center"
+                    className="w-full px-4 py-4 rounded-xl border border-up-hair bg-white text-lg font-bold text-up-navy focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                   />
                 </CalcInputCard>
               )}
@@ -360,7 +360,7 @@ export default function SeveranceFlow() {
               <CalcStepIcon
                 icon={<HelpCircle className="w-7 h-7" />}
                 accentColor="blue"
-                title={<>첫 출근부터 마지막 퇴근까지 <span className="text-blue-500">1년 넘게</span> 일하셨나요?</>}
+                title={<>첫 출근부터 마지막 퇴근까지 <span className="text-brand">1년 넘게</span> 일하셨나요?</>}
                 subtitle="퇴직급여법상 계속근로기간 1년이 필요해요"
               />
               <div className="flex flex-col gap-3">
@@ -389,7 +389,7 @@ export default function SeveranceFlow() {
               <CalcStepIcon
                 icon={<Clock className="w-7 h-7" />}
                 accentColor="blue"
-                title={<>주 평균 <span className="text-blue-500">15시간 이상</span> 근무하셨나요?</>}
+                title={<>주 평균 <span className="text-brand">15시간 이상</span> 근무하셨나요?</>}
                 subtitle="4주 평균 주 15시간 이상이어야 퇴직금을 받을 수 있어요"
               />
               <div className="flex flex-col gap-3">
@@ -457,7 +457,7 @@ export default function SeveranceFlow() {
 
               {/* PDF 발급 가이드 */}
               <button type="button" onClick={() => setPdfGuideOpen(true)}
-                className="text-[13px] text-[#8b95a1] underline underline-offset-2 hover:text-blue-500 transition-colors">
+                className="text-[13px] text-up-sub underline underline-offset-2 hover:text-brand transition-colors">
                 ❓ 근로내역서 PDF는 어디서 받나요?
               </button>
 
@@ -481,16 +481,16 @@ export default function SeveranceFlow() {
                         onClick={() => setSelectedPdfCompany(prev => prev === name ? null : name)}
                         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
                           selectedPdfCompany === name
-                            ? 'bg-blue-50 border border-blue-200'
-                            : 'bg-white/50 border border-white/40 hover:bg-white/80'
+                            ? 'bg-brand-bg border border-brand-200'
+                            : 'bg-white border border-up-hair hover:bg-up-sunken'
                         }`}>
                         <span className="shrink-0">
                           {selectedPdfCompany === name
-                            ? <Check size={14} strokeWidth={2.5} className="text-blue-500" />
+                            ? <Check size={14} strokeWidth={2.5} className="text-brand" />
                             : <span className="w-3.5 h-3.5 rounded-full border-[1.5px] border-slate-300 inline-block" />
                           }
                         </span>
-                        <span className="text-[14px] font-medium text-[#191f28]">{name}</span>
+                        <span className="text-[14px] font-medium text-up-navy">{name}</span>
                       </button>
                     ))}
                   </div>
@@ -503,7 +503,7 @@ export default function SeveranceFlow() {
                   마지막 근무일 (선택)
                 </label>
                 <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
-                  className="w-full px-4 py-4 rounded-2xl border border-white/60 bg-white/70 text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 text-center"
+                  className="w-full px-4 py-4 rounded-xl border border-up-hair bg-white text-lg font-bold text-up-navy focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                 />
                 <p className="text-[12px] text-[#8b95a1] mt-2">
                   비워두면 PDF의 마지막 근무일을 사용해요
@@ -544,7 +544,7 @@ export default function SeveranceFlow() {
                       placeholder="예: 400"
                       value={workDays}
                       onChange={e => setWorkDays(e.target.value)}
-                      className="w-full px-4 py-4 rounded-2xl border border-white/60 bg-white/70 text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 text-center"
+                      className="w-full px-4 py-4 rounded-xl border border-up-hair bg-white text-lg font-bold text-up-navy focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                     />
                     <p className="text-[12px] text-[#8b95a1] mt-1.5">첫 출근 ~ 마지막 퇴근까지의 총 일수</p>
                   </div>
@@ -555,7 +555,7 @@ export default function SeveranceFlow() {
                       placeholder="예: 150000"
                       value={avgWage}
                       onChange={e => setAvgWage(e.target.value)}
-                      className="w-full px-4 py-4 rounded-2xl border border-white/60 bg-white/70 text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 text-center"
+                      className="w-full px-4 py-4 rounded-xl border border-up-hair bg-white text-lg font-bold text-up-navy focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                     />
                     <p className="text-[12px] text-[#8b95a1] mt-1.5">최근 3개월 총 지급액 ÷ 근무일수</p>
                   </div>

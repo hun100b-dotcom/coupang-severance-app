@@ -472,7 +472,7 @@ export default function AnnualLeaveAllowancePage() {
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
                       <User className="w-7 h-7 text-[#047857]" />
                     </div>
-                    <p className="text-[22px] font-extrabold text-[#191f28] tracking-tight leading-tight">
+                    <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       현재 재직 중이신가요?
                     </p>
                     <p className="text-[13px] text-[#8b95a1] mt-1.5">퇴직자도 연차수당을 청구할 수 있어요</p>
@@ -497,7 +497,7 @@ export default function AnnualLeaveAllowancePage() {
                     ))}
                   </div>
                   <button type="button" onClick={handleNext} disabled={!stepReady()}
-                    className={`w-full py-4 rounded-2xl text-sm font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       stepReady()
                         ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
                         : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
@@ -517,7 +517,7 @@ export default function AnnualLeaveAllowancePage() {
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
                       <Calendar className="w-7 h-7 text-[#047857]" />
                     </div>
-                    <p className="text-[22px] font-extrabold text-[#191f28] tracking-tight leading-tight">
+                    <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       입사일이 언제인가요?
                     </p>
                     <p className="text-[13px] text-[#8b95a1] mt-1.5">연차는 입사일 기준으로 계산돼요</p>
@@ -537,7 +537,7 @@ export default function AnnualLeaveAllowancePage() {
                     )}
                   </div>
                   <button type="button" onClick={handleNext} disabled={!stepReady()}
-                    className={`w-full py-4 rounded-2xl text-sm font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       stepReady()
                         ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
                         : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
@@ -557,7 +557,7 @@ export default function AnnualLeaveAllowancePage() {
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
                       <Clock className="w-7 h-7 text-[#047857]" />
                     </div>
-                    <p className="text-[22px] font-extrabold text-[#191f28] tracking-tight leading-tight">
+                    <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       퇴직일이 언제인가요?
                     </p>
                     <p className="text-[13px] text-[#8b95a1] mt-1.5">마지막 근무일을 선택해 주세요</p>
@@ -578,7 +578,7 @@ export default function AnnualLeaveAllowancePage() {
                     )}
                   </div>
                   <button type="button" onClick={handleNext} disabled={!stepReady()}
-                    className={`w-full py-4 rounded-2xl text-sm font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       stepReady()
                         ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
                         : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
@@ -598,7 +598,7 @@ export default function AnnualLeaveAllowancePage() {
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
                       <Info className="w-7 h-7 text-[#047857]" />
                     </div>
-                    <p className="text-[22px] font-extrabold text-[#191f28] tracking-tight leading-tight">
+                    <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       무엇이 궁금하세요?
                     </p>
                     <p className="text-[13px] text-[#8b95a1] mt-1.5">목적에 맞게 계산해 드릴게요</p>
@@ -620,7 +620,7 @@ export default function AnnualLeaveAllowancePage() {
                     ))}
                   </div>
                   <button type="button" onClick={handleNext} disabled={!stepReady()}
-                    className={`w-full py-4 rounded-2xl text-sm font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       stepReady()
                         ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
                         : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
@@ -640,7 +640,7 @@ export default function AnnualLeaveAllowancePage() {
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
                       <CheckCircle2 className="w-7 h-7 text-[#047857]" />
                     </div>
-                    <p className="text-[22px] font-extrabold text-[#191f28] tracking-tight leading-tight">
+                    <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       이미 사용한 연차는<br />며칠인가요?
                     </p>
                     <p className="text-[13px] text-[#8b95a1] mt-1.5">없으면 0을 입력하세요</p>
@@ -656,7 +656,7 @@ export default function AnnualLeaveAllowancePage() {
                     </div>
                   </div>
                   <button type="button" onClick={handleNext}
-                    className="w-full py-4 rounded-2xl text-sm font-bold tracking-tight bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                    className="w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
                     {nextStep(surveyStep) === 'mode' ? '계산 방법 선택하기' : '다음'} <ChevronRight className="w-4 h-4" />
                   </button>
                 </motion.div>
@@ -672,7 +672,7 @@ export default function AnnualLeaveAllowancePage() {
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
                       <span className="text-2xl font-extrabold text-[#047857]">₩</span>
                     </div>
-                    <p className="text-[22px] font-extrabold text-[#191f28] tracking-tight leading-tight">
+                    <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       평균 일급은 얼마인가요?
                     </p>
                     <p className="text-[13px] text-[#8b95a1] mt-1.5">연차수당 = 남은 연차일수 × 평균 일급</p>
@@ -694,7 +694,7 @@ export default function AnnualLeaveAllowancePage() {
                     )}
                   </div>
                   <button type="button" onClick={handleNext} disabled={!stepReady()}
-                    className={`w-full py-4 rounded-2xl text-sm font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       stepReady()
                         ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
                         : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
@@ -787,7 +787,7 @@ export default function AnnualLeaveAllowancePage() {
                 {(survey.purpose === '미지급청구' || survey.purpose === '남은일수') && simpleResult.unpaidAllowance !== null && (
                   <div className="rounded-2xl bg-accent-bg border border-accent/20 px-5 py-5 text-center">
                     <p className="text-[11px] font-semibold text-[#047857] mb-1">미지급 연차수당</p>
-                    <p className="text-[36px] font-extrabold text-[#047857] tracking-tight">
+                    <p className="text-[clamp(32px,8.5vw,40px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none">
                       {formatWon(simpleResult.unpaidAllowance)}
                     </p>
                     <p className="text-[11px] text-[#047857] mt-1">
@@ -923,7 +923,7 @@ export default function AnnualLeaveAllowancePage() {
                   )}
 
                   <button type="button" onClick={runPrecise} disabled={!canRunPrecise}
-                    className={`w-full py-4 rounded-2xl text-sm font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       canRunPrecise
                         ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
                         : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
@@ -944,7 +944,7 @@ export default function AnnualLeaveAllowancePage() {
                     {pdfResult.unpaid_allowance !== null && (
                       <div className="rounded-2xl bg-accent-bg border border-accent/20 px-5 py-4 text-center mb-4">
                         <p className="text-[11px] font-semibold text-[#047857] mb-1">미지급 연차수당</p>
-                        <p className="text-[36px] font-extrabold text-[#047857] tracking-tight">
+                        <p className="text-[clamp(32px,8.5vw,40px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none">
                           {formatWon(pdfResult.unpaid_allowance)}
                         </p>
                         <p className="text-[11px] text-[#047857] mt-1">
