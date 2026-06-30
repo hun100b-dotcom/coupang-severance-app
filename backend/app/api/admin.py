@@ -1188,6 +1188,194 @@ def masked_profile_lookup(
     return {"profiles": profiles}
 
 
+# ── 지원자 관리 (서버측 마스킹 + 단건 평문 해제) ────────────
+# 보안 재설계(🔴 지원자 PII): 과거 ApplicantsMenu 는 프론트가
+#   supabase.from('job_applications').select('*') + profiles 를 직접 조회해
+#   지원자 인적사항(이름/생년월일/전화) + 회원명/이메일을 평문 통째로 받아온 뒤
+#   화면에서만 일부(전화)를 가렸다(DevTools/Network 평문 노출 = 가짜 마스킹).
+#   이제 서버가 "마스킹된 형태만" 내려보내고, 평문은 회원관리와 '동일한 보안키'
+#   (admin_secrets.member_unmask_key)를 통과한 reveal 요청에만 '단건'으로 제공한다.
+#   상태변경/확정/알림 로직은 프론트(supabase)에 그대로 두고, PII 표시 경로만 바꾼다.
+
+# 지원자 목록을 한 번에 너무 많이 끌어오지 않도록 상한(메모리/응답 보호)
+_APPLICANTS_MAX = 1000
+
+
+@router.get("/admin/applications")
+def list_applications(
+    status: str = "",
+    company: str = "",
+    job_posting_id: str = "",
+    shift: str = "",
+    task: str = "",
+    name: str = "",
+    phone: str = "",
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    """지원자 목록 — 서버에서 PII를 마스킹해 반환. 평문은 절대 포함하지 않는다.
+    이름/전화 검색도 서버측에서 '원본 컬럼' 기준으로 수행하므로(applicant_name/phone),
+    검색이 평문 노출 우회로가 되지 않는다(매칭된 결과도 마스킹되어 내려간다)."""
+    _check_admin(x_admin_token)
+
+    params: dict = {
+        # job_postings 임베드(회사/센터명) — 프론트 기존 쿼리와 동일한 관계 사용
+        "select": "id,user_id,job_posting_id,status,applied_at,work_date,"
+                  "applicant_name,applicant_birth,applicant_gender,applicant_phone,"
+                  "consent_collect,consent_third_party,preferred_shift,applied_task,"
+                  "job_postings(company_name,center_name)",
+        "order": "applied_at.desc",
+        "limit": str(_APPLICANTS_MAX),
+    }
+
+    if status.strip() and status.strip() != "all":
+        params["status"] = f"eq.{status.strip()}"
+
+    # 사업장(회사) 필터 — 회사명으로 공고 id 목록을 먼저 구해 in.() 으로 좁힌다.
+    if company.strip() and company.strip() != "all":
+        jp = _sb_get("job_postings", {"select": "id", "company_name": f"eq.{company.strip()}"})
+        job_ids = [r["id"] for r in (jp.json() if jp.status_code in (200, 206) else []) if r.get("id")]
+        if not job_ids:
+            return {"applications": [], "total": 0}  # 해당 회사 공고 없음 → 빈 목록
+        params["job_posting_id"] = f"in.({','.join(job_ids)})"
+
+    # 특정 공고 필터(회사 필터보다 구체적 — 단건이면 덮어쓴다)
+    if job_posting_id.strip():
+        params["job_posting_id"] = f"eq.{job_posting_id.strip()}"
+
+    # 교대/업무 — 비(非)PII 텍스트 부분검색
+    if shift.strip():
+        safe = _sanitize_ilike(shift.strip())
+        if safe:
+            params["preferred_shift"] = f"ilike.*{safe}*"
+    if task.strip():
+        safe = _sanitize_ilike(task.strip())
+        if safe:
+            params["applied_task"] = f"ilike.*{safe}*"
+    # 이름/전화 — PII. 원본 컬럼으로 서버측 검색(결과는 마스킹되어 반환)
+    if name.strip():
+        safe = _sanitize_ilike(name.strip())
+        if safe:
+            params["applicant_name"] = f"ilike.*{safe}*"
+    if phone.strip():
+        safe = _sanitize_ilike(phone.strip())
+        if safe:
+            params["applicant_phone"] = f"ilike.*{safe}*"
+
+    res = _sb_get("job_applications", params, count=True)
+    rows = res.json() if res.status_code in (200, 206) else []
+    total = _count_header(res) or len(rows)
+
+    # 회원 프로필(이름/이메일)도 마스킹해서 붙인다 — 평문은 서버를 떠나지 않는다.
+    user_ids = list({r.get("user_id") for r in rows if r.get("user_id")})
+    profile_map: dict = {}
+    if user_ids:
+        # UUID 형식만 통과(쿼리 안전) — masked-lookup 과 동일 규칙
+        safe_ids = [
+            i for i in user_ids
+            if isinstance(i, str) and all(c in "0123456789abcdefABCDEF-" for c in i)
+        ][:_APPLICANTS_MAX]
+        if safe_ids:
+            pr = _sb_get("profiles", {
+                "select": "id,full_name,email",
+                "id": f"in.({','.join(safe_ids)})",
+            })
+            for p in (pr.json() if pr.status_code in (200, 206) else []):
+                if p.get("id"):
+                    profile_map[p["id"]] = {
+                        "full_name": _mask_name(p.get("full_name")) if p.get("full_name") else None,
+                        "email": _mask_email(p.get("email")) if p.get("email") else None,
+                    }
+
+    applications = [
+        {
+            "id": r.get("id"),               # 지원 id — reveal 타깃팅용
+            "user_id": r.get("user_id"),     # 알림 발송 등 기능용 내부 키(직접 식별 PII 아님)
+            "job_posting_id": r.get("job_posting_id"),
+            "status": r.get("status"),
+            "applied_at": r.get("applied_at"),
+            "work_date": r.get("work_date"),
+            "applicant_gender": r.get("applicant_gender"),
+            "preferred_shift": r.get("preferred_shift"),
+            "applied_task": r.get("applied_task"),
+            "consent_collect": bool(r.get("consent_collect")),
+            "consent_third_party": bool(r.get("consent_third_party")),
+            # 인적사항 입력 여부 — 프론트의 '미입력' 표시 판단용(평문 노출 아님)
+            "has_applicant_info": bool(r.get("applicant_name")),
+            # 마스킹된 인적사항 — 값이 없으면 null(프론트가 '미입력'으로 처리)
+            "applicant_name": _mask_name(r.get("applicant_name")) if r.get("applicant_name") else None,
+            "applicant_birth": _mask_birthdate(r.get("applicant_birth")) if r.get("applicant_birth") else None,
+            "applicant_phone": _mask_phone(r.get("applicant_phone")) if r.get("applicant_phone") else None,
+            # 마스킹된 회원 프로필(없으면 null)
+            "profiles": profile_map.get(r.get("user_id")),
+            "job_postings": r.get("job_postings"),
+        }
+        for r in rows
+    ]
+    return {"applications": applications, "total": total}
+
+
+class ApplicantRevealPayload(BaseModel):
+    application_id: str
+    key: str
+    admin_email: Optional[str] = None
+
+
+@router.post("/admin/applications/reveal")
+def reveal_applicant(
+    payload: ApplicantRevealPayload,
+    request: Request,
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    """단건 평문 해제 — 회원관리와 '동일한 보안키'(member_unmask_key) 해시 검증 통과 시에만
+    지원 1건의 원본 인적사항 + 회원 이름/이메일을 반환하고, 누가/언제/어느 지원을 해제했는지
+    서버측 감사로그(audit_logs)에 기록한다. 대량 평문 일괄 반환은 제공하지 않는다."""
+    _check_admin(x_admin_token)
+    ip = request.client.host if request.client else None
+    who = payload.admin_email or "admin"
+
+    stored = _get_secret(_UNMASK_KEY_NAME)
+    if not stored:
+        raise HTTPException(
+            status_code=400,
+            detail="보안키가 설정되지 않았습니다. Settings → 개인정보 보안키에서 먼저 설정하세요.",
+        )
+    if not _verify_key(payload.key, stored):
+        _write_audit(who, "applicant.unmask.denied", "job_applications", payload.application_id,
+                     after_val={"reason": "bad_key"}, ip=ip)
+        raise HTTPException(status_code=403, detail="보안키가 일치하지 않습니다.")
+
+    res = _sb_get("job_applications", {
+        "select": "id,user_id,applicant_name,applicant_birth,applicant_gender,applicant_phone",
+        "id": f"eq.{payload.application_id}",
+    })
+    rows = res.json() if res.status_code in (200, 206) else []
+    if not rows:
+        raise HTTPException(status_code=404, detail="지원 내역을 찾을 수 없습니다.")
+    a = rows[0]
+
+    # 연결된 회원 프로필 평문(이름/이메일)도 함께 해제(같은 지원자 화면에 표시되던 값)
+    prof = {"full_name": None, "email": None}
+    if a.get("user_id"):
+        pr = _sb_get("profiles", {"select": "full_name,email", "id": f"eq.{a['user_id']}"})
+        prows = pr.json() if pr.status_code in (200, 206) else []
+        if prows:
+            prof = {"full_name": prows[0].get("full_name"), "email": prows[0].get("email")}
+
+    _write_audit(who, "applicant.unmask", "job_applications", payload.application_id,
+                 after_val={"fields": ["applicant_name", "applicant_birth", "applicant_phone",
+                                       "profile_name", "profile_email"]},
+                 ip=ip)
+    return {
+        "id": a.get("id"),
+        "applicant_name": a.get("applicant_name"),
+        "applicant_birth": a.get("applicant_birth"),
+        "applicant_gender": a.get("applicant_gender"),
+        "applicant_phone": a.get("applicant_phone"),
+        "profile_name": prof.get("full_name"),
+        "profile_email": prof.get("email"),
+    }
+
+
 # ── IP 차단 ───────────────────────────────────────────────
 
 @router.get("/admin/blocked-ips")

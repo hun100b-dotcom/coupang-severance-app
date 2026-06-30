@@ -786,3 +786,56 @@ export const getUnmaskKeyStatus = () =>
   api.get<{ configured: boolean; updated_at: string | null }>('/admin/members/unmask-key/status', {
     headers: H(),
   }).then(r => r.data)
+
+// ── 지원자 관리 (서버측 마스킹 + 단건 평문 해제) ────────────────────────
+// 보안 재설계(🔴 지원자 PII): 과거 ApplicantsMenu 는 supabase 로 job_applications +
+// profiles 를 직접 조회해 지원자 인적사항·회원명·이메일을 평문 통째 수신했다(Network 노출).
+// 이제 백엔드(service-role)가 마스킹된 데이터만 내려보내고, 평문은 회원관리와 '동일한
+// 보안키'를 통과한 reveal 단건 호출로만 받는다(감사로그 기록).
+
+// 서버측 마스킹된 지원 한 행 (평문 PII 없음 / id·user_id 는 내부 키)
+export interface MaskedApplication {
+  id: string
+  user_id: string
+  job_posting_id: string
+  status: 'applied' | 'reviewing' | 'confirmed' | 'completed' | 'cancelled' | 'rejected'
+  applied_at: string
+  work_date: string | null
+  applicant_gender: 'male' | 'female' | null
+  preferred_shift: string | null
+  applied_task: string | null
+  consent_collect: boolean
+  consent_third_party: boolean
+  has_applicant_info: boolean      // 인적사항 입력 여부('미입력' 표시 판단용)
+  applicant_name: string | null    // 마스킹됨: 김** (미입력이면 null)
+  applicant_birth: string | null   // 마스킹됨: 1990-**-**
+  applicant_phone: string | null   // 마스킹됨: 010-****-5678
+  profiles: { full_name: string | null; email: string | null } | null  // 마스킹됨
+  job_postings: { company_name: string; center_name: string } | null
+}
+
+// reveal 응답 (단건 평문 — 보기 클릭 시에만 수신)
+export interface RevealedApplicant {
+  id: string
+  applicant_name: string | null
+  applicant_birth: string | null
+  applicant_gender: 'male' | 'female' | null
+  applicant_phone: string | null
+  profile_name: string | null
+  profile_email: string | null
+}
+
+// 지원자 목록 — 모든 필터를 서버측에서 '원본 컬럼' 기준으로 적용(평문 우회 차단)
+export const getAdminApplications = (params: {
+  status?: string; company?: string; job_posting_id?: string
+  shift?: string; task?: string; name?: string; phone?: string
+}) =>
+  api.get<{ applications: MaskedApplication[]; total: number }>('/admin/applications', {
+    params, headers: H(),
+  }).then(r => r.data)
+
+// 단건 평문 해제 — 보안키 + 지원 id 전송. 서버가 해시 검증 후 1건 원본 반환 + 감사기록.
+export const revealApplicant = (applicationId: string, key: string, adminEmail: string) =>
+  api.post<RevealedApplicant>('/admin/applications/reveal',
+    { application_id: applicationId, key, admin_email: adminEmail },
+    { headers: H() }).then(r => r.data)

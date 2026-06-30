@@ -1,28 +1,23 @@
-﻿// 어드민 — 지원자 관리 전용 메뉴 (Phase C)
+// 어드민 — 지원자 관리 전용 메뉴 (Phase C)
 // 기능: LMS형 필터(사업장/공고/근무일자/업무/사용자ID/사용자명), 상태변경, 대량 처리, CSV 내보내기
+//
+// 보안 재설계(🔴 지원자 PII):
+//   과거에는 supabase.from('job_applications').select('*') + profiles 직접 조회로
+//   지원자 인적사항(이름/생년월일/전화) + 회원명/이메일을 평문 통째로 받아와
+//   화면에서만 일부(전화)를 가렸다(DevTools/Network 평문 노출 = 가짜 마스킹).
+//   이제 ① 백엔드가 "마스킹된 데이터만" 내려보내고(getAdminApplications),
+//        ② 평문은 슈퍼관리자가 회원관리와 '동일한 보안키'를 입력해 '해제 모드'에 들어간 뒤
+//           각 행의 "보기"를 누를 때만 단건 reveal 엔드포인트로 받아온다(revealApplicant).
+//   보안키는 서버에서 해시 비교하고, 누가/언제/어느 지원을 해제했는지 감사로그에 남는다.
+//   ※ 상태변경/확정/거절 알림 로직은 그대로(아래 supabase 경로) — PII '표시 경로'만 바뀜.
 import { useEffect, useState, useCallback } from 'react'
 import { UP } from '../shared/adminTheme'
 import { supabase } from '../../../lib/supabase'
-
-// ── 지원자 한 행의 타입 ──
-interface ApplicationRow {
-  id: string
-  user_id: string
-  job_posting_id: string
-  status: 'applied' | 'reviewing' | 'confirmed' | 'completed' | 'cancelled' | 'rejected'
-  applied_at: string
-  work_date: string | null
-  applicant_name: string | null
-  applicant_birth: string | null
-  applicant_gender: 'male' | 'female' | null
-  applicant_phone: string | null
-  consent_collect: boolean | null
-  consent_third_party: boolean | null
-  preferred_shift: string | null  // 교대 구분: morning|afternoon|night|any
-  applied_task: string | null     // 지원 업무 (단일 텍스트)
-  job_postings?: { company_name: string; center_name: string } | null
-  profiles?: { full_name: string | null; email: string | null } | null
-}
+import { SUPER_ADMIN_EMAIL } from '../AdminSidebar'
+import {
+  getAdminApplications, revealApplicant,
+  type MaskedApplication, type RevealedApplicant,
+} from '../../../lib/api'
 
 // 상태별 한국어 레이블
 const STATUS_LABEL: Record<string, string> = {
@@ -44,13 +39,6 @@ const statusColor = (status: string) => {
   return { bg: 'rgba(49,130,246,0.18)', color: UP.brand }  // applied
 }
 
-// 휴대폰 번호 마스킹
-function maskPhone(phone: string): string {
-  const nums = phone.replace(/\D/g, '')
-  if (nums.length < 10) return phone
-  return `${nums.slice(0, 3)}-****-${nums.slice(-4)}`
-}
-
 // 공통 셀렉트/인풋 스타일 (라이트 모드)
 const filterSelectStyle: React.CSSProperties = {
   padding: '6px 10px', borderRadius: 8,
@@ -67,21 +55,19 @@ const filterInputStyle: React.CSSProperties = {
 }
 
 export default function ApplicantsMenu() {
-  // 지원자 목록 상태
-  const [applicants, setApplicants] = useState<ApplicationRow[]>([])
+  // 지원자 목록 상태 (서버에서 마스킹되어 내려온 행)
+  const [applicants, setApplicants] = useState<MaskedApplication[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // ── 서버사이드 필터 상태 ──
+  // ── 필터 상태 (모두 서버측 적용 — 평문 우회 차단) ──
   const [companyFilter, setCompanyFilter] = useState<string>('all')
   const [jobFilter, setJobFilter] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-
-  // ── LMS형 클라이언트사이드 필터 상태 ──
-  const [shiftFilter, setShiftFilter] = useState('')   // 교대근무 (preferred_shift: morning|오전 등) 검색
-  const [taskFilter,  setTaskFilter]  = useState('')   // 업무 (applied_task 단일 텍스트) 검색
-  const [phoneFilter, setPhoneFilter] = useState('')   // 사용자ID (휴대폰번호) 검색
-  const [nameFilter,  setNameFilter]  = useState('')   // 사용자명 (성명) 검색
+  const [shiftFilter, setShiftFilter] = useState('')   // 교대근무 (preferred_shift)
+  const [taskFilter,  setTaskFilter]  = useState('')   // 업무 (applied_task)
+  const [phoneFilter, setPhoneFilter] = useState('')   // 사용자ID (휴대폰번호) — 원본 컬럼 서버검색
+  const [nameFilter,  setNameFilter]  = useState('')   // 사용자명 (성명) — 원본 컬럼 서버검색
 
   // 대량 선택 상태
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -89,6 +75,18 @@ export default function ApplicantsMenu() {
   // 상태 변경 진행 중 ID
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [bulkUpdating, setBulkUpdating] = useState(false)
+
+  // ── 마스킹 해제 상태 (회원관리와 동일 UX) ──
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false)
+  const [adminEmail, setAdminEmail] = useState('')          // 감사로그 who
+  const [unlockMode, setUnlockMode] = useState(false)
+  const [revealKey, setRevealKey] = useState('')            // 메모리에만 보관(저장/표시 안 함)
+  const [showUnlockDialog, setShowUnlockDialog] = useState(false)
+  const [unlockKeyInput, setUnlockKeyInput] = useState('')
+  const [unlockError, setUnlockError] = useState('')
+  // 행별 해제 결과 (application.id → 평문). 목록 갱신/재잠금 시 비운다.
+  const [revealed, setRevealed] = useState<Record<string, RevealedApplicant>>({})
+  const [revealingId, setRevealingId] = useState<string | null>(null)
 
   // 토스트 알림
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
@@ -98,15 +96,40 @@ export default function ApplicantsMenu() {
     return () => clearTimeout(t)
   }, [toast])
 
-  // 공고 목록 (필터 드롭다운용)
+  // 공고 목록 (필터 드롭다운용 — 비PII)
   const [jobs, setJobs] = useState<{ id: string; company_name: string; center_name: string }[]>([])
   const [companies, setCompanies] = useState<string[]>([])
 
-  // 공고 목록 로드
+  // 현재 로그인 관리자 이메일 + 슈퍼관리자 여부 판정 (AdminPage 와 동일 규칙)
   useEffect(() => {
     if (!supabase) return
     ;(async () => {
-      const { data } = await supabase
+      const { data } = await supabase!.auth.getUser()
+      const email = data.user?.email ?? ''
+      setAdminEmail(email)
+      // 1) 슈퍼관리자 이메일 또는 환경변수 관리자 이메일
+      const envAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL as string | undefined) ?? ''
+      if (email === SUPER_ADMIN_EMAIL || (envAdminEmail && email === envAdminEmail)) {
+        setIsSuperAdmin(true)
+        return
+      }
+      // 2) admin_accounts.role === 'super_admin'
+      try {
+        const { data: row } = await supabase!
+          .from('admin_accounts')
+          .select('role, is_active')
+          .eq('email', email)
+          .single()
+        if (row?.is_active && row.role === 'super_admin') setIsSuperAdmin(true)
+      } catch { /* 슈퍼관리자 아님 */ }
+    })()
+  }, [])
+
+  // 공고 목록 로드 (비PII — 필터 드롭다운용)
+  useEffect(() => {
+    if (!supabase) return
+    ;(async () => {
+      const { data } = await supabase!
         .from('job_postings')
         .select('id, company_name, center_name')
         .neq('status', 'deleted')
@@ -118,77 +141,78 @@ export default function ApplicantsMenu() {
     })()
   }, [])
 
-  // 지원자 목록 로드 (서버사이드 필터만 적용)
+  // 지원자 목록 로드 — 모든 필터를 백엔드(마스킹 경로)로 전달
   const fetchApplicants = useCallback(async () => {
-    if (!supabase) return
     setLoading(true)
     setError(null)
     try {
-      let query = supabase
-        .from('job_applications')
-        .select('*, job_postings(company_name, center_name)')
-        .order('applied_at', { ascending: false })
-
-      // 사업장 필터 — 해당 사업장 공고 ID 목록으로 필터
-      if (companyFilter !== 'all') {
-        const companyJobIds = jobs
-          .filter(j => j.company_name === companyFilter)
-          .map(j => j.id)
-        if (companyJobIds.length > 0) {
-          query = query.in('job_posting_id', companyJobIds)
-        }
-      }
-
-      // 공고별 필터
-      if (jobFilter) query = query.eq('job_posting_id', jobFilter)
-
-      // 상태 필터
-      if (statusFilter !== 'all') query = query.eq('status', statusFilter)
-
-      const { data, error } = await query
-      if (error) throw error
-
-      const rows = (data ?? []) as ApplicationRow[]
-
-      // profiles 별도 조회 + 병합 (RLS 분리)
-      const userIds = [...new Set(rows.map(r => r.user_id))]
-      if (userIds.length > 0 && supabase) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('id, full_name, email')
-          .in('id', userIds)
-        const profileMap = Object.fromEntries(
-          (profileData ?? []).map((p: { id: string; full_name: string | null; email: string | null }) => [p.id, p])
-        )
-        rows.forEach(r => { r.profiles = profileMap[r.user_id] ?? null })
-      }
-      setApplicants(rows)
+      const res = await getAdminApplications({
+        status: statusFilter,
+        company: companyFilter,
+        job_posting_id: jobFilter,
+        shift: shiftFilter,
+        task: taskFilter,
+        name: nameFilter,
+        phone: phoneFilter,
+      })
+      setApplicants(res.applications ?? [])
       setSelectedIds(new Set())
+      // 새 목록을 받으면 이전 해제 결과는 무효화(다른 행/페이지로 새지 않게)
+      setRevealed({})
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : '지원자 목록을 불러오지 못했습니다.')
     } finally {
       setLoading(false)
     }
-  }, [companyFilter, jobFilter, statusFilter, jobs])
+  }, [companyFilter, jobFilter, statusFilter, shiftFilter, taskFilter, phoneFilter, nameFilter])
 
+  // 필터 변경 시 디바운스 후 조회(텍스트 입력 타이핑마다 호출 방지)
   useEffect(() => {
-    if (jobs.length > 0 || companyFilter === 'all') {
-      fetchApplicants()
+    const t = setTimeout(fetchApplicants, 300)
+    return () => clearTimeout(t)
+  }, [fetchApplicants])
+
+  // 서버에서 이미 필터링된 목록 — 별칭만 유지(JSX 최소 변경)
+  const displayApplicants = applicants
+
+  // ── 마스킹 해제: 모드 진입 / 재잠금 / 단건 보기 ──
+  function enterUnlockMode() {
+    if (!unlockKeyInput.trim()) { setUnlockError('보안키를 입력하세요.'); return }
+    setRevealKey(unlockKeyInput.trim())
+    setUnlockMode(true)
+    setShowUnlockDialog(false)
+    setUnlockKeyInput('')
+    setUnlockError('')
+  }
+  function lockAgain() {
+    setUnlockMode(false)
+    setRevealKey('')
+    setRevealed({})
+  }
+  async function handleReveal(applicationId: string) {
+    if (!revealKey) { setShowUnlockDialog(true); return }
+    setRevealingId(applicationId)
+    try {
+      const data = await revealApplicant(applicationId, revealKey, adminEmail)
+      setRevealed(prev => ({ ...prev, [applicationId]: data }))
+    } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 403) {
+        setUnlockMode(false); setRevealKey('')
+        setUnlockError('보안키가 일치하지 않습니다. 다시 입력하세요.')
+        setShowUnlockDialog(true)
+      } else if (status === 400) {
+        setUnlockMode(false); setRevealKey('')
+        alert('보안키가 설정되지 않았습니다. Settings → 개인정보 보안키에서 먼저 설정하세요.')
+      } else {
+        alert('해제 중 오류가 발생했습니다.')
+      }
+    } finally {
+      setRevealingId(null)
     }
-  }, [fetchApplicants, jobs.length, companyFilter])
+  }
 
-  // 클라이언트사이드 필터 적용 (서버필터 후 추가 정제)
-  const displayApplicants = applicants.filter(app => {
-    // preferred_shift는 영문 enum (morning|afternoon|night|any) — 부분 일치 검색
-    if (shiftFilter && !app.preferred_shift?.toLowerCase().includes(shiftFilter.toLowerCase())) return false
-    // applied_task는 단일 텍스트 컬럼
-    if (taskFilter  && !app.applied_task?.toLowerCase().includes(taskFilter.toLowerCase())) return false
-    if (phoneFilter && !app.applicant_phone?.includes(phoneFilter)) return false
-    if (nameFilter  && !app.applicant_name?.toLowerCase().includes(nameFilter.toLowerCase())) return false
-    return true
-  })
-
-  // 단건 상태 변경
+  // 단건 상태 변경 (기능 로직 불변 — supabase 직접 경로 유지)
   const handleUpdateStatus = async (
     appId: string,
     newStatus: 'reviewing' | 'confirmed' | 'completed' | 'cancelled' | 'rejected',
@@ -209,7 +233,6 @@ export default function ApplicantsMenu() {
         .select('id')
       if (error) throw error
       if (!updated || updated.length === 0) {
-        // 변경된 행이 0 → RLS 차단 또는 대상 부재. 거짓 성공 대신 실패로 보고.
         throw new Error('변경된 행이 없습니다 — 관리자 권한(RLS)을 확인하세요.')
       }
 
@@ -226,7 +249,6 @@ export default function ApplicantsMenu() {
               : '아쉽지만 이번 공고는 어렵게 됐습니다. 다른 공고를 확인해보세요.',
             metadata: { application_id: appId, job_posting_id: app.job_posting_id },
           })
-          // 알림 실패는 상태변경을 무효화하지 않되, 무음으로 삼키지 않고 콘솔 경고
           if (notifErr) console.warn('[알림 발송 실패] 상태변경은 완료됨:', notifErr.message)
         }
       }
@@ -248,7 +270,7 @@ export default function ApplicantsMenu() {
     }
   }
 
-  // 대량 상태 변경 (체크박스 선택 기반)
+  // 대량 상태 변경 (체크박스 선택 기반 — 기능 로직 불변)
   const handleBulkUpdate = async (newStatus: 'reviewing' | 'confirmed' | 'rejected') => {
     if (!supabase || selectedIds.size === 0 || bulkUpdating) return
     if (!window.confirm(`선택된 ${selectedIds.size}명을 "${STATUS_LABEL[newStatus]}"로 변경할까요?`)) return
@@ -256,7 +278,6 @@ export default function ApplicantsMenu() {
     setBulkUpdating(true)
     try {
       const ids = [...selectedIds]
-      // ★ .select() 로 실제 변경된 행을 받아 RLS 0행 차단/부분 반영을 감지
       const { data: updated, error } = await supabase
         .from('job_applications')
         .update({ status: newStatus })
@@ -288,14 +309,11 @@ export default function ApplicantsMenu() {
         }
       }
 
-      // 실제 변경된 id 집합 → 실패한 id 계산 (부분 반영 추적)
       const updatedIds = new Set((updated ?? []).map(u => u.id))
       const failedIds = ids.filter(id => !updatedIds.has(id))
 
       await fetchApplicants()  // 내부에서 selectedIds 를 비운다
-      // 부분 반영(일부 행만 변경)도 무음으로 넘기지 않고 사용자에게 알림
       if (failedIds.length > 0) {
-        // 실패한 건만 다시 선택해 재시도를 쉽게 (fetchApplicants 이후에 호출해야 유지됨)
         setSelectedIds(new Set(failedIds))
         setToast({ msg: `⚠️ ${changed}/${ids.length}명만 변경됨 — 실패 ${failedIds.length}건을 다시 선택했습니다.`, type: 'error' })
       } else {
@@ -318,21 +336,22 @@ export default function ApplicantsMenu() {
     }
   }
 
-  // CSV 내보내기 (현재 필터 적용 목록 기준 + 제3자 동의 + 인적사항 입력 건)
+  // CSV 내보내기 — 보안상 '마스킹된' 인적사항만 내보낸다(평문 일괄 추출 금지).
+  // 평문이 필요하면 해당 행의 "보기"(단건 reveal·감사기록)로 확인한다.
+  // 대상: 제3자 제공 동의 + 인적사항 입력 건.
   const handleExportCsv = () => {
-    // displayApplicants: LMS 필터(교대/업무/사용자명 등) 적용된 현재 화면 목록
-    const filtered = displayApplicants.filter(a => a.consent_third_party === true && a.applicant_name)
+    const filtered = displayApplicants.filter(a => a.consent_third_party === true && a.has_applicant_info)
     if (filtered.length === 0) {
       alert('다운로드 가능한 지원자가 없습니다.\n(제3자 제공 동의 + 인적사항 입력 건만 포함됩니다)')
       return
     }
-    const BOM = '\uFEFF'
-    const header = ['이름', '생년월일', '성별', '휴대폰', '공고', '센터', '지원일시', '상태']
+    const BOM = '﻿'
+    const header = ['이름(마스킹)', '생년월일(마스킹)', '성별', '휴대폰(마스킹)', '공고', '센터', '지원일시', '상태']
     const rows = filtered.map(a => [
-      a.applicant_name ?? '',
-      a.applicant_birth ?? '',
+      a.applicant_name ?? '',     // 서버 마스킹: 김**
+      a.applicant_birth ?? '',    // 서버 마스킹: 1990-**-**
       a.applicant_gender === 'male' ? '남' : a.applicant_gender === 'female' ? '여' : '',
-      a.applicant_phone ? maskPhone(a.applicant_phone) : '',
+      a.applicant_phone ?? '',    // 서버 마스킹: 010-****-5678
       a.job_postings?.company_name ?? '',
       a.job_postings?.center_name ?? '',
       a.applied_at ? new Date(a.applied_at).toLocaleString('ko-KR') : '',
@@ -359,6 +378,12 @@ export default function ApplicantsMenu() {
     ...cellStyle, color: UP.sub, fontWeight: 600,
     fontSize: '0.75rem', textTransform: 'uppercase' as const, letterSpacing: '0.05em',
   }
+  const revealBtn: React.CSSProperties = {
+    padding: '3px 8px', borderRadius: 7,
+    border: '1px solid rgba(34,197,94,0.3)',
+    background: 'rgba(34,197,94,0.08)', color: UP.green,
+    fontSize: '0.66rem', cursor: 'pointer', fontWeight: 700, marginTop: 4,
+  }
 
   return (
     <div style={{ padding: 'clamp(16px,4vw,32px)', position: 'relative' }}>
@@ -378,21 +403,69 @@ export default function ApplicantsMenu() {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
         <div>
-          {/* 흰색 타이틀 */}
           <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px', color: UP.navy }}>👥 지원자 관리</h2>
           <p style={{ fontSize: '0.8rem', color: UP.sub, margin: 0 }}>
             지원자 상태를 검토중 → 출근확정 순으로 처리하세요. 총 {displayApplicants.length}명
           </p>
         </div>
-        <button onClick={handleExportCsv}
-          style={{
-            padding: '7px 16px', borderRadius: 10, border: `1px solid ${UP.greenLine}`,
-            background: UP.greenBg, color: UP.green,
-            fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
-          }}>
-          📥 CSV 다운로드
-        </button>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {/* 마스킹 해제 토글 — 슈퍼관리자만 노출 */}
+          {isSuperAdmin && (
+            !unlockMode ? (
+              <button
+                onClick={() => { setUnlockError(''); setShowUnlockDialog(true) }}
+                style={{
+                  padding: '7px 14px', borderRadius: 10,
+                  border: '1px solid rgba(240,200,0,0.35)',
+                  background: 'rgba(240,200,0,0.10)', color: UP.amber,
+                  fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700,
+                }}
+              >
+                🔒 마스킹 해제
+              </button>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{
+                  padding: '5px 12px', borderRadius: 10,
+                  background: 'rgba(49,200,100,0.12)', border: '1px solid rgba(49,200,100,0.25)',
+                  color: UP.green, fontSize: '0.78rem', fontWeight: 700,
+                }}>
+                  🔓 해제 모드 · 행별 보기 가능
+                </span>
+                <button onClick={lockAgain}
+                  style={{
+                    padding: '5px 10px', borderRadius: 8, border: `1px solid ${UP.hair}`,
+                    background: UP.sunken, color: UP.sub, fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600,
+                  }}>
+                  재잠금
+                </button>
+              </div>
+            )
+          )}
+          <button onClick={handleExportCsv}
+            style={{
+              padding: '7px 16px', borderRadius: 10, border: `1px solid ${UP.greenLine}`,
+              background: UP.greenBg, color: UP.green,
+              fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+            }}>
+            📥 CSV 다운로드
+          </button>
+        </div>
       </div>
+
+      {/* 마스킹 안내 */}
+      {!unlockMode && (
+        <div style={{
+          marginBottom: 14, padding: '10px 14px', borderRadius: 10,
+          background: 'rgba(240,200,0,0.06)', border: '1px solid rgba(240,200,0,0.18)',
+          fontSize: '0.78rem', color: UP.amber, lineHeight: 1.5,
+        }}>
+          🔒 개인정보(이름·생년월일·전화·회원명·이메일)는 서버에서 마스킹되어 전달됩니다(평문은 브라우저로 내려오지 않음).
+          {isSuperAdmin
+            ? <span style={{ color: UP.sub, marginLeft: 6 }}>· 보안키 입력 후 각 행의 "보기"로 단건 확인할 수 있습니다.</span>
+            : <span style={{ color: UP.sub, marginLeft: 6 }}>· 평문 확인은 최고관리자 권한이 필요합니다.</span>}
+        </div>
+      )}
 
       {/* ── LMS형 필터 2행×3열 그리드 ── */}
       {/* 1행: [사업장][공고][교대] / 2행: [업무][사용자ID][사용자명] */}
@@ -403,7 +476,7 @@ export default function ApplicantsMenu() {
         marginBottom: 8,
       }}>
 
-        {/* 1행 1열: 사업장 선택 (job_postings DISTINCT company_name) */}
+        {/* 1행 1열: 사업장 선택 */}
         <select
           value={companyFilter}
           onChange={e => { setCompanyFilter(e.target.value); setJobFilter('') }}
@@ -415,7 +488,7 @@ export default function ApplicantsMenu() {
           ))}
         </select>
 
-        {/* 1행 2열: 공고 선택 (선택한 사업장의 공고 목록) */}
+        {/* 1행 2열: 공고 선택 */}
         <select
           value={jobFilter}
           onChange={e => setJobFilter(e.target.value)}
@@ -432,7 +505,7 @@ export default function ApplicantsMenu() {
           ))}
         </select>
 
-        {/* 1행 3열: 교대근무 — preferred_shift enum(morning/afternoon/night/any) select */}
+        {/* 1행 3열: 교대근무 — preferred_shift select */}
         <select
           value={shiftFilter}
           onChange={e => setShiftFilter(e.target.value)}
@@ -445,7 +518,7 @@ export default function ApplicantsMenu() {
           <option value="any"       style={{ background: '#fff' }}>무관(any)</option>
         </select>
 
-        {/* 2행 1열: 업무 — applied_task 단일 텍스트 검색 */}
+        {/* 2행 1열: 업무 — applied_task 검색 */}
         <input
           type="text"
           value={taskFilter}
@@ -454,7 +527,7 @@ export default function ApplicantsMenu() {
           style={{ ...filterInputStyle, width: '100%', minWidth: 'unset' }}
         />
 
-        {/* 2행 2열: 사용자ID — 휴대폰번호 검색 */}
+        {/* 2행 2열: 사용자ID — 휴대폰번호 검색 (서버측 원본 컬럼 검색) */}
         <input
           type="text"
           value={phoneFilter}
@@ -463,7 +536,7 @@ export default function ApplicantsMenu() {
           style={{ ...filterInputStyle, width: '100%', minWidth: 'unset' }}
         />
 
-        {/* 2행 3열: 사용자명 — 성명 검색 */}
+        {/* 2행 3열: 사용자명 — 성명 검색 (서버측 원본 컬럼 검색) */}
         <input
           type="text"
           value={nameFilter}
@@ -489,7 +562,7 @@ export default function ApplicantsMenu() {
         </div>
       )}
 
-      {/* 상태 필터 (pill 버튼 — 2번째 줄) */}
+      {/* 상태 필터 (pill 버튼) */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
         {(['all', 'applied', 'reviewing', 'confirmed', 'completed', 'cancelled', 'rejected'] as const).map(s => (
           <button key={s} onClick={() => setStatusFilter(s)}
@@ -580,7 +653,6 @@ export default function ApplicantsMenu() {
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 820 }}>
               <thead>
                 <tr style={{ background: UP.sunken, borderBottom: `1px solid ${UP.hair}` }}>
-                  {/* 전체 선택 체크박스 */}
                   <th style={{ ...thStyle, width: 40, textAlign: 'center' }}>
                     <input
                       type="checkbox"
@@ -609,6 +681,16 @@ export default function ApplicantsMenu() {
                   const sc = statusColor(app.status)
                   const isUpdating = updatingId === app.id
                   const isSelected = selectedIds.has(app.id)
+                  const rev = revealed[app.id]
+                  const canReveal = isSuperAdmin && unlockMode && !rev
+                  const isRevealing = revealingId === app.id
+                  // 표시값 — 해제된 행이면 평문, 아니면 서버 마스킹 값
+                  const profileName = rev ? (rev.profile_name ?? '이름 없음') : (app.profiles?.full_name ?? '이름 없음')
+                  const profileEmail = rev ? (rev.profile_email ?? '-') : (app.profiles?.email ?? '-')
+                  const aName  = rev ? (rev.applicant_name ?? '') : (app.applicant_name ?? '')
+                  const aBirth = rev ? (rev.applicant_birth ?? '') : (app.applicant_birth ?? '')
+                  const aPhone = rev ? (rev.applicant_phone ?? '') : (app.applicant_phone ?? '')
+                  const aGender = rev ? rev.applicant_gender : app.applicant_gender
                   return (
                     <tr key={app.id} style={{ background: isSelected ? 'rgba(49,130,246,0.06)' : undefined }}>
                       {/* 체크박스 */}
@@ -628,30 +710,39 @@ export default function ApplicantsMenu() {
                         />
                       </td>
 
-                      {/* 지원자 계정 정보 */}
+                      {/* 지원자 계정 정보 (회원명/이메일 — 마스킹) */}
                       <td style={cellStyle}>
                         <div style={{ fontWeight: 600, fontSize: '0.82rem' }}>
-                          {app.profiles?.full_name ?? '이름 없음'}
+                          {profileName}
                         </div>
                         <div style={{ fontSize: '0.7rem', color: UP.sub, marginTop: 1 }}>
-                          {app.profiles?.email ?? '-'}
+                          {profileEmail}
                         </div>
+                        {/* 평문 보기 (해제 모드 + 슈퍼관리자) */}
+                        {canReveal ? (
+                          <button onClick={() => handleReveal(app.id)} disabled={isRevealing}
+                            style={{ ...revealBtn, opacity: isRevealing ? 0.5 : 1 }}>
+                            {isRevealing ? '확인 중…' : '👁 보기'}
+                          </button>
+                        ) : rev ? (
+                          <div style={{ fontSize: '0.64rem', color: UP.green, fontWeight: 700, marginTop: 4 }}>🔓 해제됨</div>
+                        ) : null}
                       </td>
 
-                      {/* 인적사항 (지원 폼에서 입력한 실제 정보) */}
+                      {/* 인적사항 (지원 폼에서 입력한 실제 정보 — 마스킹) */}
                       <td style={cellStyle}>
-                        {app.applicant_name ? (
+                        {app.has_applicant_info ? (
                           <>
                             <div style={{ fontWeight: 700, fontSize: '0.85rem', color: UP.navy }}>
-                              {app.applicant_name}
+                              {aName}
                               <span style={{ fontSize: '0.7rem', color: UP.sub, marginLeft: 4 }}>
-                                {app.applicant_gender === 'male' ? '남' : app.applicant_gender === 'female' ? '여' : ''}
+                                {aGender === 'male' ? '남' : aGender === 'female' ? '여' : ''}
                               </span>
                             </div>
                             <div style={{ fontSize: '0.7rem', color: UP.sub, marginTop: 1 }}>
-                              {app.applicant_birth ? app.applicant_birth.slice(0, 10) : '-'}
+                              {aBirth ? aBirth.slice(0, 10) : '-'}
                               {' · '}
-                              {app.applicant_phone ? maskPhone(app.applicant_phone) : '-'}
+                              {aPhone || '-'}
                             </div>
                           </>
                         ) : (
@@ -762,6 +853,66 @@ export default function ApplicantsMenu() {
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* 해제 모드 진입 다이얼로그 (회원관리와 동일 UX) */}
+      {showUnlockDialog && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 10000, padding: 16,
+          }}
+          onClick={() => setShowUnlockDialog(false)}
+        >
+          <div
+            style={{
+              background: '#fff', border: `1px solid ${UP.hair}`,
+              borderRadius: 20, padding: '28px 24px', width: '100%', maxWidth: 400,
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: '1rem', fontWeight: 800, color: UP.navy, marginBottom: 6 }}>🔐 개인정보 마스킹 해제</div>
+            <p style={{ fontSize: '0.8rem', color: UP.sub, marginBottom: 16, lineHeight: 1.5 }}>
+              보안키를 입력하면 해제 모드로 전환됩니다. 이후 각 지원자 행의 "보기"를 누를 때마다
+              해당 1건의 평문 정보가 서버에서 전송되며, 해제 기록은 감사로그에 남습니다.
+            </p>
+            <input
+              type="password"
+              placeholder="보안키 입력..."
+              value={unlockKeyInput}
+              onChange={e => { setUnlockKeyInput(e.target.value); setUnlockError('') }}
+              onKeyDown={e => e.key === 'Enter' && enterUnlockMode()}
+              autoFocus
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: 10,
+                border: unlockError ? `1px solid ${UP.danger}` : `1px solid ${UP.hair}`,
+                background: '#fff', color: UP.navy,
+                fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
+                marginBottom: unlockError ? 6 : 16,
+              }}
+            />
+            {unlockError && (
+              <p style={{ fontSize: '0.78rem', color: UP.danger, marginBottom: 12 }}>{unlockError}</p>
+            )}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setShowUnlockDialog(false)}
+                style={{
+                  flex: 1, padding: '9px 16px', borderRadius: 10, border: `1px solid ${UP.hair}`,
+                  background: UP.sunken, color: UP.body, fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600,
+                }}>
+                취소
+              </button>
+              <button onClick={enterUnlockMode}
+                style={{
+                  flex: 1, padding: '9px 16px', borderRadius: 10, border: 'none',
+                  background: UP.brand, color: '#fff', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 700,
+                }}>
+                해제 모드 진입
+              </button>
+            </div>
           </div>
         </div>
       )}
