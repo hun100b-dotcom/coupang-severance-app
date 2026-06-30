@@ -2,7 +2,7 @@
 // JobsMenu.tsx에서 공고 CRUD 로직만 분리
 // 기능: 공고 등록/수정/삭제, 섹션 변경, 상태 필터, 사업장 필터, view_count 표시, CSV 내보내기
 import { useEffect, useState, useCallback } from 'react'
-import { UP } from '../shared/adminTheme'
+import { UP, badge, btnPrimary, btnSecondary } from '../shared/adminTheme'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../contexts/AuthContext'
 import { logAdminAction } from '../../../lib/adminAuditLog'
@@ -1086,21 +1086,10 @@ export default function JobPostingsMenu() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={handleExportCsv}
-            style={{
-              padding: '8px 16px', borderRadius: 10, border: `1px solid ${UP.hair}`,
-              background: 'rgba(49,200,100,0.1)', color: UP.green,
-              fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
-            }}>
+          <button onClick={handleExportCsv} style={{ ...btnSecondary }}>
             📥 CSV 내보내기
           </button>
-          <button onClick={openCreate}
-            style={{
-              padding: '10px 22px', borderRadius: 12, border: 'none',
-              background: UP.brand, color: '#fff', fontWeight: 700,
-              fontSize: '0.9rem', cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(49,130,246,0.35)',
-            }}>
+          <button onClick={openCreate} style={{ ...btnPrimary }}>
             + 새 공고 등록
           </button>
         </div>
@@ -1187,13 +1176,12 @@ export default function JobPostingsMenu() {
               }}>
                 {/* 배지 영역 */}
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                  {(job.section as string) === 'today-urgent' && <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: '0.72rem', fontWeight: 700, background: 'rgba(239,68,68,0.15)', color: UP.danger }}>🔥 오늘추가</span>}
-                  {(job.section as string) === 'tomorrow-urgent' && <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: '0.72rem', fontWeight: 700, background: 'rgba(249,115,22,0.15)', color: UP.amber }}>⚡ 내일긴급</span>}
-                  {(job.section as string) === 'always' && <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: '0.72rem', fontWeight: 700, background: 'rgba(34,197,94,0.12)', color: UP.green }}>✅ 상시</span>}
+                  {(job.section as string) === 'today-urgent' && <span style={{ ...badge('amber') }}>🔥 오늘추가</span>}
+                  {(job.section as string) === 'tomorrow-urgent' && <span style={{ ...badge('amber') }}>⚡ 내일긴급</span>}
+                  {(job.section as string) === 'always' && <span style={{ ...badge('green') }}>✅ 상시</span>}
                   <span style={{
-                    padding: '3px 10px', borderRadius: 999, fontSize: '0.72rem', fontWeight: 700, marginLeft: 'auto',
-                    background: job.status === 'active' ? 'rgba(49,200,100,0.18)' : job.status === 'draft' ? 'rgba(255,180,0,0.18)' : UP.hairSoft,
-                    color: job.status === 'active' ? UP.green : job.status === 'draft' ? UP.amber : UP.sub,
+                    ...badge(job.status === 'active' ? 'green' : job.status === 'draft' ? 'amber' : 'neutral'),
+                    marginLeft: 'auto',
                   }}>
                     {job.status === 'active' ? '활성' : job.status === 'draft' ? '임시저장' : job.status === 'expired' ? '만료' : '삭제'}
                   </span>

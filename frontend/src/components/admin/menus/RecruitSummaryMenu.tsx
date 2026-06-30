@@ -1,7 +1,7 @@
 // 어드민 — 채용 Summary 대시보드 (Phase D-2)
 // 사업장별 공고현황, 전환율, 충원율, 일별 트렌드 차트, 채용소요일
 import { useEffect, useState, useCallback } from 'react'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, btnSecondary } from '../shared/adminTheme'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Legend,
@@ -235,20 +235,10 @@ export default function RecruitSummaryMenu() {
             <option value="all" style={{ background: '#fff', color: UP.navy }}>전체 사업장</option>
             {companies.map(c => <option key={c} value={c} style={{ background: '#fff', color: UP.navy }}>{c}</option>)}
           </select>
-          <button onClick={fetchData}
-            style={{
-              padding: '6px 14px', borderRadius: 8, border: `1px solid ${UP.hair}`,
-              background: UP.sunken, color: UP.body,
-              fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
-            }}>
+          <button onClick={fetchData} style={{ ...btnSecondary }}>
             ↻ 새로고침
           </button>
-          <button onClick={handleExportCsv}
-            style={{
-              padding: '6px 14px', borderRadius: 8, border: `1px solid ${UP.hair}`,
-              background: 'rgba(49,200,100,0.1)', color: UP.green,
-              fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
-            }}>
+          <button onClick={handleExportCsv} style={{ ...btnSecondary }}>
             📥 CSV
           </button>
         </div>
@@ -283,7 +273,7 @@ export default function RecruitSummaryMenu() {
             ].map(k => (
               <div key={k.label} style={{
                 background: UP.sunken, border: `1px solid ${UP.hair}`,
-                borderRadius: 14, padding: '16px 14px',
+                borderRadius: RADIUS.card, padding: '16px 14px',
               }}>
                 <div style={{ fontSize: '1.9rem', fontWeight: 900, color: k.color, lineHeight: 1 }}>
                   {k.value}
@@ -296,7 +286,7 @@ export default function RecruitSummaryMenu() {
           {/* ── 일별 트렌드 차트 ── */}
           <div style={{
             background: '#fff', border: `1px solid ${UP.hair}`,
-            borderRadius: 14, padding: '20px 16px', marginBottom: 24,
+            borderRadius: RADIUS.card, padding: '20px 16px', marginBottom: 24,
           }}>
             <p style={{ fontSize: '0.85rem', fontWeight: 700, color: UP.body, margin: '0 0 16px' }}>
               📈 일별 지원 트렌드 (최근 14일)
@@ -329,7 +319,7 @@ export default function RecruitSummaryMenu() {
           {companyBarData.length > 0 && (
             <div style={{
               background: '#fff', border: `1px solid ${UP.hair}`,
-              borderRadius: 14, padding: '20px 16px', marginBottom: 24,
+              borderRadius: RADIUS.card, padding: '20px 16px', marginBottom: 24,
             }}>
               <p style={{ fontSize: '0.85rem', fontWeight: 700, color: UP.body, margin: '0 0 16px' }}>
                 🏢 사업장별 지원 현황
@@ -353,7 +343,7 @@ export default function RecruitSummaryMenu() {
 
           {/* ── 사업장별 상세 테이블 ── */}
           <div style={{
-            background: '#fff', borderRadius: 14, overflow: 'hidden',
+            background: '#fff', borderRadius: RADIUS.card, overflow: 'hidden',
             border: `1px solid ${UP.hair}`,
           }}>
             <div style={{ overflowX: 'auto' }}>

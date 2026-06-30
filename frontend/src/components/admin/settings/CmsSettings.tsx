@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, btnPrimary } from '../shared/adminTheme'
 import { patchSetting } from '../../../lib/api'
 import type { SystemSettings } from '../../../types/admin'
 
@@ -108,7 +108,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
       </div>
 
       <button onClick={save} disabled={saving} style={{
-        ...btnStyle, opacity: saving ? 0.7 : 1, cursor: saving ? 'not-allowed' : 'pointer',
+        ...btnPrimary, opacity: saving ? 0.7 : 1, cursor: saving ? 'not-allowed' : 'pointer',
       }}>
         {saving ? '저장 중...' : '설정 저장'}
       </button>
@@ -124,7 +124,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
 const cardStyle: React.CSSProperties = {
   background: UP.sunken,
   border: `1px solid ${UP.hair}`,
-  borderRadius: 14, padding: '20px', marginBottom: 16,
+  borderRadius: RADIUS.card, padding: '20px', marginBottom: 16,
 }
 const titleStyle: React.CSSProperties = {
   fontSize: '0.88rem', fontWeight: 700, color: UP.body, marginBottom: 6,
@@ -136,8 +136,4 @@ const inputStyle: React.CSSProperties = {
   width: '100%', background: UP.sunken, border: `1px solid ${UP.hair}`,
   borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: UP.navy,
   outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
-}
-const btnStyle: React.CSSProperties = {
-  padding: '8px 20px', borderRadius: 8, border: 'none', background: UP.brand,
-  color: '#fff', fontSize: '0.85rem', fontWeight: 700,
 }

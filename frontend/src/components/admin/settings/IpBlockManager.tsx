@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react'
 import type { BlockedIp } from '../../../types/admin'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, btnPrimary, btnSecondary } from '../shared/adminTheme'
 import { blockIp, unblockIp } from '../../../lib/api'
 
 interface Props {
@@ -50,7 +50,7 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
     <div style={cardStyle}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
         <p style={{ ...titleStyle, flex: 1 }}>IP 차단 관리 ({ips.length}개)</p>
-        <button onClick={() => { setShowForm(f => !f); setError(null) }} style={btnStyle}>+ IP 차단</button>
+        <button onClick={() => { setShowForm(f => !f); setError(null) }} style={btnSecondary}>+ IP 차단</button>
       </div>
 
       {/* 에러 표시 (차단/해제 실패) */}
@@ -65,10 +65,11 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
           <input value={ipAddr} onChange={e => setIpAddr(e.target.value)} placeholder="IP 주소 (예: 1.2.3.4)" style={{ ...inputStyle, marginBottom: 8 }} />
           <input value={reason} onChange={e => setReason(e.target.value)} placeholder="차단 사유 (선택)" style={inputStyle} />
           <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-            <button onClick={handleBlock} disabled={saving} style={{ ...btnStyle, background: UP.danger }}>
+            {/* 차단 적용: 주CTA(btnPrimary) 베이스 + 위험 동작이라 danger 배경 유지 */}
+            <button onClick={handleBlock} disabled={saving} style={{ ...btnPrimary, background: UP.danger, boxShadow: 'none' }}>
               {saving ? '처리 중...' : '차단 적용'}
             </button>
-            <button onClick={() => { setShowForm(false); setError(null) }} style={{ ...btnStyle, background: UP.hairSoft, color: UP.sub }}>취소</button>
+            <button onClick={() => { setShowForm(false); setError(null) }} style={{ ...btnSecondary, background: UP.hairSoft, color: UP.sub, border: 'none' }}>취소</button>
           </div>
         </div>
       )}
@@ -98,7 +99,7 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
 const cardStyle: React.CSSProperties = {
   background: UP.sunken,
   border: `1px solid ${UP.hair}`,
-  borderRadius: 14, padding: '20px', marginBottom: 16,
+  borderRadius: RADIUS.card, padding: '20px', marginBottom: 16,
 }
 const titleStyle: React.CSSProperties = {
   fontSize: '0.88rem', fontWeight: 700, color: UP.body,
@@ -107,8 +108,4 @@ const inputStyle: React.CSSProperties = {
   width: '100%', background: UP.sunken, border: `1px solid ${UP.hair}`,
   borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: UP.navy,
   outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
-}
-const btnStyle: React.CSSProperties = {
-  padding: '6px 14px', borderRadius: 8, border: 'none', background: UP.brand,
-  color: '#fff', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
 }

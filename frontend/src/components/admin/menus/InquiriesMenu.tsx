@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, btnSecondary } from '../shared/adminTheme'
 import {
   getAdminInquiries, getTemplates,
   patchInquiryStatus, patchInquiryAnswer, bulkInquiryStatus,
@@ -258,7 +258,7 @@ export default function InquiriesMenu() {
           <div style={{
             background: '#fff',
             border: `1px solid ${UP.hair}`,
-            borderRadius: 14, overflow: 'hidden', marginBottom: 14,
+            borderRadius: RADIUS.card, overflow: 'hidden', marginBottom: 14,
           }}>
             {loading ? (
               <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>
@@ -309,10 +309,11 @@ export default function InquiriesMenu() {
   )
 }
 
+// 헤더 툴바 버튼(템플릿/CSV/새로고침) — 보조 액션 톤(btnSecondary) 기반.
+//   툴바 정렬을 위해 패딩·폰트만 작게 오버라이드(스타일 정합만, 로직 불변).
 const outlineBtn: React.CSSProperties = {
-  padding: '6px 12px', borderRadius: 8, border: `1px solid ${UP.hair}`,
-  background: UP.sunken, color: UP.body,
-  fontSize: '0.78rem', cursor: 'pointer',
+  ...btnSecondary,
+  padding: '6px 12px', fontSize: '0.78rem', fontWeight: 600,
 }
 
 const selectStyle: React.CSSProperties = {

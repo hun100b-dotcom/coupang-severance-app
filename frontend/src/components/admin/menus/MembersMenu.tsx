@@ -8,7 +8,7 @@
 //           각 행의 "보기"를 누를 때만 단건 reveal 엔드포인트로 받아온다(revealMember).
 //   보안키는 서버에서 해시 비교하고, 누가/언제/어느 회원을 해제했는지 감사로그에 남는다.
 import { useState, useEffect, useCallback } from 'react'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, btnPrimary, btnSecondary, badge } from '../shared/adminTheme'
 import { supabase } from '../../../lib/supabase'
 import {
   getAdminMembers, revealMember, type MaskedMember, type RevealedMember,
@@ -186,14 +186,14 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                 </span>
                 <button
                   onClick={lockAgain}
-                  style={{ ...outlineBtn, fontSize: '0.75rem', padding: '5px 10px' }}
+                  style={{ ...btnSecondary, fontSize: '0.75rem', padding: '5px 10px' }}
                 >
                   재잠금
                 </button>
               </div>
             )
           )}
-          <button onClick={fetchMembers} style={outlineBtn}>↻ 새로고침</button>
+          <button onClick={fetchMembers} style={btnSecondary}>↻ 새로고침</button>
         </div>
       </div>
 
@@ -234,14 +234,14 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
           <option value="false">미동의</option>
         </select>
         <button onClick={() => { setPage(1); fetchMembers() }} style={btnPrimary}>검색</button>
-        <button onClick={() => { setSearchEmail(''); setFilterMarketing(''); setPage(1) }} style={outlineBtn}>초기화</button>
+        <button onClick={() => { setSearchEmail(''); setFilterMarketing(''); setPage(1) }} style={btnSecondary}>초기화</button>
       </div>
 
       {/* 회원 목록 */}
       <div style={{
         background: '#fff',
         border: `1px solid ${UP.hair}`,
-        borderRadius: 14, overflow: 'hidden',
+        borderRadius: RADIUS.card, overflow: 'hidden',
       }}>
         {loading ? (
           <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0' }}>로딩 중...</p>
@@ -320,11 +320,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                       {formatDate(member.created_at)}
                     </div>
                     <div>
-                      <span style={{
-                        fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', borderRadius: 6,
-                        background: member.onboarding_completed ? 'rgba(34,197,94,0.12)' : UP.sunken,
-                        color: member.onboarding_completed ? UP.green : UP.caption,
-                      }}>
+                      <span style={badge(member.onboarding_completed ? 'green' : 'neutral')}>
                         {member.onboarding_completed ? '완료' : '미완'}
                       </span>
                     </div>
@@ -407,9 +403,9 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
       {/* 페이지네이션 */}
       {totalPages > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
-          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ ...outlineBtn, opacity: page === 1 ? 0.4 : 1 }}>← 이전</button>
+          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ ...btnSecondary, opacity: page === 1 ? 0.4 : 1 }}>← 이전</button>
           <span style={{ color: UP.sub, fontSize: '0.82rem', padding: '7px 12px' }}>{page} / {totalPages}</span>
-          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ ...outlineBtn, opacity: page === totalPages ? 0.4 : 1 }}>다음 →</button>
+          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ ...btnSecondary, opacity: page === totalPages ? 0.4 : 1 }}>다음 →</button>
         </div>
       )}
 
@@ -441,7 +437,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
               <p style={{ fontSize: '0.78rem', color: UP.danger, marginBottom: 12 }}>{unlockError}</p>
             )}
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setShowUnlockDialog(false)} style={{ ...outlineBtn, flex: 1 }}>취소</button>
+              <button onClick={() => setShowUnlockDialog(false)} style={{ ...btnSecondary, flex: 1 }}>취소</button>
               <button onClick={enterUnlockMode} style={{ ...btnPrimary, flex: 1 }}>해제 모드 진입</button>
             </div>
           </div>
@@ -451,17 +447,6 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
   )
 }
 
-const outlineBtn: React.CSSProperties = {
-  padding: '7px 14px', borderRadius: 8,
-  border: `1px solid ${UP.hair}`,
-  background: UP.sunken, color: UP.body,
-  fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600,
-}
-const btnPrimary: React.CSSProperties = {
-  padding: '7px 16px', borderRadius: 8,
-  border: 'none', background: UP.brand, color: '#fff',
-  fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700,
-}
 const revealBtn: React.CSSProperties = {
   padding: '4px 9px', borderRadius: 7,
   border: '1px solid rgba(34,197,94,0.3)',

@@ -11,7 +11,7 @@
 //   보안키는 서버에서 해시 비교하고, 누가/언제/어느 지원을 해제했는지 감사로그에 남는다.
 //   ※ 상태변경/확정/거절 알림 로직은 그대로(아래 supabase 경로) — PII '표시 경로'만 바뀜.
 import { useEffect, useState, useCallback } from 'react'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, badge, btnSecondary } from '../shared/adminTheme'
 import { supabase } from '../../../lib/supabase'
 import { SUPER_ADMIN_EMAIL } from '../AdminSidebar'
 import {
@@ -29,14 +29,15 @@ const STATUS_LABEL: Record<string, string> = {
   rejected:  '지원거절',
 }
 
-// 상태별 색상
-const statusColor = (status: string) => {
-  if (status === 'confirmed') return { bg: 'rgba(49,200,100,0.18)', color: UP.green }
-  if (status === 'reviewing') return { bg: 'rgba(255,180,0,0.18)',  color: UP.amber }
-  if (status === 'completed') return { bg: UP.hairSoft, color: UP.sub }
-  if (status === 'cancelled') return { bg: 'rgba(240,68,82,0.18)',  color: UP.danger }
-  if (status === 'rejected')  return { bg: 'rgba(240,68,82,0.25)',  color: UP.danger }
-  return { bg: 'rgba(49,130,246,0.18)', color: UP.brand }  // applied
+// 상태별 배지 톤 — badge() 헬퍼 tone으로 매핑(라벨/분기 로직은 동일)
+//   확정/출근완료→green, 검토중→amber, 취소/종결→neutral, 거절→danger, 지원완료(기본)→brand
+const statusTone = (status: string): 'brand' | 'green' | 'neutral' | 'danger' | 'amber' => {
+  if (status === 'confirmed') return 'green'
+  if (status === 'reviewing') return 'amber'
+  if (status === 'completed') return 'neutral'
+  if (status === 'cancelled') return 'neutral'
+  if (status === 'rejected')  return 'danger'
+  return 'brand'  // applied
 }
 
 // 공통 셀렉트/인풋 스타일 (라이트 모드)
@@ -442,12 +443,7 @@ export default function ApplicantsMenu() {
               </div>
             )
           )}
-          <button onClick={handleExportCsv}
-            style={{
-              padding: '7px 16px', borderRadius: 10, border: `1px solid ${UP.greenLine}`,
-              background: UP.greenBg, color: UP.green,
-              fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
-            }}>
+          <button onClick={handleExportCsv} style={{ ...btnSecondary }}>
             📥 CSV 다운로드
           </button>
         </div>
@@ -648,7 +644,7 @@ export default function ApplicantsMenu() {
       {loading ? (
         <p style={{ color: UP.caption, fontSize: '0.85rem' }}>불러오는 중...</p>
       ) : (
-        <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', border: `1px solid ${UP.hair}` }}>
+        <div style={{ background: '#fff', borderRadius: RADIUS.card, overflow: 'hidden', border: `1px solid ${UP.hair}` }}>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 820 }}>
               <thead>
@@ -678,7 +674,7 @@ export default function ApplicantsMenu() {
                   </tr>
                 )}
                 {displayApplicants.map(app => {
-                  const sc = statusColor(app.status)
+                  const sTone = statusTone(app.status)
                   const isUpdating = updatingId === app.id
                   const isSelected = selectedIds.has(app.id)
                   const rev = revealed[app.id]
@@ -765,11 +761,7 @@ export default function ApplicantsMenu() {
 
                       {/* 현재 상태 */}
                       <td style={{ ...cellStyle, textAlign: 'center' }}>
-                        <span style={{
-                          padding: '2px 8px', borderRadius: 999,
-                          fontSize: '0.72rem', fontWeight: 700,
-                          background: sc.bg, color: sc.color,
-                        }}>
+                        <span style={{ ...badge(sTone) }}>
                           {STATUS_LABEL[app.status] ?? app.status}
                         </span>
                         {/* 출근 예정일 표시 (확정 이후) */}

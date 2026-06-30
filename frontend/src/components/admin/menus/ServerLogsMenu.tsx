@@ -1,7 +1,7 @@
 // ServerLogsMenu.tsx — 서버/시스템 로그 (실시간 연동)
 // system_logs: DB 트리거 기반 자동 기록 + Supabase Realtime 구독
 import { useCallback, useEffect, useState, useRef } from 'react'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, badge, btnSecondary } from '../shared/adminTheme'
 import { supabase } from '../../../lib/supabase'
 import { getAuditLogs } from '../../../lib/api'
 import type { AuditLog } from '../../../types/admin'
@@ -17,14 +17,17 @@ interface SystemLog {
   created_at: string
 }
 
-const TYPE_META: Record<string, { color: string; bg: string; label: string; icon: string }> = {
-  DEPLOY:    { color: UP.green, bg: 'rgba(34,197,94,0.12)',   label: 'DEPLOY',    icon: '🚀' },
-  FIX:       { color: UP.amber, bg: 'rgba(240,140,0,0.12)',   label: 'FIX',       icon: '🔧' },
-  ERROR:     { color: UP.danger, bg: 'rgba(240,64,64,0.12)',   label: 'ERROR',     icon: '❌' },
-  SECURITY:  { color: UP.strong, bg: 'rgba(167,139,250,0.12)', label: 'SECURITY',  icon: '🔒' },
-  MIGRATION: { color: UP.green, bg: 'rgba(0,196,140,0.12)',   label: 'MIGRATION', icon: '📦' },
-  INFO:      { color: UP.brand, bg: 'rgba(96,165,250,0.12)',  label: 'INFO',      icon: 'ℹ️' },
-  WARNING:   { color: UP.amber, bg: 'rgba(251,191,36,0.12)',  label: 'WARNING',   icon: '⚠️' },
+// 로그 레벨별 메타 — 배지 톤(tone)을 공용 badge() 팔레트에 매핑.
+//   배지/칩 표현은 badge(tone)을 쓰고, 행 안의 큰 라벨은 기존 color/bg를 유지해 가독성 보존.
+type LogTone = 'green' | 'amber' | 'danger' | 'brand' | 'neutral'
+const TYPE_META: Record<string, { color: string; bg: string; label: string; icon: string; tone: LogTone }> = {
+  DEPLOY:    { color: UP.green, bg: 'rgba(34,197,94,0.12)',   label: 'DEPLOY',    icon: '🚀', tone: 'green' },
+  FIX:       { color: UP.amber, bg: 'rgba(240,140,0,0.12)',   label: 'FIX',       icon: '🔧', tone: 'amber' },
+  ERROR:     { color: UP.danger, bg: 'rgba(240,64,64,0.12)',   label: 'ERROR',     icon: '❌', tone: 'danger' },
+  SECURITY:  { color: UP.strong, bg: 'rgba(167,139,250,0.12)', label: 'SECURITY',  icon: '🔒', tone: 'brand' },
+  MIGRATION: { color: UP.green, bg: 'rgba(0,196,140,0.12)',   label: 'MIGRATION', icon: '📦', tone: 'green' },
+  INFO:      { color: UP.brand, bg: 'rgba(96,165,250,0.12)',  label: 'INFO',      icon: 'ℹ️', tone: 'brand' },
+  WARNING:   { color: UP.amber, bg: 'rgba(251,191,36,0.12)',  label: 'WARNING',   icon: '⚠️', tone: 'amber' },
 }
 
 function fmtDate(iso: string) {
@@ -165,9 +168,10 @@ export default function ServerLogsMenu() {
           <button
             onClick={() => setIsLive(prev => !prev)}
             style={{
-              padding: '5px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+              // LIVE 인디케이터 — 공용 green 배지 팔레트(greenBg/green)로 톤 정합
+              padding: '5px 10px', borderRadius: RADIUS.pill, border: 'none', cursor: 'pointer',
               fontSize: '0.73rem', fontWeight: 700,
-              background: isLive ? 'rgba(34,197,94,0.15)' : UP.sunken,
+              background: isLive ? UP.greenBg : UP.sunken,
               color: isLive ? UP.green : UP.caption,
               transition: 'all 0.15s',
             }}
@@ -224,10 +228,7 @@ export default function ServerLogsMenu() {
               {Object.entries(typeCounts).map(([type, count]) => {
                 const meta = TYPE_META[type] ?? TYPE_META.INFO
                 return (
-                  <span key={type} style={{
-                    fontSize: '0.62rem', fontWeight: 700, color: meta.color,
-                    background: meta.bg, padding: '2px 6px', borderRadius: 99,
-                  }}>
+                  <span key={type} style={badge(meta.tone)}>
                     {type} {count}
                   </span>
                 )
@@ -240,7 +241,7 @@ export default function ServerLogsMenu() {
 
           <div style={{
             background: '#fff', border: `1px solid ${UP.hair}`,
-            borderRadius: 12, overflow: 'hidden',
+            borderRadius: RADIUS.content, overflow: 'hidden',
           }}>
             {/* 컬럼 헤더 */}
             <div className="hidden md:grid" style={{
@@ -448,7 +449,7 @@ export default function ServerLogsMenu() {
             <button onClick={() => { setAuditAction(''); setAuditStart(''); setAuditEnd(''); setAuditPage(1) }} style={outlineBtn}>초기화</button>
           </div>
 
-          <div style={{ background: '#fff', border: `1px solid ${UP.hair}`, borderRadius: 12, padding: 14, overflow: 'hidden' }}>
+          <div style={{ background: '#fff', border: `1px solid ${UP.hair}`, borderRadius: RADIUS.content, padding: 14, overflow: 'hidden' }}>
             {auditLoading ? (
               <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>로딩 중...</p>
             ) : (
@@ -461,11 +462,10 @@ export default function ServerLogsMenu() {
   )
 }
 
+// 보조 버튼(새로고침·초기화·페이지네이션·상세보기) — 공용 btnSecondary 기반 + 조밀한 사이즈 유지
 const outlineBtn: React.CSSProperties = {
-  padding: '6px 12px', borderRadius: 8,
-  border: `1px solid ${UP.hair}`,
-  background: UP.sunken,
-  color: UP.body, fontSize: '0.78rem', cursor: 'pointer',
+  ...btnSecondary,
+  padding: '6px 12px', fontSize: '0.78rem', fontWeight: 600,
 }
 const selectSt: React.CSSProperties = {
   background: UP.sunken,

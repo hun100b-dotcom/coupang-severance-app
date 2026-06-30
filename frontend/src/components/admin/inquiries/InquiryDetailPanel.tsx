@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { AdminInquiry, InquiryTemplate } from '../../../types/admin'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, badge, btnPrimary } from '../shared/adminTheme'
 
 interface Props {
   inquiry: AdminInquiry
@@ -79,7 +79,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
       <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
         {/* 메타 */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, background: UP.brandBg, color: UP.strong, padding: '2px 8px', borderRadius: 999 }}>
+          <span style={{ ...badge('brand') }}>
             {inquiry.category}
           </span>
           <span style={{ fontSize: '0.72rem', color: UP.sub }}>
@@ -121,12 +121,13 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
                   disabled={busyStatus !== null}
                   style={{
                     padding: '5px 12px',
-                    borderRadius: 999,
+                    borderRadius: RADIUS.pill,
                     border: 'none',
                     fontSize: '0.75rem',
                     fontWeight: 700,
                     cursor: busyStatus !== null ? 'wait' : 'pointer',
-                    background: inquiry.status === s ? UP.brand : UP.hairSoft,
+                    // 현재 상태=brand 채움, 비선택=neutral 톤(badge('neutral')과 정합)
+                    background: inquiry.status === s ? UP.brand : UP.sunken,
                     color: inquiry.status === s ? '#fff' : UP.sub,
                     transition: 'all 0.15s',
                     // 진행 중 버튼만 살짝 흐리게 (스피너 대체). 화면 전환은 이미 즉각 반영됨
@@ -206,15 +207,12 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
           onClick={handleSaveAnswer}
           disabled={saving}
           style={{
+            ...btnPrimary,
             marginTop: 10,
             width: '100%',
             padding: '12px',
+            // 저장 중에는 옅은 블루로 비활성 표시 (기존 UX 보존)
             background: saving ? UP.brandLine : UP.brand,
-            color: '#fff',
-            border: 'none',
-            borderRadius: 10,
-            fontSize: '0.88rem',
-            fontWeight: 700,
             cursor: saving ? 'not-allowed' : 'pointer',
           }}
         >

@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import type { Notice } from '../../../types/supabase'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, btnPrimary, btnSecondary, badge } from '../shared/adminTheme'
 
 // 공지 작성/수정 폼 필드 타입
 interface NoticeForm {
@@ -181,16 +181,7 @@ export default function NoticesMenu() {
         </div>
         <button
           onClick={openCreate}
-          style={{
-            padding: '8px 18px',
-            borderRadius: 10,
-            border: 'none',
-            background: UP.brand,
-            color: '#fff',
-            fontWeight: 700,
-            fontSize: '0.85rem',
-            cursor: 'pointer',
-          }}
+          style={{ ...btnPrimary }}
         >
           + 새 공지 추가
         </button>
@@ -211,7 +202,7 @@ export default function NoticesMenu() {
       {loading ? (
         <p style={{ color: UP.sub, fontSize: '0.85rem' }}>불러오는 중...</p>
       ) : (
-        <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', border: `1px solid ${UP.hair}` }}>
+        <div style={{ background: '#fff', borderRadius: RADIUS.card, overflow: 'hidden', border: `1px solid ${UP.hair}` }}>
           <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 500 }}>
             <thead>
@@ -254,13 +245,8 @@ export default function NoticesMenu() {
                     <button
                       onClick={() => handleToggleActive(n)}
                       style={{
-                        padding: '3px 10px',
-                        borderRadius: 999,
+                        ...badge(n.is_active ? 'green' : 'neutral'),
                         border: 'none',
-                        background: n.is_active ? UP.greenBg : UP.hairSoft,
-                        color: n.is_active ? UP.green : UP.sub,
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
                         cursor: 'pointer',
                       }}
                     >
@@ -272,14 +258,9 @@ export default function NoticesMenu() {
                     <button
                       onClick={() => openEdit(n)}
                       style={{
+                        ...badge('brand'),
                         marginRight: 6,
-                        padding: '3px 10px',
-                        borderRadius: 8,
                         border: 'none',
-                        background: UP.brandBg,
-                        color: UP.strong,
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
                         cursor: 'pointer',
                       }}
                     >
@@ -288,13 +269,8 @@ export default function NoticesMenu() {
                     <button
                       onClick={() => handleDelete(n)}
                       style={{
-                        padding: '3px 10px',
-                        borderRadius: 8,
+                        ...badge('danger'),
                         border: 'none',
-                        background: UP.dangerBg,
-                        color: UP.danger,
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
                         cursor: 'pointer',
                       }}
                     >
@@ -425,13 +401,7 @@ export default function NoticesMenu() {
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button
                 onClick={closeModal}
-                style={{
-                  padding: '9px 20px', borderRadius: 10,
-                  border: `1px solid ${UP.hair}`,
-                  background: 'transparent',
-                  color: UP.body,
-                  fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
-                }}
+                style={{ ...btnSecondary }}
               >
                 취소
               </button>
@@ -440,13 +410,11 @@ export default function NoticesMenu() {
                 // 제목 또는 본문이 비어있으면 저장 불가
                 disabled={saving || !form.title.trim() || !form.content.trim()}
                 style={{
-                  padding: '9px 20px', borderRadius: 10,
-                  border: 'none',
+                  ...btnPrimary,
+                  // 비활성 시 배경을 옅은 블루로 (기존 거짓성공 방지 UX 보존)
                   background: (saving || !form.title.trim() || !form.content.trim())
                     ? UP.brandLine
                     : UP.brand,
-                  color: '#fff',
-                  fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
                 }}
               >
                 {saving ? '저장 중...' : '저장'}

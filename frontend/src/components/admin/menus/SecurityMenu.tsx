@@ -14,7 +14,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { getAuditLogs, getBlockedIps, getUnmaskKeyStatus } from '../../../lib/api'
-import { UP, numeric, adminCard } from '../shared/adminTheme'
+import { UP, numeric, adminCard, btnSecondary, badge } from '../shared/adminTheme'
 import PageHeader from '../shared/PageHeader'
 
 // 감사로그 한 행(필요한 필드만)
@@ -164,7 +164,7 @@ export default function SecurityMenu() {
         title="보안 현황"
         subtitle="관리자·접근통제·마스킹·감사 활동 요약 (읽기 전용)"
         actions={
-          <button onClick={fetchAll} style={refreshBtn}>↻ 새로고침</button>
+          <button onClick={fetchAll} style={btnSecondary}>↻ 새로고침</button>
         }
       />
 
@@ -293,10 +293,7 @@ export default function SecurityMenu() {
                     display: 'flex', alignItems: 'center', gap: 10, padding: '9px 4px',
                     borderTop: i === 0 ? 'none' : `1px solid ${UP.hairSoft}`,
                   }}>
-                    <span style={{
-                      fontSize: '0.68rem', fontWeight: 700, color: UP.strong,
-                      background: UP.brandBg, padding: '3px 8px', borderRadius: 999, whiteSpace: 'nowrap',
-                    }}>{actionLabel(log.action)}</span>
+                    <span style={{ ...badge('brand'), whiteSpace: 'nowrap' }}>{actionLabel(log.action)}</span>
                     <span style={{ flex: 1, fontSize: '0.8rem', color: UP.body, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.admin_email}</span>
                     {log.target_type && <span style={{ fontSize: '0.72rem', color: UP.caption }}>{log.target_type}</span>}
                     <span style={{ fontSize: '0.72rem', color: UP.sub, whiteSpace: 'nowrap' }}>{fmtRelative(log.created_at)}</span>
@@ -316,8 +313,4 @@ const sectionTitle: React.CSSProperties = {
 }
 const emptyText: React.CSSProperties = {
   fontSize: '0.82rem', color: UP.sub, textAlign: 'center', padding: '20px 0', margin: 0,
-}
-const refreshBtn: React.CSSProperties = {
-  padding: '7px 14px', borderRadius: 8, border: `1px solid ${UP.hair}`,
-  background: UP.surface, color: UP.body, fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600,
 }

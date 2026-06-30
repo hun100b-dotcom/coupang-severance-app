@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react'
 import type { SystemSettings } from '../../../types/admin'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, btnPrimary } from '../shared/adminTheme'
 import { patchSetting } from '../../../lib/api'
 
 interface Props {
@@ -48,7 +48,7 @@ export default function LegalVariables({ settings, onRefresh }: Props) {
           />
         </div>
       ))}
-      <button onClick={save} disabled={saving} style={btnStyle}>
+      <button onClick={save} disabled={saving} style={btnPrimary}>
         {saving ? '저장 중...' : '변수 저장'}
       </button>
       {msg && <p style={{ fontSize: '0.78rem', color: UP.green, marginTop: 8 }}>{msg}</p>}
@@ -59,7 +59,7 @@ export default function LegalVariables({ settings, onRefresh }: Props) {
 const cardStyle: React.CSSProperties = {
   background: UP.sunken,
   border: `1px solid ${UP.hair}`,
-  borderRadius: 14, padding: '20px', marginBottom: 16,
+  borderRadius: RADIUS.card, padding: '20px', marginBottom: 16,
 }
 const titleStyle: React.CSSProperties = {
   fontSize: '0.88rem', fontWeight: 700, color: UP.body, marginBottom: 14,
@@ -71,8 +71,4 @@ const inputStyle: React.CSSProperties = {
   width: '100%', background: UP.sunken, border: `1px solid ${UP.hair}`,
   borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: UP.navy,
   outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
-}
-const btnStyle: React.CSSProperties = {
-  padding: '8px 20px', borderRadius: 8, border: 'none', background: UP.brand,
-  color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
 }

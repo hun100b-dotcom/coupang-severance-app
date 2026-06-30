@@ -7,7 +7,7 @@ import {
 import { getTargetInsights } from '../../../lib/api'
 import type { TargetInsights } from '../../../types/admin'
 import { logAdminAction } from '../../../lib/adminAuditLog'
-import { UP } from '../shared/adminTheme'
+import { UP, btnSecondary } from '../shared/adminTheme'
 
 /* ── Color Palette ──────────────────────────────────────────
    무지개색 금지 — 브랜드 블루/그린/앰버/네이비 계열로 절제(up.* 토큰 기반).
@@ -148,11 +148,7 @@ export default function TargetMenu() {
             사용자 인사이트 &middot; 수익 분석 &middot; 세그먼트 분류
           </p>
         </div>
-        <button onClick={load} style={{
-          marginLeft: 'auto', padding: '6px 16px', borderRadius: 10,
-          border: `1px solid ${UP.hair}`, background: UP.sunken,
-          color: UP.sub, fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600,
-        }}>새로고침</button>
+        <button onClick={load} style={{ ...btnSecondary, marginLeft: 'auto' }}>새로고침</button>
       </div>
 
       {/* ═══ HERO METRICS ═════════════════════════════════ */}

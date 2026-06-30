@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react'
 import type { SystemSettings } from '../../../types/admin'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, btnPrimary, btnSecondary } from '../shared/adminTheme'
 import { patchSetting } from '../../../lib/api'
 import { supabase } from '../../../lib/supabase'
 
@@ -89,12 +89,15 @@ export default function DiscordSettings({ settings, onRefresh }: Props) {
       </div>
       {/* 저장 + 테스트 버튼 나란히 */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <button onClick={save} disabled={saving} style={btnStyle}>
+        <button onClick={save} disabled={saving} style={btnPrimary}>
           {saving ? '저장 중...' : '설정 저장'}
         </button>
+        {/* 테스트 버튼: 보조 버튼(btnSecondary) 베이스 + 디스코드 보라색 강조 유지 */}
         <button onClick={testWebhook} disabled={testing || !url.trim()} style={{
-          ...btnStyle,
+          ...btnSecondary,
           background: url.trim() ? '#5865F2' : UP.hairSoft,  // 디스코드 보라색
+          color: url.trim() ? '#fff' : UP.sub,
+          border: 'none',
           opacity: url.trim() ? 1 : 0.5,
         }}>
           {testing ? '발송 중...' : '📡 테스트 알림'}
@@ -122,7 +125,7 @@ export default function DiscordSettings({ settings, onRefresh }: Props) {
 const cardStyle: React.CSSProperties = {
   background: UP.sunken,
   border: `1px solid ${UP.hair}`,
-  borderRadius: 14,
+  borderRadius: RADIUS.card,
   padding: '20px',
   marginBottom: 16,
 }
@@ -136,8 +139,4 @@ const inputStyle: React.CSSProperties = {
   width: '100%', background: UP.sunken, border: `1px solid ${UP.hair}`,
   borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: UP.navy,
   outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
-}
-const btnStyle: React.CSSProperties = {
-  padding: '8px 20px', borderRadius: 8, border: 'none', background: UP.brand,
-  color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
 }

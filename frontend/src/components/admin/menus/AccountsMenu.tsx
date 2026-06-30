@@ -3,7 +3,7 @@
 // → 최초 super_admin 등록은 Supabase SQL Editor에서 직접 INSERT 필요
 
 import { useState, useEffect, useCallback } from 'react'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, btnPrimary, btnSecondary, btnGhost, badge } from '../shared/adminTheme'
 import { supabase } from '../../../lib/supabase'
 
 interface AdminAccount {
@@ -188,7 +188,7 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
           </p>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-          <button onClick={fetchAccounts} style={outlineBtn}>↻ 새로고침</button>
+          <button onClick={fetchAccounts} style={btnSecondary}>↻ 새로고침</button>
           {isSuperAdmin && (
             <button onClick={openCreate} style={btnPrimary}>+ 계정 추가</button>
           )}
@@ -224,7 +224,7 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
       <div style={{
         background: '#fff',
         border: `1px solid ${UP.hair}`,
-        borderRadius: 14, overflow: 'hidden',
+        borderRadius: RADIUS.card, overflow: 'hidden',
       }}>
         {loading ? (
           <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>로딩 중...</p>
@@ -271,18 +271,13 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
                   </div>
                   <div style={{ fontSize: '0.78rem', color: UP.sub }}>{formatDate(account.created_at)}</div>
                   <div>
-                    <span style={{
-                      fontSize: '0.7rem', fontWeight: 700,
-                      color: account.is_active ? UP.green : UP.caption,
-                      background: account.is_active ? 'rgba(34,197,94,0.12)' : UP.sunken,
-                      padding: '3px 8px', borderRadius: 999,
-                    }}>
+                    <span style={badge(account.is_active ? 'green' : 'neutral')}>
                       {account.is_active ? '활성' : '비활성'}
                     </span>
                   </div>
                   {isSuperAdmin && (
                     <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                      <button onClick={() => openEdit(account)} style={smallOutlineBtn}>수정</button>
+                      <button onClick={() => openEdit(account)} style={{ ...btnGhost, padding: '4px 10px', fontSize: '0.75rem' }}>수정</button>
                       <button onClick={() => handleDelete(account)} style={smallDangerBtn}>삭제</button>
                     </div>
                   )}
@@ -311,7 +306,7 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
                     </span>
                     {isSuperAdmin && (
                       <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-                        <button onClick={() => openEdit(account)} style={smallOutlineBtn}>수정</button>
+                        <button onClick={() => openEdit(account)} style={{ ...btnGhost, padding: '4px 10px', fontSize: '0.75rem' }}>수정</button>
                         <button onClick={() => handleDelete(account)} style={smallDangerBtn}>삭제</button>
                       </div>
                     )}
@@ -360,7 +355,7 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
             )}
 
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-              <button onClick={() => { setModal(null); setSaveError('') }} style={{ ...outlineBtn, flex: 1 }}>취소</button>
+              <button onClick={() => { setModal(null); setSaveError('') }} style={{ ...btnSecondary, flex: 1 }}>취소</button>
               <button onClick={handleSave} disabled={saving} style={{ ...btnPrimary, flex: 1 }}>
                 {saving ? '저장 중...' : '저장'}
               </button>
@@ -372,9 +367,6 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
   )
 }
 
-const outlineBtn: React.CSSProperties = { padding: '7px 14px', borderRadius: 8, border: `1px solid ${UP.hair}`, background: UP.sunken, color: UP.body, fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600 }
-const btnPrimary: React.CSSProperties = { padding: '7px 16px', borderRadius: 8, border: 'none', background: UP.brand, color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700 }
-const smallOutlineBtn: React.CSSProperties = { padding: '4px 10px', borderRadius: 6, border: `1px solid ${UP.hair}`, background: 'transparent', color: UP.body, fontSize: '0.75rem', cursor: 'pointer' }
 const smallDangerBtn: React.CSSProperties = { padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(240,68,82,0.25)', background: 'rgba(240,68,82,0.08)', color: UP.danger, fontSize: '0.75rem', cursor: 'pointer' }
 const overlayStyle: React.CSSProperties = { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 16 }
 const modalStyle: React.CSSProperties = { background: '#fff', border: `1px solid ${UP.hair}`, borderRadius: 20, padding: '26px 22px', width: '100%', maxWidth: 440, maxHeight: '90vh', overflowY: 'auto' }

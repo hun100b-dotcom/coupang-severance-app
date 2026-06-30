@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react'
-import { UP } from '../shared/adminTheme'
+import { UP, badge } from '../shared/adminTheme'
 
 interface Props {
   selectedIds: (string | number)[]
@@ -9,10 +9,11 @@ interface Props {
   onDone: () => void
 }
 
-const ACTIONS = [
-  { label: '검토중으로', status: 'reviewing', color: UP.strong },
-  { label: '답변완료로', status: 'answered',  color: UP.green },
-  { label: '종결로',     status: 'closed',    color: UP.sub },
+// 일괄 변경 버튼 — 사용자앱 배지 톤과 정합(검토=amber, 답변완료=green, 종결=neutral)
+const ACTIONS: { label: string; status: string; tone: 'amber' | 'green' | 'neutral' }[] = [
+  { label: '검토중으로', status: 'reviewing', tone: 'amber'   },
+  { label: '답변완료로', status: 'answered',  tone: 'green'   },
+  { label: '종결로',     status: 'closed',    tone: 'neutral' },
 ]
 
 export default function BulkActionBar({ selectedIds, onBulkStatus, onDone }: Props) {
@@ -64,13 +65,9 @@ export default function BulkActionBar({ selectedIds, onBulkStatus, onDone }: Pro
           onClick={() => handle(a.status)}
           disabled={busy}
           style={{
+            ...badge(a.tone),
             padding: '5px 12px',
-            borderRadius: 999,
             border: 'none',
-            background: `${a.color}20`,
-            color: a.color,
-            fontSize: '0.78rem',
-            fontWeight: 700,
             cursor: busy ? 'not-allowed' : 'pointer',
             opacity: busy ? 0.5 : 1,
           }}

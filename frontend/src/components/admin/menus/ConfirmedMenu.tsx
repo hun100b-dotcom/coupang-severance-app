@@ -1,7 +1,7 @@
 // 어드민 — 채용현황 대시보드 전면 개편
 // 기능: 2단계 필터(사업장→센터), KPI 대시보드, 일별 지원/확정 차트(Recharts), 교대/업무별 분포
 import { useEffect, useState, useCallback } from 'react'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, btnSecondary } from '../shared/adminTheme'
 import {
   ComposedChart, Bar, Line,
   XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer,
@@ -198,7 +198,7 @@ export default function ConfirmedMenu() {
   const baseCard: React.CSSProperties = {
     background: '#fff',
     border: `1px solid ${UP.hair}`,
-    borderRadius: 14, padding: '18px 16px',
+    borderRadius: RADIUS.card, padding: '18px 16px',
   }
 
   return (
@@ -217,15 +217,7 @@ export default function ConfirmedMenu() {
             지원 현황을 사업장·센터별로 분석합니다. 총 {total}명
           </p>
         </div>
-        <button
-          onClick={fetchData}
-          style={{
-            padding: '7px 16px', borderRadius: 10,
-            border: `1px solid ${UP.hair}`,
-            background: 'rgba(49,130,246,0.1)', color: UP.brand,
-            fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
-          }}
-        >
+        <button onClick={fetchData} style={{ ...btnSecondary }}>
           🔄 새로고침
         </button>
       </div>

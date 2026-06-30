@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { InquiryTemplate } from '../../../types/admin'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, btnPrimary, btnSecondary } from '../shared/adminTheme'
 import { createTemplate, deleteTemplate } from '../../../lib/api'
 
 interface Props {
@@ -48,7 +48,7 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
     <div style={{
       background: UP.sunken,
       border: `1px solid ${UP.hair}`,
-      borderRadius: 14,
+      borderRadius: RADIUS.card,
       padding: '20px',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
@@ -57,16 +57,7 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
         </p>
         <button
           onClick={() => { setShowForm(f => !f); setError(null) }}
-          style={{
-            padding: '5px 12px',
-            borderRadius: 8,
-            border: 'none',
-            background: UP.brand,
-            color: '#fff',
-            fontSize: '0.78rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-          }}
+          style={{ ...btnPrimary, padding: '5px 12px', fontSize: '0.78rem' }}
         >
           + 추가
         </button>
@@ -170,24 +161,15 @@ const inputStyle: React.CSSProperties = {
   boxSizing: 'border-box',
 }
 
+// 폼 저장/취소 버튼 — 헬퍼(btnPrimary/btnSecondary) 기반 + 폼 폭에 맞춘 작은 패딩
 const btnPrimaryStyle: React.CSSProperties = {
+  ...btnPrimary,
   padding: '7px 16px',
-  borderRadius: 8,
-  border: 'none',
-  background: UP.brand,
-  color: '#fff',
   fontSize: '0.82rem',
-  fontWeight: 700,
-  cursor: 'pointer',
 }
 
 const btnSecondaryStyle: React.CSSProperties = {
+  ...btnSecondary,
   padding: '7px 16px',
-  borderRadius: 8,
-  border: 'none',
-  background: UP.hairSoft,
-  color: UP.sub,
   fontSize: '0.82rem',
-  fontWeight: 700,
-  cursor: 'pointer',
 }

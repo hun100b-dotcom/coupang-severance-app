@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, btnPrimary, btnSecondary } from '../shared/adminTheme'
 import { getSettings, getBlockedIps, patchSetting, setUnmaskKey, getUnmaskKeyStatus } from '../../../lib/api'
 import { supabase } from '../../../lib/supabase'
 import type { SystemSettings, BlockedIp } from '../../../types/admin'
@@ -307,7 +307,7 @@ export default function SettingsMenu({ isSuperAdmin }: Props) {
         <div style={{ background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)', borderRadius: 12, padding: '20px', color: UP.danger }}>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>⚠️ 설정 로드 실패</div>
           <div style={{ fontSize: '0.82rem', color: UP.body, marginBottom: 12 }}>{error || '데이터를 불러오지 못했습니다.'}</div>
-          <button onClick={reload} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: UP.brand, color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700 }}>재시도</button>
+          <button onClick={reload} style={btnPrimary}>재시도</button>
         </div>
       </div>
     )
@@ -346,9 +346,12 @@ export default function SettingsMenu({ isSuperAdmin }: Props) {
   )
 }
 
-const cardSt: React.CSSProperties = { background: UP.sunken, border: `1px solid ${UP.hair}`, borderRadius: 14, padding: '20px', marginBottom: 16 }
+const cardSt: React.CSSProperties = { background: UP.sunken, border: `1px solid ${UP.hair}`, borderRadius: RADIUS.card, padding: '20px', marginBottom: 16 }
 const titleSt: React.CSSProperties = { fontSize: '0.88rem', fontWeight: 700, color: UP.body, marginBottom: 14 }
 const inputSm: React.CSSProperties = { padding: '8px 10px', borderRadius: 8, border: `1px solid ${UP.hair}`, background: '#fff', color: UP.navy, fontSize: '0.83rem', outline: 'none' }
-const btnSmPrimary: React.CSSProperties = { padding: '6px 14px', borderRadius: 8, border: 'none', background: UP.brand, color: '#fff', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 700 }
-const btnSmOutline: React.CSSProperties = { padding: '6px 12px', borderRadius: 8, border: `1px solid ${UP.hair}`, background: UP.sunken, color: UP.body, fontSize: '0.78rem', cursor: 'pointer' }
-const btnSmDanger: React.CSSProperties = { padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(240,64,64,0.2)', background: 'rgba(240,64,64,0.08)', color: UP.danger, fontSize: '0.78rem', cursor: 'pointer' }
+// 주CTA(보안키 저장·권한 추가/저장) — 공용 btnPrimary 기반 + 조밀한 인라인 사이즈 유지
+const btnSmPrimary: React.CSSProperties = { ...btnPrimary, padding: '6px 14px', fontSize: '0.78rem', boxShadow: 'none' }
+// 보조(수정·취소) — 공용 btnSecondary 기반 + 조밀한 인라인 사이즈 유지
+const btnSmOutline: React.CSSProperties = { ...btnSecondary, padding: '6px 12px', fontSize: '0.78rem', fontWeight: 600 }
+// 삭제 — 위험 동작이라 danger 톤 유지(라운드만 공용 btn 라운드로 정합)
+const btnSmDanger: React.CSSProperties = { padding: '6px 12px', borderRadius: RADIUS.btn, border: '1px solid rgba(240,64,64,0.2)', background: 'rgba(240,64,64,0.08)', color: UP.danger, fontSize: '0.78rem', cursor: 'pointer' }

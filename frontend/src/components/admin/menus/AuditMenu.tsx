@@ -1,6 +1,6 @@
 // AuditMenu.tsx — 관리자 감사 로그 (audit_logs 테이블)
 import { useState, useEffect, useCallback } from 'react'
-import { UP } from '../shared/adminTheme'
+import { UP, RADIUS, btnPrimary, btnSecondary, btnGhost } from '../shared/adminTheme'
 import { getAuditLogs } from '../../../lib/api'
 import { exportCsv } from '../../../utils/exportCsv'
 
@@ -265,8 +265,8 @@ export default function AuditMenu() {
           </p>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-          <button onClick={handleExport} style={outlineBtn}>📥 CSV (현재 페이지)</button>
-          <button onClick={fetchLogs} style={outlineBtn}>↻ 새로고침</button>
+          <button onClick={handleExport} style={btnSecondary}>📥 CSV (현재 페이지)</button>
+          <button onClick={fetchLogs} style={btnSecondary}>↻ 새로고침</button>
         </div>
       </div>
 
@@ -308,14 +308,14 @@ export default function AuditMenu() {
         </select>
         <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setPage(1) }} style={{ ...filterInput, flex: '0 1 140px' }} />
         <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); setPage(1) }} style={{ ...filterInput, flex: '0 1 140px' }} />
-        <button onClick={() => { setPage(1); fetchLogs() }} style={primaryBtn}>검색</button>
-        <button onClick={() => { setEmailFilter(''); setActionFilter(''); setStartDate(''); setEndDate(''); setPage(1) }} style={outlineBtn}>초기화</button>
+        <button onClick={() => { setPage(1); fetchLogs() }} style={btnPrimary}>검색</button>
+        <button onClick={() => { setEmailFilter(''); setActionFilter(''); setStartDate(''); setEndDate(''); setPage(1) }} style={btnSecondary}>초기화</button>
       </div>
 
       {/* 로그 목록 */}
       <div style={{
         background: '#fff', border: `1px solid ${UP.hair}`,
-        borderRadius: 14, overflow: 'hidden',
+        borderRadius: RADIUS.card, overflow: 'hidden',
       }}>
         {loading ? (
           <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0' }}>로딩 중...</p>
@@ -367,7 +367,7 @@ export default function AuditMenu() {
                     </span>
                     {hasDetail ? (
                       <button onClick={() => setExpanded(prev => ({ ...prev, [log.id]: !prev[log.id] }))}
-                        style={{ ...outlineBtn, padding: '2px 6px', fontSize: '0.68rem' }}>
+                        style={{ ...btnGhost, padding: '2px 6px', fontSize: '0.68rem' }}>
                         {expanded[log.id] ? '▲' : '▼'}
                       </button>
                     ) : (
@@ -402,7 +402,7 @@ export default function AuditMenu() {
                     )}
                     {hasDetail && (
                       <button onClick={() => setExpanded(prev => ({ ...prev, [log.id]: !prev[log.id] }))}
-                        style={{ ...outlineBtn, padding: '3px 8px', fontSize: '0.72rem', marginTop: 6 }}>
+                        style={{ ...btnGhost, padding: '3px 8px', fontSize: '0.72rem', marginTop: 6 }}>
                         상세 {expanded[log.id] ? '접기' : '보기'}
                       </button>
                     )}
@@ -424,27 +424,18 @@ export default function AuditMenu() {
       {totalPages > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-            style={{ ...outlineBtn, opacity: page === 1 ? 0.4 : 1 }}>← 이전</button>
+            style={{ ...btnGhost, opacity: page === 1 ? 0.4 : 1 }}>← 이전</button>
           <span style={{ color: UP.sub, fontSize: '0.82rem', padding: '7px 12px' }}>
             {page} / {totalPages}
           </span>
           <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-            style={{ ...outlineBtn, opacity: page === totalPages ? 0.4 : 1 }}>다음 →</button>
+            style={{ ...btnGhost, opacity: page === totalPages ? 0.4 : 1 }}>다음 →</button>
         </div>
       )}
     </div>
   )
 }
 
-const outlineBtn: React.CSSProperties = {
-  padding: '7px 14px', borderRadius: 8, border: `1px solid ${UP.hair}`,
-  background: UP.sunken, color: UP.body,
-  fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600,
-}
-const primaryBtn: React.CSSProperties = {
-  padding: '7px 16px', borderRadius: 8, border: 'none',
-  background: UP.brand, color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700,
-}
 const filterInput: React.CSSProperties = {
   padding: '8px 12px', borderRadius: 8, border: `1px solid ${UP.hair}`,
   background: '#fff', color: UP.navy, fontSize: '0.82rem', outline: 'none',

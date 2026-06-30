@@ -1,5 +1,5 @@
 ﻿import type { AdminInquiry } from '../../../types/admin'
-import { UP } from '../shared/adminTheme'
+import { UP, badge } from '../shared/adminTheme'
 
 interface Props {
   inquiries: AdminInquiry[]
@@ -11,12 +11,13 @@ interface Props {
   activeId?: string | number
 }
 
-// 상태 색 — up.* 토큰 (대시보드 RecentActivity와 동일 위계)
-const STATUS_COLOR: Record<string, string> = {
-  waiting:   UP.amber,
-  reviewing: UP.strong,
-  answered:  UP.green,
-  closed:    UP.sub,
+// 상태 → 배지 톤 매핑 (사용자앱 ui<Badge> 톤과 정합)
+//   대기→amber, 검토→brand, 답변완료→green, 종결→neutral
+const STATUS_TONE: Record<string, 'brand' | 'green' | 'neutral' | 'amber'> = {
+  waiting:   'amber',
+  reviewing: 'brand',
+  answered:  'green',
+  closed:    'neutral',
 }
 const STATUS_LABEL: Record<string, string> = {
   waiting:   '대기중',
@@ -104,12 +105,7 @@ export default function InquiryTable({ inquiries, selected, onToggle, onToggleAl
                 </td>
                 <td style={{ padding: '10px 8px' }}>
                   <span style={{
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    color: STATUS_COLOR[inq.status] ?? UP.caption,
-                    background: `${STATUS_COLOR[inq.status]}18`,
-                    padding: '2px 8px',
-                    borderRadius: 999,
+                    ...badge(STATUS_TONE[inq.status] ?? 'neutral'),
                     whiteSpace: 'nowrap',
                   }}>
                     {STATUS_LABEL[inq.status] ?? inq.status}
