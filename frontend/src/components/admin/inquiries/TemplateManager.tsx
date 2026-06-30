@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { InquiryTemplate } from '../../../types/admin'
+import { UP } from '../shared/adminTheme'
 import { createTemplate, deleteTemplate } from '../../../lib/api'
 
 interface Props {
@@ -45,13 +46,13 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
 
   return (
     <div style={{
-      background: '#f8fafc',
-      border: '1px solid #e2e8f0',
+      background: UP.sunken,
+      border: `1px solid ${UP.hair}`,
       borderRadius: 14,
       padding: '20px',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-        <p style={{ fontSize: '0.88rem', fontWeight: 700, color: '#475569', flex: 1 }}>
+        <p style={{ fontSize: '0.88rem', fontWeight: 700, color: UP.body, flex: 1 }}>
           답변 템플릿 ({templates.length}개)
         </p>
         <button
@@ -60,7 +61,7 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
             padding: '5px 12px',
             borderRadius: 8,
             border: 'none',
-            background: '#3182f6',
+            background: UP.brand,
             color: '#fff',
             fontSize: '0.78rem',
             fontWeight: 700,
@@ -73,13 +74,13 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
 
       {/* 에러 표시 (생성/삭제 실패) */}
       {error && (
-        <p style={{ fontSize: '0.78rem', color: '#cc2233', marginBottom: 10, fontWeight: 600 }}>
+        <p style={{ fontSize: '0.78rem', color: UP.danger, marginBottom: 10, fontWeight: 600 }}>
           ⚠️ {error}
         </p>
       )}
 
       {showForm && (
-        <div style={{ marginBottom: 16, padding: 14, background: 'rgba(0,0,0,0.2)', borderRadius: 10 }}>
+        <div style={{ marginBottom: 16, padding: 14, background: UP.sunken, border: `1px solid ${UP.hair}`, borderRadius: 10 }}>
           <input
             value={title}
             onChange={e => setTitle(e.target.value)}
@@ -110,7 +111,7 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
       )}
 
       {templates.length === 0 && !showForm && (
-        <p style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', padding: '16px 0' }}>
+        <p style={{ fontSize: '0.82rem', color: UP.caption, textAlign: 'center', padding: '16px 0' }}>
           등록된 템플릿이 없습니다.
         </p>
       )}
@@ -122,31 +123,31 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
             alignItems: 'flex-start',
             gap: 10,
             padding: '10px 12px',
-            background: 'rgba(0,0,0,0.15)',
+            background: UP.sunken,
             borderRadius: 8,
           }}>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a' }}>{t.title}</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: UP.navy }}>{t.title}</span>
                 <span style={{
                   fontSize: '0.68rem',
-                  background: 'rgba(49,130,246,0.15)',
-                  color: '#3182f6',
+                  background: UP.brandBg,
+                  color: UP.brand,
                   padding: '1px 7px',
                   borderRadius: 999,
                 }}>
                   {t.category}
                 </span>
-                <span style={{ fontSize: '0.68rem', color: '#94a3b8', marginLeft: 'auto' }}>
+                <span style={{ fontSize: '0.68rem', color: UP.caption, marginLeft: 'auto' }}>
                   사용 {t.use_count}회
                 </span>
               </div>
-              <p style={{ fontSize: '0.78rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <p style={{ fontSize: '0.78rem', color: UP.sub, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {t.content}
               </p>
             </div>
             <button onClick={() => handleDelete(t.id)} style={{
-              background: 'none', border: 'none', color: 'rgba(240,68,82,0.6)',
+              background: 'none', border: 'none', color: UP.danger,
               cursor: 'pointer', fontSize: '0.85rem', flexShrink: 0,
             }}>✕</button>
           </div>
@@ -158,12 +159,12 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  background: '#f8fafc',
-  border: '1px solid #e2e8f0',
+  background: UP.sunken,
+  border: `1px solid ${UP.hair}`,
   borderRadius: 8,
   padding: '8px 12px',
   fontSize: '0.85rem',
-  color: '#0f172a',
+  color: UP.navy,
   outline: 'none',
   fontFamily: 'inherit',
   boxSizing: 'border-box',
@@ -173,7 +174,7 @@ const btnPrimaryStyle: React.CSSProperties = {
   padding: '7px 16px',
   borderRadius: 8,
   border: 'none',
-  background: '#3182f6',
+  background: UP.brand,
   color: '#fff',
   fontSize: '0.82rem',
   fontWeight: 700,
@@ -184,8 +185,8 @@ const btnSecondaryStyle: React.CSSProperties = {
   padding: '7px 16px',
   borderRadius: 8,
   border: 'none',
-  background: '#f1f5f9',
-  color: '#64748b',
+  background: UP.hairSoft,
+  color: UP.sub,
   fontSize: '0.82rem',
   fontWeight: 700,
   cursor: 'pointer',

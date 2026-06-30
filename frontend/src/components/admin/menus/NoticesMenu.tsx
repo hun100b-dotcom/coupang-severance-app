@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import type { Notice } from '../../../types/supabase'
+import { UP } from '../shared/adminTheme'
 
 // 공지 작성/수정 폼 필드 타입
 interface NoticeForm {
@@ -140,15 +141,15 @@ export default function NoticesMenu() {
   // ── 공통 셀 스타일 (어두운 테마) ──────────────────────────────────────────
   const cellStyle: React.CSSProperties = {
     padding: '10px 12px',
-    borderBottom: '1px solid #f1f5f9',
+    borderBottom: `1px solid ${UP.hairSoft}`,
     fontSize: '0.83rem',
-    color: '#334155',
+    color: UP.body,
     verticalAlign: 'middle',
   }
 
   const thStyle: React.CSSProperties = {
     ...cellStyle,
-    color: '#64748b',
+    color: UP.sub,
     fontWeight: 600,
     fontSize: '0.75rem',
     textTransform: 'uppercase' as const,
@@ -160,9 +161,9 @@ export default function NoticesMenu() {
     width: '100%',
     padding: '10px 12px',
     borderRadius: 10,
-    border: '1px solid #e2e8f0',
-    background: '#f8fafc',
-    color: '#0f172a',
+    border: `1px solid ${UP.hair}`,
+    background: UP.sunken,
+    color: UP.navy,
     fontSize: '0.88rem',
     boxSizing: 'border-box',
     outline: 'none',
@@ -174,7 +175,7 @@ export default function NoticesMenu() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
         <div>
           <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0 }}>📢 공지사항 관리</h2>
-          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '4px 0 0' }}>
+          <p style={{ fontSize: '0.8rem', color: UP.sub, margin: '4px 0 0' }}>
             홈 화면 배너에 표시되는 공지를 관리합니다. 제목은 배너에, 본문은 상세 페이지에 표시됩니다.
           </p>
         </div>
@@ -184,7 +185,7 @@ export default function NoticesMenu() {
             padding: '8px 18px',
             borderRadius: 10,
             border: 'none',
-            background: '#3182f6',
+            background: UP.brand,
             color: '#fff',
             fontWeight: 700,
             fontSize: '0.85rem',
@@ -198,9 +199,9 @@ export default function NoticesMenu() {
       {/* ── 에러 배너 (목록/저장/토글/삭제 실패) ──────────────────────────────── */}
       {error && (
         <div style={{
-          background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
+          background: UP.dangerBg, border: `1px solid ${UP.dangerLine}`,
           borderRadius: 10, padding: '12px 16px', marginBottom: 16,
-          color: '#cc2233', fontSize: '0.82rem', fontWeight: 600,
+          color: UP.danger, fontSize: '0.82rem', fontWeight: 600,
         }}>
           ⚠️ {error}
         </div>
@@ -208,13 +209,13 @@ export default function NoticesMenu() {
 
       {/* ── 공지 목록 테이블 ─────────────────────────────────────────────────── */}
       {loading ? (
-        <p style={{ color: '#64748b', fontSize: '0.85rem' }}>불러오는 중...</p>
+        <p style={{ color: UP.sub, fontSize: '0.85rem' }}>불러오는 중...</p>
       ) : (
-        <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+        <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', border: `1px solid ${UP.hair}` }}>
           <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 500 }}>
             <thead>
-              <tr style={{ background: '#f8fafc' }}>
+              <tr style={{ background: UP.sunken }}>
                 <th style={{ ...thStyle, width: 60 }}>우선순위</th>
                 {/* 제목 + 본문 미리보기 분리 표시 */}
                 <th style={thStyle}>제목</th>
@@ -226,7 +227,7 @@ export default function NoticesMenu() {
             <tbody>
               {notices.length === 0 && (
                 <tr>
-                  <td colSpan={5} style={{ ...cellStyle, textAlign: 'center', color: '#94a3b8' }}>
+                  <td colSpan={5} style={{ ...cellStyle, textAlign: 'center', color: UP.caption }}>
                     공지사항이 없습니다.
                   </td>
                 </tr>
@@ -234,14 +235,14 @@ export default function NoticesMenu() {
               {notices.map(n => (
                 <tr key={n.id} style={{ transition: 'background 0.15s' }}>
                   {/* 우선순위 */}
-                  <td style={{ ...cellStyle, textAlign: 'center', fontWeight: 700, color: '#3182f6' }}>
+                  <td style={{ ...cellStyle, textAlign: 'center', fontWeight: 700, color: UP.strong }}>
                     {n.priority}
                   </td>
                   {/* 제목 — 비어있으면 "(제목 없음)" 표시 */}
-                  <td style={{ ...cellStyle, fontWeight: 600, color: '#0f172a' }}>
+                  <td style={{ ...cellStyle, fontWeight: 600, color: UP.navy }}>
                     {n.title
                       ? (n.title.length > 24 ? n.title.slice(0, 24) + '…' : n.title)
-                      : <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>(제목 없음)</span>
+                      : <span style={{ color: UP.caption, fontStyle: 'italic' }}>(제목 없음)</span>
                     }
                   </td>
                   {/* 본문 미리보기 */}
@@ -256,8 +257,8 @@ export default function NoticesMenu() {
                         padding: '3px 10px',
                         borderRadius: 999,
                         border: 'none',
-                        background: n.is_active ? 'rgba(49,200,100,0.18)' : '#f1f5f9',
-                        color: n.is_active ? '#3fc878' : '#64748b',
+                        background: n.is_active ? UP.greenBg : UP.hairSoft,
+                        color: n.is_active ? UP.green : UP.sub,
                         fontSize: '0.75rem',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -275,8 +276,8 @@ export default function NoticesMenu() {
                         padding: '3px 10px',
                         borderRadius: 8,
                         border: 'none',
-                        background: 'rgba(49,130,246,0.15)',
-                        color: '#3182f6',
+                        background: UP.brandBg,
+                        color: UP.strong,
                         fontSize: '0.75rem',
                         fontWeight: 600,
                         cursor: 'pointer',
@@ -290,8 +291,8 @@ export default function NoticesMenu() {
                         padding: '3px 10px',
                         borderRadius: 8,
                         border: 'none',
-                        background: 'rgba(240,68,82,0.12)',
-                        color: '#f04452',
+                        background: UP.dangerBg,
+                        color: UP.danger,
                         fontSize: '0.75rem',
                         fontWeight: 600,
                         cursor: 'pointer',
@@ -322,7 +323,7 @@ export default function NoticesMenu() {
             onClick={e => e.stopPropagation()}
             style={{
               background: '#fff',
-              border: '1px solid #e2e8f0',
+              border: `1px solid ${UP.hair}`,
               borderRadius: 16,
               padding: 28,
               width: '100%',
@@ -335,9 +336,9 @@ export default function NoticesMenu() {
 
             {/* ── 제목 입력 (배너에 표시되는 짧은 텍스트) ── */}
             <label style={{ display: 'block', marginBottom: 14 }}>
-              <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', marginBottom: 6 }}>
-                제목 <span style={{ color: 'rgba(255,100,100,0.7)' }}>*</span>
-                <span style={{ color: '#94a3b8', marginLeft: 6 }}>홈 화면 배너에 표시됩니다</span>
+              <span style={{ fontSize: '0.78rem', color: UP.sub, display: 'block', marginBottom: 6 }}>
+                제목 <span style={{ color: UP.danger }}>*</span>
+                <span style={{ color: UP.caption, marginLeft: 6 }}>홈 화면 배너에 표시됩니다</span>
               </span>
               <input
                 type="text"
@@ -348,16 +349,16 @@ export default function NoticesMenu() {
                 style={inputStyle}
               />
               {/* 글자 수 카운터 */}
-              <span style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: 4, display: 'block', textAlign: 'right' }}>
+              <span style={{ fontSize: '0.7rem', color: UP.caption, marginTop: 4, display: 'block', textAlign: 'right' }}>
                 {form.title.length}/60
               </span>
             </label>
 
             {/* ── 본문 입력 (상세 페이지에서 표시) ── */}
             <label style={{ display: 'block', marginBottom: 14 }}>
-              <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', marginBottom: 6 }}>
-                본문 <span style={{ color: 'rgba(255,100,100,0.7)' }}>*</span>
-                <span style={{ color: '#94a3b8', marginLeft: 6 }}>공지사항 상세 페이지에 표시됩니다</span>
+              <span style={{ fontSize: '0.78rem', color: UP.sub, display: 'block', marginBottom: 6 }}>
+                본문 <span style={{ color: UP.danger }}>*</span>
+                <span style={{ color: UP.caption, marginLeft: 6 }}>공지사항 상세 페이지에 표시됩니다</span>
               </span>
               <textarea
                 value={form.content}
@@ -371,7 +372,7 @@ export default function NoticesMenu() {
             {/* ── 우선순위 + 활성 토글 ── */}
             <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
               <label style={{ flex: 1 }}>
-                <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', marginBottom: 6 }}>
+                <span style={{ fontSize: '0.78rem', color: UP.sub, display: 'block', marginBottom: 6 }}>
                   우선순위 (높을수록 먼저 표시)
                 </span>
                 <input
@@ -384,7 +385,7 @@ export default function NoticesMenu() {
 
               {/* 활성 토글 스위치 */}
               <label style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', marginBottom: 6 }}>
+                <span style={{ fontSize: '0.78rem', color: UP.sub, display: 'block', marginBottom: 6 }}>
                   활성
                 </span>
                 <div
@@ -393,7 +394,7 @@ export default function NoticesMenu() {
                     width: 44,
                     height: 26,
                     borderRadius: 999,
-                    background: form.is_active ? '#3182f6' : '#e2e8f0',
+                    background: form.is_active ? UP.brand : UP.hair,
                     cursor: 'pointer',
                     position: 'relative',
                     transition: 'background 0.2s',
@@ -415,7 +416,7 @@ export default function NoticesMenu() {
 
             {/* 저장 실패 에러 (모달 내부 — 오버레이가 상단 배너를 가리므로) */}
             {error && (
-              <p style={{ fontSize: '0.78rem', color: '#cc2233', marginBottom: 12, fontWeight: 600 }}>
+              <p style={{ fontSize: '0.78rem', color: UP.danger, marginBottom: 12, fontWeight: 600 }}>
                 ⚠️ {error}
               </p>
             )}
@@ -426,9 +427,9 @@ export default function NoticesMenu() {
                 onClick={closeModal}
                 style={{
                   padding: '9px 20px', borderRadius: 10,
-                  border: '1px solid #e2e8f0',
+                  border: `1px solid ${UP.hair}`,
                   background: 'transparent',
-                  color: '#475569',
+                  color: UP.body,
                   fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
                 }}
               >
@@ -442,8 +443,8 @@ export default function NoticesMenu() {
                   padding: '9px 20px', borderRadius: 10,
                   border: 'none',
                   background: (saving || !form.title.trim() || !form.content.trim())
-                    ? 'rgba(49,130,246,0.3)'
-                    : '#3182f6',
+                    ? UP.brandLine
+                    : UP.brand,
                   color: '#fff',
                   fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
                 }}

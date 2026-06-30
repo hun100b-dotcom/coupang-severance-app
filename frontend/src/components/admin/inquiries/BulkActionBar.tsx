@@ -1,4 +1,5 @@
 ﻿import { useState } from 'react'
+import { UP } from '../shared/adminTheme'
 
 interface Props {
   selectedIds: (string | number)[]
@@ -9,9 +10,9 @@ interface Props {
 }
 
 const ACTIONS = [
-  { label: '검토중으로', status: 'reviewing', color: '#3182f6' },
-  { label: '답변완료로', status: 'answered',  color: '#00a876' },
-  { label: '종결로',     status: 'closed',    color: '#64748b' },
+  { label: '검토중으로', status: 'reviewing', color: UP.strong },
+  { label: '답변완료로', status: 'answered',  color: UP.green },
+  { label: '종결로',     status: 'closed',    color: UP.sub },
 ]
 
 export default function BulkActionBar({ selectedIds, onBulkStatus, onDone }: Props) {
@@ -48,15 +49,15 @@ export default function BulkActionBar({ selectedIds, onBulkStatus, onDone }: Pro
       alignItems: 'center',
       gap: 10,
       padding: '10px 16px',
-      background: 'rgba(49,130,246,0.1)',
+      background: UP.brandBg,
       borderRadius: 10,
       marginBottom: 12,
-      border: '1px solid rgba(49,130,246,0.2)',
+      border: `1px solid ${UP.brandLine}`,
     }}>
-      <span style={{ fontSize: '0.82rem', color: '#3182f6', fontWeight: 700 }}>
+      <span style={{ fontSize: '0.82rem', color: UP.strong, fontWeight: 700 }}>
         {selectedIds.length}건 선택됨
       </span>
-      <span style={{ marginLeft: 8, fontSize: '0.78rem', color: '#64748b' }}>일괄 변경:</span>
+      <span style={{ marginLeft: 8, fontSize: '0.78rem', color: UP.sub }}>일괄 변경:</span>
       {ACTIONS.map(a => (
         <button
           key={a.status}
@@ -78,7 +79,7 @@ export default function BulkActionBar({ selectedIds, onBulkStatus, onDone }: Pro
         </button>
       ))}
       {err && (
-        <span style={{ marginLeft: 8, fontSize: '0.76rem', color: '#cc2233', fontWeight: 600 }}>
+        <span style={{ marginLeft: 8, fontSize: '0.76rem', color: UP.danger, fontWeight: 600 }}>
           ⚠️ {err}
         </span>
       )}

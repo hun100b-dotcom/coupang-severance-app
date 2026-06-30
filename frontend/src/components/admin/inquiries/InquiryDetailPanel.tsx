@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { AdminInquiry, InquiryTemplate } from '../../../types/admin'
+import { UP } from '../shared/adminTheme'
 
 interface Props {
   inquiry: AdminInquiry
@@ -59,46 +60,47 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
       position: 'fixed',
       top: 0, right: 0,
       width: 420,
+      maxWidth: '100vw',   // 320px 등 좁은 화면에서 패널이 뷰포트를 넘지 않도록
       height: '100vh',
-      background: '#fff',
-      borderLeft: '1px solid #e2e8f0',
+      background: UP.surface,
+      borderLeft: `1px solid ${UP.hair}`,
       display: 'flex',
       flexDirection: 'column',
       zIndex: 100,
-      boxShadow: '-8px 0 32px rgba(0,0,0,0.4)',
+      boxShadow: '-8px 0 32px rgba(16,24,40,0.14)',
     }}>
       {/* 헤더 */}
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
-        <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>문의 상세</span>
-        <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: '#64748b' }}>{fmt(inquiry.created_at)}</span>
+      <div style={{ padding: '16px 20px', borderBottom: `1px solid ${UP.hairSoft}`, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: UP.sub, fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+        <span style={{ fontSize: '0.88rem', fontWeight: 700, color: UP.navy }}>문의 상세</span>
+        <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: UP.sub }}>{fmt(inquiry.created_at)}</span>
       </div>
 
       <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
         {/* 메타 */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, background: 'rgba(49,130,246,0.15)', color: '#3182f6', padding: '2px 8px', borderRadius: 999 }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, background: UP.brandBg, color: UP.strong, padding: '2px 8px', borderRadius: 999 }}>
             {inquiry.category}
           </span>
-          <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+          <span style={{ fontSize: '0.72rem', color: UP.sub }}>
             {inquiry.user_email ?? `UID: ${String(inquiry.user_id).slice(0, 12)}…`}
           </span>
         </div>
 
         {/* 제목 */}
         {inquiry.title && (
-          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a', marginBottom: 10 }}>
+          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: UP.navy, marginBottom: 10 }}>
             {inquiry.title}
           </p>
         )}
 
         {/* 본문 */}
         <div style={{
-          background: 'rgba(0,0,0,0.25)',
+          background: UP.sunken,
           borderRadius: 10,
           padding: '14px',
           fontSize: '0.85rem',
-          color: '#334155',
+          color: UP.body,
           lineHeight: 1.7,
           whiteSpace: 'pre-wrap',
           marginBottom: 16,
@@ -108,7 +110,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
 
         {/* 상태 변경 */}
         <div style={{ marginBottom: 16 }}>
-          <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: 8 }}>상태 변경</p>
+          <p style={{ fontSize: '0.75rem', color: UP.sub, marginBottom: 8 }}>상태 변경</p>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {STATUSES.map(s => {
               const isBusy = busyStatus === s
@@ -124,8 +126,8 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
                     fontSize: '0.75rem',
                     fontWeight: 700,
                     cursor: busyStatus !== null ? 'wait' : 'pointer',
-                    background: inquiry.status === s ? '#3182f6' : '#f1f5f9',
-                    color: inquiry.status === s ? '#fff' : '#64748b',
+                    background: inquiry.status === s ? UP.brand : UP.hairSoft,
+                    color: inquiry.status === s ? '#fff' : UP.sub,
                     transition: 'all 0.15s',
                     // 진행 중 버튼만 살짝 흐리게 (스피너 대체). 화면 전환은 이미 즉각 반영됨
                     opacity: busyStatus !== null && !isBusy ? 0.6 : 1,
@@ -141,7 +143,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
         {/* 템플릿 선택 */}
         {templates.length > 0 && (
           <div style={{ marginBottom: 12 }}>
-            <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: 8 }}>답변 템플릿</p>
+            <p style={{ fontSize: '0.75rem', color: UP.sub, marginBottom: 8 }}>답변 템플릿</p>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {templates.map(t => (
                 <button
@@ -150,9 +152,9 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
                   style={{
                     padding: '4px 10px',
                     borderRadius: 999,
-                    border: '1px solid #e2e8f0',
-                    background: '#f8fafc',
-                    color: '#475569',
+                    border: `1px solid ${UP.hair}`,
+                    background: UP.sunken,
+                    color: UP.body,
                     fontSize: '0.72rem',
                     cursor: 'pointer',
                   }}
@@ -167,14 +169,14 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
         {/* 기존 답변 */}
         {inquiry.answer && (
           <div style={{
-            background: 'rgba(0,196,140,0.07)',
-            border: '1px solid rgba(0,196,140,0.18)',
+            background: UP.greenBg,
+            border: `1px solid ${UP.greenLine}`,
             borderRadius: 10,
             padding: '12px 14px',
             marginBottom: 12,
           }}>
-            <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#00a876', marginBottom: 6 }}>✓ 등록된 답변</p>
-            <p style={{ fontSize: '0.83rem', color: '#334155', whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>{inquiry.answer}</p>
+            <p style={{ fontSize: '0.72rem', fontWeight: 700, color: UP.green, marginBottom: 6 }}>✓ 등록된 답변</p>
+            <p style={{ fontSize: '0.83rem', color: UP.body, whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>{inquiry.answer}</p>
           </div>
         )}
 
@@ -186,12 +188,12 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
           rows={5}
           style={{
             width: '100%',
-            background: '#f8fafc',
-            border: '1px solid #e2e8f0',
+            background: UP.sunken,
+            border: `1px solid ${UP.hair}`,
             borderRadius: 10,
             padding: '12px',
             fontSize: '0.85rem',
-            color: '#0f172a',
+            color: UP.navy,
             resize: 'vertical',
             outline: 'none',
             fontFamily: 'inherit',
@@ -199,7 +201,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
             boxSizing: 'border-box',
           }}
         />
-        {err && <p style={{ fontSize: '0.78rem', color: '#cc2233', marginTop: 6 }}>{err}</p>}
+        {err && <p style={{ fontSize: '0.78rem', color: UP.danger, marginTop: 6 }}>{err}</p>}
         <button
           onClick={handleSaveAnswer}
           disabled={saving}
@@ -207,7 +209,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
             marginTop: 10,
             width: '100%',
             padding: '12px',
-            background: saving ? 'rgba(49,130,246,0.4)' : '#3182f6',
+            background: saving ? UP.brandLine : UP.brand,
             color: '#fff',
             border: 'none',
             borderRadius: 10,
