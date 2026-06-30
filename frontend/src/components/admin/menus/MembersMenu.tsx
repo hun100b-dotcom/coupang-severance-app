@@ -1,25 +1,18 @@
-// MembersMenu.tsx — 회원 관리 (개인정보 마스킹 + 보안키 언마스킹)
+// MembersMenu.tsx — 회원 관리 (서버측 마스킹 + 단건 평문 해제)
+//
+// 보안 재설계(🔴#4):
+//   과거에는 supabase.from('profiles').select('*')로 회원 PII(이름/이메일/전화/생년월일)를
+//   평문 통째로 받아와 화면에서만 별표로 가렸다(DevTools/Network로 무력화 = 가짜 마스킹).
+//   이제 ① 백엔드가 "마스킹된 데이터만" 내려보내고(getAdminMembers),
+//        ② 평문은 슈퍼관리자가 보안키를 입력해 "해제 모드"에 들어간 뒤
+//           각 행의 "보기"를 누를 때만 단건 reveal 엔드포인트로 받아온다(revealMember).
+//   보안키는 서버에서 해시 비교하고, 누가/언제/어느 회원을 해제했는지 감사로그에 남는다.
 import { useState, useEffect, useCallback } from 'react'
 import { UP } from '../shared/adminTheme'
 import { supabase } from '../../../lib/supabase'
-import { logAdminAction } from '../../../lib/adminAuditLog'
-
-interface MemberRow {
-  id: string
-  email: string | null
-  display_name: string | null
-  full_name: string | null
-  birthdate: string | null
-  phone_number: string | null
-  provider: string | null
-  joined_at: string | null
-  marketing_sms: boolean
-  marketing_email: boolean
-  marketing_phone: boolean
-  onboarding_completed: boolean
-  updated_at: string | null
-  created_at: string
-}
+import {
+  getAdminMembers, revealMember, type MaskedMember, type RevealedMember,
+} from '../../../lib/api'
 
 interface Props {
   isSuperAdmin: boolean
@@ -27,87 +20,58 @@ interface Props {
 
 const PAGE_SIZE = 20
 
-// 이메일 마스킹: a***@gmail.com
-function maskEmail(email: string | null): string {
-  if (!email) return '이메일 미등록'
-  const atIdx = email.indexOf('@')
-  if (atIdx <= 0) return '****'
-  const local = email.slice(0, atIdx)
-  const domain = email.slice(atIdx)
-  const visible = local.slice(0, Math.min(2, local.length))
-  const masked = '*'.repeat(Math.max(3, local.length - visible.length))
-  return `${visible}${masked}${domain}`
-}
-
-// UUID 마스킹
+// UUID 표시용 마스킹 (id는 직접 식별 PII가 아닌 내부 키 — 표시할 때만 가린다)
 function maskId(id: string): string {
+  if (!id || id.length < 12) return '****'
   return id.slice(0, 8) + '****-****-****-' + id.slice(-4)
 }
 
-// 이름 마스킹: 홍길동 → 홍*동
-function maskName(name: string | null): string {
-  if (!name) return '미등록'
-  if (name.length <= 1) return name
-  if (name.length === 2) return name[0] + '*'
-  return name[0] + '*'.repeat(name.length - 2) + name[name.length - 1]
-}
-
-// 생년월일 마스킹: 1990-01-01 → 1990-**-**
-function maskBirthdate(date: string | null): string {
-  if (!date) return '미등록'
-  const parts = date.split('-')
-  if (parts.length !== 3) return '****-**-**'
-  return `${parts[0]}-**-**`
-}
-
-// 핸드폰 마스킹: 010-1234-5678 → 010-****-5678
-function maskPhone(phone: string | null): string {
-  if (!phone) return '미등록'
-  const parts = phone.split('-')
-  if (parts.length !== 3) return '***-****-****'
-  return `${parts[0]}-****-${parts[2]}`
-}
-
 export default function MembersMenu({ isSuperAdmin }: Props) {
-  const [members, setMembers] = useState<MemberRow[]>([])
+  const [members, setMembers] = useState<MaskedMember[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState('')
 
   const [searchEmail, setSearchEmail] = useState('')
   const [filterMarketing, setFilterMarketing] = useState<'' | 'true' | 'false'>('')
   const [page, setPage] = useState(1)
 
-  // 마스킹 해제 상태
-  const [unmasked, setUnmasked] = useState(false)
+  // 해제 모드 상태 — 보안키는 메모리에만 보관(저장/표시 안 함)
+  const [unlockMode, setUnlockMode] = useState(false)
+  const [revealKey, setRevealKey] = useState('')
   const [showUnlockDialog, setShowUnlockDialog] = useState(false)
-  const [unlockKey, setUnlockKey] = useState('')
+  const [unlockKeyInput, setUnlockKeyInput] = useState('')
   const [unlockError, setUnlockError] = useState('')
-  const [unlockLoading, setUnlockLoading] = useState(false)
+
+  // 행별 해제 결과 (member.id → 평문). 페이지를 떠나거나 재잠금하면 비운다.
+  const [revealed, setRevealed] = useState<Record<string, RevealedMember>>({})
+  const [revealingId, setRevealingId] = useState<string | null>(null)
+  const [adminEmail, setAdminEmail] = useState('')
+
+  // 현재 로그인 관리자 이메일 (감사로그 who)
+  useEffect(() => {
+    if (!supabase) return
+    supabase.auth.getUser().then(({ data }) => setAdminEmail(data.user?.email ?? ''))
+  }, [])
 
   const fetchMembers = useCallback(async () => {
-    if (!supabase) return
     setLoading(true)
+    setLoadError('')
     try {
-      let query = supabase
-        .from('profiles')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-
-      if (searchEmail.trim()) query = query.ilike('email', `%${searchEmail.trim()}%`)
-      if (filterMarketing === 'true') query = query.or('marketing_sms.eq.true,marketing_email.eq.true,marketing_phone.eq.true')
-      else if (filterMarketing === 'false') query = query.eq('marketing_sms', false).eq('marketing_email', false).eq('marketing_phone', false)
-
-      const from = (page - 1) * PAGE_SIZE
-      const to = from + PAGE_SIZE - 1
-      query = query.range(from, to)
-
-      const { data, error, count } = await query
-      if (error) throw error
-      setMembers(data ?? [])
-      setTotal(count ?? 0)
+      const res = await getAdminMembers({
+        page,
+        limit: PAGE_SIZE,
+        search: searchEmail.trim(),
+        marketing: filterMarketing,
+      })
+      setMembers(res.members ?? [])
+      setTotal(res.total ?? 0)
+      // 새 목록을 받으면 이전 해제 결과는 무효화(다른 행/페이지로 새지 않게)
+      setRevealed({})
     } catch (err) {
       console.error('회원 목록 불러오기 실패:', err)
       setMembers([])
+      setLoadError('회원 목록을 불러오지 못했습니다.')
     } finally {
       setLoading(false)
     }
@@ -115,41 +79,47 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
 
   useEffect(() => { fetchMembers() }, [fetchMembers])
 
-  // 마스킹 해제 시도
-  async function handleUnmask() {
-    if (!supabase) return
-    if (!unlockKey.trim()) { setUnlockError('보안키를 입력하세요.'); return }
-    setUnlockLoading(true)
+  // 해제 모드 진입 — 보안키 입력만 받고, 평문은 아직 받지 않는다(행별 보기에서 단건 호출).
+  function enterUnlockMode() {
+    if (!unlockKeyInput.trim()) { setUnlockError('보안키를 입력하세요.'); return }
+    setRevealKey(unlockKeyInput.trim())
+    setUnlockMode(true)
+    setShowUnlockDialog(false)
+    setUnlockKeyInput('')
     setUnlockError('')
+  }
+
+  // 재잠금 — 키와 해제 결과를 모두 폐기
+  function lockAgain() {
+    setUnlockMode(false)
+    setRevealKey('')
+    setRevealed({})
+  }
+
+  // 단건 평문 해제 — "보기" 클릭 시 그 행만 서버에 요청
+  async function handleReveal(memberId: string) {
+    if (!revealKey) { setShowUnlockDialog(true); return }
+    setRevealingId(memberId)
     try {
-      const { data } = await supabase
-        .from('system_settings')
-        .select('value')
-        .eq('key', 'member_unmask_key')
-        .single()
-
-      const storedKey = data?.value ?? ''
-      if (!storedKey) {
-        setUnlockError('보안키가 설정되지 않았습니다. Settings → 개인정보 보안키에서 설정하세요.')
-        return
-      }
-      if (unlockKey === storedKey) {
-        // 마스킹 해제 감사 로그 기록
-        await logAdminAction('unmask_members', 'profiles', undefined, {
-          timestamp: new Date().toISOString(),
-          member_count: members.length,
-        })
-
-        setUnmasked(true)
-        setShowUnlockDialog(false)
-        setUnlockKey('')
+      const data = await revealMember(memberId, revealKey, adminEmail)
+      setRevealed(prev => ({ ...prev, [memberId]: data }))
+    } catch (err) {
+      // 403(키 불일치) 등 → 해제 모드 해제하고 다시 키 입력 유도
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 403) {
+        setUnlockMode(false)
+        setRevealKey('')
+        setUnlockError('보안키가 일치하지 않습니다. 다시 입력하세요.')
+        setShowUnlockDialog(true)
+      } else if (status === 400) {
+        setUnlockMode(false)
+        setRevealKey('')
+        alert('보안키가 설정되지 않았습니다. Settings → 개인정보 보안키에서 먼저 설정하세요.')
       } else {
-        setUnlockError('보안키가 일치하지 않습니다.')
+        alert('해제 중 오류가 발생했습니다.')
       }
-    } catch {
-      setUnlockError('보안키 확인 중 오류가 발생했습니다.')
     } finally {
-      setUnlockLoading(false)
+      setRevealingId(null)
     }
   }
 
@@ -158,7 +128,6 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
     const d = new Date(iso)
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
   }
-
 
   function providerBadge(provider: string | null) {
     if (!provider) return null
@@ -191,50 +160,54 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
           </p>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {/* 마스킹 상태 표시 + 해제 버튼 */}
-          {!unmasked ? (
-            <button
-              onClick={() => setShowUnlockDialog(true)}
-              style={{
-                padding: '7px 14px', borderRadius: 8,
-                border: '1px solid rgba(240,200,0,0.3)',
-                background: 'rgba(240,200,0,0.08)', color: UP.amber,
-                fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700,
-              }}
-            >
-              🔒 마스킹 해제
-            </button>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{
-                padding: '4px 12px', borderRadius: 8,
-                background: 'rgba(34,197,94,0.12)',
-                border: '1px solid rgba(34,197,94,0.25)',
-                color: UP.green, fontSize: '0.78rem', fontWeight: 700,
-              }}>
-                🔓 마스킹 해제됨
-              </span>
+          {/* 해제 모드 토글 — 슈퍼관리자만 노출 (권한 없으면 마스킹만 가능) */}
+          {isSuperAdmin && (
+            !unlockMode ? (
               <button
-                onClick={() => { setUnmasked(false); setUnlockKey('') }}
-                style={{ ...outlineBtn, fontSize: '0.75rem', padding: '5px 10px' }}
+                onClick={() => { setUnlockError(''); setShowUnlockDialog(true) }}
+                style={{
+                  padding: '7px 14px', borderRadius: 8,
+                  border: '1px solid rgba(240,200,0,0.3)',
+                  background: 'rgba(240,200,0,0.08)', color: UP.amber,
+                  fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700,
+                }}
               >
-                재잠금
+                🔒 마스킹 해제
               </button>
-            </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{
+                  padding: '4px 12px', borderRadius: 8,
+                  background: 'rgba(34,197,94,0.12)',
+                  border: '1px solid rgba(34,197,94,0.25)',
+                  color: UP.green, fontSize: '0.78rem', fontWeight: 700,
+                }}>
+                  🔓 해제 모드 · 행별 보기 가능
+                </span>
+                <button
+                  onClick={lockAgain}
+                  style={{ ...outlineBtn, fontSize: '0.75rem', padding: '5px 10px' }}
+                >
+                  재잠금
+                </button>
+              </div>
+            )
           )}
           <button onClick={fetchMembers} style={outlineBtn}>↻ 새로고침</button>
         </div>
       </div>
 
-      {/* 마스킹 해제 주의 안내 */}
-      {!unmasked && (
+      {/* 마스킹 안내 */}
+      {!unlockMode && (
         <div style={{
           marginBottom: 14, padding: '10px 14px', borderRadius: 10,
           background: 'rgba(240,200,0,0.06)', border: '1px solid rgba(240,200,0,0.15)',
           fontSize: '0.78rem', color: 'rgba(255,220,50,0.8)', lineHeight: 1.5,
         }}>
-          🔒 개인정보 보호를 위해 이메일/ID가 마스킹 처리됩니다. 보안키 입력 시 전체 정보를 확인할 수 있습니다.
-          {isSuperAdmin && <span style={{ color: UP.sub, marginLeft: 6 }}>· 보안키는 Settings → 개인정보 보안키에서 설정</span>}
+          🔒 개인정보는 서버에서 마스킹되어 전달됩니다(평문은 브라우저로 내려오지 않음).
+          {isSuperAdmin
+            ? <span style={{ color: UP.sub, marginLeft: 6 }}>· 보안키 입력 후 각 행의 "보기"로 단건 확인할 수 있습니다.</span>
+            : <span style={{ color: UP.sub, marginLeft: 6 }}>· 평문 확인은 최고관리자 권한이 필요합니다.</span>}
         </div>
       )}
 
@@ -272,6 +245,10 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
       }}>
         {loading ? (
           <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0' }}>로딩 중...</p>
+        ) : loadError ? (
+          <p style={{ textAlign: 'center', color: UP.danger, padding: '32px 0', fontSize: '0.85rem' }}>
+            {loadError}
+          </p>
         ) : members.length === 0 ? (
           <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>
             조회된 회원이 없습니다.
@@ -280,7 +257,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
           <>
             {/* PC 테이블 헤더 */}
             <div className="hidden md:grid" style={{
-              gridTemplateColumns: '1.5fr 90px 90px 110px 80px 80px 80px 80px',
+              gridTemplateColumns: '1.5fr 90px 90px 110px 80px 80px 70px 60px 70px',
               padding: '10px 16px',
               borderBottom: `1px solid ${UP.hairSoft}`,
               fontSize: '0.7rem', fontWeight: 700,
@@ -295,20 +272,25 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
               <span>가입일</span>
               <span>온보딩</span>
               <span>마케팅</span>
+              <span>{isSuperAdmin ? '평문' : ''}</span>
             </div>
 
             {members.map(member => {
-              const emailDisplay = unmasked ? (member.email ?? '이메일 미등록') : maskEmail(member.email)
-              const idDisplay = unmasked ? member.id : maskId(member.id)
-              const nameDisplay = unmasked ? (member.full_name ?? '미등록') : maskName(member.full_name)
-              const birthdateDisplay = unmasked ? (member.birthdate ?? '미등록') : maskBirthdate(member.birthdate)
-              const phoneDisplay = unmasked ? (member.phone_number ?? '미등록') : maskPhone(member.phone_number)
+              const rev = revealed[member.id]
+              // 해제된 행이면 reveal 응답(평문), 아니면 서버가 보낸 마스킹 값
+              const emailDisplay = rev ? (rev.email ?? '이메일 미등록') : member.email
+              const idDisplay = rev ? member.id : maskId(member.id)
+              const nameDisplay = rev ? (rev.full_name ?? '미등록') : member.full_name
+              const birthdateDisplay = rev ? (rev.birthdate ?? '미등록') : member.birthdate
+              const phoneDisplay = rev ? (rev.phone_number ?? '미등록') : member.phone_number
+              const canReveal = isSuperAdmin && unlockMode && !rev
+              const isRevealing = revealingId === member.id
 
               return (
                 <div key={member.id}>
                   {/* PC 행 */}
                   <div className="hidden md:grid" style={{
-                    gridTemplateColumns: '1.5fr 90px 90px 110px 80px 80px 80px 80px',
+                    gridTemplateColumns: '1.5fr 90px 90px 110px 80px 80px 70px 60px 70px',
                     padding: '11px 16px',
                     borderBottom: `1px solid ${UP.hairSoft}`,
                     alignItems: 'center',
@@ -359,6 +341,17 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                         )
                       })()}
                     </div>
+                    {/* 평문 보기 (해제 모드 + 슈퍼관리자) */}
+                    <div>
+                      {canReveal ? (
+                        <button onClick={() => handleReveal(member.id)} disabled={isRevealing}
+                          style={{ ...revealBtn, opacity: isRevealing ? 0.5 : 1 }}>
+                          {isRevealing ? '…' : '👁 보기'}
+                        </button>
+                      ) : rev ? (
+                        <span style={{ fontSize: '0.66rem', color: UP.green, fontWeight: 700 }}>🔓 해제됨</span>
+                      ) : null}
+                    </div>
                   </div>
 
                   {/* 모바일 카드 */}
@@ -396,6 +389,13 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                         마케팅 {(member.marketing_sms || member.marketing_email || member.marketing_phone) ? '동의' : '미동의'}
                       </span>
                     </div>
+                    {canReveal && (
+                      <button onClick={() => handleReveal(member.id)} disabled={isRevealing}
+                        style={{ ...revealBtn, marginTop: 8, opacity: isRevealing ? 0.5 : 1 }}>
+                        {isRevealing ? '확인 중…' : '👁 평문 보기'}
+                      </button>
+                    )}
+                    {rev && <div style={{ fontSize: '0.66rem', color: UP.green, fontWeight: 700, marginTop: 6 }}>🔓 해제됨</div>}
                   </div>
                 </div>
               )
@@ -413,20 +413,21 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
         </div>
       )}
 
-      {/* 마스킹 해제 다이얼로그 */}
+      {/* 해제 모드 진입 다이얼로그 */}
       {showUnlockDialog && (
         <div style={overlayStyle} onClick={() => setShowUnlockDialog(false)}>
           <div style={modalStyle} onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: '1rem', fontWeight: 800, color: UP.navy, marginBottom: 6 }}>🔐 개인정보 마스킹 해제</div>
             <p style={{ fontSize: '0.8rem', color: UP.sub, marginBottom: 16, lineHeight: 1.5 }}>
-              슈퍼 관리자가 설정한 보안키를 입력하면 회원 이메일과 ID 전체를 확인할 수 있습니다.
+              보안키를 입력하면 해제 모드로 전환됩니다. 이후 각 회원 행의 "보기"를 누를 때마다
+              해당 1명의 평문 정보가 서버에서 전송되며, 해제 기록은 감사로그에 남습니다.
             </p>
             <input
               type="password"
               placeholder="보안키 입력..."
-              value={unlockKey}
-              onChange={e => { setUnlockKey(e.target.value); setUnlockError('') }}
-              onKeyDown={e => e.key === 'Enter' && handleUnmask()}
+              value={unlockKeyInput}
+              onChange={e => { setUnlockKeyInput(e.target.value); setUnlockError('') }}
+              onKeyDown={e => e.key === 'Enter' && enterUnlockMode()}
               autoFocus
               style={{
                 width: '100%', padding: '10px 12px', borderRadius: 10,
@@ -441,9 +442,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
             )}
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setShowUnlockDialog(false)} style={{ ...outlineBtn, flex: 1 }}>취소</button>
-              <button onClick={handleUnmask} disabled={unlockLoading} style={{ ...btnPrimary, flex: 1 }}>
-                {unlockLoading ? '확인 중...' : '확인'}
-              </button>
+              <button onClick={enterUnlockMode} style={{ ...btnPrimary, flex: 1 }}>해제 모드 진입</button>
             </div>
           </div>
         </div>
@@ -462,6 +461,12 @@ const btnPrimary: React.CSSProperties = {
   padding: '7px 16px', borderRadius: 8,
   border: 'none', background: UP.brand, color: '#fff',
   fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700,
+}
+const revealBtn: React.CSSProperties = {
+  padding: '4px 9px', borderRadius: 7,
+  border: '1px solid rgba(34,197,94,0.3)',
+  background: 'rgba(34,197,94,0.08)', color: UP.green,
+  fontSize: '0.66rem', cursor: 'pointer', fontWeight: 700,
 }
 const filterInput: React.CSSProperties = {
   padding: '8px 12px', borderRadius: 8,

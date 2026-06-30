@@ -8,6 +8,9 @@ NOTE: 모든 엔드포인트는 sync def + httpx.Client() 사용.
 
 from __future__ import annotations
 
+import base64
+import hashlib
+import hmac
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -881,6 +884,266 @@ def patch_setting(
                  before_val={"value": old_val}, after_val={"value": payload.value},
                  ip=request.client.host if request.client else None)
     return {"ok": True}
+
+
+# ── 회원 관리 (서버측 마스킹 + 단건 평문 해제) ────────────
+# 보안 재설계(🔴#4): 과거에는 프론트가 supabase.from('profiles').select('*')로
+# 회원 PII(이름/이메일/전화/생년월일)를 평문으로 통째 수신한 뒤 화면에서만 가렸다
+# (DevTools/Network로 무력화 가능 = 가짜 마스킹). 이제 서버가 마스킹된 형태만
+# 내려보내고, 평문은 보안키 해시를 통과한 reveal 요청에만 "단건"으로 제공한다.
+
+_UNMASK_KEY_NAME = "member_unmask_key"   # admin_secrets 테이블의 키 이름
+_PBKDF2_ITER = 200_000                   # PBKDF2 반복 횟수 (해시 강도)
+
+
+# ── PII 마스킹 (프론트 maskEmail 등과 동일 규칙, 서버측 수행) ──
+def _mask_email(email: Optional[str]) -> str:
+    if not email:
+        return "이메일 미등록"
+    at = email.find("@")
+    if at <= 0:
+        return "****"
+    local, domain = email[:at], email[at:]
+    visible = local[: min(2, len(local))]
+    masked = "*" * max(3, len(local) - len(visible))
+    return f"{visible}{masked}{domain}"
+
+
+def _mask_name(name: Optional[str]) -> str:
+    if not name:
+        return "미등록"
+    if len(name) <= 1:
+        return name
+    if len(name) == 2:
+        return name[0] + "*"
+    return name[0] + "*" * (len(name) - 2) + name[-1]
+
+
+def _mask_birthdate(date: Optional[str]) -> str:
+    if not date:
+        return "미등록"
+    parts = str(date).split("-")
+    if len(parts) != 3:
+        return "****-**-**"
+    return f"{parts[0]}-**-**"
+
+
+def _mask_phone(phone: Optional[str]) -> str:
+    if not phone:
+        return "미등록"
+    parts = phone.split("-")
+    if len(parts) != 3:
+        return "***-****-****"
+    return f"{parts[0]}-****-{parts[2]}"
+
+
+# ── 보안키 해시 (PBKDF2-HMAC-SHA256, 외부 의존성 없음) ──
+def _hash_key(raw: str) -> str:
+    """원문 키 → 'pbkdf2_sha256$iter$salt$hash' 문자열. salt는 매번 랜덤."""
+    salt = os.urandom(16)
+    dk = hashlib.pbkdf2_hmac("sha256", raw.encode("utf-8"), salt, _PBKDF2_ITER)
+    return (
+        f"pbkdf2_sha256${_PBKDF2_ITER}$"
+        f"{base64.b64encode(salt).decode()}${base64.b64encode(dk).decode()}"
+    )
+
+
+def _verify_key(raw: str, stored: str) -> bool:
+    """원문 키와 저장된 해시를 상수시간 비교. 형식이 깨졌으면 False."""
+    try:
+        algo, iter_s, salt_b64, hash_b64 = stored.split("$")
+        if algo != "pbkdf2_sha256":
+            return False
+        salt = base64.b64decode(salt_b64)
+        expected = base64.b64decode(hash_b64)
+        dk = hashlib.pbkdf2_hmac("sha256", raw.encode("utf-8"), salt, int(iter_s))
+        return hmac.compare_digest(dk, expected)
+    except Exception:
+        return False
+
+
+# ── admin_secrets 테이블 접근 (service-role 전용, RLS deny-all) ──
+def _get_secret_row(key: str) -> Optional[dict]:
+    try:
+        res = _sb_get("admin_secrets", {"select": "value_hash,updated_at", "key": f"eq.{key}"})
+        if res.status_code in (200, 206):
+            rows = res.json()
+            return rows[0] if rows else None
+    except Exception:
+        return None
+    return None
+
+
+def _get_secret(key: str) -> Optional[str]:
+    row = _get_secret_row(key)
+    return row.get("value_hash") if row else None
+
+
+def _set_secret(key: str, value_hash: str, who: str) -> bool:
+    try:
+        res = httpx.post(
+            f"{SUPABASE_URL}/rest/v1/admin_secrets",
+            headers={**_supabase_headers(), "Prefer": "resolution=merge-duplicates"},
+            json={
+                "key": key,
+                "value_hash": value_hash,
+                "algo": "pbkdf2_sha256",
+                "updated_by": who,
+                "updated_at": datetime.utcnow().isoformat(),
+            },
+            timeout=10,
+        )
+        return res.status_code in (200, 201, 204)
+    except Exception:
+        return False
+
+
+def _sanitize_ilike(term: str) -> str:
+    """PostgREST 메타문자 제거 — 와일드카드 오매칭/쿼리 깨짐 방지."""
+    out = term
+    for ch in ("*", ",", "(", ")", "%"):
+        out = out.replace(ch, "")
+    return out
+
+
+@router.get("/admin/members")
+def list_members(
+    page: int = 1,
+    limit: int = 20,
+    search: str = "",
+    marketing: str = "",
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    """회원 목록 — 서버에서 PII를 마스킹해 반환. 평문은 절대 포함하지 않는다.
+    검색/마케팅 필터/페이지네이션은 서버측에서 '원본 컬럼' 기준으로 수행하므로
+    검색이 평문 노출 우회로가 되지 않는다."""
+    _check_admin(x_admin_token)
+    params: dict = {
+        "select": "*",
+        "order": "created_at.desc",
+        "limit": str(limit),
+        "offset": str((page - 1) * limit),
+    }
+    if search.strip():
+        safe = _sanitize_ilike(search.strip())
+        if safe:
+            params["email"] = f"ilike.*{safe}*"
+    if marketing == "true":
+        params["or"] = "(marketing_sms.eq.true,marketing_email.eq.true,marketing_phone.eq.true)"
+    elif marketing == "false":
+        params["marketing_sms"] = "eq.false"
+        params["marketing_email"] = "eq.false"
+        params["marketing_phone"] = "eq.false"
+
+    res = _sb_get("profiles", params, count=True)
+    rows = res.json() if res.status_code in (200, 206) else []
+    total = _count_header(res)
+    if total == 0:
+        total = len(rows)
+
+    members = [
+        {
+            # 내부 UUID — reveal 타깃팅에 필요. 이름·이메일·전화 같은 직접 식별 PII가
+            # 아니며(기존에도 노출되던 DB 키), 표시할 때는 프론트에서 마스킹한다.
+            "id": r.get("id"),
+            "email": _mask_email(r.get("email")),
+            "full_name": _mask_name(r.get("full_name")),
+            "birthdate": _mask_birthdate(r.get("birthdate")),
+            "phone_number": _mask_phone(r.get("phone_number")),
+            "provider": r.get("provider"),
+            "created_at": r.get("created_at"),
+            "marketing_sms": bool(r.get("marketing_sms")),
+            "marketing_email": bool(r.get("marketing_email")),
+            "marketing_phone": bool(r.get("marketing_phone")),
+            "onboarding_completed": bool(r.get("onboarding_completed")),
+        }
+        for r in rows
+    ]
+    return {"members": members, "total": total}
+
+
+class RevealPayload(BaseModel):
+    member_id: str
+    key: str
+    admin_email: Optional[str] = None
+
+
+@router.post("/admin/members/reveal")
+def reveal_member(
+    payload: RevealPayload,
+    request: Request,
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    """단건 평문 해제 — 보안키 해시 검증 통과 시에만 1명의 원본 PII를 반환하고
+    누가/언제/어느 회원을 해제했는지 서버측 감사로그(audit_logs)에 기록한다.
+    대량 평문 일괄 반환은 제공하지 않는다(행마다 별도 reveal 호출)."""
+    _check_admin(x_admin_token)
+    ip = request.client.host if request.client else None
+    who = payload.admin_email or "admin"
+
+    stored = _get_secret(_UNMASK_KEY_NAME)
+    if not stored:
+        raise HTTPException(
+            status_code=400,
+            detail="보안키가 설정되지 않았습니다. Settings → 개인정보 보안키에서 먼저 설정하세요.",
+        )
+    if not _verify_key(payload.key, stored):
+        # 실패한 해제 시도도 감사로그에 남긴다 (무단 접근 탐지)
+        _write_audit(who, "member.unmask.denied", "profiles", payload.member_id,
+                     after_val={"reason": "bad_key"}, ip=ip)
+        raise HTTPException(status_code=403, detail="보안키가 일치하지 않습니다.")
+
+    res = _sb_get("profiles", {
+        "select": "id,email,full_name,birthdate,phone_number,display_name",
+        "id": f"eq.{payload.member_id}",
+    })
+    rows = res.json() if res.status_code in (200, 206) else []
+    if not rows:
+        raise HTTPException(status_code=404, detail="회원을 찾을 수 없습니다.")
+    m = rows[0]
+    _write_audit(who, "member.unmask", "profiles", payload.member_id,
+                 after_val={"fields": ["email", "full_name", "birthdate", "phone_number"]},
+                 ip=ip)
+    return {
+        "id": m.get("id"),
+        "email": m.get("email"),
+        "full_name": m.get("full_name"),
+        "birthdate": m.get("birthdate"),
+        "phone_number": m.get("phone_number"),
+        "display_name": m.get("display_name"),
+    }
+
+
+class UnmaskKeyPayload(BaseModel):
+    key: str
+    admin_email: Optional[str] = None
+
+
+@router.post("/admin/members/unmask-key")
+def set_unmask_key(
+    payload: UnmaskKeyPayload,
+    request: Request,
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    """보안키 설정/변경 — 원문은 저장하지 않고 PBKDF2 해시만 admin_secrets에 저장.
+    해시는 공개 읽기가 막힌 테이블에 들어가 클라이언트로 절대 내려가지 않는다."""
+    _check_admin(x_admin_token)
+    if not payload.key.strip():
+        raise HTTPException(status_code=400, detail="보안키를 입력하세요.")
+    who = payload.admin_email or "admin"
+    if not _set_secret(_UNMASK_KEY_NAME, _hash_key(payload.key.strip()), who):
+        raise HTTPException(status_code=500, detail="보안키 저장 실패")
+    _write_audit(who, "member.unmask_key.set", "admin_secrets", _UNMASK_KEY_NAME,
+                 ip=request.client.host if request.client else None)
+    return {"ok": True}
+
+
+@router.get("/admin/members/unmask-key/status")
+def unmask_key_status(x_admin_token: Optional[str] = Header(default=None)):
+    """보안키 설정 여부만 반환 — 해시 값 자체는 절대 반환하지 않는다."""
+    _check_admin(x_admin_token)
+    row = _get_secret_row(_UNMASK_KEY_NAME)
+    return {"configured": bool(row), "updated_at": (row or {}).get("updated_at")}
 
 
 # ── IP 차단 ───────────────────────────────────────────────
