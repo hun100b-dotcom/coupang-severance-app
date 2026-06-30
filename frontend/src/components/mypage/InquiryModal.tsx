@@ -51,7 +51,7 @@ export function InquiryModal({ open, onClose, onSubmit }: InquiryModalProps) {
           {/* 모달 카드 */}
           <motion.form
             onSubmit={handleSubmit}
-            className="relative w-full max-w-[420px] bg-white rounded-[28px] shadow-[0_24px_80px_rgba(15,23,42,0.45)] border border-slate-100 px-5 py-5 space-y-4"
+            className="relative w-full max-w-[420px] bg-white rounded-2xl shadow-[0_24px_80px_rgba(15,23,42,0.45)] border border-up-hair px-5 py-5 space-y-4"
             initial={{ opacity: 0, y: 24, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.96 }}
@@ -59,15 +59,15 @@ export function InquiryModal({ open, onClose, onSubmit }: InquiryModalProps) {
           >
             <div className="flex items-center justify-between mb-1">
               <div>
-                <p className="text-xs font-semibold text-[#4e5968]">1:1 문의</p>
-                <p className="text-sm font-extrabold text-[#191f28] tracking-tight">
+                <p className="text-xs font-semibold text-up-sub">1:1 문의</p>
+                <p className="text-sm font-extrabold text-up-navy tracking-tight">
                   궁금한 점을 편하게 남겨주세요
                 </p>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100"
+                className="w-8 h-8 rounded-full bg-up-sunken flex items-center justify-center text-up-sub hover:bg-up-sunken"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -75,23 +75,23 @@ export function InquiryModal({ open, onClose, onSubmit }: InquiryModalProps) {
 
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#4e5968]">제목</label>
+                <label className="text-xs font-semibold text-up-sub">제목</label>
                 <input
                   type="text"
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder="예) 퇴직금 계산 결과가 맞는지 확인하고 싶어요"
-                  className="w-full px-3 py-2 rounded-2xl border border-slate-200 text-sm text-[#191f28] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#3182f6]/40 focus:border-[#3182f6]"
+                  className="w-full px-3 py-2 rounded-2xl border border-up-hair text-sm text-up-navy placeholder:text-up-sub focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#4e5968]">내용</label>
+                <label className="text-xs font-semibold text-up-sub">내용</label>
                 <textarea
                   value={content}
                   onChange={e => setContent(e.target.value)}
                   placeholder="상세한 근무 기간, 궁금한 점 등을 자유롭게 적어주세요."
                   rows={5}
-                  className="w-full px-3 py-2 rounded-2xl border border-slate-200 text-sm text-[#191f28] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#3182f6]/40 focus:border-[#3182f6] resize-none"
+                  className="w-full px-3 py-2 rounded-2xl border border-up-hair text-sm text-up-navy placeholder:text-up-sub focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand resize-none"
                 />
               </div>
             </div>
@@ -99,7 +99,7 @@ export function InquiryModal({ open, onClose, onSubmit }: InquiryModalProps) {
             <button
               type="submit"
               disabled={!title.trim() || !content.trim() || submitting}
-              className="w-full mt-2 inline-flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-white bg-[#3182f6] disabled:bg-slate-300 shadow-[0_14px_40px_rgba(49,130,246,0.35)] hover:bg-[#1b64da] transition-colors"
+              className="w-full mt-2 inline-flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-white bg-brand-strong disabled:bg-slate-300 shadow-[0_14px_40px_rgba(49,130,246,0.35)] hover:bg-[#1b64da] transition-colors"
             >
               {submitting ? (
                 <>

@@ -178,8 +178,8 @@ export default function MyPage() {
   // 로딩 중
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4 relative z-[1]">
-        <p className="text-sm text-[#8B95A1]">로그인 정보를 확인하는 중입니다...</p>
+      <div className="min-h-screen bg-up-page flex flex-col items-center justify-center px-4 relative z-[1]">
+        <p className="text-sm text-up-sub">로그인 정보를 확인하는 중입니다...</p>
       </div>
     )
   }
@@ -187,8 +187,8 @@ export default function MyPage() {
   // 로그인 안 됨
   if (!isLoggedIn || !user) {
     return (
-      <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4 relative z-[1]">
-        <p className="text-sm text-[#8B95A1]">로그인이 필요합니다. 이동 중...</p>
+      <div className="min-h-screen bg-up-page flex flex-col items-center justify-center px-4 relative z-[1]">
+        <p className="text-sm text-up-sub">로그인이 필요합니다. 이동 중...</p>
       </div>
     )
   }
@@ -226,125 +226,130 @@ export default function MyPage() {
   // 회원 탈퇴 핸들러는 ⚙️ 설정 탭(MySettingsTab)으로 이동됨
 
   return (
-    <div className="relative z-[1] pb-8">
+    <div className="relative z-[1] min-h-screen bg-up-page pb-10">
 
-      {/* ── 페이지 헤더 (TopNav가 상단 내비를 제공하므로 뒤로가기/로그아웃 중복 헤더 제거) ── */}
-      <div className="w-full max-w-[760px] mx-auto px-4 md:px-6 pt-4">
-        <div className="flex items-end justify-between gap-3 mb-4">
+      <div className="w-full max-w-[1120px] mx-auto px-4 md:px-6 lg:px-8 pt-5">
+
+        {/* ── 페이지 헤더 (TopNav가 상단 내비를 제공하므로 뒤로가기 중복 제거) ── */}
+        <div className="flex items-end justify-between gap-3 mb-5">
           <div className="min-w-0">
-            <h1 className="text-[24px] md:text-[28px] font-black text-ink-900 tracking-tight">마이페이지</h1>
-            <p className="text-[14px] text-ink-700 mt-1 truncate">
-              <span className="font-bold text-ink-900">{displayName}</span>님, 반가워요
-              {daysWithCatch != null && <span className="text-ink-600"> · CATCH와 {daysWithCatch}일째</span>}
+            <h1 className="text-[24px] md:text-[30px] font-black text-up-navy tracking-tight">마이페이지</h1>
+            <p className="text-[14px] md:text-[15px] text-up-sub mt-1.5 truncate">
+              <span className="font-bold text-up-navy">{displayName}</span>님, 반가워요
+              {daysWithCatch != null && <span className="text-up-sub"> · CATCH와 <span className="font-mono tabular-nums">{daysWithCatch}</span>일째</span>}
             </p>
           </div>
           <button type="button" onClick={() => logout()}
-            className="shrink-0 flex items-center gap-1.5 min-h-[40px] px-3 rounded-md text-[13px] font-semibold text-ink-600 hover:text-ink-900 hover:bg-[#F2F4F6] transition-colors">
+            className="shrink-0 flex items-center gap-1.5 min-h-[40px] px-3 rounded-lg text-[13px] font-semibold text-up-sub hover:text-up-navy hover:bg-up-sunken transition-colors">
             <LogOut className="w-4 h-4" />
             로그아웃
           </button>
         </div>
 
-        {/* ── 탭 바 (세그먼트형 pill) — C-4: 지원현황 미읽음 배지 ── */}
-        <div className="sticky top-14 z-30 -mx-4 px-4 md:-mx-6 md:px-6 py-2 bg-page/80 backdrop-blur-md">
-          <div className="flex gap-1 overflow-x-auto hide-scrollbar p-1 bg-white border border-line rounded-pill shadow-card">
-            {TABS.map(tab => {
-              const Icon = tab.icon
-              const isActive = activeTab === tab.key
-              const hasBadge = tab.key === 'applications' && unreadNotifCount > 0
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => {
-                    setActiveTab(tab.key)
-                    if (tab.key === 'applications') markNotificationsRead()
-                  }}
-                  className={`relative flex-1 flex items-center justify-center gap-1.5 px-3 min-h-[44px] text-[13px] font-bold whitespace-nowrap rounded-pill transition-colors shrink-0 ${
-                    isActive ? 'bg-brand text-white' : 'text-ink-600 hover:text-ink-900 hover:bg-[#F2F4F6]'
-                  }`}
-                  aria-label={tab.label}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  <span className="relative inline-flex">
-                    <Icon className="w-4 h-4" />
-                    {hasBadge && (
-                      <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full bg-danger ring-1 ${isActive ? 'ring-brand' : 'ring-white'}`} />
-                    )}
-                  </span>
-                  <span>{tab.label}</span>
-                  {hasBadge && unreadNotifCount <= 9 && (
-                    <span className="ml-0.5 w-4 h-4 rounded-full bg-danger text-white text-[9px] font-black flex items-center justify-center">
-                      {unreadNotifCount}
+        {/* ── 데스크톱 2단(좌 세로메뉴 + 우 콘텐츠) / 모바일 적층 ── */}
+        <div className="lg:grid lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-8 lg:items-start">
+
+          {/* ── 좌측 메뉴 (데스크톱 sticky 세로 / 모바일 가로 스크롤) — C-4: 지원현황 미읽음 배지 ── */}
+          <nav className="sticky top-14 lg:top-[72px] z-20 -mx-4 px-4 md:-mx-6 md:px-6 lg:mx-0 lg:px-0 py-2 lg:py-0">
+            <div className="flex lg:flex-col gap-1 lg:gap-1.5 overflow-x-auto hide-scrollbar p-1.5 lg:p-2 bg-white border border-up-hair rounded-2xl shadow-card">
+              {TABS.map(tab => {
+                const Icon = tab.icon
+                const isActive = activeTab === tab.key
+                const hasBadge = tab.key === 'applications' && unreadNotifCount > 0
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => {
+                      setActiveTab(tab.key)
+                      if (tab.key === 'applications') markNotificationsRead()
+                    }}
+                    className={`relative flex-1 lg:flex-none lg:w-full flex items-center justify-center lg:justify-start gap-1.5 lg:gap-2.5 px-3 lg:px-3.5 min-h-[44px] lg:min-h-[48px] text-[13px] lg:text-[14px] font-bold whitespace-nowrap rounded-xl transition-colors shrink-0 ${
+                      isActive ? 'bg-brand-strong text-white' : 'text-up-sub hover:text-up-navy hover:bg-up-sunken'
+                    }`}
+                    aria-label={tab.label}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    <span className="relative inline-flex">
+                      <Icon className="w-4 h-4 lg:w-[18px] lg:h-[18px]" />
+                      {hasBadge && (
+                        <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full bg-danger ring-1 ${isActive ? 'ring-brand-strong' : 'ring-white'}`} />
+                      )}
                     </span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
+                    <span>{tab.label}</span>
+                    {hasBadge && unreadNotifCount <= 9 && (
+                      <span className="ml-0.5 lg:ml-auto w-4 h-4 rounded-full bg-danger text-white text-[9px] font-black flex items-center justify-center tabular-nums">
+                        {unreadNotifCount}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </nav>
+
+          {/* ── 우측 탭 콘텐츠 ── */}
+          <main className="mt-4 lg:mt-0 min-w-0 pb-6">
+
+            {/* ① 홈 탭 — 기존 마이페이지 내용 */}
+            {activeTab === 'home' && (
+              <div className="space-y-3 md:space-y-4">
+                {/* 프로필 카드 */}
+                <ProfileCard
+                  name={displayName}
+                  email={user.email}
+                  avatarUrl={avatarUrl}
+                  joinedAt={joinedAt}
+                  daysWithCatch={daysWithCatch}
+                />
+
+                {/* 계산 기록 */}
+                <SavedResultsList
+                  reports={reports}
+                  loading={loadingReports}
+                  onSelectReport={r => setSelectedReport(r)}
+                  onGoCalculate={() => navigate('/severance')}
+                />
+
+                {/* 내 PDF 관리 */}
+                <SavedPdfList />
+
+                {/* 빠른 계산 바로가기 */}
+                <QuickActions onOpenInquiry={() => setInquiryModalOpen(true)} />
+
+                {/* 고객지원 */}
+                <SupportSection
+                  inquiries={inquiries}
+                  loadingInquiries={loadingInquiries}
+                  onOpenInquiry={() => setInquiryModalOpen(true)}
+                />
+
+                {/* 계정 관리 섹션은 ⚙️ 설정 탭으로 이동됨 */}
+              </div>
+            )}
+
+            {/* ② 즐겨찾기 탭 */}
+            {activeTab === 'favorites' && (
+              <MyFavoritesTab userId={user.raw.id} />
+            )}
+
+            {/* ③ 지원현황 탭 */}
+            {activeTab === 'applications' && (
+              <MyApplicationsTab userId={user.raw.id} />
+            )}
+
+            {/* ④ 스케줄 탭 */}
+            {activeTab === 'schedule' && (
+              <MyScheduleTab userId={user.raw.id} />
+            )}
+
+            {/* ⑤ 설정 탭 */}
+            {activeTab === 'settings' && (
+              <MySettingsTab />
+            )}
+
+          </main>
         </div>
       </div>
-
-      {/* ── 탭 콘텐츠 ── */}
-      <main className="w-full max-w-[760px] mx-auto px-4 md:px-6 pt-4 pb-6">
-
-        {/* ① 홈 탭 — 기존 마이페이지 내용 */}
-        {activeTab === 'home' && (
-          <div className="space-y-3">
-            {/* 프로필 카드 */}
-            <ProfileCard
-              name={displayName}
-              email={user.email}
-              avatarUrl={avatarUrl}
-              joinedAt={joinedAt}
-              daysWithCatch={daysWithCatch}
-            />
-
-            {/* 계산 기록 */}
-            <SavedResultsList
-              reports={reports}
-              loading={loadingReports}
-              onSelectReport={r => setSelectedReport(r)}
-              onGoCalculate={() => navigate('/severance')}
-            />
-
-            {/* 내 PDF 관리 */}
-            <SavedPdfList />
-
-            {/* 빠른 계산 바로가기 */}
-            <QuickActions onOpenInquiry={() => setInquiryModalOpen(true)} />
-
-            {/* 고객지원 */}
-            <SupportSection
-              inquiries={inquiries}
-              loadingInquiries={loadingInquiries}
-              onOpenInquiry={() => setInquiryModalOpen(true)}
-            />
-
-            {/* 계정 관리 섹션은 ⚙️ 설정 탭으로 이동됨 */}
-          </div>
-        )}
-
-        {/* ② 즐겨찾기 탭 */}
-        {activeTab === 'favorites' && (
-          <MyFavoritesTab userId={user.raw.id} />
-        )}
-
-        {/* ③ 지원현황 탭 */}
-        {activeTab === 'applications' && (
-          <MyApplicationsTab userId={user.raw.id} />
-        )}
-
-        {/* ④ 스케줄 탭 */}
-        {activeTab === 'schedule' && (
-          <MyScheduleTab userId={user.raw.id} />
-        )}
-
-        {/* ⑤ 설정 탭 */}
-        {activeTab === 'settings' && (
-          <MySettingsTab />
-        )}
-
-      </main>
 
       {/* 계산결과 상세 모달 */}
       <SavedResultDetail

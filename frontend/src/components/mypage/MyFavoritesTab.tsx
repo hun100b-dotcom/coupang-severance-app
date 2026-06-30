@@ -87,8 +87,8 @@ export default function MyFavoritesTab({ userId }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-5 h-5 animate-spin text-[#3182f6]" />
-        <span className="ml-2 text-[13px] text-[#8b95a1]">불러오는 중...</span>
+        <Loader2 className="w-5 h-5 animate-spin text-brand" />
+        <span className="ml-2 text-[13px] text-up-sub">불러오는 중...</span>
       </div>
     )
   }
@@ -101,10 +101,10 @@ export default function MyFavoritesTab({ userId }: Props) {
         <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
           <AlertCircle className="w-8 h-8 text-red-300" />
         </div>
-        <p className="text-[14px] font-bold text-[#4e5968]">{fetchError}</p>
+        <p className="text-[14px] font-bold text-up-sub">{fetchError}</p>
         <button
           onClick={loadData}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#3182f6] text-white text-[13px] font-bold"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-brand-strong hover:bg-brand-700 text-white text-[13px] font-bold"
         >
           <RefreshCw className="w-4 h-4" />
           다시 시도
@@ -120,8 +120,8 @@ export default function MyFavoritesTab({ userId }: Props) {
         <div className="w-16 h-16 rounded-full bg-brand-bg flex items-center justify-center">
           <Star className="w-8 h-8 text-brand" />
         </div>
-        <p className="text-[15px] font-bold text-[#4e5968]">아직 저장한 공고가 없어요</p>
-        <p className="text-[13px] text-[#8b95a1] leading-relaxed">
+        <p className="text-[15px] font-bold text-up-sub">아직 저장한 공고가 없어요</p>
+        <p className="text-[13px] text-up-sub leading-relaxed">
           채용정보 탭에서 별 버튼을 눌러<br />관심 회사나 센터를 저장하세요
         </p>
       </div>
@@ -132,8 +132,8 @@ export default function MyFavoritesTab({ userId }: Props) {
     <div className="flex flex-col gap-3">
 
       {/* ── 저장한 회사/센터 태그 목록 ── */}
-      <div className="bg-white rounded-[24px] p-4 border border-slate-100 shadow-[0_4px_16px_rgba(49,130,246,0.04)]">
-        <p className="text-[12px] font-bold text-[#8b95a1] mb-3 uppercase tracking-wide">
+      <div className="bg-white rounded-2xl p-4 border border-up-hair shadow-[0_4px_16px_rgba(49,130,246,0.04)]">
+        <p className="text-[12px] font-bold text-up-sub mb-3 uppercase tracking-wide">
           저장한 회사 · 센터 ({favorites.length})
         </p>
         <div className="flex flex-wrap gap-2">
@@ -144,7 +144,7 @@ export default function MyFavoritesTab({ userId }: Props) {
               <span className="text-[10px] text-brand-strong font-bold">
                 {fav.favorite_type === 'company' ? '회사' : '센터'}
               </span>
-              <span className="text-[13px] font-semibold text-[#4e5968]">
+              <span className="text-[13px] font-semibold text-up-sub">
                 {/* center 타입은 "회사명::센터명" 형태이므로 센터명만 표시 */}
                 {fav.favorite_type === 'center'
                   ? fav.favorite_value.split('::')[1] ?? fav.favorite_value
@@ -166,22 +166,22 @@ export default function MyFavoritesTab({ userId }: Props) {
       {/* ── 저장한 회사의 현재 공고 ── */}
       {jobs.length > 0 ? (
         <>
-          <p className="text-[14px] font-extrabold text-[#191f28] px-1 mt-1">
+          <p className="text-[14px] font-extrabold text-up-navy px-1 mt-1">
             저장한 회사의 현재 공고
           </p>
           {jobs.map(job => (
             <div key={job.id}
-              className="bg-white rounded-[24px] p-4 border border-slate-100 shadow-[0_4px_16px_rgba(49,130,246,0.04)]">
+              className="bg-white rounded-2xl p-4 border border-up-hair shadow-[0_4px_16px_rgba(49,130,246,0.04)]">
               {/* 헤더: 회사명 + 급구 배지 + 즐겨찾기 해제 */}
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[15px] font-extrabold text-[#191f28]">{job.company_name}</span>
+                    <span className="text-[15px] font-extrabold text-up-navy">{job.company_name}</span>
                     {job.is_urgent && (
                       <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold">급구</span>
                     )}
                   </div>
-                  <p className="text-[12px] text-[#8b95a1] mt-0.5">{job.center_name}</p>
+                  <p className="text-[12px] text-up-sub mt-0.5">{job.center_name}</p>
                 </div>
                 {/* 이미 즐겨찾기 된 항목 — 별 클릭으로 해제 */}
                 <button
@@ -192,9 +192,9 @@ export default function MyFavoritesTab({ userId }: Props) {
               </div>
 
               {/* 위치 + 근무시간 */}
-              <div className="flex items-center gap-3 text-[12px] text-[#8b95a1] mb-3">
+              <div className="flex items-center gap-3 text-[12px] text-up-sub mb-3">
                 <span className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-[#3182f6]" />{job.region}
+                  <MapPin className="w-3 h-3 text-brand" />{job.region}
                 </span>
                 {job.work_hours && (
                   <span className="flex items-center gap-1">
@@ -206,16 +206,16 @@ export default function MyFavoritesTab({ userId }: Props) {
               {/* 일급 / 시급 표시 */}
               <div className="flex items-center gap-2">
                 {job.daily_wage > 0 && (
-                  <div className="flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-xl">
-                    <span className="text-[11px] text-[#8b95a1]">일급</span>
-                    <span className="text-[15px] font-black text-[#3182f6]">
+                  <div className="flex items-center gap-1 bg-brand-bg px-3 py-1.5 rounded-xl">
+                    <span className="text-[11px] text-up-sub">일급</span>
+                    <span className="text-[15px] font-black font-mono tabular-nums text-up-strong">
                       {job.daily_wage.toLocaleString('ko-KR')}원
                     </span>
                   </div>
                 )}
-                <div className="flex items-center gap-1 bg-slate-50 px-3 py-1.5 rounded-xl">
-                  <span className="text-[11px] text-[#8b95a1]">시급</span>
-                  <span className="text-[14px] font-bold text-[#4e5968]">
+                <div className="flex items-center gap-1 bg-up-sunken px-3 py-1.5 rounded-xl">
+                  <span className="text-[11px] text-up-sub">시급</span>
+                  <span className="text-[14px] font-bold font-mono tabular-nums text-up-body">
                     {job.hourly_wage.toLocaleString('ko-KR')}원
                   </span>
                 </div>
@@ -225,9 +225,9 @@ export default function MyFavoritesTab({ userId }: Props) {
         </>
       ) : (
         // 즐겨찾기는 있지만 현재 활성 공고 없음
-        <div className="bg-white rounded-[24px] p-6 border border-slate-100 text-center">
-          <p className="text-[14px] font-bold text-[#8b95a1]">저장한 회사의 현재 모집 공고가 없어요</p>
-          <p className="text-[12px] text-[#c8cdd2] mt-1">새 공고가 올라오면 여기서 확인할 수 있어요</p>
+        <div className="bg-white rounded-2xl p-6 border border-up-hair text-center">
+          <p className="text-[14px] font-bold text-up-sub">저장한 회사의 현재 모집 공고가 없어요</p>
+          <p className="text-[12px] text-up-caption mt-1">새 공고가 올라오면 여기서 확인할 수 있어요</p>
         </div>
       )}
     </div>

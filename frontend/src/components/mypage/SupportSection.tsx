@@ -120,16 +120,16 @@ export function SupportSection({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.15, ease: [0.2, 0.8, 0.2, 1] }}
-      className="bg-white rounded-xl shadow-card border border-line overflow-hidden"
+      className="bg-white rounded-xl shadow-card border border-up-hair overflow-hidden"
     >
       <div className="px-5 pt-5 pb-4">
-        <p className="text-[15px] font-extrabold text-ink-900 tracking-tight mb-4">고객지원</p>
+        <p className="text-[15px] font-extrabold text-up-navy tracking-tight mb-4">고객지원</p>
 
         {/* 1:1 문의 버튼 */}
         <button
           type="button"
           onClick={onOpenInquiry}
-          className="w-full flex items-center gap-3 px-4 py-4 rounded-lg bg-brand text-white hover:bg-brand-strong active:scale-[0.98] transition-all shadow-[0_8px_24px_rgba(49,130,246,0.3)] mb-4"
+          className="w-full flex items-center gap-3 px-4 py-4 rounded-lg bg-brand-strong text-white hover:bg-brand-700 active:scale-[0.98] transition-all shadow-[0_8px_24px_rgba(49,130,246,0.3)] mb-4"
         >
           <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
             <MessageCircle className="w-5 h-5" />
@@ -149,10 +149,10 @@ export function SupportSection({
           onClick={handleToggleExpand}
           className="w-full flex items-center justify-between mb-2 group"
         >
-          <p className="text-[12px] font-bold text-[#4e5968]">
+          <p className="text-[12px] font-bold text-up-sub">
             문의 내역
             {inquiries.length > 0 && (
-              <span className="ml-1.5 text-[10px] font-semibold text-[#8b95a1]">
+              <span className="ml-1.5 text-[10px] font-semibold text-up-sub">
                 ({inquiries.length}건)
               </span>
             )}
@@ -161,7 +161,7 @@ export function SupportSection({
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown className="w-4 h-4 text-[#8b95a1]" />
+            <ChevronDown className="w-4 h-4 text-up-sub" />
           </motion.div>
         </button>
 
@@ -184,8 +184,8 @@ export function SupportSection({
                     onClick={() => setActiveCategory(cat)}
                     className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] font-bold flex-shrink-0 transition-all active:scale-95 ${
                       activeCategory === cat
-                        ? 'bg-[#191f28] text-white'
-                        : 'bg-slate-100 text-[#4e5968]'
+                        ? 'bg-up-navy text-white'
+                        : 'bg-up-sunken text-up-sub'
                     }`}
                   >
                     {cat}
@@ -198,10 +198,10 @@ export function SupportSection({
 
         {/* 문의 내역 리스트 */}
         {loadingInquiries ? (
-          <div className="h-12 rounded-2xl bg-slate-100 animate-pulse mb-3" />
+          <div className="h-12 rounded-2xl bg-up-sunken animate-pulse mb-3" />
         ) : displayedInquiries.length === 0 ? (
-          <div className="rounded-2xl bg-slate-50 px-4 py-3 mb-3">
-            <p className="text-[12px] text-[#8b95a1]">
+          <div className="rounded-2xl bg-up-sunken px-4 py-3 mb-3">
+            <p className="text-[12px] text-up-sub">
               {isExpanded && activeCategory !== '전체'
                 ? `'${activeCategory}' 카테고리의 문의가 없어요`
                 : '아직 남긴 문의가 없어요'}
@@ -219,22 +219,22 @@ export function SupportSection({
               return (
                 <li
                   key={item.id}
-                  className="rounded-2xl border border-slate-100 bg-slate-50/60 px-4 py-3 space-y-1"
+                  className="rounded-2xl border border-up-hair bg-up-sunken px-4 py-3 space-y-1"
                 >
                   {/* 날짜 + 상태 배지 */}
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-[10px] text-[#8b95a1]">{formatDate(item.created_at)}</p>
+                    <p className="text-[10px] text-up-sub">{formatDate(item.created_at)}</p>
                     <StatusBadge status={item.status} answered={!!answered} />
                   </div>
 
                   {/* 카테고리 + 제목 */}
                   {item.category && (
-                    <p className="text-[10px] font-semibold text-[#3182f6]">{item.category}</p>
+                    <p className="text-[10px] font-semibold text-brand">{item.category}</p>
                   )}
-                  <p className="text-[13px] font-semibold text-[#191f28] truncate">
+                  <p className="text-[13px] font-semibold text-up-navy truncate">
                     {item.title || '제목 없음'}
                   </p>
-                  <p className="text-[11px] text-[#4e5968] line-clamp-1">{item.content}</p>
+                  <p className="text-[11px] text-up-sub line-clamp-1">{item.content}</p>
 
                   {/* 관리자 답변 접기/펼치기 */}
                   {item.answer && (
@@ -242,7 +242,7 @@ export function SupportSection({
                       <button
                         type="button"
                         onClick={() => toggleAnswer(item.id)}
-                        className="flex items-center gap-1 text-[11px] font-bold text-[#3182f6] hover:text-[#1b64da] transition-colors"
+                        className="flex items-center gap-1 text-[11px] font-bold text-brand hover:text-brand-strong transition-colors"
                       >
                         <span>{isAnswerOpen ? '답변 접기' : '답변 보기'}</span>
                         <motion.div
@@ -263,11 +263,11 @@ export function SupportSection({
                             transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
                             className="overflow-hidden"
                           >
-                            <div className="mt-1.5 rounded-xl bg-white border border-slate-100 px-3 py-2">
-                              <p className="text-[10px] font-semibold text-[#4e5968] mb-0.5">
+                            <div className="mt-1.5 rounded-xl bg-white border border-up-hair px-3 py-2">
+                              <p className="text-[10px] font-semibold text-up-sub mb-0.5">
                                 CATCH 답변
                               </p>
-                              <p className="text-[11px] text-[#4e5968] whitespace-pre-line">
+                              <p className="text-[11px] text-up-sub whitespace-pre-line">
                                 {item.answer}
                               </p>
                             </div>
@@ -287,28 +287,28 @@ export function SupportSection({
           <button
             type="button"
             onClick={handleToggleExpand}
-            className="w-full text-[11px] font-bold text-[#8b95a1] py-1 hover:text-[#4e5968] transition-colors"
+            className="w-full text-[11px] font-bold text-up-sub py-1 hover:text-up-body transition-colors"
           >
             전체 {inquiries.length}건 보기
           </button>
         )}
 
         {/* FAQ 아코디언 */}
-        <p className="text-[12px] font-bold text-[#4e5968] mb-2 mt-2">자주 묻는 질문</p>
+        <p className="text-[12px] font-bold text-up-sub mb-2 mt-2">자주 묻는 질문</p>
         <div className="space-y-1.5">
           {FAQS.map((faq, i) => (
-            <div key={i} className="rounded-2xl border border-slate-100 overflow-hidden">
+            <div key={i} className="rounded-2xl border border-up-hair overflow-hidden">
               <button
                 type="button"
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-up-sunken transition-colors"
               >
-                <p className="text-[12px] font-bold text-[#191f28] pr-4">{faq.q}</p>
+                <p className="text-[12px] font-bold text-up-navy pr-4">{faq.q}</p>
                 <motion.div
                   animate={{ rotate: openFaq === i ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <ChevronDown className="w-4 h-4 text-[#8b95a1] flex-shrink-0" />
+                  <ChevronDown className="w-4 h-4 text-up-sub flex-shrink-0" />
                 </motion.div>
               </button>
               <AnimatePresence>
@@ -320,7 +320,7 @@ export function SupportSection({
                     transition={{ duration: 0.2 }}
                   >
                     <div className="px-4 pb-3 pt-0">
-                      <p className="text-[12px] text-[#4e5968] leading-relaxed border-t border-slate-100 pt-2.5">
+                      <p className="text-[12px] text-up-sub leading-relaxed border-t border-up-hair pt-2.5">
                         {faq.a}
                       </p>
                     </div>

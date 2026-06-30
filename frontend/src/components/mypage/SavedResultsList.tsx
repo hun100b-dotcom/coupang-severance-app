@@ -66,11 +66,11 @@ function getSummaryText(payload: AnyPayload | null | undefined): string {
 
 // 탭별 색상 설정 — 색 규칙: 블루 메인 + 회색 중립 (서비스별 무지개 색코딩 제거, 전부 브랜드 블루로 통일)
 const TAB_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
-  severance:        { bg: 'bg-brand-bg',  text: 'text-brand-strong', dot: 'bg-brand' },
-  unemployment:     { bg: 'bg-brand-bg',  text: 'text-brand-strong', dot: 'bg-brand' },
-  weekly_allowance: { bg: 'bg-brand-bg',  text: 'text-brand-strong', dot: 'bg-brand' },
-  annual_leave:     { bg: 'bg-brand-bg',  text: 'text-brand-strong', dot: 'bg-brand' },
-  unknown:          { bg: 'bg-[#F2F4F6]', text: 'text-ink-600',      dot: 'bg-ink-400' },
+  severance:        { bg: 'bg-brand-bg',  text: 'text-up-strong', dot: 'bg-brand' },
+  unemployment:     { bg: 'bg-brand-bg',  text: 'text-up-strong', dot: 'bg-brand' },
+  weekly_allowance: { bg: 'bg-brand-bg',  text: 'text-up-strong', dot: 'bg-brand' },
+  annual_leave:     { bg: 'bg-brand-bg',  text: 'text-up-strong', dot: 'bg-brand' },
+  unknown:          { bg: 'bg-up-sunken', text: 'text-up-sub',      dot: 'bg-ink-400' },
 }
 
 import { useState } from 'react'
@@ -88,14 +88,14 @@ export function SavedResultsList({ reports, loading, onSelectReport, onGoCalcula
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.05, ease: [0.2, 0.8, 0.2, 1] }}
-      className="bg-white rounded-xl shadow-card border border-line overflow-hidden"
+      className="bg-white rounded-xl shadow-card border border-up-hair overflow-hidden"
     >
       {/* 섹션 헤더 */}
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[15px] font-extrabold text-[#191f28] tracking-tight">내 계산 기록</p>
+          <p className="text-[15px] font-extrabold text-up-navy tracking-tight">내 계산 기록</p>
           {reports.length > 0 && (
-            <span className="text-[11px] text-[#8b95a1]">총 {reports.length}건</span>
+            <span className="text-[11px] text-up-sub tabular-nums">총 {reports.length}건</span>
           )}
         </div>
 
@@ -106,8 +106,8 @@ export function SavedResultsList({ reports, loading, onSelectReport, onGoCalcula
               onClick={() => setActiveTab(tab.key)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${
                 activeTab === tab.key
-                  ? 'bg-[#3182f6] text-white shadow-[0_4px_12px_rgba(49,130,246,0.3)]'
-                  : 'bg-slate-100 text-[#4e5968] hover:bg-slate-200'
+                  ? 'bg-brand-strong text-white shadow-[0_4px_12px_rgba(49,130,246,0.3)]'
+                  : 'bg-up-sunken text-up-sub hover:bg-slate-200'
               }`}>
               {tab.icon} {tab.label}
             </button>
@@ -119,7 +119,7 @@ export function SavedResultsList({ reports, loading, onSelectReport, onGoCalcula
       {loading && (
         <div className="px-5 pb-5 space-y-2">
           {[1,2,3].map(i => (
-            <div key={i} className="h-16 rounded-2xl bg-slate-100 animate-pulse" />
+            <div key={i} className="h-16 rounded-2xl bg-up-sunken animate-pulse" />
           ))}
         </div>
       )}
@@ -127,18 +127,18 @@ export function SavedResultsList({ reports, loading, onSelectReport, onGoCalcula
       {/* 빈 상태 */}
       {!loading && filtered.length === 0 && (
         <div className="px-5 pb-6 flex flex-col items-center gap-3 py-8">
-          <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
-            <FileText className="w-7 h-7 text-slate-400" />
+          <div className="w-14 h-14 rounded-2xl bg-up-sunken flex items-center justify-center">
+            <FileText className="w-7 h-7 text-up-caption" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-bold text-[#191f28]">
+            <p className="text-sm font-bold text-up-navy">
               {activeTab === 'all' ? '아직 저장된 계산이 없어요' : `저장된 ${TABS.find(t => t.key === activeTab)?.label} 기록이 없어요`}
             </p>
-            <p className="text-[12px] text-[#8b95a1] mt-1">결과 화면에서 저장하면 여기서 다시 볼 수 있어요</p>
+            <p className="text-[12px] text-up-sub mt-1">결과 화면에서 저장하면 여기서 다시 볼 수 있어요</p>
           </div>
           {activeTab === 'all' && (
             <button type="button" onClick={onGoCalculate}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#3182f6] text-white text-xs font-semibold shadow-[0_6px_20px_rgba(49,130,246,0.35)] hover:bg-[#1b64da] transition-colors">
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-brand-strong text-white text-xs font-semibold shadow-[0_6px_20px_rgba(49,130,246,0.35)] hover:bg-brand-700 transition-colors">
               <Calculator className="w-3.5 h-3.5" />
               계산하러 가기
             </button>
@@ -159,28 +159,28 @@ export function SavedResultsList({ reports, loading, onSelectReport, onGoCalcula
                 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25 }}>
                 <button type="button" onClick={() => onSelectReport(report)}
-                  className="w-full rounded-2xl border border-slate-100 bg-slate-50/60 px-4 py-3.5 flex items-center gap-3 text-left hover:bg-slate-100/80 active:scale-[0.98] transition-all">
+                  className="w-full rounded-2xl border border-up-hair bg-up-sunken px-4 py-3.5 flex items-center gap-3 text-left hover:border-brand-200 active:scale-[0.98] transition-all">
                   {/* 타입 아이콘 */}
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${colors.bg}`}>
                     <span className="text-lg">{tabInfo?.icon ?? '📂'}</span>
                   </div>
                   {/* 정보 */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-bold text-[#191f28] truncate">{report.title}</p>
+                    <p className="text-[13px] font-bold text-up-navy truncate">{report.title}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-[#8b95a1]">{formatDate(report.created_at)}</span>
+                      <span className="text-[10px] text-up-sub tabular-nums">{formatDate(report.created_at)}</span>
                       {report.company_name && (
                         <>
-                          <span className="text-[#d1d5db]">·</span>
-                          <span className="text-[10px] text-[#8b95a1] truncate">{report.company_name}</span>
+                          <span className="text-up-caption">·</span>
+                          <span className="text-[10px] text-up-sub truncate">{report.company_name}</span>
                         </>
                       )}
                     </div>
                     {summary && (
-                      <p className={`text-[13px] font-extrabold mt-1 ${colors.text}`}>{summary}</p>
+                      <p className={`text-[13px] font-extrabold mt-1 font-mono tabular-nums break-keep ${colors.text}`}>{summary}</p>
                     )}
                   </div>
-                  <ChevronRight className="w-4 h-4 text-[#d1d5db] flex-shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-up-caption flex-shrink-0" />
                 </button>
               </motion.li>
             )

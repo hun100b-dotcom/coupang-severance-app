@@ -35,7 +35,7 @@ export function ProfileCard({ name, email, avatarUrl, joinedAt, daysWithCatch, o
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
-      className="bg-white rounded-xl shadow-card border border-line overflow-hidden"
+      className="bg-white rounded-xl shadow-card border border-up-hair overflow-hidden"
     >
       {/* 상단 파란 배경 영역 */}
       <div className="h-20 bg-gradient-to-r from-brand to-brand-strong relative" />
@@ -56,7 +56,7 @@ export function ProfileCard({ name, email, avatarUrl, joinedAt, daysWithCatch, o
           </div>
           {onEditName && (
             <button type="button" onClick={onEditName}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-[#4e5968] hover:bg-slate-50 transition-colors">
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-up-hair text-xs font-semibold text-up-sub hover:bg-up-sunken transition-colors">
               <Edit3 className="w-3.5 h-3.5" />
               프로필 편집
             </button>
@@ -64,16 +64,16 @@ export function ProfileCard({ name, email, avatarUrl, joinedAt, daysWithCatch, o
         </div>
 
         {/* 이름·이메일 */}
-        <p className="text-[20px] font-extrabold text-[#191f28] tracking-tight">{name}</p>
-        {email && <p className="text-[12px] text-[#8b95a1] mt-0.5">{email}</p>}
+        <p className="text-[20px] font-extrabold text-up-navy tracking-tight">{name}</p>
+        {email && <p className="text-[12px] text-up-sub mt-0.5">{email}</p>}
 
         {/* 가입일 + 함께한 날수 */}
         <div className="mt-3 flex items-center gap-3">
           {joinedAt && (
-            <span className="text-[11px] text-[#8b95a1]">가입일 {formatDate(joinedAt)}</span>
+            <span className="text-[11px] text-up-sub tabular-nums">가입일 {formatDate(joinedAt)}</span>
           )}
           {daysWithCatch !== null && daysWithCatch >= 0 && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-pill bg-brand-bg text-[11px] font-bold text-brand-strong">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-pill bg-brand-bg text-[11px] font-bold text-brand-strong tabular-nums">
               🎯 CATCH와 함께한 {daysWithCatch}일
             </span>
           )}

@@ -59,9 +59,9 @@ export function QuickActions({ onOpenInquiry }: QuickActionsProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
-      className="bg-white rounded-xl shadow-card border border-line px-5 py-5"
+      className="bg-white rounded-xl shadow-card border border-up-hair px-5 py-5"
     >
-      <p className="text-[15px] font-extrabold text-[#191f28] tracking-tight mb-4">빠른 계산</p>
+      <p className="text-[15px] font-extrabold text-up-navy tracking-tight mb-4">빠른 계산</p>
 
       <div className="grid grid-cols-2 gap-2.5">
         {ACTIONS.map((action, i) => (
@@ -72,11 +72,11 @@ export function QuickActions({ onOpenInquiry }: QuickActionsProps) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: i * 0.05 }}
-            className={`bg-gradient-to-br ${action.bg} rounded-[20px] border ${action.border} px-4 py-4 text-left hover:shadow-md active:scale-[0.97] transition-all`}
+            className={`bg-gradient-to-br ${action.bg} rounded-2xl border ${action.border} px-4 py-4 text-left hover:shadow-md active:scale-[0.97] transition-all`}
           >
             <span className="text-2xl block mb-2">{action.icon}</span>
             <p className={`text-[13px] font-extrabold ${action.accent}`}>{action.label}</p>
-            <p className="text-[10px] text-[#8b95a1] mt-0.5 leading-tight">{action.sub}</p>
+            <p className="text-[10px] text-up-sub mt-0.5 leading-tight">{action.sub}</p>
           </motion.button>
         ))}
       </div>

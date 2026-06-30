@@ -43,12 +43,12 @@ function SeveranceDetail({ p }: { p: SeverancePayload }) {
         <div className="w-8 h-8 rounded-xl bg-brand-bg flex items-center justify-center">
           <span className="text-lg">💼</span>
         </div>
-        <p className="font-extrabold text-[#191f28]">퇴직금 계산 결과</p>
+        <p className="font-extrabold text-up-navy">퇴직금 계산 결과</p>
       </div>
       {rows.map(r => (
-        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-brand-bg border border-brand-100' : 'bg-slate-50 border border-slate-100'}`}>
-          <span className="text-[12px] text-[#4e5968]">{r.label}</span>
-          <span className={`text-sm font-bold ${r.highlight ? 'text-brand-strong' : 'text-[#191f28]'}`}>{r.value}</span>
+        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-brand-bg border border-brand-100' : 'bg-up-sunken border border-up-hair'}`}>
+          <span className="text-[12px] text-up-sub">{r.label}</span>
+          <span className={`text-sm font-bold font-mono tabular-nums ${r.highlight ? 'text-up-strong' : 'text-up-navy'}`}>{r.value}</span>
         </div>
       ))}
       {p.eligibility_message && (
@@ -79,12 +79,12 @@ function WeeklyAllowanceDetail({ p }: { p: WeeklyAllowancePayload }) {
         <div className="w-8 h-8 rounded-xl bg-brand-bg flex items-center justify-center">
           <span className="text-lg">📅</span>
         </div>
-        <p className="font-extrabold text-[#191f28]">주휴수당 계산 결과</p>
+        <p className="font-extrabold text-up-navy">주휴수당 계산 결과</p>
       </div>
       {rows.map(r => (
-        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-brand-bg border border-brand-100' : 'bg-slate-50 border border-slate-100'}`}>
-          <span className="text-[12px] text-[#4e5968]">{r.label}</span>
-          <span className={`text-sm font-bold ${r.highlight ? 'text-brand-strong' : 'text-[#191f28]'}`}>{r.value}</span>
+        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-brand-bg border border-brand-100' : 'bg-up-sunken border border-up-hair'}`}>
+          <span className="text-[12px] text-up-sub">{r.label}</span>
+          <span className={`text-sm font-bold font-mono tabular-nums ${r.highlight ? 'text-up-strong' : 'text-up-navy'}`}>{r.value}</span>
         </div>
       ))}
     </div>
@@ -107,12 +107,12 @@ function AnnualLeaveDetail({ p }: { p: AnnualLeavePayload }) {
         <div className="w-8 h-8 rounded-xl bg-brand-bg flex items-center justify-center">
           <span className="text-lg">📋</span>
         </div>
-        <p className="font-extrabold text-[#191f28]">연차수당 계산 결과</p>
+        <p className="font-extrabold text-up-navy">연차수당 계산 결과</p>
       </div>
       {rows.map(r => (
-        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-brand-bg border border-brand-100' : 'bg-slate-50 border border-slate-100'}`}>
-          <span className="text-[12px] text-[#4e5968]">{r.label}</span>
-          <span className={`text-sm font-bold ${r.highlight ? 'text-brand-strong' : 'text-[#191f28]'}`}>{r.value}</span>
+        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-brand-bg border border-brand-100' : 'bg-up-sunken border border-up-hair'}`}>
+          <span className="text-[12px] text-up-sub">{r.label}</span>
+          <span className={`text-sm font-bold font-mono tabular-nums ${r.highlight ? 'text-up-strong' : 'text-up-navy'}`}>{r.value}</span>
         </div>
       ))}
     </div>
@@ -135,12 +135,12 @@ function UnemploymentDetail({ p }: { p: UnemploymentPayload }) {
         <div className="w-8 h-8 rounded-xl bg-brand-bg flex items-center justify-center">
           <span className="text-lg">🛡️</span>
         </div>
-        <p className="font-extrabold text-[#191f28]">실업급여 계산 결과</p>
+        <p className="font-extrabold text-up-navy">실업급여 계산 결과</p>
       </div>
       {rows.map(r => (
-        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-brand-bg border border-brand-100' : 'bg-slate-50 border border-slate-100'}`}>
-          <span className="text-[12px] text-[#4e5968]">{r.label}</span>
-          <span className={`text-sm font-bold ${r.highlight ? 'text-brand-strong' : 'text-[#191f28]'}`}>{r.value}</span>
+        <div key={r.label} className={`flex justify-between items-center px-4 py-2.5 rounded-xl ${r.highlight ? 'bg-brand-bg border border-brand-100' : 'bg-up-sunken border border-up-hair'}`}>
+          <span className="text-[12px] text-up-sub">{r.label}</span>
+          <span className={`text-sm font-bold font-mono tabular-nums ${r.highlight ? 'text-up-strong' : 'text-up-navy'}`}>{r.value}</span>
         </div>
       ))}
     </div>
@@ -180,21 +180,21 @@ export function SavedResultDetail({ report, onClose }: Props) {
               {/* 헤더 */}
               <div className="flex items-center justify-between mb-5">
                 <div>
-                  <p className="text-[17px] font-extrabold text-[#191f28]">{report.title}</p>
+                  <p className="text-[17px] font-extrabold text-up-navy">{report.title}</p>
                   <div className="flex items-center gap-1 mt-1">
-                    <Calendar className="w-3 h-3 text-[#8b95a1]" />
-                    <span className="text-[11px] text-[#8b95a1]">{formatDate(report.created_at)} 계산</span>
+                    <Calendar className="w-3 h-3 text-up-sub" />
+                    <span className="text-[11px] text-up-sub">{formatDate(report.created_at)} 계산</span>
                   </div>
                 </div>
                 <button type="button" onClick={onClose}
-                  className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
-                  <X className="w-5 h-5 text-[#8b95a1]" />
+                  className="p-2 rounded-xl hover:bg-up-sunken transition-colors">
+                  <X className="w-5 h-5 text-up-sub" />
                 </button>
               </div>
 
               {/* 타입별 상세 */}
               {!report.payload && (
-                <p className="text-sm text-[#8b95a1] text-center py-8">상세 데이터가 없어요</p>
+                <p className="text-sm text-up-sub text-center py-8">상세 데이터가 없어요</p>
               )}
               {report.payload && payloadType === 'severance' && (
                 <SeveranceDetail p={report.payload as SeverancePayload} />
@@ -209,7 +209,7 @@ export function SavedResultDetail({ report, onClose }: Props) {
                 <UnemploymentDetail p={report.payload as UnemploymentPayload} />
               )}
 
-              <p className="text-[10px] text-[#8b95a1] text-center mt-5 leading-relaxed">
+              <p className="text-[10px] text-up-sub text-center mt-5 leading-relaxed">
                 이 결과는 참고용입니다. 정확한 금액은 노무사 상담을 받으세요.
               </p>
             </div>
