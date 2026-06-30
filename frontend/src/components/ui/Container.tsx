@@ -13,11 +13,11 @@ interface Props {
 }
 
 export default function Container({ children, className = '', style, size = 'wide' }: Props) {
-  // wide: 데스크톱에서 1080px (다단 그리드 구성용)
-  // narrow: 데스크톱에서도 본문 가독성 위해 640px 유지 (계산기 폼 등)
-  const maxW = size === 'narrow' ? 'max-w-[640px]' : 'max-w-[1080px]'
+  // wide: 데스크톱에서 1280px (Phase 3 업스케일 — 홈에서 검증된 와이드 폭, 1080→1280)
+  // narrow: 데스크톱에서도 본문 가독성 위해 640px 유지 (계산기 폼 등 — 보수적 유지)
+  const maxW = size === 'narrow' ? 'max-w-[640px]' : 'max-w-content'
   return (
-    <div className={`w-full ${maxW} mx-auto px-4 md:px-6 ${className}`} style={style}>
+    <div className={`w-full ${maxW} mx-auto px-5 md:px-8 ${className}`} style={style}>
       {children}
     </div>
   )

@@ -44,6 +44,27 @@ export default {
         },
         line:  '#E5E8EB',  // 보더 기본
         page:  '#F7F9FC',  // 페이지 배경 (거의 흰색)
+        // ─────────────────────────────────────────────
+        // 🟦 업비트풍 토큰 (Phase 3 전역화 — Home.tsx 로컬 UP 객체 승격)
+        //   값 출처: upbit.com/home 라이브 실측 (docs/design/upbit_home_analysis.md)
+        //   ※ body/page/green은 업비트 원색이 아니라 CATCH 잉크·청회색 톤과 통일한 절충값(AA 충족).
+        //   기존 brand/ink/line/page 토큰은 그대로 두고(하위호환), 업비트 위계는 up.* 로 별도 제공.
+        //   사용 예: text-up-sub, bg-up-page, border-up-hair
+        // ─────────────────────────────────────────────
+        up: {
+          page:    '#EEF1F5', // 페이지 배경(옅은 청회색)
+          surface: '#FFFFFF', // 카드/면
+          sunken:  '#F2F5FA', // 구획/표 헤더 배경
+          navy:    '#1A2434', // 헤딩(남색 잉크)
+          body:    '#333D4B', // 본문
+          sub:     '#565D6A', // 보조 텍스트 (AA 6.7:1)
+          caption: '#8E929B', // 캡션/날짜 (비필수만)
+          hair:    '#E1E4EA', // 헤어라인 보더
+          brand:   '#3182F6', // 포인트 블루
+          strong:  '#1B64DA', // 주 CTA·금액 강조 (AA 5.4:1)
+          green:   '#047857', // 채용(AA용 진한 그린)
+          danger:  '#F04452', // 긴급 전용
+        },
         // 의미색 (상태 표시)
         success: '#06BE7B',
         warning: '#F59E0B',
@@ -65,6 +86,13 @@ export default {
       fontFamily: {
         sans: ['Pretendard', 'Apple SD Gothic Neo', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
+      },
+      // ── 콘텐츠 컨테이너 폭 토큰 (Phase 3 업스케일: 1080→1280) ──
+      //   max-w-content = 데스크톱 와이드 콘텐츠 폭(홈에서 검증된 1280)
+      //   max-w-content-narrow = 폼/리포트 등 읽기 흐름용
+      maxWidth: {
+        content: '1280px',
+        'content-narrow': '720px',
       },
       borderRadius: {
         // 8pt 그리드 기반 radius 스케일

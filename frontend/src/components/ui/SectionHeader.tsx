@@ -21,7 +21,8 @@ export default function SectionHeader({ title, tone = 'brand', action, subtitle,
         <div className="flex items-center gap-2">
           {/* 좌측 액센트 바 — 섹션 구분 시각 신호 */}
           <span className={`w-1 h-4 rounded-pill ${barColor} flex-shrink-0`} aria-hidden="true" />
-          <h2 className="text-[17px] font-extrabold text-ink-900 tracking-tight truncate">{title}</h2>
+          {/* Phase 3 업스케일: 섹션 타이틀 데스크톱만 17→20px (모바일은 17 유지 — 보수적) */}
+          <h2 className="text-[17px] md:text-[20px] font-extrabold text-ink-900 tracking-tight truncate">{title}</h2>
         </div>
         {subtitle && <p className="text-[13px] text-ink-600 mt-1 ml-3">{subtitle}</p>}
       </div>
