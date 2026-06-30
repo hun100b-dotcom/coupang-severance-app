@@ -475,7 +475,7 @@ export default function AnnualLeaveAllowancePage() {
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       현재 재직 중이신가요?
                     </p>
-                    <p className="text-[13px] text-[#8b95a1] mt-1.5">퇴직자도 연차수당을 청구할 수 있어요</p>
+                    <p className="text-[13px] text-up-sub mt-1.5">퇴직자도 연차수당을 청구할 수 있어요</p>
                   </div>
                   <div className="flex flex-col gap-3">
                     {[
@@ -490,7 +490,7 @@ export default function AnnualLeaveAllowancePage() {
                             : 'bg-white border-line text-[#191f28] hover:bg-[#F7F9FC]'
                         }`}>
                         <p className="font-bold text-[15px]">{opt.icon} {opt.label}</p>
-                        <p className={`text-[12px] mt-0.5 ${survey.isStillWorking === opt.value ? 'text-white/80' : 'text-[#8b95a1]'}`}>
+                        <p className={`text-[12px] mt-0.5 ${survey.isStillWorking === opt.value ? 'text-white/80' : 'text-up-sub'}`}>
                           {opt.sub}
                         </p>
                       </button>
@@ -520,7 +520,7 @@ export default function AnnualLeaveAllowancePage() {
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       입사일이 언제인가요?
                     </p>
-                    <p className="text-[13px] text-[#8b95a1] mt-1.5">연차는 입사일 기준으로 계산돼요</p>
+                    <p className="text-[13px] text-up-sub mt-1.5">연차는 입사일 기준으로 계산돼요</p>
                   </div>
                   <div className="rounded-xl bg-white border border-line shadow-[0_12px_40px_rgba(49,130,246,0.08)] px-5 py-6">
                     <input type="date" value={survey.hireDate} autoFocus
@@ -560,7 +560,7 @@ export default function AnnualLeaveAllowancePage() {
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       퇴직일이 언제인가요?
                     </p>
-                    <p className="text-[13px] text-[#8b95a1] mt-1.5">마지막 근무일을 선택해 주세요</p>
+                    <p className="text-[13px] text-up-sub mt-1.5">마지막 근무일을 선택해 주세요</p>
                   </div>
                   <div className="rounded-xl bg-white border border-line shadow-[0_12px_40px_rgba(49,130,246,0.08)] px-5 py-6">
                     <input type="date" value={survey.endDate} autoFocus
@@ -601,7 +601,7 @@ export default function AnnualLeaveAllowancePage() {
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       무엇이 궁금하세요?
                     </p>
-                    <p className="text-[13px] text-[#8b95a1] mt-1.5">목적에 맞게 계산해 드릴게요</p>
+                    <p className="text-[13px] text-up-sub mt-1.5">목적에 맞게 계산해 드릴게요</p>
                   </div>
                   <div className="flex flex-col gap-2.5">
                     {PURPOSES.map(p => (
@@ -613,7 +613,7 @@ export default function AnnualLeaveAllowancePage() {
                             : 'bg-white border-line text-[#191f28] hover:bg-[#F7F9FC]'
                         }`}>
                         <p className="font-bold text-[15px]">{p.icon} {p.label}</p>
-                        <p className={`text-[12px] mt-0.5 ${survey.purpose === p.value ? 'text-white/80' : 'text-[#8b95a1]'}`}>
+                        <p className={`text-[12px] mt-0.5 ${survey.purpose === p.value ? 'text-white/80' : 'text-up-sub'}`}>
                           {p.sub}
                         </p>
                       </button>
@@ -643,7 +643,7 @@ export default function AnnualLeaveAllowancePage() {
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       이미 사용한 연차는<br />며칠인가요?
                     </p>
-                    <p className="text-[13px] text-[#8b95a1] mt-1.5">없으면 0을 입력하세요</p>
+                    <p className="text-[13px] text-up-sub mt-1.5">없으면 0을 입력하세요</p>
                   </div>
                   <div className="rounded-xl bg-white border border-line shadow-[0_12px_40px_rgba(49,130,246,0.08)] px-5 py-6">
                     <div className="relative">
@@ -652,7 +652,7 @@ export default function AnnualLeaveAllowancePage() {
                         placeholder="0" min={0}
                         className="w-full px-4 py-4 pr-12 rounded-2xl border border-line bg-white text-[24px] font-extrabold text-[#191f28] placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 text-center"
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[#8b95a1] font-semibold">일</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-up-sub font-semibold">일</span>
                     </div>
                   </div>
                   <button type="button" onClick={handleNext}
@@ -675,7 +675,7 @@ export default function AnnualLeaveAllowancePage() {
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       평균 일급은 얼마인가요?
                     </p>
-                    <p className="text-[13px] text-[#8b95a1] mt-1.5">연차수당 = 남은 연차일수 × 평균 일급</p>
+                    <p className="text-[13px] text-up-sub mt-1.5">연차수당 = 남은 연차일수 × 평균 일급</p>
                   </div>
                   <div className="rounded-xl bg-white border border-line shadow-[0_12px_40px_rgba(49,130,246,0.08)] px-5 py-6">
                     <div className="relative">
@@ -684,7 +684,7 @@ export default function AnnualLeaveAllowancePage() {
                         placeholder="예) 100000" min={0}
                         className="w-full px-4 py-4 pr-10 rounded-2xl border border-line bg-white text-[24px] font-extrabold text-[#191f28] placeholder:text-ink-400 placeholder:text-[18px] focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 text-center"
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[#8b95a1] font-semibold">원</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-up-sub font-semibold">원</span>
                     </div>
                     {wage > 0 && (
                       <div className="mt-2 flex items-center justify-center gap-1">
@@ -727,7 +727,7 @@ export default function AnnualLeaveAllowancePage() {
                       ? [{ label: '평균 일급', value: formatWon(wage) }] : []),
                   ].map(({ label, value }) => (
                     <div key={label} className="rounded-xl bg-white border border-line px-3 py-2">
-                      <p className="text-[10px] text-[#8b95a1]">{label}</p>
+                      <p className="text-[10px] text-up-sub">{label}</p>
                       <p className="text-sm font-extrabold text-[#191f28] truncate">{value}</p>
                     </div>
                   ))}
@@ -750,7 +750,7 @@ export default function AnnualLeaveAllowancePage() {
                     입력하신 정보로 연차 발생일수와<br />미지급 수당을 바로 계산해요.
                   </p>
                 </div>
-                <ChevronRight className="w-5 h-5 text-[#8b95a1] flex-shrink-0 mt-1" />
+                <ChevronRight className="w-5 h-5 text-up-sub flex-shrink-0 mt-1" />
               </button>
 
               <button type="button" onClick={() => setStep('pdf')}
@@ -767,7 +767,7 @@ export default function AnnualLeaveAllowancePage() {
                     근로복지공단 일용근로내역서 PDF로<br />월별 개근 기록을 분석해 정밀하게 계산해요.
                   </p>
                 </div>
-                <ChevronRight className="w-5 h-5 text-[#8b95a1] flex-shrink-0 mt-1" />
+                <ChevronRight className="w-5 h-5 text-up-sub flex-shrink-0 mt-1" />
               </button>
             </motion.div>
           )}
@@ -787,7 +787,7 @@ export default function AnnualLeaveAllowancePage() {
                 {(survey.purpose === '미지급청구' || survey.purpose === '남은일수') && simpleResult.unpaidAllowance !== null && (
                   <div className="rounded-2xl bg-accent-bg border border-accent/20 px-5 py-5 text-center">
                     <p className="text-[11px] font-semibold text-[#047857] mb-1">미지급 연차수당</p>
-                    <p className="text-[clamp(32px,8.5vw,40px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none">
+                    <p className="text-[clamp(25px,7vw,38px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none break-keep">
                       {formatWon(simpleResult.unpaidAllowance)}
                     </p>
                     <p className="text-[11px] text-[#047857] mt-1">
@@ -813,7 +813,7 @@ export default function AnnualLeaveAllowancePage() {
                   ))}
                 </div>
 
-                <p className="text-[10px] text-[#8b95a1] text-center leading-relaxed">
+                <p className="text-[10px] text-up-sub text-center leading-relaxed">
                   이 결과는 참고용입니다. 정확한 금액은 노무사 상담을 받으세요.
                 </p>
 
@@ -825,7 +825,7 @@ export default function AnnualLeaveAllowancePage() {
                     <p className="text-[13px] font-bold text-[#191f28]">
                       {saveState === 'saved' ? '✅ 마이페이지에 저장됐어요' : '📌 계산결과 저장하기'}
                     </p>
-                    <p className="text-[11px] text-[#8b95a1] mt-0.5">
+                    <p className="text-[11px] text-up-sub mt-0.5">
                       {saveState === 'login_required' ? '로그인 후 저장할 수 있어요' :
                        saveState === 'error' ? '저장 중 오류가 발생했어요' :
                        saveState === 'saved' ? '마이페이지에서 다시 확인할 수 있어요' :
@@ -873,7 +873,7 @@ export default function AnnualLeaveAllowancePage() {
 
                   {/* PDF 발급 가이드 버튼 */}
                   <button type="button" onClick={() => setPdfGuideOpen(true)}
-                    className="text-[13px] text-[#8b95a1] underline underline-offset-2 hover:text-[#047857] transition-colors">
+                    className="text-[13px] text-up-sub underline underline-offset-2 hover:text-[#047857] transition-colors">
                     ❓ 근로내역서 PDF는 어디서 받나요?
                   </button>
 
@@ -944,7 +944,7 @@ export default function AnnualLeaveAllowancePage() {
                     {pdfResult.unpaid_allowance !== null && (
                       <div className="rounded-2xl bg-accent-bg border border-accent/20 px-5 py-4 text-center mb-4">
                         <p className="text-[11px] font-semibold text-[#047857] mb-1">미지급 연차수당</p>
-                        <p className="text-[clamp(32px,8.5vw,40px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none">
+                        <p className="text-[clamp(25px,7vw,38px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none break-keep">
                           {formatWon(pdfResult.unpaid_allowance)}
                         </p>
                         <p className="text-[11px] text-[#047857] mt-1">
@@ -981,10 +981,10 @@ export default function AnnualLeaveAllowancePage() {
                             }`}>
                             <p className="text-[12px] font-semibold text-[#191f28]">{m.month}</p>
                             <div className="flex items-center gap-2">
-                              <p className="text-[11px] text-[#8b95a1]">{m.work_days}일 근무</p>
+                              <p className="text-[11px] text-up-sub">{m.work_days}일 근무</p>
                               {m.attended
                                 ? <span className="text-[10px] font-bold text-[#047857] bg-accent-bg px-2 py-0.5 rounded-full">개근</span>
-                                : <span className="text-[10px] font-bold text-[#8b95a1] bg-gray-100 px-2 py-0.5 rounded-full">미개근</span>
+                                : <span className="text-[10px] font-bold text-up-sub bg-gray-100 px-2 py-0.5 rounded-full">미개근</span>
                               }
                             </div>
                           </div>
@@ -999,7 +999,7 @@ export default function AnnualLeaveAllowancePage() {
                     다시 계산하기
                   </button>
 
-                  <p className="text-[10px] text-[#8b95a1] text-center leading-relaxed">
+                  <p className="text-[10px] text-up-sub text-center leading-relaxed">
                     이 결과는 참고용입니다. 정확한 금액은 노무사 상담을 받으세요.
                   </p>
                 </motion.div>

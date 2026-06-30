@@ -350,7 +350,7 @@ export default function WeeklyAllowancePage() {
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       쿠팡에서 어떤 형태로<br />일하셨나요?
                     </p>
-                    <p className="text-[13px] text-[#8b95a1] mt-1.5">근무 형태를 선택해 주세요</p>
+                    <p className="text-[13px] text-up-sub mt-1.5">근무 형태를 선택해 주세요</p>
                   </div>
                   <div className="flex flex-col gap-2.5">
                     {WORK_TYPES.map(type => (
@@ -388,7 +388,7 @@ export default function WeeklyAllowancePage() {
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       주당 며칠 근무하셨나요?
                     </p>
-                    <p className="text-[13px] text-[#8b95a1] mt-1.5">소정근로일 기준으로 선택해 주세요</p>
+                    <p className="text-[13px] text-up-sub mt-1.5">소정근로일 기준으로 선택해 주세요</p>
                   </div>
                   <div className="grid grid-cols-7 gap-2">
                     {[1,2,3,4,5,6,7].map(d => (
@@ -432,7 +432,7 @@ export default function WeeklyAllowancePage() {
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       하루 평균 몇 시간<br />근무하셨나요?
                     </p>
-                    <p className="text-[13px] text-[#8b95a1] mt-1.5">소수점 입력 가능 (예: 7.5)</p>
+                    <p className="text-[13px] text-up-sub mt-1.5">소수점 입력 가능 (예: 7.5)</p>
                   </div>
                   <div className="rounded-xl bg-white border border-line shadow-card px-5 py-6">
                     <div className="relative">
@@ -441,7 +441,7 @@ export default function WeeklyAllowancePage() {
                         placeholder="예) 8" min={1} max={12} step={0.5}
                         className="w-full px-4 py-4 pr-16 rounded-2xl border border-line bg-white text-[24px] font-extrabold text-[#191f28] placeholder:text-ink-400 placeholder:text-[18px] focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 text-center"
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[#8b95a1] font-semibold">시간</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-up-sub font-semibold">시간</span>
                     </div>
                     {hours > 0 && days > 0 && (
                       <div className={`mt-3 rounded-xl px-4 py-2.5 text-center border ${
@@ -479,7 +479,7 @@ export default function WeeklyAllowancePage() {
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       시급은 얼마인가요?
                     </p>
-                    <p className="text-[13px] text-[#8b95a1] mt-1.5">2026년 최저시급 10,320원</p>
+                    <p className="text-[13px] text-up-sub mt-1.5">2026년 최저시급 10,320원</p>
                   </div>
                   <div className="rounded-xl bg-white border border-line shadow-card px-5 py-6">
                     <div className="relative">
@@ -488,7 +488,7 @@ export default function WeeklyAllowancePage() {
                         placeholder="10030" min={0}
                         className="w-full px-4 py-4 pr-10 rounded-2xl border border-line bg-white text-[24px] font-extrabold text-[#191f28] placeholder:text-ink-400 placeholder:text-[18px] focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 text-center"
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[#8b95a1] font-semibold">원</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-up-sub font-semibold">원</span>
                     </div>
                     {wage > 0 && wage < 10320 && (
                       <div className="mt-2 flex items-center justify-center gap-1">
@@ -527,7 +527,7 @@ export default function WeeklyAllowancePage() {
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       해당 주에 결근 없이<br />개근하셨나요?
                     </p>
-                    <p className="text-[13px] text-[#8b95a1] mt-1.5">지각·조퇴는 결근이 아니에요</p>
+                    <p className="text-[13px] text-up-sub mt-1.5">지각·조퇴는 결근이 아니에요</p>
                   </div>
                   <div className="flex flex-col gap-3">
                     {[
@@ -546,7 +546,7 @@ export default function WeeklyAllowancePage() {
                       >
                         <p className="font-bold text-[15px]">{opt.label}</p>
                         <p className={`text-[12px] mt-0.5 ${
-                          survey.allPresent === opt.value ? 'text-white/80' : 'text-[#8b95a1]'
+                          survey.allPresent === opt.value ? 'text-white/80' : 'text-up-sub'
                         }`}>{opt.sub}</p>
                       </button>
                     ))}
@@ -584,7 +584,7 @@ export default function WeeklyAllowancePage() {
                     { label: '개근 여부', value: survey.allPresent ? '개근 ✓' : '결근 있음' },
                   ].map(({ label, value }) => (
                     <div key={label} className="rounded-xl bg-white border border-line px-3 py-2">
-                      <p className="text-[10px] text-[#8b95a1]">{label}</p>
+                      <p className="text-[10px] text-up-sub">{label}</p>
                       <p className={`text-sm font-extrabold truncate ${
                         label === '개근 여부' && !survey.allPresent ? 'text-danger' :
                         label === '개근 여부' ? 'text-[#047857]' :
@@ -614,7 +614,7 @@ export default function WeeklyAllowancePage() {
                     입력하신 정보를 바탕으로<br />이번 주 주휴수당을 바로 계산해요.
                   </p>
                 </div>
-                <ChevronRight className="w-5 h-5 text-[#8b95a1] flex-shrink-0 mt-1" />
+                <ChevronRight className="w-5 h-5 text-up-sub flex-shrink-0 mt-1" />
               </button>
 
               {/* PDF 정밀계산 */}
@@ -633,7 +633,7 @@ export default function WeeklyAllowancePage() {
                     근로복지공단 일용근로내역서 PDF로<br />주차별 주휴수당을 정밀하게 분석해요.
                   </p>
                 </div>
-                <ChevronRight className="w-5 h-5 text-[#8b95a1] flex-shrink-0 mt-1" />
+                <ChevronRight className="w-5 h-5 text-up-sub flex-shrink-0 mt-1" />
               </button>
             </motion.div>
           )}
@@ -657,7 +657,7 @@ export default function WeeklyAllowancePage() {
                 {simpleResult.eligible && (
                   <div className="rounded-2xl bg-accent-bg border border-accent/20 px-5 py-5 text-center">
                     <p className="text-[11px] font-semibold text-[#047857] mb-1">이번 주 주휴수당</p>
-                    <p className="text-[clamp(32px,8.5vw,40px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none">
+                    <p className="text-[clamp(25px,7vw,38px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none break-keep">
                       {formatWon(simpleResult.allowance)}
                     </p>
                   </div>
@@ -666,7 +666,7 @@ export default function WeeklyAllowancePage() {
                 <div className="rounded-2xl bg-white border border-line px-4 py-3 space-y-2">
                   {simpleResult.eligible && (
                     <div className="flex justify-between text-xs">
-                      <span className="text-[#8b95a1]">계산식</span>
+                      <span className="text-up-sub">계산식</span>
                       <span className="font-semibold text-[#4e5968]">
                         ({simpleResult.weeklyHours}h ÷ 40h) × 8h × {formatWon(wage)}
                       </span>
@@ -675,7 +675,7 @@ export default function WeeklyAllowancePage() {
                   <p className="text-[12px] text-[#4e5968] leading-relaxed whitespace-pre-line">{simpleResult.reason}</p>
                 </div>
 
-                <p className="text-[10px] text-[#8b95a1] text-center">
+                <p className="text-[10px] text-up-sub text-center">
                   이 결과는 참고용입니다. 정확한 금액은 노무사 상담을 받으세요.
                 </p>
 
@@ -689,7 +689,7 @@ export default function WeeklyAllowancePage() {
                     <p className="text-[13px] font-bold text-[#191f28]">
                       {saveState === 'saved' ? '✅ 마이페이지에 저장됐어요' : '📌 계산결과 저장하기'}
                     </p>
-                    <p className="text-[11px] text-[#8b95a1] mt-0.5">
+                    <p className="text-[11px] text-up-sub mt-0.5">
                       {saveState === 'login_required' ? '로그인 후 저장할 수 있어요' :
                        saveState === 'error' ? '저장 중 오류가 발생했어요' :
                        saveState === 'saved' ? '마이페이지에서 다시 확인할 수 있어요' :
@@ -738,7 +738,7 @@ export default function WeeklyAllowancePage() {
 
                   {/* PDF 발급 가이드 버튼 */}
                   <button type="button" onClick={() => setPdfGuideOpen(true)}
-                    className="text-[13px] text-[#8b95a1] underline underline-offset-2 hover:text-[#047857] transition-colors">
+                    className="text-[13px] text-up-sub underline underline-offset-2 hover:text-[#047857] transition-colors">
                     ❓ 근로내역서 PDF는 어디서 받나요?
                   </button>
 
@@ -808,21 +808,21 @@ export default function WeeklyAllowancePage() {
                     </div>
                     <div className="rounded-2xl bg-accent-bg border border-accent/20 px-5 py-4 text-center mb-3">
                       <p className="text-[11px] font-semibold text-[#047857] mb-1">총 주휴수당 합계</p>
-                      <p className="text-[clamp(32px,8.5vw,40px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none">
+                      <p className="text-[clamp(25px,7vw,38px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none break-keep">
                         {formatWon(pdfResult.total_allowance)}
                       </p>
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-center">
                       <div className="rounded-xl bg-white border border-line px-2 py-2.5">
-                        <p className="text-[10px] text-[#8b95a1]">전체 주차</p>
+                        <p className="text-[10px] text-up-sub">전체 주차</p>
                         <p className="text-sm font-extrabold text-[#191f28]">{pdfResult.total_weeks}주</p>
                       </div>
                       <div className="rounded-xl bg-white border border-line px-2 py-2.5">
-                        <p className="text-[10px] text-[#8b95a1]">주휴수당 발생</p>
+                        <p className="text-[10px] text-up-sub">주휴수당 발생</p>
                         <p className="text-sm font-extrabold text-[#047857]">{pdfResult.eligible_weeks}주</p>
                       </div>
                       <div className="rounded-xl bg-white border border-line px-2 py-2.5">
-                        <p className="text-[10px] text-[#8b95a1]">적용 시급</p>
+                        <p className="text-[10px] text-up-sub">적용 시급</p>
                         <p className="text-sm font-extrabold text-[#191f28]">{formatWon(pdfResult.hourly_wage)}</p>
                       </div>
                     </div>
@@ -838,13 +838,13 @@ export default function WeeklyAllowancePage() {
                           }`}>
                           <div>
                             <p className="text-[11px] font-bold text-[#191f28]">{w.week_start} ~ {w.week_end}</p>
-                            <p className="text-[10px] text-[#8b95a1]">{w.work_days}일 근무 · {w.weekly_hours}시간</p>
+                            <p className="text-[10px] text-up-sub">{w.work_days}일 근무 · {w.weekly_hours}시간</p>
                           </div>
                           <div className="text-right">
                             {w.eligible ? (
                               <p className="text-sm font-extrabold text-[#047857]">{formatWon(w.allowance)}</p>
                             ) : (
-                              <p className="text-[11px] font-semibold text-[#8b95a1]">해당 없음</p>
+                              <p className="text-[11px] font-semibold text-up-sub">해당 없음</p>
                             )}
                           </div>
                         </div>
@@ -858,7 +858,7 @@ export default function WeeklyAllowancePage() {
                     다시 계산하기
                   </button>
 
-                  <p className="text-[10px] text-[#8b95a1] text-center leading-relaxed">
+                  <p className="text-[10px] text-up-sub text-center leading-relaxed">
                     이 결과는 참고용입니다. 정확한 금액은 노무사 상담을 받으세요.
                   </p>
                 </motion.div>

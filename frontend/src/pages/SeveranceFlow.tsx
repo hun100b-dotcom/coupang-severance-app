@@ -464,14 +464,14 @@ export default function SeveranceFlow() {
               {/* 사업장 선택 */}
               {extractLoading && (
                 <CalcInputCard className="text-center">
-                  <p className="text-[14px] text-[#8b95a1]">📂 PDF 분석 중…</p>
+                  <p className="text-[14px] text-up-sub">📂 PDF 분석 중…</p>
                 </CalcInputCard>
               )}
               {!extractLoading && pdfCompanies.length > 0 && (
                 <CalcInputCard>
                   <p className="text-[14px] font-bold text-[#191f28] mb-3">
                     계산할 사업장을 선택하세요
-                    <span className="text-[12px] font-normal text-[#8b95a1] ml-2">
+                    <span className="text-[12px] font-normal text-up-sub ml-2">
                       ({pdfCompanies.length}개 추출됨)
                     </span>
                   </p>
@@ -505,7 +505,7 @@ export default function SeveranceFlow() {
                 <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
                   className="w-full px-4 py-4 rounded-xl border border-up-hair bg-white text-lg font-bold text-up-navy focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                 />
-                <p className="text-[12px] text-[#8b95a1] mt-2">
+                <p className="text-[12px] text-up-sub mt-2">
                   비워두면 PDF의 마지막 근무일을 사용해요
                 </p>
               </CalcInputCard>
@@ -546,7 +546,7 @@ export default function SeveranceFlow() {
                       onChange={e => setWorkDays(e.target.value)}
                       className="w-full px-4 py-4 rounded-xl border border-up-hair bg-white text-lg font-bold text-up-navy focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                     />
-                    <p className="text-[12px] text-[#8b95a1] mt-1.5">첫 출근 ~ 마지막 퇴근까지의 총 일수</p>
+                    <p className="text-[12px] text-up-sub mt-1.5">첫 출근 ~ 마지막 퇴근까지의 총 일수</p>
                   </div>
                   <div>
                     <label className="block text-[14px] font-semibold text-[#191f28] mb-2">평균 일당 (원)</label>
@@ -557,7 +557,7 @@ export default function SeveranceFlow() {
                       onChange={e => setAvgWage(e.target.value)}
                       className="w-full px-4 py-4 rounded-xl border border-up-hair bg-white text-lg font-bold text-up-navy focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                     />
-                    <p className="text-[12px] text-[#8b95a1] mt-1.5">최근 3개월 총 지급액 ÷ 근무일수</p>
+                    <p className="text-[12px] text-up-sub mt-1.5">최근 3개월 총 지급액 ÷ 근무일수</p>
                   </div>
                 </div>
               </CalcInputCard>
