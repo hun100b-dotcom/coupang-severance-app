@@ -111,7 +111,7 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
       )}
 
       {templates.length === 0 && !showForm && (
-        <p style={{ fontSize: '0.82rem', color: UP.caption, textAlign: 'center', padding: '16px 0' }}>
+        <p style={{ fontSize: '0.82rem', color: UP.sub, textAlign: 'center', padding: '16px 0' }}>
           등록된 템플릿이 없습니다.
         </p>
       )}

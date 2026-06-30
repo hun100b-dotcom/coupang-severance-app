@@ -137,7 +137,7 @@ export default function InquiryTable({ inquiries, selected, onToggle, onToggleAl
         </tbody>
       </table>
       {inquiries.length === 0 && (
-        <p style={{ textAlign: 'center', color: UP.caption, padding: '32px 0', fontSize: '0.85rem' }}>
+        <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>
           문의가 없습니다.
         </p>
       )}

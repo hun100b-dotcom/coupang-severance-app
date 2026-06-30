@@ -49,7 +49,7 @@ const TT: React.CSSProperties = {
 }
 
 const Empty = () => (
-  <div style={{ textAlign: 'center', padding: '28px 0', color: UP.caption, fontSize: '0.82rem' }}>
+  <div style={{ textAlign: 'center', padding: '28px 0', color: UP.sub, fontSize: '0.82rem' }}>
     데이터 없음
   </div>
 )

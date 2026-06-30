@@ -227,7 +227,7 @@ export default function NoticesMenu() {
             <tbody>
               {notices.length === 0 && (
                 <tr>
-                  <td colSpan={5} style={{ ...cellStyle, textAlign: 'center', color: UP.caption }}>
+                  <td colSpan={5} style={{ ...cellStyle, textAlign: 'center', color: UP.sub }}>
                     공지사항이 없습니다.
                   </td>
                 </tr>
