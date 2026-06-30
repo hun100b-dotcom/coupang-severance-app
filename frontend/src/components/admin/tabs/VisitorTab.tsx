@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
+import { lookupMaskedProfiles } from '../../../lib/api'
 import { exportXlsx } from '../../../lib/exportXlsx'
 import PageHeader from '../shared/PageHeader'
 import { UP, numeric, CHART_SERIES } from '../shared/adminTheme'
@@ -68,12 +69,15 @@ export default function VisitorTab() {
       if (err) throw err
       const rawLogs = (data ?? []) as VisitorLog[]
       const userIds = [...new Set(rawLogs.filter(l => l.user_id).map(l => l.user_id as string))]
+      // 보안(🟡 V5): 과거에는 supabase.from('profiles').select 로 평문 PII 를 받아왔다(Network 노출).
+      // 이제 백엔드(service-role)에서 "마스킹된" 이름/이메일만 받아온다 — 평문은 서버를 떠나지 않음.
       let profileMap: Record<string, UserProfile> = {}
-      if (userIds.length > 0 && supabase) {
-        const { data: profileData, error: profileErr } = await supabase
-          .from('profiles').select('id, full_name, email').in('id', userIds)
-        if (profileErr) console.warn('[VisitorTab] profiles 조회 실패:', profileErr.message)
-        profileMap = Object.fromEntries((profileData ?? []).map((p: UserProfile) => [p.id, p]))
+      if (userIds.length > 0) {
+        try {
+          profileMap = await lookupMaskedProfiles(userIds)
+        } catch (profileErr) {
+          console.warn('[VisitorTab] 마스킹 프로필 조회 실패:', profileErr)
+        }
       }
       setLogs(rawLogs.map(l => ({ ...l, profile: l.user_id ? (profileMap[l.user_id] ?? null) : null })))
       setLastUpdated(new Date())

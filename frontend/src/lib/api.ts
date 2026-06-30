@@ -767,6 +767,20 @@ export const revealMember = (memberId: string, key: string, adminEmail: string) 
 export const setUnmaskKey = (key: string, adminEmail: string) =>
   api.post('/admin/members/unmask-key', { key, admin_email: adminEmail }, { headers: H() }).then(r => r.data)
 
+// 마스킹된 프로필 한 행 (평문 PII 없음) — 방문자/지원자 화면의 회원명·이메일 표시용
+export interface MaskedProfileLite {
+  id: string
+  full_name: string   // 마스킹됨: 김**
+  email: string       // 마스킹됨: ab***@gmail.com
+}
+
+// user_id 목록 → 마스킹된 프로필 매핑(id→{full_name,email}).
+// 보안(🟡 V5): 평문 profiles 직접 조회를 대체. 평문은 서버를 떠나지 않는다.
+export const lookupMaskedProfiles = (ids: string[]) =>
+  api.post<{ profiles: Record<string, MaskedProfileLite> }>(
+    '/admin/profiles/masked-lookup', { ids }, { headers: H() },
+  ).then(r => r.data.profiles)
+
 // 보안키 설정 여부 (해시 값은 절대 반환되지 않음)
 export const getUnmaskKeyStatus = () =>
   api.get<{ configured: boolean; updated_at: string | null }>('/admin/members/unmask-key/status', {

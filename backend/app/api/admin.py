@@ -1146,6 +1146,48 @@ def unmask_key_status(x_admin_token: Optional[str] = Header(default=None)):
     return {"configured": bool(row), "updated_at": (row or {}).get("updated_at")}
 
 
+# ── 프로필 마스킹 조회 (방문자/지원자 화면의 회원명·이메일 표시용) ──────────
+# 보안(🟡 V5): 과거 방문자탭은 프론트가 supabase.from('profiles').select('id,full_name,email')
+# 로 평문 PII 를 받아와 화면에서만 보여줬다(Network 탭 평문 노출). 이제 user_id 목록을
+# 보내면 서버가 "마스킹된 이름/이메일만" 돌려준다(평문은 절대 내려가지 않음).
+# 평문이 필요하면 회원관리(MembersMenu)의 보안키 reveal 경로를 사용한다.
+
+class ProfileLookupPayload(BaseModel):
+    ids: list[str]
+
+
+@router.post("/admin/profiles/masked-lookup")
+def masked_profile_lookup(
+    payload: ProfileLookupPayload,
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    """user_id 목록 → {id: {id, full_name(마스킹), email(마스킹)}} 매핑 반환.
+    평문 PII 는 포함하지 않는다. id 는 UUID 이므로 PostgREST in.() 에 안전하게 들어간다."""
+    _check_admin(x_admin_token)
+    # UUID 형식만 통과 — 콤마/와일드카드 등 메타문자 주입 차단(쿼리 안전)
+    safe_ids = [
+        i for i in (payload.ids or [])
+        if isinstance(i, str) and i and all(c in "0123456789abcdefABCDEF-" for c in i)
+    ][:1000]  # 과도한 목록 방지(상한)
+    if not safe_ids:
+        return {"profiles": {}}
+
+    res = _sb_get("profiles", {
+        "select": "id,full_name,email",
+        "id": f"in.({','.join(safe_ids)})",
+    })
+    rows = res.json() if res.status_code in (200, 206) else []
+    profiles = {
+        r["id"]: {
+            "id": r["id"],
+            "full_name": _mask_name(r.get("full_name")),
+            "email": _mask_email(r.get("email")),
+        }
+        for r in rows if r.get("id")
+    }
+    return {"profiles": profiles}
+
+
 # ── IP 차단 ───────────────────────────────────────────────
 
 @router.get("/admin/blocked-ips")
