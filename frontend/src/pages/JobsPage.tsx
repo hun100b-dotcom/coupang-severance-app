@@ -1,9 +1,10 @@
-// 채용정보 피드 — 2026 리디자인 "B-fixed"
+// 채용정보 피드 — 업비트풍 Phase4 리디자인 "upbit-jobs"
 // - Layout 안 페이지(TopNav/BottomNav는 Layout 제공) → 콘텐츠만 렌더
-// - 색: 블루 메인 + 그린(채용 보조) + 회색 중립 + 의미색(긴급=빨강/주황). 무지개(퍼플/인디고/스카이/틸) 제거
+// - 톤: 업비트풍 up.* 토큰(navy/body/sub/caption/hair/sunken) + 헤어라인 보더 + 솔리드 흰 카드 + 업스케일 타이포
+//   · 채용 정체성 = 그린 액센트(up-green #047857, AA 통과) 유지 · 긴급=danger / 내일=warning 의미색
+//   · 금액은 mono + tabular-nums + break-keep(자릿수 정렬·줄바꿈 방지)
 // - 반응형: 모바일 1열 / sm 2열 / lg 3열 카드 그리드 · 상세는 모바일 바텀시트 / 데스크톱 중앙 다이얼로그
-// - 긴 회사명·주소·근무시간 텍스트 잘림(truncate) 보강
-// - ⚠️ 기능 로직(즐겨찾기·지원 플로우·실시간 구독·토스트·모달)은 전부 보존, 스타일/구조만 개편
+// - ⚠️ 기능 로직(즐겨찾기·지원 플로우·실시간 구독·토스트·모달·fetch)은 전부 보존 — 스타일/구조(JSX)만 개편
 import { useEffect, useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -90,20 +91,20 @@ function toCardData(job: JobPosting): JobCardData {
   }
 }
 
-// ── 섹션 설정 (의미색: 오늘=danger, 내일=warning, 상시=accent) ──
+// ── 섹션 설정 (의미색: 오늘=danger, 내일=warning, 상시=그린) ──
 const SECTIONS = [
   { type: 'urgent_today' as const,    label: '오늘 추가모집', color: '#C81E2E', bg: 'bg-danger/[0.07]',  border: 'border-danger/20',  icon: '🔥' },
   { type: 'urgent_tomorrow' as const, label: '내일 긴급모집', color: '#B45309', bg: 'bg-warning/[0.08]', border: 'border-warning/25', icon: '⚡' },
   { type: 'regular' as const,         label: '상시 모집',    color: '#047857', bg: 'bg-accent/[0.08]',  border: 'border-accent/25',  icon: '✅' },
 ]
 
-// ── CTA 매핑 (무지개 제거: phone=브랜드 / sms=그린 / kakao=카카오 브랜드색 유지 / landing=중립 / catch=브랜드) ──
+// ── CTA 매핑 (무지개 제거 + 흰텍스트 AA: 브랜드=brand-strong(5.4:1) / 그린=up-green(4.7:1) / 카카오 브랜드색 유지 / landing=중립) ──
 const CTA_MAP: Record<string, { icon: typeof Phone; bg: string; text: string }> = {
-  phone:   { icon: Phone,          bg: 'bg-brand hover:bg-brand-strong', text: 'text-white' },
-  sms:     { icon: MessageSquare,   bg: 'bg-accent hover:bg-accent-strong', text: 'text-white' },
+  phone:   { icon: Phone,          bg: 'bg-brand-strong hover:bg-brand-700', text: 'text-white' },
+  sms:     { icon: MessageSquare,   bg: 'bg-up-green hover:opacity-90', text: 'text-white' },
   kakao:   { icon: Send,            bg: 'bg-[#FEE500]', text: 'text-[#3C1E1E]' },
-  landing: { icon: ExternalLink,    bg: 'bg-[#F2F4F6] border border-line', text: 'text-ink-900' },
-  catch:   { icon: Rocket,          bg: 'bg-brand hover:bg-brand-strong', text: 'text-white' },
+  landing: { icon: ExternalLink,    bg: 'bg-up-sunken border border-up-hair', text: 'text-up-navy' },
+  catch:   { icon: Rocket,          bg: 'bg-brand-strong hover:bg-brand-700', text: 'text-white' },
 }
 
 type SortKey = 'latest' | 'wage'
@@ -336,33 +337,37 @@ export default function JobsPage() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className={`fixed top-16 left-1/2 -translate-x-1/2 z-[300] w-[calc(100%-32px)] max-w-[428px]
-              px-4 py-3 rounded-lg shadow-float text-sm font-semibold text-center text-white
-              ${toastType === 'success' ? 'bg-brand' : 'bg-danger'}`}
+              px-4 py-3 rounded-xl shadow-float text-sm font-semibold text-center text-white break-keep
+              ${toastType === 'success' ? 'bg-up-strong' : 'bg-up-danger'}`}
           >
             {toastMsg}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <Container className="flex flex-col gap-5 md:gap-7 pt-4 pb-8">
+      <Container className="flex flex-col gap-6 md:gap-8 pt-4 pb-10">
 
-        {/* ════════════ 히어로 (블루 그라데이션) ════════════ */}
-        <motion.div
+        {/* ════════════ 히어로 (업비트풍: 솔리드 흰 카드 + 그린 채용 정체성) ════════════ */}
+        <motion.section
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative overflow-hidden rounded-xl border border-brand-700
-            bg-gradient-to-br from-brand-strong to-brand-700 p-6 md:p-8 shadow-[0_10px_30px_rgba(27,100,218,0.22)]"
+          className="relative overflow-hidden rounded-2xl bg-white border border-up-hair shadow-card p-6 md:p-9"
         >
-          <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/[0.08] blur-3xl pointer-events-none" />
+          {/* 은은한 그린 글로우 (채용 정체성) */}
+          <div className="absolute -top-12 -right-12 w-52 h-52 rounded-full bg-accent/[0.07] blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 md:flex md:items-center md:justify-between md:gap-8">
-            <div className="md:flex-1">
-              <h1 className="text-[22px] md:text-[26px] font-black text-white leading-tight tracking-tight mb-2 break-keep">
+          <div className="relative z-10 md:flex md:items-center md:justify-between md:gap-10">
+            <div className="md:flex-1 min-w-0">
+              {/* 채용 정체성 키커 (그린) */}
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-[12px] font-bold mb-4 bg-accent-bg text-up-green">
+                <Briefcase className="w-3.5 h-3.5" /> JOBS · 실시간 채용
+              </span>
+              <h1 className="text-[clamp(24px,5.2vw,38px)] font-black text-up-navy leading-tight tracking-tight mb-2.5 break-keep">
                 우리 지역 채용 정보 캐치하기
               </h1>
-              {/* 로테이션 서브타이틀 (색 통일) */}
-              <div className="h-[26px] overflow-hidden">
+              {/* 로테이션 서브타이틀 (보조 텍스트 — AA 위해 up-sub) */}
+              <div className="h-[28px] md:h-[30px] overflow-hidden">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.p
                     key={heroCopyIdx}
@@ -370,7 +375,7 @@ export default function JobsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                    className="text-[13px] md:text-[14px] leading-relaxed font-medium text-white/90 break-keep"
+                    className="text-[14px] md:text-[16px] leading-relaxed font-medium text-up-sub break-keep truncate"
                   >
                     {HERO_COPIES[heroCopyIdx]}
                   </motion.p>
@@ -378,40 +383,40 @@ export default function JobsPage() {
               </div>
             </div>
 
-            {/* 요약 수치 (의미색 점만 사용, 숫자는 흰색) */}
-            <div className="grid grid-cols-4 gap-2 mt-5 md:mt-0 md:w-[360px]">
+            {/* 요약 수치 (sunken 타일 + 의미색 점) */}
+            <div className="grid grid-cols-4 gap-2.5 mt-6 md:mt-0 md:w-[380px] shrink-0">
               {[
-                { n: allJobs.length, label: '전체', dot: 'bg-white' },
+                { n: allJobs.length, label: '전체', dot: 'bg-up-strong' },
                 { n: allJobs.filter(j => j.recruit_type === 'urgent_today').length, label: '오늘긴급', dot: 'bg-danger' },
                 { n: allJobs.filter(j => j.recruit_type === 'urgent_tomorrow').length, label: '내일긴급', dot: 'bg-warning' },
                 { n: allJobs.filter(j => j.recruit_type === 'regular').length, label: '상시', dot: 'bg-accent' },
               ].map(s => (
-                <div key={s.label} className="px-1 py-2.5 rounded-md bg-white/[0.14] text-center">
-                  <p className="text-[18px] font-black text-white leading-none tabular-nums">{s.n}</p>
-                  <p className="text-[10px] text-white/80 font-medium leading-tight mt-1 flex items-center justify-center gap-1">
-                    <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />{s.label}
+                <div key={s.label} className="px-1.5 py-3 rounded-xl bg-up-sunken border border-up-hair text-center min-w-0">
+                  <p className="text-[clamp(18px,5vw,22px)] font-black text-up-navy leading-none tabular-nums font-mono">{s.n}</p>
+                  <p className="text-[10px] md:text-[11px] text-up-sub font-medium leading-tight mt-1.5 flex items-center justify-center gap-1 truncate">
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${s.dot}`} />{s.label}
                   </p>
                 </div>
               ))}
             </div>
           </div>
-        </motion.div>
+        </motion.section>
 
         {/* ════════════ 검색 + 필터 ════════════ */}
         <div className="flex flex-col gap-3">
           {/* 검색바
               ⚠️ index.css 전역 input[type=text]{padding:14px 16px}(특이도 0,1,1)가 Tailwind pl-10을 덮어써
-                 아이콘과 placeholder가 겹쳤음 → important 수정자(!pl-12 !pr-4)로 좌측 패딩 강제 확보 */}
+                 아이콘과 placeholder가 겹쳤음 → important 수정자(!pl-12 !pr-4)로 좌측 패딩 강제 확보 (겹침 0) */}
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-ink-500 pointer-events-none" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-up-sub pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="회사, 센터, 지역, 업무 검색"
-              className="w-full !pl-12 !pr-4 min-h-[48px] rounded-lg bg-white border border-line
-                text-[14px] text-ink-900 placeholder:text-ink-400 outline-none
-                focus:ring-2 focus:ring-brand/30 focus:border-brand shadow-card transition-all"
+              className="w-full !pl-12 !pr-4 min-h-[52px] rounded-xl bg-white border border-up-hair
+                text-[15px] text-up-navy placeholder:text-up-caption outline-none
+                focus:ring-2 focus:ring-brand/25 focus:border-brand shadow-card transition-all"
             />
           </div>
 
@@ -420,21 +425,21 @@ export default function JobsPage() {
             {/* 지역 드롭다운 */}
             <div className="relative shrink-0">
               <button onClick={() => setRegionOpen(v => !v)}
-                className={`flex items-center gap-1.5 px-3.5 min-h-[44px] rounded-pill text-[13px] font-bold border transition-all ${
+                className={`flex items-center gap-1.5 px-4 min-h-[44px] rounded-pill text-[13px] font-bold border transition-all ${
                   regionFilter !== '전체'
-                    ? 'bg-brand text-white border-brand'
-                    : 'bg-white text-ink-700 border-line'
+                    ? 'bg-brand-strong text-white border-brand-strong'
+                    : 'bg-white text-up-body border-up-hair hover:border-brand-200'
                 }`}>
                 <MapPin className="w-3.5 h-3.5" />
                 {regionFilter}
                 <ChevronDown className={`w-3 h-3 transition-transform ${regionOpen ? 'rotate-180' : ''}`} />
               </button>
               {regionOpen && (
-                <div className="absolute top-full left-0 mt-1.5 w-44 bg-white rounded-lg shadow-float border border-line z-30 overflow-hidden py-1 max-h-[280px] overflow-y-auto">
+                <div className="absolute top-full left-0 mt-1.5 w-44 bg-white rounded-xl shadow-float border border-up-hair z-30 overflow-hidden py-1 max-h-[280px] overflow-y-auto">
                   {REGION_OPTIONS.map(r => (
                     <button key={r} onClick={() => { setRegionFilter(r); setRegionOpen(false) }}
                       className={`w-full text-left px-4 py-2.5 text-[13px] transition-colors ${
-                        regionFilter === r ? 'bg-brand-bg text-brand font-bold' : 'text-ink-700 hover:bg-[#F2F4F6]'
+                        regionFilter === r ? 'bg-brand-bg text-brand-strong font-bold' : 'text-up-body hover:bg-up-sunken'
                       }`}>
                       {r}
                     </button>
@@ -445,8 +450,8 @@ export default function JobsPage() {
 
             {/* 급구 토글 (의미색 danger) */}
             <button onClick={() => setUrgentOnly(v => !v)}
-              className={`shrink-0 px-3.5 min-h-[44px] rounded-pill text-[13px] font-bold border transition-all ${
-                urgentOnly ? 'bg-danger text-white border-danger' : 'bg-white text-ink-700 border-line'
+              className={`shrink-0 px-4 min-h-[44px] rounded-pill text-[13px] font-bold border transition-all ${
+                urgentOnly ? 'bg-up-danger text-white border-up-danger' : 'bg-white text-up-body border-up-hair hover:border-brand-200'
               }`}>
               🔥 급구
             </button>
@@ -455,7 +460,7 @@ export default function JobsPage() {
 
             {/* 정렬 */}
             <button onClick={() => setSortKey(s => s === 'latest' ? 'wage' : 'latest')}
-              className="shrink-0 flex items-center gap-1 px-3.5 min-h-[44px] rounded-pill bg-white border border-line text-[13px] font-bold text-ink-700">
+              className="shrink-0 flex items-center gap-1 px-4 min-h-[44px] rounded-pill bg-white border border-up-hair text-[13px] font-bold text-up-body hover:border-brand-200 transition-all">
               <ArrowUpDown className="w-3.5 h-3.5" />
               {sortKey === 'latest' ? '최신순' : '시급순'}
             </button>
@@ -465,52 +470,52 @@ export default function JobsPage() {
         {/* ════════════ 섹션별 공고 (4상태) ════════════ */}
         {loading ? (
           // 로딩 — 스켈레톤 그리드
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {[1, 2, 3].map(i => (
-              <div key={i} className="rounded-xl bg-white border border-line p-4 shadow-card">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-md bg-line animate-pulse shrink-0" />
+              <div key={i} className="rounded-2xl bg-white border border-up-hair p-5 shadow-card">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-lg bg-up-hair animate-pulse shrink-0" />
                   <div className="flex-1 flex flex-col gap-1.5">
-                    <div className="h-3.5 w-28 rounded bg-line animate-pulse" />
-                    <div className="h-3 w-20 rounded bg-line/70 animate-pulse" />
+                    <div className="h-3.5 w-28 rounded bg-up-hair animate-pulse" />
+                    <div className="h-3 w-20 rounded bg-up-sunken animate-pulse" />
                   </div>
                 </div>
-                <div className="h-12 w-full rounded-md bg-line/60 animate-pulse mb-3" />
-                <div className="h-10 w-full rounded-md bg-line/50 animate-pulse" />
+                <div className="h-14 w-full rounded-lg bg-up-sunken animate-pulse mb-4" />
+                <div className="h-11 w-full rounded-lg bg-up-sunken animate-pulse" />
               </div>
             ))}
           </div>
         ) : fetchError ? (
           // 에러
-          <div className="rounded-xl p-10 bg-white border border-danger/20 text-center shadow-card">
+          <div className="rounded-2xl p-10 bg-white border border-danger/20 text-center shadow-card">
             <p className="text-[15px] font-bold text-[#C81E2E] mb-2">⚠️ 오류</p>
-            <p className="text-[13px] text-ink-600">{fetchError}</p>
+            <p className="text-[14px] text-up-sub break-keep">{fetchError}</p>
             <button
               onClick={fetchJobs}
-              className="mt-4 px-5 min-h-[44px] rounded-md bg-brand text-white text-[13px] font-bold hover:bg-brand-strong transition-colors"
+              className="mt-4 px-5 min-h-[44px] rounded-lg bg-brand-strong text-white text-[14px] font-bold hover:bg-brand-700 transition-colors"
             >
               다시 불러오기
             </button>
           </div>
         ) : sections.length === 0 ? (
           // 빈 상태
-          <div className="rounded-xl p-12 bg-white border border-line text-center shadow-card">
-            <Briefcase className="w-12 h-12 text-ink-400 mx-auto mb-3" strokeWidth={1.5} />
-            <p className="text-[16px] font-bold text-ink-700">공고가 없어요</p>
-            <p className="text-[13px] text-ink-500 mt-1">검색 조건을 변경해보세요</p>
+          <div className="rounded-2xl p-12 bg-white border border-up-hair text-center shadow-card">
+            <Briefcase className="w-12 h-12 text-up-caption mx-auto mb-3" strokeWidth={1.5} />
+            <p className="text-[16px] font-bold text-up-navy">공고가 없어요</p>
+            <p className="text-[13px] text-up-sub mt-1">검색 조건을 변경해보세요</p>
           </div>
         ) : (
           // 목록 — 섹션별 + 반응형 그리드
           sections.map(section => (
             <section key={section.type}>
               {/* 섹션 헤더 */}
-              <div className={`flex items-center gap-2 mb-3 px-4 py-2.5 rounded-lg ${section.bg} border ${section.border}`}>
-                <span className="text-[15px]">{section.icon}</span>
-                <span className="text-[14px] font-extrabold" style={{ color: section.color }}>{section.label}</span>
-                <span className="ml-auto text-[12px] font-bold px-2.5 py-0.5 rounded-pill" style={{ background: section.color + '26', color: section.color }}>{section.jobs.length}건</span>
+              <div className={`flex items-center gap-2 mb-4 px-4 py-3 rounded-xl ${section.bg} border ${section.border}`}>
+                <span className="text-[16px]">{section.icon}</span>
+                <span className="text-[15px] font-extrabold tracking-tight" style={{ color: section.color }}>{section.label}</span>
+                <span className="ml-auto text-[12px] font-bold px-2.5 py-0.5 rounded-pill tabular-nums" style={{ background: section.color + '26', color: section.color }}>{section.jobs.length}건</span>
               </div>
 
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-stretch">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 items-stretch">
                 {section.jobs.map((job, i) => {
                   const centerKey = `${job.company_name}::${job.center_name}`
                   const isFav = isFavorited(favorites, 'company', job.company_name) || isFavorited(favorites, 'center', centerKey)
@@ -520,15 +525,15 @@ export default function JobsPage() {
                       key={job.id}
                       initial={{ opacity: 0, y: 14 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.04, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                      className={`flex flex-col h-full min-w-0 rounded-xl bg-white border transition-all shadow-card hover:shadow-float
-                        ${isFav ? 'border-brand/40' : 'border-line'}`}
+                      transition={{ delay: Math.min(i * 0.04, 0.3), duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                      className={`flex flex-col h-full min-w-0 rounded-2xl bg-white border transition-all shadow-card hover:shadow-float hover:-translate-y-0.5
+                        ${isFav ? 'border-brand/40' : 'border-up-hair'}`}
                     >
-                      <div className="flex flex-col h-full p-4">
+                      <div className="flex flex-col h-full p-5">
                         {/* 상단: 로고 + 회사명/센터 + 긴급배지 + 즐겨찾기 */}
-                        <div className="flex items-start gap-3 mb-3">
+                        <div className="flex items-start gap-3 mb-4">
                           <img src={job.logo_url} alt={job.company_name}
-                            className="w-12 h-12 rounded-md object-contain bg-white p-1 border border-line shrink-0" />
+                            className="w-12 h-12 rounded-lg object-contain bg-white p-1 border border-up-hair shrink-0" />
                           <div className="flex-1 min-w-0">
                             {job.recruit_type !== 'regular' && (
                               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-pill text-[10px] font-bold mb-1 ${
@@ -537,45 +542,45 @@ export default function JobsPage() {
                                 {job.recruit_type === 'urgent_today' ? '🔥 오늘 긴급' : '⚡ 내일 긴급'}
                               </span>
                             )}
-                            <p className="text-[15px] font-extrabold text-ink-900 leading-tight truncate">{job.company_name}</p>
-                            <p className="text-[12px] text-ink-600 leading-tight truncate">{job.center_name}</p>
+                            <p className="text-[16px] font-extrabold text-up-navy leading-tight truncate">{job.company_name}</p>
+                            <p className="text-[12px] text-up-sub leading-tight truncate mt-0.5">{job.center_name}</p>
                           </div>
                           <button onClick={(e) => { e.stopPropagation(); toggleFav('center', centerKey) }}
-                            className="flex items-center justify-center w-11 h-11 -mt-1 -mr-1 rounded-md hover:bg-brand-bg transition-colors shrink-0"
+                            className="flex items-center justify-center w-11 h-11 -mt-1 -mr-1 rounded-lg hover:bg-brand-bg transition-colors shrink-0"
                             aria-label="즐겨찾기">
-                            <Star className={`w-5 h-5 transition-all ${isFav ? 'fill-brand text-brand scale-110' : 'text-ink-400'}`} />
+                            <Star className={`w-5 h-5 transition-all ${isFav ? 'fill-brand text-brand scale-110' : 'text-up-caption'}`} />
                           </button>
                         </div>
 
                         {/* 시급 블록 (브랜드 톤) */}
-                        <div className="bg-brand-bg rounded-md px-4 py-3 mb-3">
+                        <div className="bg-brand-bg rounded-lg px-4 py-3.5 mb-4">
                           <div className="flex items-baseline justify-between gap-2">
                             <div className="flex items-baseline gap-1 min-w-0">
-                              <span className="text-[10px] text-ink-600 font-medium shrink-0">시급</span>
-                              <span className="text-[24px] font-black text-brand tracking-tight leading-none tabular-nums truncate">{fmtWage(job.hourly_wage)}</span>
-                              <span className="text-[13px] font-bold text-brand shrink-0">원</span>
+                              <span className="text-[10px] text-up-sub font-medium shrink-0">시급</span>
+                              <span className="text-[clamp(22px,6vw,26px)] font-black text-up-strong tracking-tight leading-none tabular-nums font-mono truncate break-keep">{fmtWage(job.hourly_wage)}</span>
+                              <span className="text-[13px] font-bold text-up-strong shrink-0">원</span>
                             </div>
                             <div className="flex items-baseline gap-1 shrink-0">
-                              <span className="text-[10px] text-ink-600 font-medium">일급</span>
-                              <span className="text-[15px] font-black text-ink-700 tracking-tight tabular-nums">{fmtWage(job.daily_wage)}</span>
-                              <span className="text-[11px] font-semibold text-ink-500">원</span>
+                              <span className="text-[10px] text-up-sub font-medium">일급</span>
+                              <span className="text-[15px] font-black text-up-body tracking-tight tabular-nums font-mono">{fmtWage(job.daily_wage)}</span>
+                              <span className="text-[11px] font-semibold text-up-sub">원</span>
                             </div>
                           </div>
                         </div>
 
                         {/* 위치·시간·인원·마감 — 세로 스택 + 각 줄 truncate */}
-                        <div className="flex flex-col gap-1 text-[12px] text-ink-600 mb-3">
+                        <div className="flex flex-col gap-1.5 text-[12px] text-up-sub mb-4">
                           <span className="flex items-center gap-1.5 min-w-0">
                             <MapPin className="w-3.5 h-3.5 text-brand shrink-0" />
                             <span className="truncate" style={{ wordBreak: 'keep-all' }}>{job.address_detail}</span>
                           </span>
                           <span className="flex items-center gap-1.5 min-w-0">
-                            <Clock className="w-3.5 h-3.5 text-ink-500 shrink-0" />
+                            <Clock className="w-3.5 h-3.5 text-up-sub shrink-0" />
                             <span className="truncate">{job.work_hours}</span>
                           </span>
                           <span className="flex items-center gap-3">
                             <span className="flex items-center gap-1.5 shrink-0">
-                              <Users className="w-3.5 h-3.5 text-ink-500 shrink-0" />{job.headcount}명
+                              <Users className="w-3.5 h-3.5 text-up-sub shrink-0" />{job.headcount}명
                             </span>
                             {job.expires_at && (
                               <span className="text-[#C81E2E] font-semibold shrink-0">~{fmtDate(job.expires_at)} 마감</span>
@@ -587,12 +592,12 @@ export default function JobsPage() {
                         {job.benefits.length > 0 && (
                           <div className="flex flex-wrap items-center gap-1.5 mb-4">
                             {job.benefits.slice(0, 3).map(b => (
-                              <span key={b} className="flex items-center gap-1 px-2 py-0.5 rounded-sm bg-accent-bg text-[#047857] text-[11px] font-semibold">
+                              <span key={b} className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent-bg text-up-green text-[11px] font-semibold">
                                 <span className="text-[10px]">{getBenefitEmoji(b)}</span>{b}
                               </span>
                             ))}
                             {job.benefits.length > 3 && (
-                              <span className="text-[11px] text-ink-500 font-medium">+{job.benefits.length - 3}개 더</span>
+                              <span className="text-[11px] text-up-sub font-medium">+{job.benefits.length - 3}개 더</span>
                             )}
                           </div>
                         )}
@@ -601,16 +606,16 @@ export default function JobsPage() {
                         <div className="flex gap-2 mt-auto">
                           <button
                             onClick={() => setSelectedJob(job)}
-                            className="flex-1 min-h-[44px] rounded-md border border-line text-ink-700
+                            className="flex-1 min-h-[46px] rounded-lg border border-up-hair text-up-body
                               font-bold text-[13px] flex items-center justify-center gap-1
-                              active:scale-[0.98] transition-all hover:bg-[#F2F4F6]"
+                              active:scale-[0.98] transition-all hover:bg-up-sunken"
                           >
                             상세보기
                           </button>
                           {appliedMap[job.id] ? (
                             <button
                               disabled
-                              className="flex-1 min-h-[44px] rounded-md bg-accent-bg text-[#047857]
+                              className="flex-1 min-h-[46px] rounded-lg bg-accent-bg text-up-green
                                 font-bold text-[13px] flex items-center justify-center gap-1 cursor-default"
                             >
                               <CheckCircle2 className="w-4 h-4" />
@@ -620,7 +625,7 @@ export default function JobsPage() {
                             <button
                               onClick={(e) => handleApply(e, job.id)}
                               disabled={isApplySubmitting && pendingApplyJobId === job.id}
-                              className="flex-1 min-h-[44px] rounded-md bg-brand hover:bg-brand-strong
+                              className="flex-1 min-h-[46px] rounded-lg bg-brand-strong hover:bg-brand-700
                                 text-white font-bold text-[13px] flex items-center justify-center gap-1
                                 shadow-[0_4px_14px_rgba(49,130,246,0.28)] active:scale-[0.98] transition-all
                                 disabled:opacity-70 disabled:cursor-not-allowed"
@@ -652,7 +657,7 @@ export default function JobsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm sm:p-4"
+            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/45 backdrop-blur-sm sm:p-4"
             onClick={() => setSelectedJob(null)}
           >
             <motion.div
@@ -660,24 +665,24 @@ export default function JobsPage() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 500, opacity: 0.6 }}
               transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-              className="w-full max-w-[460px] sm:max-w-[560px] bg-white rounded-t-xl sm:rounded-xl
-                shadow-float max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden"
+              className="w-full max-w-[460px] sm:max-w-[600px] bg-white rounded-t-2xl sm:rounded-2xl
+                shadow-float max-h-[94vh] sm:max-h-[88vh] flex flex-col overflow-hidden"
               onClick={e => e.stopPropagation()}
             >
               {/* 스크롤 콘텐츠 */}
               <div className="flex-1 overflow-y-auto">
                 <div className="p-6">
-                  <div className="w-10 h-1 bg-line rounded-full mx-auto mb-5 sm:hidden" />
+                  <div className="w-10 h-1 bg-up-hair rounded-full mx-auto mb-5 sm:hidden" />
                   <button onClick={() => setSelectedJob(null)}
-                    className="absolute top-3 right-3 flex items-center justify-center w-11 h-11 rounded-full bg-[#F2F4F6] hover:bg-line transition-colors z-10"
+                    className="absolute top-3 right-3 flex items-center justify-center w-11 h-11 rounded-full bg-up-sunken hover:bg-up-hair transition-colors z-10"
                     aria-label="닫기">
-                    <X className="w-4 h-4 text-ink-600" />
+                    <X className="w-4 h-4 text-up-sub" />
                   </button>
 
                   {/* Frame 1: 회사 정보 */}
                   <div className="flex items-start gap-3 mb-5 pr-10">
                     <img src={selectedJob.logo_url} alt={selectedJob.company_name}
-                      className="w-13 h-13 rounded-md object-contain bg-white p-1.5 border border-line shrink-0"
+                      className="w-13 h-13 rounded-lg object-contain bg-white p-1.5 border border-up-hair shrink-0"
                       style={{ width: 52, height: 52 }} />
                     <div className="flex-1 min-w-0">
                       {selectedJob.recruit_type !== 'regular' && (
@@ -687,34 +692,34 @@ export default function JobsPage() {
                           {selectedJob.recruit_type === 'urgent_today' ? '🔥 오늘 긴급' : '⚡ 내일 긴급'}
                         </span>
                       )}
-                      <h2 className="text-[18px] font-black text-ink-900 leading-tight break-words">{selectedJob.company_name}</h2>
-                      <p className="text-[14px] text-ink-600 break-words">{selectedJob.center_name}</p>
+                      <h2 className="text-[19px] font-black text-up-navy leading-tight break-words">{selectedJob.company_name}</h2>
+                      <p className="text-[14px] text-up-sub break-words mt-0.5">{selectedJob.center_name}</p>
                     </div>
                     <button onClick={() => toggleFav('center', `${selectedJob.company_name}::${selectedJob.center_name}`)}
-                      className="flex items-center justify-center w-11 h-11 rounded-md hover:bg-brand-bg transition-colors shrink-0"
+                      className="flex items-center justify-center w-11 h-11 rounded-lg hover:bg-brand-bg transition-colors shrink-0"
                       aria-label="즐겨찾기">
                       <Star className={`w-6 h-6 ${
                         isFavorited(favorites, 'center', `${selectedJob.company_name}::${selectedJob.center_name}`)
-                          ? 'fill-brand text-brand' : 'text-ink-400'
+                          ? 'fill-brand text-brand' : 'text-up-caption'
                       }`} />
                     </button>
                   </div>
 
-                  {/* Frame 2: 급여 */}
+                  {/* Frame 2: 급여 (금액 오버플로 가드: clamp 하한 + break-keep + min-w-0) */}
                   <div className="grid grid-cols-2 gap-2.5 mb-4">
-                    <div className="bg-brand-bg rounded-md p-4 text-center">
-                      <p className="text-[11px] text-ink-600 mb-1">시급</p>
-                      <p className="text-[24px] font-black text-brand tracking-tight tabular-nums">{fmtWage(selectedJob.hourly_wage)}<span className="text-[14px]">원</span></p>
+                    <div className="bg-brand-bg rounded-lg p-4 text-center min-w-0">
+                      <p className="text-[11px] text-up-sub mb-1">시급</p>
+                      <p className="text-[clamp(19px,5.5vw,24px)] font-black text-up-strong tracking-tight tabular-nums font-mono break-keep">{fmtWage(selectedJob.hourly_wage)}<span className="text-[13px]">원</span></p>
                     </div>
-                    <div className="bg-[#F7F9FC] rounded-md p-4 text-center">
-                      <p className="text-[11px] text-ink-600 mb-1">일급</p>
-                      <p className="text-[24px] font-black text-ink-900 tracking-tight tabular-nums">{fmtWage(selectedJob.daily_wage)}<span className="text-[14px]">원</span></p>
+                    <div className="bg-up-sunken rounded-lg p-4 text-center min-w-0">
+                      <p className="text-[11px] text-up-sub mb-1">일급</p>
+                      <p className="text-[clamp(19px,5.5vw,24px)] font-black text-up-navy tracking-tight tabular-nums font-mono break-keep">{fmtWage(selectedJob.daily_wage)}<span className="text-[13px]">원</span></p>
                     </div>
                   </div>
 
                   {/* Frame 3: 근무 조건 */}
-                  <div className="rounded-md bg-[#F7F9FC] p-4 mb-4">
-                    <p className="text-[12px] font-bold text-ink-600 mb-3">근무 조건</p>
+                  <div className="rounded-lg bg-up-sunken p-4 mb-4">
+                    <p className="text-[12px] font-bold text-up-sub mb-3">근무 조건</p>
                     <div className="grid grid-cols-2 gap-y-4 gap-x-3">
                       <FrameRow icon={<MapPin className="w-4 h-4 text-brand" />} label="위치" value={selectedJob.address_detail} />
                       <FrameRow icon={<Clock className="w-4 h-4 text-brand" />} label="근무시간" value={selectedJob.work_hours} />
@@ -725,11 +730,11 @@ export default function JobsPage() {
 
                   {/* Frame 4: 혜택 (그린) */}
                   {selectedJob.benefits.length > 0 && (
-                    <div className="rounded-md bg-accent-bg border border-accent/20 p-4 mb-4">
-                      <p className="text-[12px] font-bold text-[#047857] mb-3">🎁 혜택 &amp; 복리후생</p>
+                    <div className="rounded-lg bg-accent-bg border border-accent/20 p-4 mb-4">
+                      <p className="text-[12px] font-bold text-up-green mb-3">🎁 혜택 &amp; 복리후생</p>
                       <div className="flex flex-wrap gap-2">
                         {selectedJob.benefits.map(b => (
-                          <span key={b} className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-white border border-accent/20 text-[13px] font-semibold text-ink-700">
+                          <span key={b} className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-white border border-accent/20 text-[13px] font-semibold text-up-body break-keep">
                             <span>{getBenefitEmoji(b)}</span>{b}
                           </span>
                         ))}
@@ -737,26 +742,26 @@ export default function JobsPage() {
                     </div>
                   )}
 
-                  {/* Frame 5: 상세 내용 */}
+                  {/* Frame 5: 상세 내용 (긴 텍스트 잘림 0 — pre-line + break-keep) */}
                   {selectedJob.description && (
-                    <div className="rounded-md bg-[#F7F9FC] p-4 mb-4">
-                      <p className="text-[12px] font-bold text-ink-600 mb-2.5">상세 내용</p>
-                      <p className="text-[14px] text-ink-700 leading-relaxed whitespace-pre-line break-keep">{selectedJob.description}</p>
+                    <div className="rounded-lg bg-up-sunken p-4 mb-4">
+                      <p className="text-[12px] font-bold text-up-sub mb-2.5">상세 내용</p>
+                      <p className="text-[14px] text-up-body leading-relaxed whitespace-pre-line break-keep">{selectedJob.description}</p>
                     </div>
                   )}
 
                   {/* Frame 5.5: 위치 지도 */}
-                  <div className="rounded-md bg-[#F7F9FC] p-4 mb-4">
+                  <div className="rounded-lg bg-up-sunken p-4 mb-4">
                     <div className="flex items-center gap-2 mb-2.5">
                       <Map className="w-4 h-4 text-brand" />
-                      <p className="text-[12px] font-bold text-ink-600">위치 정보</p>
+                      <p className="text-[12px] font-bold text-up-sub">위치 정보</p>
                     </div>
-                    <p className="text-[13px] text-ink-700 mb-2.5 break-keep">{selectedJob.address_detail}</p>
+                    <p className="text-[13px] text-up-body mb-2.5 break-keep">{selectedJob.address_detail}</p>
                     <a
                       href={`https://map.kakao.com/?q=${encodeURIComponent(selectedJob.map_query)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 min-h-[48px] rounded-md bg-[#FEE500] text-[#3C1E1E] font-bold text-[13px]
+                      className="flex items-center justify-center gap-2 min-h-[48px] rounded-lg bg-[#FEE500] text-[#3C1E1E] font-bold text-[13px]
                         active:scale-[0.98] transition-transform"
                     >
                       <Map className="w-4 h-4" />
@@ -765,8 +770,8 @@ export default function JobsPage() {
                   </div>
 
                   {/* Frame 6: 지원 방법 */}
-                  <div className="rounded-md bg-[#F7F9FC] p-4">
-                    <p className="text-[12px] font-bold text-ink-600 mb-3">지원 방법</p>
+                  <div className="rounded-lg bg-up-sunken p-4">
+                    <p className="text-[12px] font-bold text-up-sub mb-3">지원 방법</p>
                     <div className="flex flex-col gap-2.5">
                       {selectedJob.apply_methods.map((method, i) => {
                         const cta = CTA_MAP[method.type] ?? CTA_MAP.phone
@@ -779,7 +784,7 @@ export default function JobsPage() {
                           <a key={i} href={href}
                             target={['landing', 'kakao'].includes(method.type) ? '_blank' : undefined}
                             rel={['landing', 'kakao'].includes(method.type) ? 'noopener noreferrer' : undefined}
-                            className={`flex items-center justify-center gap-2 min-h-[48px] rounded-md
+                            className={`flex items-center justify-center gap-2 min-h-[48px] rounded-lg
                               ${cta.bg} ${cta.text} font-bold text-[14px]
                               active:scale-[0.98] transition-all`}>
                             <Icon className="w-4 h-4" />{method.label}
@@ -787,7 +792,7 @@ export default function JobsPage() {
                         )
                       })}
                       {!selectedJob.external_link && (
-                        <p className="text-center text-[13px] text-ink-500 py-1">회사 정보 링크 없음</p>
+                        <p className="text-center text-[13px] text-up-sub py-1">회사 정보 링크 없음</p>
                       )}
                     </div>
                   </div>
@@ -800,24 +805,24 @@ export default function JobsPage() {
                     ).slice(0, 3)
                     if (similar.length === 0) return null
                     return (
-                      <div className="rounded-md bg-[#F7F9FC] p-4 mt-4">
-                        <p className="text-[12px] font-bold text-ink-600 mb-3">📋 비슷한 공고 더보기</p>
+                      <div className="rounded-lg bg-up-sunken p-4 mt-4">
+                        <p className="text-[12px] font-bold text-up-sub mb-3">📋 비슷한 공고 더보기</p>
                         <div className="flex flex-col gap-2">
                           {similar.map(j => (
                             <button
                               key={j.id}
                               onClick={() => setSelectedJob(j)}
-                              className="flex items-center gap-3 p-3 rounded-md bg-white border border-line text-left hover:border-brand-200 transition-colors active:scale-[0.98]"
+                              className="flex items-center gap-3 p-3 rounded-lg bg-white border border-up-hair text-left hover:border-brand-200 transition-colors active:scale-[0.98]"
                             >
                               <img src={j.logo_url} alt={j.company_name}
-                                className="w-9 h-9 rounded-md object-contain bg-white p-0.5 border border-line shrink-0" />
+                                className="w-9 h-9 rounded-md object-contain bg-white p-0.5 border border-up-hair shrink-0" />
                               <div className="flex-1 min-w-0">
-                                <p className="text-[13px] font-bold text-ink-900 truncate">{j.company_name}</p>
-                                <p className="text-[11px] text-ink-500 truncate">{j.center_name} · {j.region}</p>
+                                <p className="text-[13px] font-bold text-up-navy truncate">{j.company_name}</p>
+                                <p className="text-[11px] text-up-sub truncate">{j.center_name} · {j.region}</p>
                               </div>
                               <div className="shrink-0 text-right">
-                                <p className="text-[14px] font-black text-brand tabular-nums">{fmtWage(j.hourly_wage)}<span className="text-[10px] font-semibold">원</span></p>
-                                <p className="text-[10px] text-ink-500">시급</p>
+                                <p className="text-[14px] font-black text-up-strong tabular-nums font-mono">{fmtWage(j.hourly_wage)}<span className="text-[10px] font-semibold">원</span></p>
+                                <p className="text-[10px] text-up-sub">시급</p>
                               </div>
                             </button>
                           ))}
@@ -828,7 +833,7 @@ export default function JobsPage() {
 
                   {/* 카카오톡 공유 */}
                   <div className="mt-4">
-                    <p className="text-[12px] font-bold text-ink-600 mb-2.5">이 공고 공유하기</p>
+                    <p className="text-[12px] font-bold text-up-sub mb-2.5">이 공고 공유하기</p>
                     <KakaoShareButton
                       onClick={() =>
                         shareJob({
@@ -848,14 +853,14 @@ export default function JobsPage() {
 
               {/* 하단 고정 CTA */}
               <div
-                className="bg-white border-t border-line px-5 py-4 shrink-0"
+                className="bg-white border-t border-up-hair px-5 py-4 shrink-0"
                 style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
               >
                 {appliedMap[selectedJob.id] ? (
                   <button
                     disabled
-                    className="w-full min-h-[52px] rounded-lg bg-accent-bg border border-accent/20
-                      text-[#047857] font-black text-[15px] flex items-center justify-center gap-2 cursor-default"
+                    className="w-full min-h-[56px] rounded-xl bg-accent-bg border border-accent/20
+                      text-up-green font-black text-[15px] flex items-center justify-center gap-2 cursor-default"
                   >
                     <CheckCircle2 className="w-5 h-5" />지원 완료
                   </button>
@@ -863,7 +868,7 @@ export default function JobsPage() {
                   <button
                     onClick={(e) => handleApply(e, selectedJob.id)}
                     disabled={isApplySubmitting && pendingApplyJobId === selectedJob.id}
-                    className="w-full min-h-[52px] rounded-lg bg-brand hover:bg-brand-strong
+                    className="w-full min-h-[56px] rounded-xl bg-brand-strong hover:bg-brand-700
                       text-white font-black text-[15px] flex items-center justify-center gap-2
                       shadow-[0_8px_20px_rgba(49,130,246,0.30)] active:scale-[0.98] transition-all
                       disabled:opacity-70 disabled:cursor-not-allowed"
@@ -922,7 +927,7 @@ export default function JobsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 bg-black/45 backdrop-blur-sm"
             onClick={() => setLoginPromptOpen(false)}
           >
             <motion.div
@@ -931,30 +936,30 @@ export default function JobsPage() {
               exit={{ y: 40, opacity: 0, scale: 0.97 }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-[380px] bg-white rounded-xl p-6 shadow-float"
+              className="w-full max-w-[380px] bg-white rounded-2xl p-6 shadow-float"
             >
               <div className="flex items-center justify-center mb-4">
-                <div className="w-14 h-14 rounded-lg bg-brand flex items-center justify-center shadow-[0_8px_20px_rgba(49,130,246,0.30)]">
+                <div className="w-14 h-14 rounded-xl bg-brand flex items-center justify-center shadow-[0_8px_20px_rgba(49,130,246,0.30)]">
                   <LogIn className="w-7 h-7 text-white" />
                 </div>
               </div>
-              <h3 className="text-[18px] font-black text-ink-900 text-center mb-2">
+              <h3 className="text-[18px] font-black text-up-navy text-center mb-2">
                 로그인이 필요해요
               </h3>
-              <p className="text-[13px] text-ink-600 text-center leading-relaxed mb-5">
+              <p className="text-[13px] text-up-sub text-center leading-relaxed mb-5 break-keep">
                 지원하기 기능은 로그인 후 사용할 수 있어요.<br />
                 카카오 또는 구글로 1초만에 가입하세요!
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setLoginPromptOpen(false)}
-                  className="flex-1 min-h-[48px] rounded-md bg-[#F2F4F6] text-ink-700 text-[14px] font-semibold hover:bg-line transition-colors"
+                  className="flex-1 min-h-[48px] rounded-lg bg-up-sunken text-up-body text-[14px] font-semibold hover:bg-up-hair transition-colors"
                 >
                   취소
                 </button>
                 <button
                   onClick={() => { setLoginPromptOpen(false); navigate('/login') }}
-                  className="flex-1 min-h-[48px] rounded-md bg-brand hover:bg-brand-strong text-white text-[14px] font-bold shadow-[0_4px_14px_rgba(49,130,246,0.28)] transition-colors"
+                  className="flex-1 min-h-[48px] rounded-lg bg-brand-strong hover:bg-brand-700 text-white text-[14px] font-bold shadow-[0_4px_14px_rgba(49,130,246,0.28)] transition-colors"
                 >
                   로그인하기
                 </button>
@@ -996,8 +1001,8 @@ function FrameRow({ icon, label, value }: { icon: React.ReactNode; label: string
     <div className="flex items-start gap-2.5 min-w-0">
       <div className="mt-0.5 shrink-0">{icon}</div>
       <div className="min-w-0">
-        <p className="text-[10px] text-ink-600">{label}</p>
-        <p className="text-[13px] font-bold text-ink-900 break-keep">{value}</p>
+        <p className="text-[10px] text-up-sub">{label}</p>
+        <p className="text-[13px] font-bold text-up-navy break-keep">{value}</p>
       </div>
     </div>
   )
