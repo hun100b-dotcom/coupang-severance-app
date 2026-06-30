@@ -56,12 +56,69 @@ export const CHART_SERIES = [UP.brand, UP.greenChart, UP.amberChart, UP.strong, 
 // 숫자(금액·통계)용 인라인 스타일 — tabular-nums 자릿수 정렬
 export const numeric: CSSProperties = { fontVariantNumeric: 'tabular-nums' }
 
-// 공용 카드 스타일 — 흰 면 + 헤어라인 + 은은한 그림자
+// ── 형태(form) 토큰 — 사용자앱(tailwind.config·index.css)과 1:1 일치 ──
+//   라운드: 사용자앱 카드 radius-xl(20)·btn(12)·content(16)·pill 과 동일.
+//   그림자: tailwind boxShadow.card / .float, index.css .glass-card 와 동일.
+//   → 어드민 카드·버튼이 사용자 화면과 "한 몸"으로 보이게 하는 단일 출처.
+export const RADIUS = { sm: 8, btn: 12, content: 16, card: 20, pill: 9999 } as const
+export const SHADOW = {
+  card:  '0 1px 2px rgba(16,24,40,0.04), 0 4px 16px rgba(16,24,40,0.06)',
+  float: '0 8px 24px rgba(49,130,246,0.10), 0 20px 48px rgba(16,24,40,0.10)',
+} as const
+
+// 사용자앱이 쓰는 진입 모션 클래스(index.css 정의) — 어드민 메뉴 전환에 동일 적용.
+//   page-enter 는 가로 이동이라 좁은 화면에서 가로 스크롤 유발 가능 → 세로 페이드인
+//   slideUpFade(.animate-staggered-fade)를 써 사용자 화면과 같은 톤이되 안전하게.
+export const ENTER_CLASS = 'animate-staggered-fade'
+
+// 공용 카드 스타일 — 사용자앱 .glass-card / ui<Card variant="solid"> 와 동일한 폼
+//   (솔리드 흰 면 + 헤어라인 보더 + radius 20 + shadow-card). 2026 리디자인에서
+//   사용자앱 글래스가 솔리드 흰 카드로 바뀌었으므로 어드민도 동일하게 솔리드.
 export const adminCard: CSSProperties = {
   background: UP.surface,
   border: `1px solid ${UP.hair}`,
-  borderRadius: 12,
-  boxShadow: '0 1px 2px rgba(16,24,40,0.04), 0 4px 14px rgba(16,24,40,0.05)',
+  borderRadius: RADIUS.card,
+  boxShadow: SHADOW.card,
+}
+// 깊이감 강조 카드(ui<Card variant="float">) — 히어로/모달성 카드용
+export const adminCardFloat: CSSProperties = { ...adminCard, boxShadow: SHADOW.float }
+
+// ── 버튼 헬퍼 — 사용자앱 ui<Button> primary/secondary/ghost 와 동일 톤 ──
+export const btnPrimary: CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+  padding: '9px 16px', borderRadius: RADIUS.btn, border: 'none',
+  background: UP.brand, color: '#fff', fontSize: '0.85rem', fontWeight: 700,
+  letterSpacing: '-0.01em', cursor: 'pointer',
+  boxShadow: '0 4px 14px rgba(49,130,246,0.30)',
+}
+export const btnSecondary: CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+  padding: '9px 16px', borderRadius: RADIUS.btn,
+  background: UP.surface, color: UP.strong, border: `1px solid ${UP.brandLine}`,
+  fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
+}
+export const btnGhost: CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+  padding: '9px 14px', borderRadius: RADIUS.btn,
+  background: 'transparent', color: UP.body, border: `1px solid ${UP.hair}`,
+  fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+}
+
+// ── 배지 헬퍼 — 사용자앱 ui<Badge> 와 동일(알약형 + 옅은 배경 + 진한 텍스트) ──
+type BadgeTone = 'brand' | 'green' | 'neutral' | 'danger' | 'amber'
+export function badge(tone: BadgeTone = 'brand'): CSSProperties {
+  const map: Record<BadgeTone, { background: string; color: string }> = {
+    brand:   { background: UP.brandBg,  color: UP.strong },
+    green:   { background: UP.greenBg,  color: UP.green },
+    neutral: { background: UP.sunken,   color: UP.sub },
+    danger:  { background: UP.dangerBg, color: UP.danger },
+    amber:   { background: UP.amberBg,  color: UP.amber },
+  }
+  return {
+    display: 'inline-flex', alignItems: 'center', gap: 4,
+    padding: '2px 8px', borderRadius: RADIUS.pill,
+    fontSize: '0.66rem', fontWeight: 700, lineHeight: 1.4, ...map[tone],
+  }
 }
 
 // 표 헤더 셀 공통 스타일(라벨)

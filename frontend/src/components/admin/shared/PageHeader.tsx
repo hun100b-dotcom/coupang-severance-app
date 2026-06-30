@@ -34,6 +34,11 @@ export default function PageHeader({ title, subtitle, icon, actions }: Props) {
           lineHeight: 1.2,
           letterSpacing: '-0.01em',
         }}>
+          {/* 좌측 액센트 바 — 사용자앱 ui<SectionHeader> 와 동일한 섹션 구분 신호 */}
+          <span aria-hidden="true" style={{
+            width: 4, height: 18, borderRadius: 9999,
+            background: UP.brand, flexShrink: 0,
+          }} />
           {icon && <span style={{ fontSize: '1.2rem' }}>{icon}</span>}
           {title}
         </h1>

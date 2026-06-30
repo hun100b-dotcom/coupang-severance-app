@@ -380,7 +380,10 @@ export default function AdminPage() {
             minHeight: 0,
             background: UP.page,
           }}>
-            {renderMenu()}
+            {/* 메뉴 전환 시 사용자앱과 동일한 진입 모션(slideUpFade). key 로 전환마다 재생 */}
+            <div key={activeMenu} className="animate-staggered-fade">
+              {renderMenu()}
+            </div>
           </main>
         </div>
       </div>
