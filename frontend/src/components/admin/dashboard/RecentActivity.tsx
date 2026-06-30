@@ -1,5 +1,6 @@
-// 최근 문의 활동 — 라이트 모드 전환
+// 최근 문의 활동 — 업비트 톤 (상태/카테고리 색 토큰화)
 import type { AdminInquiry } from '../../../types/admin'
+import { UP } from '../shared/adminTheme'
 
 interface Props {
   inquiries: AdminInquiry[]
@@ -17,35 +18,36 @@ function fmtRelative(iso: string) {
   return `${Math.floor(days / 30)}개월 전`
 }
 
-// 라이트 모드 상태 색상
+// 상태 색상 — 토큰 기반 (텍스트 AA 고려)
 const STATUS_META: Record<string, { color: string; bg: string; border: string; label: string }> = {
-  waiting:   { color: '#d97706', bg: '#fffbeb', border: '#fde68a', label: '대기중' },
-  reviewing: { color: '#3182f6', bg: '#eff6ff', border: '#bfdbfe', label: '검토중' },
-  answered:  { color: '#059669', bg: '#f0fdf4', border: '#bbf7d0', label: '답변완료' },
-  closed:    { color: '#475569', bg: '#f8fafc', border: '#e2e8f0', label: '종결' },
+  waiting:   { color: UP.amber,  bg: UP.amberBg,  border: UP.amberLine,  label: '대기중' },
+  reviewing: { color: UP.strong, bg: UP.brandBg,  border: UP.brandLine,  label: '검토중' },
+  answered:  { color: UP.green,  bg: UP.greenBg,  border: UP.greenLine,  label: '답변완료' },
+  closed:    { color: UP.sub,    bg: UP.sunken,   border: UP.hair,       label: '종결' },
 }
 
+// 카테고리 색상 — 무지개 대신 브랜드/그린/앰버/네이비 계열로 절제
 const CATEGORY_COLOR: Record<string, string> = {
-  '기타': '#64748b',
-  '오류/버그': '#e11d48',
-  '서류발급': '#7c3aed',
-  '계산오류': '#d97706',
-  '사용방법': '#0891b2',
+  '기타': UP.sub,
+  '오류/버그': UP.danger,
+  '서류발급': UP.strong,
+  '계산오류': UP.amber,
+  '사용방법': UP.brand,
 }
 
 export default function RecentActivity({ inquiries }: Props) {
   return (
     <div style={{
-      background: '#fff',
-      border: '1px solid #e2e8f0',
-      borderRadius: 16,
+      background: UP.surface,
+      border: `1px solid ${UP.hair}`,
+      borderRadius: 12,
       padding: 'clamp(14px,3vw,22px)',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+      boxShadow: '0 1px 2px rgba(16,24,40,0.04)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div>
-          <p style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>최근 문의 활동</p>
-          <p style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: 2 }}>최근 8건</p>
+          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: UP.navy, margin: 0 }}>최근 문의 활동</p>
+          <p style={{ fontSize: '0.7rem', color: UP.caption, marginTop: 2 }}>최근 8건</p>
         </div>
         {inquiries.length > 0 && (
           <div style={{ display: 'flex', gap: 6 }}>
@@ -73,13 +75,13 @@ export default function RecentActivity({ inquiries }: Props) {
       {inquiries.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '24px 0' }}>
           <p style={{ fontSize: '1.5rem', marginBottom: 6 }}>📭</p>
-          <p style={{ fontSize: '0.82rem', color: '#94a3b8' }}>문의 없음</p>
+          <p style={{ fontSize: '0.82rem', color: UP.sub }}>문의 없음</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {inquiries.slice(0, 8).map(inq => {
             const status = STATUS_META[inq.status] ?? STATUS_META.waiting
-            const catColor = CATEGORY_COLOR[inq.category] ?? '#64748b'
+            const catColor = CATEGORY_COLOR[inq.category] ?? UP.sub
             return (
               <div key={inq.id} style={{
                 display: 'flex',
@@ -87,12 +89,12 @@ export default function RecentActivity({ inquiries }: Props) {
                 gap: 10,
                 padding: '10px 12px',
                 borderRadius: 10,
-                background: '#f8fafc',
-                border: '1px solid #f1f5f9',
+                background: UP.sunken,
+                border: `1px solid ${UP.hairSoft}`,
                 transition: 'background 0.1s',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#eff6ff' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = '#f8fafc' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = UP.brandBg }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = UP.sunken }}
               >
                 {/* 상태 인디케이터 바 */}
                 <div style={{
@@ -127,7 +129,7 @@ export default function RecentActivity({ inquiries }: Props) {
                   </div>
                   <p style={{
                     fontSize: '0.82rem',
-                    color: '#334155',
+                    color: UP.body,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
@@ -137,7 +139,7 @@ export default function RecentActivity({ inquiries }: Props) {
                   </p>
                 </div>
 
-                <span style={{ fontSize: '0.68rem', color: '#94a3b8', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '0.68rem', color: UP.caption, flexShrink: 0, whiteSpace: 'nowrap' }}>
                   {fmtRelative(inq.created_at)}
                 </span>
               </div>

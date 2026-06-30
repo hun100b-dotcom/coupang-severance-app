@@ -1,5 +1,6 @@
-// KPI 카드 — 라이트 모드 (캐치퀀트봇 스타일)
-// border-slate-200 + shadow-sm + rounded-2xl
+// KPI 카드 — 업비트 톤 (흰 면 + 헤어라인 + tabular 숫자)
+import { UP, numeric } from '../shared/adminTheme'
+
 interface Props {
   label: string
   value: string | number
@@ -9,26 +10,26 @@ interface Props {
   trend?: number
 }
 
-export default function KpiCard({ label, value, sub, color = '#3182f6', icon, trend }: Props) {
+export default function KpiCard({ label, value, sub, color = UP.brand, icon, trend }: Props) {
   return (
     <div style={{
-      background: '#fff',
-      border: '1px solid #e2e8f0',
-      borderRadius: 14,
-      padding: 'clamp(12px,2.5vw,18px)',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+      background: UP.surface,
+      border: `1px solid ${UP.hair}`,
+      borderRadius: 12,
+      padding: 'clamp(14px,2.5vw,18px)',
+      boxShadow: '0 1px 2px rgba(16,24,40,0.04)',
       transition: 'box-shadow 0.15s, transform 0.15s',
       position: 'relative',
       overflow: 'hidden',
     }}
     onMouseEnter={e => {
       const el = e.currentTarget as HTMLDivElement
-      el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)'
+      el.style.boxShadow = '0 4px 16px rgba(16,24,40,0.09)'
       el.style.transform = 'translateY(-1px)'
     }}
     onMouseLeave={e => {
       const el = e.currentTarget as HTMLDivElement
-      el.style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)'
+      el.style.boxShadow = '0 1px 2px rgba(16,24,40,0.04)'
       el.style.transform = 'translateY(0)'
     }}
     >
@@ -44,11 +45,11 @@ export default function KpiCard({ label, value, sub, color = '#3182f6', icon, tr
         <div style={{ minWidth: 0, flex: 1 }}>
           {/* 라벨 */}
           <p style={{
-            fontSize: '0.62rem',
-            fontWeight: 600,
+            fontSize: '0.625rem',
+            fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.06em',
-            color: '#64748b',
+            color: UP.sub,
             marginBottom: 8,
           }}>
             {label}
@@ -56,11 +57,12 @@ export default function KpiCard({ label, value, sub, color = '#3182f6', icon, tr
 
           {/* 큰 숫자 */}
           <p style={{
-            fontSize: 'clamp(1.2rem,3.5vw,1.7rem)',
+            fontSize: 'clamp(1.25rem,3.5vw,1.75rem)',
             fontWeight: 800,
             color,
             lineHeight: 1.1,
             wordBreak: 'break-all',
+            ...numeric,
           }}>
             {value}
           </p>
@@ -71,18 +73,19 @@ export default function KpiCard({ label, value, sub, color = '#3182f6', icon, tr
               <span style={{
                 fontSize: '0.65rem',
                 fontWeight: 700,
-                color: trend > 0 ? '#059669' : '#e11d48',
-                background: trend > 0 ? '#d1fae5' : '#ffe4e6',
+                color: trend > 0 ? UP.green : UP.danger,
+                background: trend > 0 ? UP.greenBg : UP.dangerBg,
                 padding: '2px 6px',
                 borderRadius: 6,
+                ...numeric,
               }}>
                 {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
               </span>
             )}
             {sub && (
               <p style={{
-                fontSize: '0.65rem',
-                color: '#94a3b8',
+                fontSize: '0.66rem',
+                color: UP.caption,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',

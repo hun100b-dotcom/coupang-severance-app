@@ -1,30 +1,36 @@
-// 일별 트렌드 차트 — 라이트 모드 전환
+// 일별 트렌드 차트 — 업비트 톤 (색은 토큰 매핑, 데이터/로직 불변)
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer,
 } from 'recharts'
 import type { DailyAnalytics } from '../../../types/admin'
+import { UP, numeric } from '../shared/adminTheme'
 
 interface Props {
   data: DailyAnalytics[]
 }
 
+// 차트 시리즈 색 — 토큰 기반 (브랜드/그린/앰버)
+const S_USERS = UP.brand
+const S_REPORTS = UP.greenChart
+const S_INQUIRIES = UP.amberChart
+
 function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ name: string; value: number; color: string }>; label?: string }) {
   if (!active || !payload) return null
   return (
     <div style={{
-      background: '#fff',
-      border: '1px solid #e2e8f0',
+      background: UP.surface,
+      border: `1px solid ${UP.hair}`,
       borderRadius: 10,
       padding: '10px 14px',
-      boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+      boxShadow: '0 4px 16px rgba(16,24,40,0.12)',
     }}>
-      <p style={{ fontSize: '0.72rem', color: '#64748b', marginBottom: 6, fontWeight: 600 }}>{label}</p>
+      <p style={{ fontSize: '0.72rem', color: UP.sub, marginBottom: 6, fontWeight: 600 }}>{label}</p>
       {payload.map((p, i) => (
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: p.color }} />
-          <span style={{ fontSize: '0.75rem', color: '#475569' }}>{p.name}</span>
-          <span style={{ fontSize: '0.75rem', color: '#0f172a', fontWeight: 700, marginLeft: 'auto' }}>{p.value}</span>
+          <span style={{ fontSize: '0.75rem', color: UP.body }}>{p.name}</span>
+          <span style={{ fontSize: '0.75rem', color: UP.navy, fontWeight: 700, marginLeft: 'auto', ...numeric }}>{p.value}</span>
         </div>
       ))}
     </div>
@@ -42,26 +48,26 @@ export default function DailyTrendChart({ data }: Props) {
 
   return (
     <div style={{
-      background: '#fff',
-      border: '1px solid #e2e8f0',
-      borderRadius: 16,
+      background: UP.surface,
+      border: `1px solid ${UP.hair}`,
+      borderRadius: 12,
       padding: 'clamp(14px,3vw,22px)',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+      boxShadow: '0 1px 2px rgba(16,24,40,0.04)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
-          <p style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>일별 트렌드</p>
-          <p style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: 2 }}>기간 내 유저·계산·문의 추이</p>
+          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: UP.navy, margin: 0 }}>일별 트렌드</p>
+          <p style={{ fontSize: '0.7rem', color: UP.caption, marginTop: 2 }}>기간 내 유저·계산·문의 추이</p>
         </div>
         <div style={{ display: 'flex', gap: 14 }}>
           {[
-            { label: '유저', value: totals.users, color: '#3182f6' },
-            { label: '계산', value: totals.reports, color: '#059669' },
-            { label: '문의', value: totals.inquiries, color: '#d97706' },
+            { label: '유저', value: totals.users, color: S_USERS },
+            { label: '계산', value: totals.reports, color: S_REPORTS },
+            { label: '문의', value: totals.inquiries, color: S_INQUIRIES },
           ].map(item => (
             <div key={item.label} style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: '0.6rem', color: item.color, fontWeight: 600 }}>{item.label}</span>
-              <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0f172a' }}>{item.value}</div>
+              <span style={{ fontSize: '0.62rem', color: item.color, fontWeight: 700 }}>{item.label}</span>
+              <div style={{ fontSize: '0.9rem', fontWeight: 800, color: UP.navy, ...numeric }}>{item.value}</div>
             </div>
           ))}
         </div>
@@ -70,28 +76,28 @@ export default function DailyTrendChart({ data }: Props) {
         <AreaChart data={data} margin={{ top: 5, right: 8, left: -24, bottom: 0 }}>
           <defs>
             <linearGradient id="gUsers" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3182f6" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#3182f6" stopOpacity={0} />
+              <stop offset="5%" stopColor={S_USERS} stopOpacity={0.2} />
+              <stop offset="95%" stopColor={S_USERS} stopOpacity={0} />
             </linearGradient>
             <linearGradient id="gReports" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#059669" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#059669" stopOpacity={0} />
+              <stop offset="5%" stopColor={S_REPORTS} stopOpacity={0.2} />
+              <stop offset="95%" stopColor={S_REPORTS} stopOpacity={0} />
             </linearGradient>
             <linearGradient id="gInquiries" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#d97706" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#d97706" stopOpacity={0} />
+              <stop offset="5%" stopColor={S_INQUIRIES} stopOpacity={0.2} />
+              <stop offset="95%" stopColor={S_INQUIRIES} stopOpacity={0} />
             </linearGradient>
           </defs>
-          {/* 라이트 모드: 연한 회색 그리드 */}
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+          {/* 옅은 헤어라인 그리드 */}
+          <CartesianGrid strokeDasharray="3 3" stroke={UP.hairSoft} />
           <XAxis dataKey="date" tickFormatter={fmt}
-            tick={{ fontSize: 10, fill: '#94a3b8' }} interval="preserveStartEnd" />
-          <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} width={28} />
+            tick={{ fontSize: 10, fill: UP.caption }} interval="preserveStartEnd" />
+          <YAxis tick={{ fontSize: 10, fill: UP.caption }} width={28} />
           <Tooltip content={<CustomTooltip />} />
-          <Legend wrapperStyle={{ fontSize: 11, color: '#64748b', paddingTop: 8 }} />
-          <Area type="monotone" dataKey="new_users" name="신규 유저" stroke="#3182f6" strokeWidth={2} fill="url(#gUsers)" dot={false} />
-          <Area type="monotone" dataKey="new_reports" name="계산 건수" stroke="#059669" strokeWidth={2} fill="url(#gReports)" dot={false} />
-          <Area type="monotone" dataKey="new_inquiries" name="문의 건수" stroke="#d97706" strokeWidth={2} fill="url(#gInquiries)" dot={false} />
+          <Legend wrapperStyle={{ fontSize: 11, color: UP.sub, paddingTop: 8 }} />
+          <Area type="monotone" dataKey="new_users" name="신규 유저" stroke={S_USERS} strokeWidth={2} fill="url(#gUsers)" dot={false} />
+          <Area type="monotone" dataKey="new_reports" name="계산 건수" stroke={S_REPORTS} strokeWidth={2} fill="url(#gReports)" dot={false} />
+          <Area type="monotone" dataKey="new_inquiries" name="문의 건수" stroke={S_INQUIRIES} strokeWidth={2} fill="url(#gInquiries)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
