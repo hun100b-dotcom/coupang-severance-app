@@ -99,12 +99,12 @@ export default function ReportDetail() {
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-[17px] font-extrabold text-ink-900 truncate">진단 리포트</h1>
+          <h1 className="text-[18px] font-extrabold text-up-navy truncate">진단 리포트</h1>
         </Container>
       </header>
 
       <Container size="narrow" className="pt-4">
-        <div className="bg-white rounded-xl shadow-card border border-line p-5 mb-4">
+        <div className="bg-white rounded-xl shadow-card border border-up-hair p-5 mb-4">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-md bg-brand-bg flex items-center justify-center flex-shrink-0">
               <FileText className="w-5 h-5 text-brand" />
@@ -123,7 +123,7 @@ export default function ReportDetail() {
             <>
               <div className="mb-4">
                 <p className="text-xs text-ink-700 mb-2">예상 퇴직금 (세전)</p>
-                <p className="text-[28px] font-black text-brand-strong mb-1 tracking-tight tabular-nums">{fmt(Math.round((report.payload as SeverancePayload).severance))}<span className="text-base font-bold ml-1">원</span></p>
+                <p className="text-[clamp(26px,7vw,38px)] font-mono font-black text-brand-strong mb-1 tracking-tight tabular-nums break-keep leading-none">{fmt(Math.round((report.payload as SeverancePayload).severance))}<span className="text-base font-bold ml-1">원</span></p>
                 <div className="inline-flex items-center gap-2 mt-2">
                   <span className={`inline-block px-3 py-1 rounded-pill text-xs font-bold ${
                     (report.payload as SeverancePayload).eligible
@@ -155,7 +155,7 @@ export default function ReportDetail() {
               </div>
 
               {(report.payload as SeverancePayload).eligibility_message && (
-                <div className="p-3 bg-[#F7F9FC] border border-line rounded-md mb-4">
+                <div className="p-3 bg-[#F7F9FC] border border-up-hair rounded-md mb-4">
                   <p className="text-xs text-ink-700 font-medium mb-1">자격 판정</p>
                   <p className="text-sm text-ink-900 break-keep">{(report.payload as SeverancePayload).eligibility_message}</p>
                 </div>

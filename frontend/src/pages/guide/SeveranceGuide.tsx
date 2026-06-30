@@ -177,8 +177,8 @@ function InfoBox({ title, children, variant = 'default' }: { title: string; chil
   }
   return (
     <div className={`border-l-4 ${variant === 'warning' ? 'border-warning' : variant === 'tip' ? 'border-accent' : 'border-brand'} ${variantStyles[variant]} rounded-lg p-4 mb-4`}>
-      <h4 className="font-bold text-sm mb-2 text-gray-900">{title}</h4>
-      <div className="text-sm text-gray-700">{children}</div>
+      <h4 className="font-bold text-sm mb-2 text-up-navy">{title}</h4>
+      <div className="text-sm text-up-body">{children}</div>
     </div>
   )
 }
@@ -192,11 +192,11 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.3 }}
-      className="bg-white border border-gray-200 rounded-lg p-4 mb-6 sticky top-14 z-20"
+      className="bg-up-surface border border-up-hair rounded-lg p-4 mb-6 sticky top-14 z-20"
     >
       <button
         onClick={() => setShowContents(!showContents)}
-        className="w-full text-left font-bold text-gray-900 flex items-center justify-between mb-2"
+        className="w-full text-left font-bold text-up-navy flex items-center justify-between mb-2"
       >
         <span className="text-sm">목차</span>
         <ChevronRight className={`w-4 h-4 transition-transform ${showContents ? 'rotate-90' : ''}`} />
@@ -209,8 +209,8 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
               href={`#${item.id}`}
               className={`block text-sm py-1 px-2 rounded transition-colors ${
                 activeSection === item.id
-                  ? 'bg-blue-100 text-blue-700 font-semibold'
-                  : 'text-gray-600 hover:text-blue-600'
+                  ? 'bg-brand-bg text-up-strong font-semibold'
+                  : 'text-up-sub hover:text-up-strong'
               }`}
             >
               {item.label}
@@ -227,15 +227,15 @@ function GuideCard({ title, icon, href }: { title: string; icon: React.ReactNode
   return (
     <Link
       to={href}
-      className="block bg-gradient-to-br from-blue-50 to-brand-strong border border-blue-200 rounded-xl p-4 hover:shadow-md transition-all"
+      className="block bg-gradient-to-br from-blue-50 to-brand-strong border border-brand-200 rounded-xl p-4 hover:shadow-md transition-all"
     >
       <div className="flex items-center gap-3">
         <div className="text-2xl">{icon}</div>
         <div>
-          <h4 className="font-bold text-sm text-gray-900">{title}</h4>
-          <p className="text-xs text-gray-600 mt-1">가이드 보기</p>
+          <h4 className="font-bold text-sm text-up-navy">{title}</h4>
+          <p className="text-xs text-up-sub mt-1">가이드 보기</p>
         </div>
-        <ChevronRight className="w-4 h-4 text-blue-600 ml-auto" />
+        <ChevronRight className="w-4 h-4 text-up-strong ml-auto" />
       </div>
     </Link>
   )
@@ -263,7 +263,7 @@ export default function SeveranceGuide() {
   }, [])
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-white">{/* bg-white: blob 완전 차단 */}
+    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-up-page">{/* bg-up-surface: blob 완전 차단 */}
       {/* ── SEO 메타태그: title, description, canonical, JSON-LD 구조화 데이터 ── */}
       <PageMeta
         title="쿠팡 일용직 퇴직금 계산기 | 2026년 최신 기준 완전정복 | CATCH"
@@ -281,17 +281,17 @@ export default function SeveranceGuide() {
           transition={{ delay: 0.1 }}
           className="rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 p-6 text-white overflow-hidden relative"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -z-10" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-up-surface/10 rounded-full blur-2xl -z-10" />
           {/* H1 — SEO 타겟 키워드 포함 */}
-          <h1 className="text-xl font-black mb-1 leading-tight text-white">쿠팡 일용직 퇴직금 계산기</h1>
-          <p className="text-blue-100 text-sm mb-3">2026년 최신 기준 완전정복</p>
+          <h1 className="text-[clamp(22px,5.5vw,28px)] font-black mb-1 leading-tight text-white">쿠팡 일용직 퇴직금 계산기</h1>
+          <p className="text-white/85 text-sm mb-3">2026년 최신 기준 완전정복</p>
           {/* flex-wrap으로 뱃지가 375px 이하에서 줄바꿈 허용 */}
           <div className="flex flex-wrap gap-2 text-xs">
-            <span className="bg-white/20 rounded-full px-2.5 py-1 font-bold">평균 수령 250만원</span>
-            <span className="bg-white/20 rounded-full px-2.5 py-1 font-bold">미청구율 70%</span>
-            <span className="bg-white/20 rounded-full px-2.5 py-1 font-bold">소멸시효 3년</span>
+            <span className="bg-up-surface/20 rounded-full px-2.5 py-1 font-bold">평균 수령 250만원</span>
+            <span className="bg-up-surface/20 rounded-full px-2.5 py-1 font-bold">미청구율 70%</span>
+            <span className="bg-up-surface/20 rounded-full px-2.5 py-1 font-bold">소멸시효 3년</span>
           </div>
-          <p className="text-blue-200 text-[11px] mt-3">마지막 업데이트: 2026-04-10</p>
+          <p className="text-white/70 text-[11px] mt-3">마지막 업데이트: 2026-04-10</p>
         </motion.div>
 
         {/* ── 목차 ── */}
@@ -304,10 +304,10 @@ export default function SeveranceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">퇴직금이란?</h2>
-          <p className="text-sm text-gray-700 mb-4 leading-relaxed">
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">퇴직금이란?</h2>
+          <p className="text-sm text-up-body mb-4 leading-relaxed">
             퇴직금은 근로자가 일정 기간 이상 근무한 후 퇴직할 때 사용자(회사)가 의무적으로 지급해야 하는
             <span className="font-semibold"> 법정 보상금</span>입니다.
             <br /><br />
@@ -317,9 +317,9 @@ export default function SeveranceGuide() {
             사용자는 퇴직하는 근로자에게 계속 근로 기간 1년에 대해 30일분 이상의
             평균임금을 퇴직금으로 지급해야 한다.
           </InfoBox>
-          <p className="text-sm text-gray-700 leading-relaxed">
+          <p className="text-sm text-up-body leading-relaxed">
             쿠팡·CFS 일용직 근로자들은 이 권리를 잘 모르거나 청구를 포기하는 경우가 많습니다.
-            실제로 미청구율이 <span className="font-bold text-blue-600">약 70%</span>에 달합니다.
+            실제로 미청구율이 <span className="font-bold text-up-strong">약 70%</span>에 달합니다.
           </p>
         </motion.section>
 
@@ -330,28 +330,28 @@ export default function SeveranceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">누가 받을 수 있나요?</h2>
-          <p className="text-sm text-gray-700 mb-4 leading-relaxed">
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">누가 받을 수 있나요?</h2>
+          <p className="text-sm text-up-body mb-4 leading-relaxed">
             아래 두 가지 조건을 <span className="font-semibold">모두</span> 충족해야 합니다.
           </p>
           <div className="space-y-3 mb-4">
             <div className="flex gap-3">
-              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
+              <div className="w-6 h-6 rounded-full bg-brand-bg text-up-strong text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
               <div>
-                <h3 className="font-bold text-sm text-gray-900">계속 근로 기간 1년 이상</h3>
-                <p className="text-xs text-gray-600 mt-1">
+                <h3 className="font-bold text-sm text-up-navy">계속 근로 기간 1년 이상</h3>
+                <p className="text-xs text-up-sub mt-1">
                   입사일부터 퇴직일까지 계속 근무한 기간이 365일 이상이어야 합니다.
                   공백(무급 휴가·휴직 등)이 있어도 <span className="font-semibold">3개월 미만</span>이면 계속 근로로 인정됩니다.
                 </p>
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
+              <div className="w-6 h-6 rounded-full bg-brand-bg text-up-strong text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
               <div>
-                <h3 className="font-bold text-sm text-gray-900">주 평균 15시간 이상 근무</h3>
-                <p className="text-xs text-gray-600 mt-1">
+                <h3 className="font-bold text-sm text-up-navy">주 평균 15시간 이상 근무</h3>
+                <p className="text-xs text-up-sub mt-1">
                   최근 4주를 평균했을 때 주당 근로 시간이 15시간 이상이어야 합니다.
                   쿠팡 물류센터 일반 근무(8시간/일, 주 2~3일 이상)는 대부분 해당됩니다.
                 </p>
@@ -374,10 +374,10 @@ export default function SeveranceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">CFS(쿠팡풀필먼트서비스) 일용직 특수성</h2>
-          <p className="text-sm text-gray-700 mb-4 leading-relaxed">
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">CFS(쿠팡풀필먼트서비스) 일용직 특수성</h2>
+          <p className="text-sm text-up-body mb-4 leading-relaxed">
             CFS는 쿠팡이 운영하는 물류 자회사로, 계약상 '일용직'이어도 실질적으로는
             <span className="font-semibold"> 상시 반복 근무</span>를 하는 경우가 많습니다.
             이때 법원은 '계속 근로 관계'를 인정합니다.
@@ -398,7 +398,7 @@ export default function SeveranceGuide() {
               </p>
             </InfoBox>
           </div>
-          <p className="text-sm text-gray-700 leading-relaxed">
+          <p className="text-sm text-up-body leading-relaxed">
             CATCH 퇴직금 계산기는 이 <span className="font-semibold">28일 블록 알고리즘</span>을 정확하게 적용합니다.
             PDF 급여명세서를 업로드하면 블록별 적격 여부까지 자동 계산됩니다.
           </p>
@@ -411,22 +411,22 @@ export default function SeveranceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">퇴직금 계산 공식</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">퇴직금 계산 공식</h2>
 
           <InfoBox title="퇴직금 = (1일 평균임금 × 30일) × (재직일수 ÷ 365)" variant="default">
             <div className="space-y-2 text-xs">
               <p><span className="font-semibold">1일 평균임금</span> = 최근 3개월 급여 총액 ÷ 90일</p>
               <p><span className="font-semibold">재직일수</span> = 입사일부터 퇴직일까지의 날짜 수</p>
-              <p className="text-blue-600 font-semibold mt-1">
+              <p className="text-up-strong font-semibold mt-1">
                 ※ 1일 평균임금이 최저임금보다 낮을 경우 최저임금으로 대체 적용
               </p>
             </div>
           </InfoBox>
 
-          <h3 className="font-bold text-sm text-gray-900 mb-2 mt-4">평균임금 산정 방법</h3>
-          <p className="text-xs text-gray-700 mb-3 leading-relaxed">
+          <h3 className="font-bold text-sm text-up-navy mb-2 mt-4">평균임금 산정 방법</h3>
+          <p className="text-xs text-up-body mb-3 leading-relaxed">
             평균임금은 퇴직일 직전 <span className="font-semibold">3개월(90일)</span> 동안 지급된 임금 총액을 90일로 나눈 값입니다.
             기본급 외에도 시간외수당, 야간수당, 휴일수당 등 정기적으로 받은 수당도 포함합니다.
           </p>
@@ -443,27 +443,27 @@ export default function SeveranceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">실제 계산 예시</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">실제 계산 예시</h2>
 
-          <h3 className="font-bold text-sm text-gray-900 mb-2">예시 1 — 월급 210만원, 근속 400일</h3>
-          <div className="bg-blue-50 rounded-lg p-3 text-xs space-y-1.5 text-gray-700 mb-4">
+          <h3 className="font-bold text-sm text-up-navy mb-2">예시 1 — 월급 210만원, 근속 400일</h3>
+          <div className="bg-brand-bg rounded-lg p-3 text-xs space-y-1.5 text-up-body mb-4">
             <p>• 최근 3개월 합계: 630만원</p>
             <p>• 1일 평균임금: 630만원 ÷ 90일 = <span className="font-bold">70,000원</span></p>
             <p>• 재직일수: 400일</p>
-            <p className="font-bold text-blue-700 pt-1.5 border-t border-blue-200">
+            <p className="font-bold text-up-strong pt-1.5 border-t border-brand-200">
               퇴직금 = (70,000 × 30) × (400 ÷ 365) ≈ <span className="text-base">약 230만원</span>
             </p>
           </div>
 
-          <h3 className="font-bold text-sm text-gray-900 mb-2">예시 2 — 시급 11,000원, 주 5일, 근속 2년</h3>
-          <div className="bg-blue-50 rounded-lg p-3 text-xs space-y-1.5 text-gray-700 mb-4">
+          <h3 className="font-bold text-sm text-up-navy mb-2">예시 2 — 시급 11,000원, 주 5일, 근속 2년</h3>
+          <div className="bg-brand-bg rounded-lg p-3 text-xs space-y-1.5 text-up-body mb-4">
             <p>• 월 급여: 11,000원 × 8시간 × 22일 = 1,936,000원</p>
             <p>• 최근 3개월 합계: 약 580만원</p>
             <p>• 1일 평균임금: 580만원 ÷ 90일 ≈ <span className="font-bold">64,444원</span></p>
             <p>• 재직일수: 730일</p>
-            <p className="font-bold text-blue-700 pt-1.5 border-t border-blue-200">
+            <p className="font-bold text-up-strong pt-1.5 border-t border-brand-200">
               퇴직금 = (64,444 × 30) × (730 ÷ 365) ≈ <span className="text-base">약 386만원</span>
             </p>
           </div>
@@ -481,9 +481,9 @@ export default function SeveranceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">퇴직금 받는 법 (단계별 안내)</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">퇴직금 받는 법 (단계별 안내)</h2>
 
           <div className="space-y-3 mb-4">
             {[
@@ -496,8 +496,8 @@ export default function SeveranceGuide() {
               <div key={item.step} className="flex gap-3">
                 <div className="w-8 h-8 rounded-full bg-brand-bg text-brand-strong text-sm font-bold flex items-center justify-center flex-shrink-0">{item.step}</div>
                 <div>
-                  <h3 className="font-bold text-sm text-gray-900">{item.title}</h3>
-                  <p className="text-xs text-gray-600 mt-1">{item.desc}</p>
+                  <h3 className="font-bold text-sm text-up-navy">{item.title}</h3>
+                  <p className="text-xs text-up-sub mt-1">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -516,26 +516,26 @@ export default function SeveranceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">세금 & 주의사항</h2>
-          <p className="text-sm text-gray-700 mb-3 leading-relaxed">
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">세금 & 주의사항</h2>
+          <p className="text-sm text-up-body mb-3 leading-relaxed">
             퇴직금에는 <span className="font-semibold">퇴직소득세</span>가 부과됩니다.
             단, 근속 연수가 길수록 공제액이 커져 실제 세율은 매우 낮습니다.
           </p>
-          <div className="bg-gray-50 rounded-lg p-3 text-xs space-y-1.5 text-gray-700 mb-4">
-            <p className="font-bold text-gray-900">근속연수별 퇴직소득 공제 (참고)</p>
+          <div className="bg-up-sunken rounded-lg p-3 text-xs space-y-1.5 text-up-body mb-4">
+            <p className="font-bold text-up-navy">근속연수별 퇴직소득 공제 (참고)</p>
             <p>• 5년 이하: 근속연수 × 30만원</p>
             <p>• 5~10년: 150만원 + (근속연수-5) × 50만원</p>
             <p>• 10~20년: 400만원 + (근속연수-10) × 80만원</p>
             <p>• 20년 초과: 1,200만원 + (근속연수-20) × 120만원</p>
-            <p className="text-blue-600 mt-1">※ 2026년 기준 — 정확한 세액은 홈택스 계산기 이용 권장</p>
+            <p className="text-up-strong mt-1">※ 2026년 기준 — 정확한 세액은 홈택스 계산기 이용 권장</p>
           </div>
           <InfoBox title="퇴직금과 실업급여는 별개" variant="tip">
             퇴직금(근로자퇴직급여보장법)과 실업급여(고용보험법)는 완전히 다른 제도입니다.
             조건을 충족하면 둘 다 받을 수 있습니다.
             실업급여 조건 확인 →{' '}
-            <Link to="/guide/unemployment" className="text-blue-600 underline font-bold">실업급여 가이드</Link>
+            <Link to="/guide/unemployment" className="text-up-strong underline font-bold">실업급여 가이드</Link>
           </InfoBox>
         </motion.section>
 
@@ -546,9 +546,9 @@ export default function SeveranceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">자주 묻는 질문 10선</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">자주 묻는 질문 10선</h2>
           <div className="space-y-2.5">
             {[
               { q: '일용직도 정말 퇴직금을 받을 수 있나요?', a: '네, 1년 이상·주 15시간 이상 조건만 충족하면 고용 형태에 관계없이 받을 수 있습니다 (근로자퇴직급여보장법 제4조).' },
@@ -562,12 +562,12 @@ export default function SeveranceGuide() {
               { q: '국가 대지급제도는 어떻게 신청하나요?', a: '회사 파산 또는 지급 불능 시 근로복지공단에 체불 임금 대지급을 신청합니다. 근로복지공단 고객센터(1588-0075) 또는 관할 지사에 문의하세요.' },
               { q: 'PDF가 없어도 CATCH 계산기를 쓸 수 있나요?', a: '네, CATCH는 PDF 정밀계산과 수동 입력 간편계산을 모두 지원합니다. 날짜와 금액만 알면 간편계산으로 예상 금액을 확인할 수 있습니다.' },
             ].map((item, i) => (
-              <details key={i} className="border border-gray-200 rounded-lg p-3">
-                <summary className="font-bold text-sm cursor-pointer text-gray-900 flex justify-between items-center">
+              <details key={i} className="border border-up-hair rounded-lg p-3">
+                <summary className="font-bold text-sm cursor-pointer text-up-navy flex justify-between items-center">
                   <span className="flex-1 pr-2">{item.q}</span>
                   <span className="flex-shrink-0">▼</span>
                 </summary>
-                <p className="text-xs text-gray-600 mt-2 leading-relaxed">{item.a}</p>
+                <p className="text-xs text-up-sub mt-2 leading-relaxed">{item.a}</p>
               </details>
             ))}
           </div>
@@ -578,7 +578,7 @@ export default function SeveranceGuide() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="bg-white rounded-xl p-5 mt-2"
+          className="bg-up-surface rounded-xl p-5 mt-2"
         >
           <button
             onClick={() => navigate('/severance')}
@@ -588,7 +588,7 @@ export default function SeveranceGuide() {
             지금 바로 CATCH로 퇴직금 계산하기
           </button>
 
-          <h3 className="font-bold text-sm text-gray-900 mb-3">관련 가이드</h3>
+          <h3 className="font-bold text-sm text-up-navy mb-3">관련 가이드</h3>
           <div className="space-y-2">
             <GuideCard title="실업급여 가이드" icon="💼" href="/guide/unemployment" />
             <GuideCard title="주휴수당 가이드" icon="⏰" href="/guide/weekly-allowance" />
@@ -606,7 +606,7 @@ export default function SeveranceGuide() {
         >
           <button
             onClick={() => navigate('/guide')}
-            className="w-full py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+            className="w-full py-3 rounded-xl border border-up-hair text-sm font-semibold text-up-sub hover:bg-up-sunken transition-colors"
           >
             ← 전체 가이드 목록 보기
           </button>

@@ -88,8 +88,8 @@ function InfoBox({ title, children, variant = 'default' }: { title: string; chil
   }
   return (
     <div className={`border-l-4 ${variant === 'warning' ? 'border-warning' : variant === 'tip' ? 'border-accent' : 'border-accent'} ${variantStyles[variant]} rounded-lg p-4 mb-4`}>
-      <h4 className="font-bold text-sm mb-2 text-gray-900">{title}</h4>
-      <div className="text-sm text-gray-700">{children}</div>
+      <h4 className="font-bold text-sm mb-2 text-up-navy">{title}</h4>
+      <div className="text-sm text-up-body">{children}</div>
     </div>
   )
 }
@@ -103,11 +103,11 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.3 }}
-      className="bg-white border border-gray-200 rounded-lg p-4 mb-6 sticky top-14 z-20"
+      className="bg-up-surface border border-up-hair rounded-lg p-4 mb-6 sticky top-14 z-20"
     >
       <button
         onClick={() => setShowContents(!showContents)}
-        className="w-full text-left font-bold text-gray-900 flex items-center justify-between mb-2"
+        className="w-full text-left font-bold text-up-navy flex items-center justify-between mb-2"
       >
         <span className="text-sm">목차</span>
         <ChevronRight className={`w-4 h-4 transition-transform ${showContents ? 'rotate-90' : ''}`} />
@@ -121,7 +121,7 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
               className={`block text-sm py-1 px-2 rounded transition-colors ${
                 activeSection === item.id
                   ? 'bg-accent-bg text-accent-700 font-semibold'
-                  : 'text-gray-600 hover:text-accent-700'
+                  : 'text-up-sub hover:text-accent-700'
               }`}
             >
               {item.label}
@@ -143,8 +143,8 @@ function GuideCard({ title, icon: Icon, href }: { title: string; icon: React.Rea
       <div className="flex items-center gap-3">
         <div className="text-2xl">{Icon}</div>
         <div>
-          <h4 className="font-bold text-sm text-gray-900">{title}</h4>
-          <p className="text-xs text-gray-600 mt-1">가이드 보기</p>
+          <h4 className="font-bold text-sm text-up-navy">{title}</h4>
+          <p className="text-xs text-up-sub mt-1">가이드 보기</p>
         </div>
         <ChevronRight className="w-4 h-4 text-accent-700 ml-auto" />
       </div>
@@ -176,7 +176,7 @@ export default function AnnualLeaveGuide() {
   }, [])
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-gray-50">
+    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-up-page">
       {/* ── SEO 메타태그: title, description, canonical, JSON-LD 구조화 데이터 ── */}
       <PageMeta
         title="연차수당 가이드 — 일용직 연차수당 조건·계산법 완전 정리 | CATCH"
@@ -194,7 +194,7 @@ export default function AnnualLeaveGuide() {
           transition={{ delay: 0.1 }}
           className="rounded-2xl bg-gradient-to-br from-accent-700 to-accent p-6 text-white overflow-hidden relative"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -z-10" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-up-surface/10 rounded-full blur-2xl -z-10" />
           <h2 className="text-2xl font-black mb-2 text-white">미사용 연차를 돈으로 받아요</h2>
           <p className="text-white/85 text-sm mb-4">첫해 최대 11일 | 이후 최대 25일</p>
           <div className="text-3xl font-black">퇴직 시 정산</div>
@@ -210,10 +210,10 @@ export default function AnnualLeaveGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">연차수당이란?</h2>
-          <p className="text-sm text-gray-700 mb-4 leading-relaxed">
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">연차수당이란?</h2>
+          <p className="text-sm text-up-body mb-4 leading-relaxed">
             연차수당은 근로자가 <span className="font-semibold">미사용 연차휴가를 돈으로 정산받는 것</span>입니다. <br />
             근로기준법 제60조에서 보장하는 법정 권리입니다.
           </p>
@@ -233,26 +233,26 @@ export default function AnnualLeaveGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">연차 발생</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">연차 발생</h2>
 
-          <p className="text-sm text-gray-700 mb-4">연차는 근무 기간과 출근율에 따라 발생합니다.</p>
+          <p className="text-sm text-up-body mb-4">연차는 근무 기간과 출근율에 따라 발생합니다.</p>
 
           <div className="space-y-3 mb-4">
             <div className="bg-accent-bg rounded-lg p-3 text-xs">
-              <p className="font-bold text-gray-900 mb-1">첫 해 (1년)</p>
-              <p className="text-gray-600">80% 이상 출근 시 15일 발생</p>
-              <p className="text-gray-500 text-[10px] mt-1">※ 일반적으로 퇴직 시 최대 11일 정산</p>
+              <p className="font-bold text-up-navy mb-1">첫 해 (1년)</p>
+              <p className="text-up-sub">80% 이상 출근 시 15일 발생</p>
+              <p className="text-up-sub text-[10px] mt-1">※ 일반적으로 퇴직 시 최대 11일 정산</p>
             </div>
             <div className="bg-accent-bg rounded-lg p-3 text-xs">
-              <p className="font-bold text-gray-900 mb-1">2~2년 11개월</p>
-              <p className="text-gray-600">80% 이상 출근 시 15일</p>
+              <p className="font-bold text-up-navy mb-1">2~2년 11개월</p>
+              <p className="text-up-sub">80% 이상 출근 시 15일</p>
             </div>
             <div className="bg-accent-bg rounded-lg p-3 text-xs">
-              <p className="font-bold text-gray-900 mb-1">3년 이상</p>
-              <p className="text-gray-600">2년마다 +1일씩 증가 (최대 25일)</p>
-              <p className="text-gray-500 text-[10px] mt-1">3년: 20일, 5년: 21일, 7년: 22일...</p>
+              <p className="font-bold text-up-navy mb-1">3년 이상</p>
+              <p className="text-up-sub">2년마다 +1일씩 증가 (최대 25일)</p>
+              <p className="text-up-sub text-[10px] mt-1">3년: 20일, 5년: 21일, 7년: 22일...</p>
             </div>
           </div>
 
@@ -272,22 +272,22 @@ export default function AnnualLeaveGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">일용직 적용</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">일용직 적용</h2>
 
-          <p className="text-sm text-gray-700 mb-4 leading-relaxed">
+          <p className="text-sm text-up-body mb-4 leading-relaxed">
             일용직도 조건을 충족하면 연차수당을 받을 수 있습니다.
           </p>
 
           <div className="space-y-3 mb-4">
             <div className="bg-accent-bg rounded-lg p-3 text-xs">
-              <p className="font-bold text-gray-900 mb-1">✓ 연차 발생 조건</p>
-              <p className="text-gray-600">1년 이상 근무 + 80% 이상 출근</p>
+              <p className="font-bold text-up-navy mb-1">✓ 연차 발생 조건</p>
+              <p className="text-up-sub">1년 이상 근무 + 80% 이상 출근</p>
             </div>
             <div className="bg-accent-bg rounded-lg p-3 text-xs">
-              <p className="font-bold text-gray-900 mb-1">주의사항</p>
-              <p className="text-gray-600">일용직은 출근율 계산이 정규직과 다를 수 있습니다.<br />
+              <p className="font-bold text-up-navy mb-1">주의사항</p>
+              <p className="text-up-sub">일용직은 출근율 계산이 정규직과 다를 수 있습니다.<br />
               회사가 별도 규정을 가지고 있을 수 있으므로 확인이 필요합니다.</p>
             </div>
           </div>
@@ -309,12 +309,12 @@ export default function AnnualLeaveGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">계산 방법</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">계산 방법</h2>
 
           <div className="mb-4">
-            <h3 className="font-bold text-sm text-gray-900 mb-3">계산 공식</h3>
+            <h3 className="font-bold text-sm text-up-navy mb-3">계산 공식</h3>
             <InfoBox
               title="미지급 연차수당 = 1일 통상임금 × 미사용 연차일수"
               variant="default"
@@ -327,8 +327,8 @@ export default function AnnualLeaveGuide() {
           </div>
 
           <div className="mb-4">
-            <h3 className="font-bold text-sm text-gray-900 mb-3">계산 예시</h3>
-            <div className="bg-accent-bg rounded-lg p-3 text-xs space-y-1 text-gray-700">
+            <h3 className="font-bold text-sm text-up-navy mb-3">계산 예시</h3>
+            <div className="bg-accent-bg rounded-lg p-3 text-xs space-y-1 text-up-body">
               <p>• 근무 기간: 2년</p>
               <p>• 월 급여: 200만원</p>
               <p>• 월 평균 근로일: 22일</p>
@@ -350,39 +350,39 @@ export default function AnnualLeaveGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">정산 방법</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">정산 방법</h2>
 
-          <p className="text-sm text-gray-700 mb-4">연차수당은 퇴직할 때 함께 정산합니다.</p>
+          <p className="text-sm text-up-body mb-4">연차수당은 퇴직할 때 함께 정산합니다.</p>
 
           <div className="space-y-3 mb-4">
             <div className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">1</div>
               <div>
-                <h4 className="font-bold text-sm text-gray-900">연차 사용 계획</h4>
-                <p className="text-xs text-gray-600 mt-1">남은 연차를 사용할지 정산받을지 결정</p>
+                <h4 className="font-bold text-sm text-up-navy">연차 사용 계획</h4>
+                <p className="text-xs text-up-sub mt-1">남은 연차를 사용할지 정산받을지 결정</p>
               </div>
             </div>
             <div className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">2</div>
               <div>
-                <h4 className="font-bold text-sm text-gray-900">미사용 연차 확인</h4>
-                <p className="text-xs text-gray-600 mt-1">회사에서 미사용 연차 일수 확인</p>
+                <h4 className="font-bold text-sm text-up-navy">미사용 연차 확인</h4>
+                <p className="text-xs text-up-sub mt-1">회사에서 미사용 연차 일수 확인</p>
               </div>
             </div>
             <div className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">3</div>
               <div>
-                <h4 className="font-bold text-sm text-gray-900">정산금 청구</h4>
-                <p className="text-xs text-gray-600 mt-1">내용증명으로 미지급 연차수당 청구</p>
+                <h4 className="font-bold text-sm text-up-navy">정산금 청구</h4>
+                <p className="text-xs text-up-sub mt-1">내용증명으로 미지급 연차수당 청구</p>
               </div>
             </div>
             <div className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">4</div>
               <div>
-                <h4 className="font-bold text-sm text-gray-900">수령</h4>
-                <p className="text-xs text-gray-600 mt-1">퇴직금 및 최종 급여와 함께 수령</p>
+                <h4 className="font-bold text-sm text-up-navy">수령</h4>
+                <p className="text-xs text-up-sub mt-1">퇴직금 및 최종 급여와 함께 수령</p>
               </div>
             </div>
           </div>
@@ -403,48 +403,48 @@ export default function AnnualLeaveGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">자주 묻는 질문</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">자주 묻는 질문</h2>
           <div className="space-y-3">
-            <details className="border border-gray-200 rounded-lg p-3">
-              <summary className="font-bold text-sm cursor-pointer text-gray-900 flex justify-between items-center">
+            <details className="border border-up-hair rounded-lg p-3">
+              <summary className="font-bold text-sm cursor-pointer text-up-navy flex justify-between items-center">
                 회사에서 연차를 쓸 수 없게 하면?
                 <span>▼</span>
               </summary>
-              <p className="text-xs text-gray-600 mt-2">불법입니다. 근로자가 연차 사용을 신청하면 회사는 특별한 사유 없이 거절할 수 없습니다.</p>
+              <p className="text-xs text-up-sub mt-2">불법입니다. 근로자가 연차 사용을 신청하면 회사는 특별한 사유 없이 거절할 수 없습니다.</p>
             </details>
 
-            <details className="border border-gray-200 rounded-lg p-3">
-              <summary className="font-bold text-sm cursor-pointer text-gray-900 flex justify-between items-center">
+            <details className="border border-up-hair rounded-lg p-3">
+              <summary className="font-bold text-sm cursor-pointer text-up-navy flex justify-between items-center">
                 일용직은 연차가 없다고 해도 되나요?
                 <span>▼</span>
               </summary>
-              <p className="text-xs text-gray-600 mt-2">아니요. 일용직도 조건을 충족하면 연차가 발생합니다. 다만 일용직은 고용 형태에 따라 적용 여부가 다를 수 있으니 회사에 확인하세요.</p>
+              <p className="text-xs text-up-sub mt-2">아니요. 일용직도 조건을 충족하면 연차가 발생합니다. 다만 일용직은 고용 형태에 따라 적용 여부가 다를 수 있으니 회사에 확인하세요.</p>
             </details>
 
-            <details className="border border-gray-200 rounded-lg p-3">
-              <summary className="font-bold text-sm cursor-pointer text-gray-900 flex justify-between items-center">
+            <details className="border border-up-hair rounded-lg p-3">
+              <summary className="font-bold text-sm cursor-pointer text-up-navy flex justify-between items-center">
                 퇴직 전에 연차를 모두 써야 하나요?
                 <span>▼</span>
               </summary>
-              <p className="text-xs text-gray-600 mt-2">아니요. 미사용 연차는 연차수당으로 정산받을 수 있습니다. 법인이 소멸시효로 인정하지 않는 한 청구할 수 있습니다.</p>
+              <p className="text-xs text-up-sub mt-2">아니요. 미사용 연차는 연차수당으로 정산받을 수 있습니다. 법인이 소멸시효로 인정하지 않는 한 청구할 수 있습니다.</p>
             </details>
 
-            <details className="border border-gray-200 rounded-lg p-3">
-              <summary className="font-bold text-sm cursor-pointer text-gray-900 flex justify-between items-center">
+            <details className="border border-up-hair rounded-lg p-3">
+              <summary className="font-bold text-sm cursor-pointer text-up-navy flex justify-between items-center">
                 연차수당이 퇴직금과 다른가요?
                 <span>▼</span>
               </summary>
-              <p className="text-xs text-gray-600 mt-2">네, 다릅니다. 퇴직금은 근로자퇴직급여보장법에 따르고, 연차수당은 미사용 연차를 돈으로 정산하는 것입니다.</p>
+              <p className="text-xs text-up-sub mt-2">네, 다릅니다. 퇴직금은 근로자퇴직급여보장법에 따르고, 연차수당은 미사용 연차를 돈으로 정산하는 것입니다.</p>
             </details>
 
-            <details className="border border-gray-200 rounded-lg p-3">
-              <summary className="font-bold text-sm cursor-pointer text-gray-900 flex justify-between items-center">
+            <details className="border border-up-hair rounded-lg p-3">
+              <summary className="font-bold text-sm cursor-pointer text-up-navy flex justify-between items-center">
                 1년 미만은 정말 연차가 없나요?
                 <span>▼</span>
               </summary>
-              <p className="text-xs text-gray-600 mt-2">법정 기준으로는 1년 이상 근무해야 연차가 발생합니다. 다만 회사 규정으로 더 빨리 주기도 합니다.</p>
+              <p className="text-xs text-up-sub mt-2">법정 기준으로는 1년 이상 근무해야 연차가 발생합니다. 다만 회사 규정으로 더 빨리 주기도 합니다.</p>
             </details>
           </div>
         </motion.section>
@@ -454,7 +454,7 @@ export default function AnnualLeaveGuide() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="bg-white rounded-xl p-5 mt-2"
+          className="bg-up-surface rounded-xl p-5 mt-2"
         >
           <button
             onClick={() => navigate('/annual-leave')}
@@ -464,7 +464,7 @@ export default function AnnualLeaveGuide() {
             지금 바로 연차수당 계산하기
           </button>
 
-          <h3 className="font-bold text-sm text-gray-900 mb-3">다른 가이드</h3>
+          <h3 className="font-bold text-sm text-up-navy mb-3">다른 가이드</h3>
           <div className="space-y-2">
             <GuideCard
               title="퇴직금 가이드"
@@ -494,7 +494,7 @@ export default function AnnualLeaveGuide() {
         >
           <button
             onClick={() => navigate('/guide')}
-            className="w-full py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+            className="w-full py-3 rounded-xl border border-up-hair text-sm font-semibold text-up-sub hover:bg-up-sunken transition-colors"
           >
             ← 전체 가이드 목록 보기
           </button>

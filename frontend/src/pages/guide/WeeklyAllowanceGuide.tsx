@@ -80,8 +80,8 @@ function InfoBox({ title, children, variant = 'default' }: { title: string; chil
   }
   return (
     <div className={`border-l-4 ${variant === 'warning' ? 'border-warning' : variant === 'tip' ? 'border-accent' : 'border-accent'} ${variantStyles[variant]} rounded-lg p-4 mb-4`}>
-      <h4 className="font-bold text-sm mb-2 text-gray-900">{title}</h4>
-      <div className="text-sm text-gray-700">{children}</div>
+      <h4 className="font-bold text-sm mb-2 text-up-navy">{title}</h4>
+      <div className="text-sm text-up-body">{children}</div>
     </div>
   )
 }
@@ -95,11 +95,11 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.3 }}
-      className="bg-white border border-gray-200 rounded-lg p-4 mb-6 sticky top-14 z-20"
+      className="bg-up-surface border border-up-hair rounded-lg p-4 mb-6 sticky top-14 z-20"
     >
       <button
         onClick={() => setShowContents(!showContents)}
-        className="w-full text-left font-bold text-gray-900 flex items-center justify-between mb-2"
+        className="w-full text-left font-bold text-up-navy flex items-center justify-between mb-2"
       >
         <span className="text-sm">목차</span>
         <ChevronRight className={`w-4 h-4 transition-transform ${showContents ? 'rotate-90' : ''}`} />
@@ -113,7 +113,7 @@ function TableOfContents({ activeSection }: { activeSection: string }) {
               className={`block text-sm py-1 px-2 rounded transition-colors ${
                 activeSection === item.id
                   ? 'bg-accent-bg text-accent-700 font-semibold'
-                  : 'text-gray-600 hover:text-accent-700'
+                  : 'text-up-sub hover:text-accent-700'
               }`}
             >
               {item.label}
@@ -135,8 +135,8 @@ function GuideCard({ title, icon: Icon, href }: { title: string; icon: React.Rea
       <div className="flex items-center gap-3">
         <div className="text-2xl">{Icon}</div>
         <div>
-          <h4 className="font-bold text-sm text-gray-900">{title}</h4>
-          <p className="text-xs text-gray-600 mt-1">가이드 보기</p>
+          <h4 className="font-bold text-sm text-up-navy">{title}</h4>
+          <p className="text-xs text-up-sub mt-1">가이드 보기</p>
         </div>
         <ChevronRight className="w-4 h-4 text-accent-700 ml-auto" />
       </div>
@@ -168,7 +168,7 @@ export default function WeeklyAllowanceGuide() {
   }, [])
 
   return (
-    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-gray-50">
+    <div className="relative z-[1] min-h-screen flex flex-col items-center px-4 pt-2 pb-8 bg-up-page">
       {/* ── SEO 메타태그: title, description, canonical, JSON-LD 구조화 데이터 ── */}
       <PageMeta
         title="주휴수당 가이드 — 알바·일용직 주휴수당 조건·계산법 완전 정리 | CATCH"
@@ -186,7 +186,7 @@ export default function WeeklyAllowanceGuide() {
           transition={{ delay: 0.1 }}
           className="rounded-2xl bg-gradient-to-br from-accent-700 to-accent p-6 text-white overflow-hidden relative"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -z-10" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-up-surface/10 rounded-full blur-2xl -z-10" />
           <h2 className="text-2xl font-black mb-2 text-white">매주 빠짐없이 받아야 해요</h2>
           <p className="text-white/85 text-sm mb-4">주 15시간 이상 근무 시 발생</p>
           <div className="text-3xl font-black">근로기준법 55조 보장</div>
@@ -202,10 +202,10 @@ export default function WeeklyAllowanceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">주휴수당이란?</h2>
-          <p className="text-sm text-gray-700 mb-4 leading-relaxed">
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">주휴수당이란?</h2>
+          <p className="text-sm text-up-body mb-4 leading-relaxed">
             주휴수당은 주중에 소정의 근로를 수행한 근로자가 <span className="font-semibold">주휴일에 받는 보상금</span>입니다. <br />
             근로기준법 제55조에서 보장하는 법정 급여입니다.
           </p>
@@ -225,23 +225,23 @@ export default function WeeklyAllowanceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">발생 조건</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">발생 조건</h2>
 
           <div className="space-y-3 mb-4">
             <div className="flex gap-3">
               <div className="w-6 h-6 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
               <div>
-                <h4 className="font-bold text-sm text-gray-900">주간 근로 시간</h4>
-                <p className="text-xs text-gray-600 mt-1">1주 15시간 이상 근무</p>
+                <h4 className="font-bold text-sm text-up-navy">주간 근로 시간</h4>
+                <p className="text-xs text-up-sub mt-1">1주 15시간 이상 근무</p>
               </div>
             </div>
             <div className="flex gap-3">
               <div className="w-6 h-6 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
               <div>
-                <h4 className="font-bold text-sm text-gray-900">주간 개근</h4>
-                <p className="text-xs text-gray-600 mt-1">그 주의 소정근로일을 모두 근무해야 함</p>
+                <h4 className="font-bold text-sm text-up-navy">주간 개근</h4>
+                <p className="text-xs text-up-sub mt-1">그 주의 소정근로일을 모두 근무해야 함</p>
               </div>
             </div>
           </div>
@@ -262,12 +262,12 @@ export default function WeeklyAllowanceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">계산 방법</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">계산 방법</h2>
 
           <div className="mb-4">
-            <h3 className="font-bold text-sm text-gray-900 mb-3">계산 공식</h3>
+            <h3 className="font-bold text-sm text-up-navy mb-3">계산 공식</h3>
             <InfoBox
               title="주휴수당 = 1일 통상임금 × 1일"
               variant="default"
@@ -280,8 +280,8 @@ export default function WeeklyAllowanceGuide() {
           </div>
 
           <div className="mb-4">
-            <h3 className="font-bold text-sm text-gray-900 mb-3">계산 예시</h3>
-            <div className="bg-accent-bg rounded-lg p-3 text-xs space-y-1 text-gray-700">
+            <h3 className="font-bold text-sm text-up-navy mb-3">계산 예시</h3>
+            <div className="bg-accent-bg rounded-lg p-3 text-xs space-y-1 text-up-body">
               <p>• 시급: 12,000원</p>
               <p>• 1일 근로시간: 8시간</p>
               <p>• 1일 통상임금: 12,000원 × 8시간 = 96,000원</p>
@@ -307,23 +307,23 @@ export default function WeeklyAllowanceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">일용직 적용</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">일용직 적용</h2>
 
-          <p className="text-sm text-gray-700 mb-4 leading-relaxed">
+          <p className="text-sm text-up-body mb-4 leading-relaxed">
             일용직 근로자도 주휴수당 발생 조건을 충족하면 <br />
             받을 권리가 있습니다.
           </p>
 
           <div className="space-y-3 mb-4">
             <div className="bg-accent-bg rounded-lg p-3 text-xs">
-              <p className="font-bold text-gray-900 mb-1">✓ 받을 수 있는 경우</p>
-              <p className="text-gray-600">매주 정해진 요일에 출근하는 일용직 근로자</p>
+              <p className="font-bold text-up-navy mb-1">✓ 받을 수 있는 경우</p>
+              <p className="text-up-sub">매주 정해진 요일에 출근하는 일용직 근로자</p>
             </div>
             <div className="bg-accent-bg rounded-lg p-3 text-xs">
-              <p className="font-bold text-gray-900 mb-1">✗ 받기 어려운 경우</p>
-              <p className="text-gray-600">출근 패턴이 불규칙하거나 주 15시간 미만의 경우</p>
+              <p className="font-bold text-up-navy mb-1">✗ 받기 어려운 경우</p>
+              <p className="text-up-sub">출근 패턴이 불규칙하거나 주 15시간 미만의 경우</p>
             </div>
           </div>
 
@@ -344,37 +344,37 @@ export default function WeeklyAllowanceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">미지급 시 대처법</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">미지급 시 대처법</h2>
 
           <div className="space-y-3 mb-4">
             <div className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">1</div>
               <div>
-                <h4 className="font-bold text-sm text-gray-900">근무 기록 확인</h4>
-                <p className="text-xs text-gray-600 mt-1">지난 4주 동안의 일한 날짜와 시간 정리</p>
+                <h4 className="font-bold text-sm text-up-navy">근무 기록 확인</h4>
+                <p className="text-xs text-up-sub mt-1">지난 4주 동안의 일한 날짜와 시간 정리</p>
               </div>
             </div>
             <div className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">2</div>
               <div>
-                <h4 className="font-bold text-sm text-gray-900">급여 명세서 확인</h4>
-                <p className="text-xs text-gray-600 mt-1">주휴수당 항목이 있는지 확인</p>
+                <h4 className="font-bold text-sm text-up-navy">급여 명세서 확인</h4>
+                <p className="text-xs text-up-sub mt-1">주휴수당 항목이 있는지 확인</p>
               </div>
             </div>
             <div className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">3</div>
               <div>
-                <h4 className="font-bold text-sm text-gray-900">회사에 청구</h4>
-                <p className="text-xs text-gray-600 mt-1">내용증명으로 미지급 주휴수당 지급 요청</p>
+                <h4 className="font-bold text-sm text-up-navy">회사에 청구</h4>
+                <p className="text-xs text-up-sub mt-1">내용증명으로 미지급 주휴수당 지급 요청</p>
               </div>
             </div>
             <div className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-accent-bg text-accent-700 text-sm font-bold flex items-center justify-center flex-shrink-0">4</div>
               <div>
-                <h4 className="font-bold text-sm text-gray-900">행정기관 신고</h4>
-                <p className="text-xs text-gray-600 mt-1">고용노동부 고용센터에 신고 (미지급 임금 문제)</p>
+                <h4 className="font-bold text-sm text-up-navy">행정기관 신고</h4>
+                <p className="text-xs text-up-sub mt-1">고용노동부 고용센터에 신고 (미지급 임금 문제)</p>
               </div>
             </div>
           </div>
@@ -395,40 +395,40 @@ export default function WeeklyAllowanceGuide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="bg-white rounded-xl p-5"
+          className="bg-up-surface rounded-xl p-5 border border-up-hair shadow-card"
         >
-          <h2 className="text-xl font-black text-gray-900 mb-4">자주 묻는 질문</h2>
+          <h2 className="text-[clamp(22px,5.5vw,28px)] font-black text-up-navy mb-4">자주 묻는 질문</h2>
           <div className="space-y-3">
-            <details className="border border-gray-200 rounded-lg p-3">
-              <summary className="font-bold text-sm cursor-pointer text-gray-900 flex justify-between items-center">
+            <details className="border border-up-hair rounded-lg p-3">
+              <summary className="font-bold text-sm cursor-pointer text-up-navy flex justify-between items-center">
                 주 15시간은 정확히 어떻게 계산하나요?
                 <span>▼</span>
               </summary>
-              <p className="text-xs text-gray-600 mt-2">1주일(월~일) 동안 일한 시간의 합계입니다. 최근 4주의 평균이 기준이 될 수도 있습니다.</p>
+              <p className="text-xs text-up-sub mt-2">1주일(월~일) 동안 일한 시간의 합계입니다. 최근 4주의 평균이 기준이 될 수도 있습니다.</p>
             </details>
 
-            <details className="border border-gray-200 rounded-lg p-3">
-              <summary className="font-bold text-sm cursor-pointer text-gray-900 flex justify-between items-center">
+            <details className="border border-up-hair rounded-lg p-3">
+              <summary className="font-bold text-sm cursor-pointer text-up-navy flex justify-between items-center">
                 한 날만 못 나가도 못 받나요?
                 <span>▼</span>
               </summary>
-              <p className="text-xs text-gray-600 mt-2">그 주의 소정근로일을 모두 근무해야 발생합니다. 정당한 사유 없이 한 날 결근하면 그 주 주휴수당은 발생하지 않습니다.</p>
+              <p className="text-xs text-up-sub mt-2">그 주의 소정근로일을 모두 근무해야 발생합니다. 정당한 사유 없이 한 날 결근하면 그 주 주휴수당은 발생하지 않습니다.</p>
             </details>
 
-            <details className="border border-gray-200 rounded-lg p-3">
-              <summary className="font-bold text-sm cursor-pointer text-gray-900 flex justify-between items-center">
+            <details className="border border-up-hair rounded-lg p-3">
+              <summary className="font-bold text-sm cursor-pointer text-up-navy flex justify-between items-center">
                 휴가나 질병으로 못 나갔으면?
                 <span>▼</span>
               </summary>
-              <p className="text-xs text-gray-600 mt-2">정당한 사유(유급휴가, 질병 등)는 근무한 것으로 간주될 수 있습니다. 회사와 협의하세요.</p>
+              <p className="text-xs text-up-sub mt-2">정당한 사유(유급휴가, 질병 등)는 근무한 것으로 간주될 수 있습니다. 회사와 협의하세요.</p>
             </details>
 
-            <details className="border border-gray-200 rounded-lg p-3">
-              <summary className="font-bold text-sm cursor-pointer text-gray-900 flex justify-between items-center">
+            <details className="border border-up-hair rounded-lg p-3">
+              <summary className="font-bold text-sm cursor-pointer text-up-navy flex justify-between items-center">
                 주휴수당을 현금으로 받을 수 있나요?
                 <span>▼</span>
               </summary>
-              <p className="text-xs text-gray-600 mt-2">네, 주휴수당도 임금이므로 현금 또는 통장으로 지급받을 수 있습니다.</p>
+              <p className="text-xs text-up-sub mt-2">네, 주휴수당도 임금이므로 현금 또는 통장으로 지급받을 수 있습니다.</p>
             </details>
           </div>
         </motion.section>
@@ -438,7 +438,7 @@ export default function WeeklyAllowanceGuide() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="bg-white rounded-xl p-5 mt-2"
+          className="bg-up-surface rounded-xl p-5 mt-2"
         >
           <button
             onClick={() => navigate('/weekly-allowance')}
@@ -448,7 +448,7 @@ export default function WeeklyAllowanceGuide() {
             지금 바로 주휴수당 계산하기
           </button>
 
-          <h3 className="font-bold text-sm text-gray-900 mb-3">다른 가이드</h3>
+          <h3 className="font-bold text-sm text-up-navy mb-3">다른 가이드</h3>
           <div className="space-y-2">
             <GuideCard
               title="퇴직금 가이드"
@@ -478,7 +478,7 @@ export default function WeeklyAllowanceGuide() {
         >
           <button
             onClick={() => navigate('/guide')}
-            className="w-full py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+            className="w-full py-3 rounded-xl border border-up-hair text-sm font-semibold text-up-sub hover:bg-up-sunken transition-colors"
           >
             ← 전체 가이드 목록 보기
           </button>

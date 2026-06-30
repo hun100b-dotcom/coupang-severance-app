@@ -169,7 +169,7 @@ function GovernmentBenefitsSection() {
         className="rounded-xl bg-gradient-to-br from-brand-strong to-brand-700 p-5 text-white shadow-[0_12px_40px_rgba(27,100,218,0.22)]"
       >
         <p className="text-[11px] font-bold opacity-70 mb-1 tracking-widest uppercase">Benefits Guide</p>
-        <p className="text-[22px] font-extrabold leading-tight mb-2">
+        <p className="text-[clamp(22px,6vw,28px)] font-extrabold leading-tight mb-2">
           일용직 근로자가<br />받을 수 있는 혜택
         </p>
         <p className="text-[13px] opacity-80 leading-relaxed">
@@ -192,7 +192,7 @@ function GovernmentBenefitsSection() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 + i * 0.06 }}
-            className="rounded-xl bg-white border border-line shadow-[0_8px_32px_rgba(49,130,246,0.06)] overflow-hidden"
+            className="rounded-xl bg-white border border-up-hair shadow-[0_8px_32px_rgba(49,130,246,0.06)] overflow-hidden"
           >
             {/* 카드 헤더 — 탭 역할 */}
             <button
@@ -209,18 +209,18 @@ function GovernmentBenefitsSection() {
                     {benefit.badge}
                   </span>
                 </div>
-                <p className="text-[15px] font-extrabold text-[#191f28] leading-tight">{benefit.title}</p>
-                <p className="text-[12px] text-[#4e5968] mt-0.5">{benefit.subtitle}</p>
+                <p className="text-[15px] font-extrabold text-up-navy leading-tight">{benefit.title}</p>
+                <p className="text-[12px] text-up-body mt-0.5">{benefit.subtitle}</p>
               </div>
               <ChevronRight
-                className={`w-4 h-4 text-[#8b95a1] flex-shrink-0 mt-2 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}
+                className={`w-4 h-4 text-up-sub flex-shrink-0 mt-2 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}
               />
             </button>
 
             {/* 핵심 수치 */}
             <div className="px-4 pb-3">
-              <div className="rounded-xl bg-[#F7F9FC] border border-line px-3 py-2 flex items-center justify-between">
-                <p className="text-[11px] text-[#8b95a1]">{benefit.amountLabel}</p>
+              <div className="rounded-xl bg-[#F7F9FC] border border-up-hair px-3 py-2 flex items-center justify-between">
+                <p className="text-[11px] text-up-sub">{benefit.amountLabel}</p>
                 <p className="text-sm font-extrabold text-brand-strong">{benefit.amount}</p>
               </div>
             </div>
@@ -238,10 +238,10 @@ function GovernmentBenefitsSection() {
                 </div>
 
                 <div>
-                  <p className="text-[11px] font-bold text-[#4e5968] mb-1.5">신청 조건</p>
+                  <p className="text-[11px] font-bold text-up-body mb-1.5">신청 조건</p>
                   <ul className="space-y-1.5">
                     {benefit.conditions.map((c, ci) => (
-                      <li key={ci} className="flex gap-2 text-[12px] text-[#4e5968] leading-relaxed">
+                      <li key={ci} className="flex gap-2 text-[12px] text-up-body leading-relaxed">
                         <span className="text-brand-strong font-bold flex-shrink-0">•</span>
                         {c}
                       </li>
@@ -249,7 +249,7 @@ function GovernmentBenefitsSection() {
                   </ul>
                 </div>
 
-                <div className="rounded-xl bg-[#F7F9FC] border border-line px-3 py-2.5">
+                <div className="rounded-xl bg-[#F7F9FC] border border-up-hair px-3 py-2.5">
                   <p className="text-[11px] font-bold text-ink-700 mb-0.5">💡 신청 방법</p>
                   <p className="text-[12px] text-ink-700 leading-relaxed">{benefit.tip}</p>
                 </div>
@@ -264,9 +264,9 @@ function GovernmentBenefitsSection() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className="rounded-xl bg-white border border-line px-4 py-4"
+        className="rounded-xl bg-white border border-up-hair px-4 py-4"
       >
-        <p className="text-[11px] font-bold text-[#4e5968] mb-2.5">📞 통합 문의처</p>
+        <p className="text-[11px] font-bold text-up-body mb-2.5">📞 통합 문의처</p>
         <div className="space-y-2">
           {[
             ['복지로 (보건복지상담)', '129'],
@@ -275,14 +275,14 @@ function GovernmentBenefitsSection() {
             ['건강보험공단', '1577-1000'],
           ].map(([org, tel]) => (
             <div key={org} className="flex justify-between items-center text-[12px]">
-              <span className="text-[#4e5968]">{org}</span>
+              <span className="text-up-body">{org}</span>
               <span className="font-bold text-brand-strong">{tel}</span>
             </div>
           ))}
         </div>
       </motion.div>
 
-      <p className="text-center text-[10px] text-[#8b95a1] leading-relaxed pb-2">
+      <p className="text-center text-[10px] text-up-sub leading-relaxed pb-2">
         지원 기준·금액은 2025년 기준이며 변경될 수 있습니다.<br />
         정확한 내용은 해당 기관에 직접 문의하세요.
       </p>
@@ -301,7 +301,7 @@ export default function MyBenefitsPage() {
 
       {/* ── 헤더 ── */}
       <header className="sticky top-14 z-40 w-full max-w-[600px] py-3 mb-1">
-        <div className="flex items-center gap-2 px-2 py-2 rounded-2xl bg-white border border-line shadow-[0_2px_12px_rgba(49,130,246,0.07)]">
+        <div className="flex items-center gap-2 px-2 py-2 rounded-2xl bg-white border border-up-hair shadow-[0_2px_12px_rgba(49,130,246,0.07)]">
           <button
             type="button"
             onClick={() => navigate(-1)}
@@ -313,7 +313,7 @@ export default function MyBenefitsPage() {
             <div className="w-7 h-7 rounded-xl bg-brand-bg flex items-center justify-center">
               <Gift className="w-4 h-4 text-brand" />
             </div>
-            <h1 className="text-[17px] font-extrabold text-[#191f28] tracking-tight">나의 혜택</h1>
+            <h1 className="text-[18px] font-extrabold text-up-navy tracking-tight">나의 혜택</h1>
           </div>
         </div>
       </header>
