@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { supabase } from './supabase'
 
 const baseURL = typeof import.meta.env.VITE_API_URL === 'string' && import.meta.env.VITE_API_URL
@@ -11,17 +11,101 @@ export const api = axios.create({
   timeout: 90000, // Render 무료 티어 콜드스타트 대기 (최대 50초+)
 })
 
+const _sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms))
+
+// ── 콜드스타트/일시장애 자동 재시도 + 우아한 에러 안내 ───────────────────────
+// 배경: Render 무료 티어는 15분 이상 유휴 시 절전 → 첫 요청에 게이트웨이가 "즉시
+//   503"을 반환하며 인스턴스를 깨운다. 재시도가 없으면 이 503/네트워크 단절이
+//   그대로 화면에 "Network error"로 노출된다(어드민 백엔드 의존 메뉴 전역 폭주).
+// 처치: 응답이 아예 없거나(네트워크/타임아웃) 502·503·504 인 경우에 한해 지수
+//   백오프로 최대 3회 재시도한다. 503 은 즉시 반환되므로 재시도 비용이 작고,
+//   슬립이 깨어나면 그 사이 200 으로 회복된다(콜드스타트 30~50초를 백오프로 흡수).
+//   최종 실패 시에는 원시 영문 에러("Network Error") 대신 한국어 안내를 부착하고,
+//   어드민 호출에 한해 error.message 자체도 한국어로 정규화한다(아래 _isAdminRequest 참조).
+const _RETRY_MAX = 3
+const _RETRY_STATUSES = new Set([502, 503, 504])
+
+function _isRetriable(error: AxiosError): boolean {
+  // 쓰기(POST/PATCH/DELETE)는 서버가 이미 처리했을 수 있어(예: 504) 재시도 시 중복
+  // 실행 위험 → 멱등 메서드(GET/HEAD/OPTIONS)만 재시도한다. 어드민 "메뉴 로드 실패"
+  // 폭주는 거의 전부 GET 이므로 이 한정으로도 핵심 증상은 해소된다.
+  const method = (error.config?.method ?? 'get').toLowerCase()
+  if (method !== 'get' && method !== 'head' && method !== 'options') return false
+  if (!error.response) return true // 응답 없음 = 네트워크/타임아웃/콜드스타트
+  return _RETRY_STATUSES.has(error.response.status)
+}
+
+// 이 요청이 "어드민 백엔드 호출"인지 판별 — X-Admin-Token 헤더 유무로 구분한다.
+// 어드민 호출(getSettings/getAdminMembers/getAdminApplications/getAuditLogs 등)만
+// H() 로 X-Admin-Token 을 싣는다. 계산기(severance/precise 등)는 이 헤더가 없다.
+// 이 구분으로 "에러 메시지 한국어 정규화"를 어드민 호출에만 적용해, 계산기 페이지가
+// `err.message === 'Network Error'` 로 분기하는 기존 로직(SeveranceFlow 등)을 건드리지 않는다.
+function _isAdminRequest(cfg?: InternalAxiosRequestConfig): boolean {
+  const h = cfg?.headers as { has?: (k: string) => boolean; [k: string]: unknown } | undefined
+  if (!h) return false
+  // axios 1.x 는 AxiosHeaders(.has) — 평객체 fallback 까지 모두 안전하게 확인
+  if (typeof h.has === 'function') return h.has('X-Admin-Token')
+  return Boolean(h['X-Admin-Token'] || h['x-admin-token'])
+}
+
+// 백엔드 실패를 사람이 읽을 수 있는 한국어 메시지로 정규화 — 어드민 메뉴 catch 에서 재사용
+export function adminErrorMessage(error: unknown): string {
+  const e = error as AxiosError
+  if (e?.response) {
+    const s = e.response.status
+    if (s === 401) return '관리자 인증 실패 — 관리자 토큰(VITE_ADMIN_SECRET)을 확인하세요.'
+    if (s === 403) return '권한이 없거나 차단된 요청입니다.'
+    if (s === 404) return '요청 경로를 찾을 수 없습니다 (API 경로 점검 필요).'
+    if (s >= 500) return '백엔드 서버 점검 중입니다. 잠시 후 다시 시도해주세요.'
+    return `요청이 거부되었습니다 (HTTP ${s}).`
+  }
+  // 응답 자체가 없음 = 네트워크 단절/콜드스타트/CORS
+  return '백엔드 서버에 연결할 수 없습니다 (콜드스타트 또는 점검 중). 잠시 후 다시 시도해주세요.'
+}
+
+api.interceptors.response.use(
+  res => res,
+  async (error: AxiosError) => {
+    const cfg = error.config as (InternalAxiosRequestConfig & { _retryCount?: number }) | undefined
+    if (cfg && _isRetriable(error)) {
+      cfg._retryCount = cfg._retryCount ?? 0
+      if (cfg._retryCount < _RETRY_MAX) {
+        cfg._retryCount += 1
+        // 재시도 호출은 짧은 타임아웃으로 캡 — 진짜 무응답(콜드스타트 행) 시 매 시도가
+        // 기본 90s 를 곱해 분 단위로 늘어나는 것을 막는다(최초 1회만 긴 타임아웃 허용).
+        cfg.timeout = 15000
+        await _sleep(cfg._retryCount * 1500) // 1.5s → 3s → 4.5s 백오프(3회)
+        return api(cfg)
+      }
+    }
+    // 최종 실패: 우아한 한국어 메시지를 error 에 부착(메뉴에서 표시용)
+    const msg = adminErrorMessage(error)
+    ;(error as AxiosError & { adminMessage?: string }).adminMessage = msg
+    // 어드민 백엔드 호출이면 error.message 자체도 한국어로 정규화한다.
+    // 배경: 어드민 메뉴 20여 곳이 catch 에서 `e.message` 를 그대로 화면/배너에 노출하지만
+    //   adminMessage 는 아무도 읽지 않아 죽은 코드였다 → 콜드스타트/장애 시 영문
+    //   "Network Error" 가 그대로 노출됐다. 여기서 메시지를 한국어로 바꿔 두면 개별 메뉴를
+    //   수정하지 않고도 전역적으로 우아한 안내가 표시된다.
+    // 안전: X-Admin-Token 이 실린 어드민 호출에만 적용 → 계산기/인증 등 `=== 'Network Error'`
+    //   분기 로직은 토큰이 없어 영향받지 않는다.
+    if (_isAdminRequest(cfg)) {
+      ;(error as AxiosError).message = msg
+    }
+    return Promise.reject(error)
+  },
+)
+
 // ── Render 콜드스타트 사전 워밍업 ────────────────────────────────────────────
-// Render 무료 티어는 15분 이상 유휴 시 서버가 절전 모드로 진입합니다.
-// 앱이 처음 로드될 때 백그라운드에서 /health 엔드포인트에 ping을 날려
-// 서버를 미리 깨워 둡니다. 사용자가 실제 계산 버튼을 누를 때쯤엔
-// 서버가 이미 준비되어 있어 콜드스타트 대기 시간이 크게 줄어듭니다.
-// 실패해도 오류를 무시합니다 — 워밍업 실패가 앱 동작을 막으면 안 됩니다.
+// 앱 로드 시 백그라운드로 실제 GET(/api/click-count)을 호출해 잠든 인스턴스를 깨운다.
+// (기존 워밍업은 백엔드에 존재하지 않는 /api/health 를 쳐서 404 — 실효성이 낮았다.
+//  click-count 는 dev 프록시·prod 절대경로 양쪽에서 동일하게 도달하는 공개 GET 이다.)
+// 위 인터셉터가 503 을 자동 재시도하므로, 슬립 상태여도 이 한 번의 호출이 깨운다.
+// 실패해도 조용히 무시 — 워밍업 실패가 앱 동작을 막으면 안 된다.
 ;(async () => {
   try {
-    await api.get('/health', { timeout: 10000 }) // 10초 안에 응답 없으면 그냥 포기
+    await api.get('/click-count', { timeout: 12000 })
   } catch {
-    // 워밍업 실패는 조용히 무시 (콘솔에도 출력하지 않습니다)
+    // 워밍업 실패는 조용히 무시 (콘솔 출력 없음)
   }
 })()
 
