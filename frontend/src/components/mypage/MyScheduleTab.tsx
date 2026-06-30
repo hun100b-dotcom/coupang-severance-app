@@ -230,7 +230,7 @@ export default function MyScheduleTab({ userId }: Props) {
                   </div>
 
                   {/* 출근 예정일 */}
-                  <div className="flex items-center gap-1.5 text-[13px] font-bold text-emerald-700 mb-2">
+                  <div className="flex items-center gap-1.5 text-[13px] font-bold text-accent-700 mb-2">
                     <Calendar className="w-3.5 h-3.5" />
                     {fmtDate(app.work_date!)}
                   </div>
@@ -294,9 +294,9 @@ export default function MyScheduleTab({ userId }: Props) {
         <div>
           {/* 섹션 헤더 */}
           <div className="flex items-center gap-2 mb-3">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <CheckCircle2 className="w-4 h-4 text-accent-700" />
             <p className="text-[14px] font-extrabold text-up-navy">완료된 출근 기록</p>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-black">
+            <span className="px-2 py-0.5 rounded-full bg-accent-bg text-accent-700 text-[11px] font-black">
               {completedApps.length}건
             </span>
           </div>
@@ -308,8 +308,8 @@ export default function MyScheduleTab({ userId }: Props) {
                 className="rounded-2xl p-4 bg-up-sunken border border-up-hair flex items-center gap-3"
               >
                 {/* 완료 아이콘 */}
-                <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                <div className="w-9 h-9 rounded-full bg-accent-bg flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-5 h-5 text-accent-700" />
                 </div>
                 {/* 회사명 + 날짜/지역 */}
                 <div className="flex-1 min-w-0">

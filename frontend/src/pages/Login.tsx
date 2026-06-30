@@ -194,27 +194,27 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4 py-8 relative z-10">
+    <div className="min-h-screen bg-up-sunken flex flex-col items-center justify-center px-4 py-8 relative z-10">
       <div className="w-full max-w-[400px]">
         {/* 상단 로고 */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#3182F6] overflow-hidden mb-3 shadow-lg shadow-blue-500/30">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand overflow-hidden mb-3 shadow-lg shadow-brand/30">
             <img src="/catch-logo.png" alt="CATCH" className="w-full h-full object-contain p-1.5" />
           </div>
-          <h1 className="text-xl font-bold text-[#191F28] mb-2">간편 로그인</h1>
-          <p className="text-sm text-[#4E5968]">카카오 또는 Google 계정으로 빠르게 시작해 보세요.</p>
+          <h1 className="text-xl font-bold text-ink-900 mb-2">간편 로그인</h1>
+          <p className="text-sm text-ink-700">카카오 또는 Google 계정으로 빠르게 시작해 보세요.</p>
         </div>
 
         {/* ── 약관 동의 섹션 ── */}
-        <div className="mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+        <div className="mb-4 p-4 bg-up-sunken rounded-xl border border-up-hair">
 
           {/* 전체 동의 토글 (3개 동시 체크/해제) */}
-          <label className="flex items-center gap-3 cursor-pointer mb-3 pb-3 border-b border-gray-200">
+          <label className="flex items-center gap-3 cursor-pointer mb-3 pb-3 border-b border-up-hair">
             <input
               type="checkbox"
               checked={allAgreed}
               onChange={handleAllAgree}
-              className="w-4 h-4 accent-blue-600"
+              className="w-4 h-4 accent-brand"
             />
             <span className="text-sm font-semibold text-up-body">전체 동의</span>
           </label>
@@ -225,7 +225,7 @@ export default function LoginPage() {
               type="checkbox"
               checked={terms}
               onChange={e => setTerms(e.target.checked)}
-              className="w-4 h-4 accent-blue-600"
+              className="w-4 h-4 accent-brand"
             />
             <span className="text-sm text-up-body">[필수] 이용약관 동의</span>
             {/* 이용약관 페이지로 이동 (label 버블링 방지) */}
@@ -244,7 +244,7 @@ export default function LoginPage() {
               type="checkbox"
               checked={privacy}
               onChange={e => setPrivacy(e.target.checked)}
-              className="w-4 h-4 accent-blue-600"
+              className="w-4 h-4 accent-brand"
             />
             <span className="text-sm text-up-body leading-tight">[필수] 개인정보 수집·이용 및 국외이전 동의</span>
             {/* 개인정보처리방침 페이지로 이동 */}
@@ -263,20 +263,20 @@ export default function LoginPage() {
               type="checkbox"
               checked={marketing}
               onChange={e => setMarketing(e.target.checked)}
-              className="w-4 h-4 accent-blue-600"
+              className="w-4 h-4 accent-brand"
             />
             <span className="text-sm text-up-body">[선택] 마케팅 정보 수신 동의</span>
           </label>
         </div>
 
         {/* 소셜 로그인 버튼 */}
-        <div className="bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.04)] border border-gray-100/50 p-6">
-          <p className="text-sm font-semibold text-[#191F28] mb-4">소셜 계정 선택</p>
+        <div className="bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.04)] border border-up-hair/50 p-6">
+          <p className="text-sm font-semibold text-ink-900 mb-4">소셜 계정 선택</p>
 
           {/* 에러 메시지 */}
           {errorMsg && (
-            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200">
-              <p className="text-sm text-red-600 whitespace-pre-line">{errorMsg}</p>
+            <div className="mb-4 p-3 rounded-xl bg-danger/10 border border-danger/30">
+              <p className="text-sm text-danger whitespace-pre-line">{errorMsg}</p>
             </div>
           )}
 
@@ -299,7 +299,7 @@ export default function LoginPage() {
             {/* Google 로그인 — Google Identity Services 사용 (Supabase URL 노출 없음) */}
             <div ref={googleWrapRef} className={`w-full flex justify-center ${!terms || !privacy ? 'opacity-50 pointer-events-none' : ''}`}>
               {loadingProvider === 'google' ? (
-                <div className="w-full h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center text-sm text-up-sub">
+                <div className="w-full h-12 rounded-full bg-white border border-up-hair flex items-center justify-center text-sm text-up-sub">
                   Google로 로그인 중...
                 </div>
               ) : (

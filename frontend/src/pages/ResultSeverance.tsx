@@ -98,13 +98,13 @@ function Section1Period({ r }: { r: EmploymentReport }) {
           </p>
           {r.segments.map(s => (
             <div key={s.seg_idx} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', fontSize: '0.82rem' }}>
-              <span style={{ color: s.eligible ? '#00a876' : '#cc2233', fontWeight: 700 }}>
+              <span style={{ color: s.eligible ? '#047857' : '#cc2233', fontWeight: 700 }}>
                 {s.eligible ? '✓' : '✗'}
               </span>
               <span style={{ color: 'var(--toss-text-2)' }}>
                 구간 {s.seg_idx + 1}: {s.first_date} ~ {s.last_date}
               </span>
-              <span style={{ marginLeft: 'auto', fontWeight: 700, color: s.eligible ? '#00a876' : '#cc2233' }}>
+              <span style={{ marginLeft: 'auto', fontWeight: 700, color: s.eligible ? '#047857' : '#cc2233' }}>
                 {s.qualifying_days}일
               </span>
             </div>
@@ -249,7 +249,7 @@ function Section3Formula({ avgWage, workDays, severance }: {
 
 // ── [4] 수급 자격 판단 (28일 블록 기반) ───────────────────
 function BlockCard({ block }: { block: BlockItem }) {
-  const color = block.qualifies ? '#00a876' : '#cc2233'
+  const color = block.qualifies ? '#047857' : '#cc2233'
   const bg    = block.qualifies ? 'rgba(0,196,140,0.07)' : 'rgba(240,68,82,0.06)'
   const border = block.qualifies ? 'rgba(0,196,140,0.2)' : 'rgba(240,68,82,0.18)'
 
@@ -324,7 +324,7 @@ function Section4Eligibility({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 10 }}>
           <div>
             <p style={{ fontSize: '0.8rem', color: 'var(--toss-text-3)', marginBottom: 2 }}>인정 근속기간</p>
-            <p style={{ fontSize: '1.8rem', fontWeight: 900, fontFamily: "'Inter', sans-serif", lineHeight: 1, color: eligible ? '#00a876' : 'var(--toss-blue)' }}>
+            <p style={{ fontSize: '1.8rem', fontWeight: 900, fontFamily: "'Inter', sans-serif", lineHeight: 1, color: eligible ? '#047857' : 'var(--toss-blue)' }}>
               {qualifyDays}
               <span style={{ fontSize: '0.9rem', fontWeight: 600, marginLeft: 4 }}>일</span>
             </p>
@@ -343,7 +343,7 @@ function Section4Eligibility({
             width: `${pctQ}%`,
             height: '100%',
             background: eligible
-              ? 'linear-gradient(90deg, #00c48c, #00a876)'
+              ? 'linear-gradient(90deg, #00c48c, #047857)'
               : 'linear-gradient(90deg, #3182f6, #5a9ef8)',
             borderRadius: 7,
             transition: 'width 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
@@ -355,7 +355,7 @@ function Section4Eligibility({
           }} />
         </div>
         <div style={{ display: 'flex', gap: 16, marginTop: 6, fontSize: '0.75rem' }}>
-          <span style={{ color: '#00a876' }}>● 적격 블록 {qualifyingBlocks.length}개</span>
+          <span style={{ color: '#047857' }}>● 적격 블록 {qualifyingBlocks.length}개</span>
           <span style={{ color: '#cc2233' }}>● 미달 블록 {nonQualifyingBlocks.length}개</span>
           <span style={{ color: 'var(--toss-text-3)', marginLeft: 'auto' }}>{pctQ.toFixed(1)}%</span>
         </div>
@@ -364,12 +364,12 @@ function Section4Eligibility({
       {/* 요약 뱃지 */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
         <div style={{ flex: 1, padding: '10px 12px', borderRadius: 12, background: 'rgba(0,196,140,0.08)', border: '1px solid rgba(0,196,140,0.2)' }}>
-          <p className="label-sm" style={{ marginBottom: 3, color: '#00a876' }}>적격 블록</p>
-          <p style={{ fontSize: '1.4rem', fontWeight: 900, color: '#00a876', fontFamily: "'Inter', sans-serif" }}>
+          <p className="label-sm" style={{ marginBottom: 3, color: '#047857' }}>적격 블록</p>
+          <p style={{ fontSize: '1.4rem', fontWeight: 900, color: '#047857', fontFamily: "'Inter', sans-serif" }}>
             {qualifyingBlocks.length}
             <span style={{ fontSize: '0.8rem', fontWeight: 600, marginLeft: 2 }}>개</span>
           </p>
-          <p style={{ fontSize: '0.72rem', color: '#00a876', opacity: 0.7 }}>= {qualifyingBlocks.reduce((s, b) => s + b.block_days, 0)}일</p>
+          <p style={{ fontSize: '0.72rem', color: '#047857' }}>= {qualifyingBlocks.reduce((s, b) => s + b.block_days, 0)}일</p>
         </div>
         <div style={{ flex: 1, padding: '10px 12px', borderRadius: 12, background: 'rgba(240,68,82,0.06)', border: '1px solid rgba(240,68,82,0.15)' }}>
           <p className="label-sm" style={{ marginBottom: 3, color: '#cc2233' }}>미달 블록</p>
@@ -538,7 +538,7 @@ export default function ResultSeverance({ result, resultType, company, onReset }
                 background: eligible ? 'rgba(0,196,140,0.08)' : 'rgba(240,68,82,0.06)',
                 borderRadius: 10,
                 fontSize: '0.85rem',
-                color: eligible ? '#00a876' : '#cc2233',
+                color: eligible ? '#047857' : '#cc2233',
                 fontWeight: 600,
                 lineHeight: 1.5,
               }}

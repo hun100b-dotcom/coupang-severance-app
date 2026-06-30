@@ -161,7 +161,7 @@ export default function InquiryPage() {
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-600 pointer-events-none" />
             <input
-              className="w-full pl-10 pr-4 py-2.5 border border-line rounded-xl bg-[#F7F9FC] text-sm focus:outline-none focus:ring-2 focus:ring-brand/40"
+              className="w-full pl-10 pr-4 py-2.5 border border-line rounded-xl bg-page text-sm focus:outline-none focus:ring-2 focus:ring-brand/40"
               placeholder="궁금한 내용을 검색해보세요"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -178,7 +178,7 @@ export default function InquiryPage() {
                   <button
                     type="button"
                     onClick={() => setOpenFaqId(openFaqId === faq.id ? null : faq.id)}
-                    className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left bg-white hover:bg-[#F7F9FC] transition-colors"
+                    className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left bg-white hover:bg-page transition-colors"
                   >
                     <span className="text-[13px] font-semibold text-ink-900 leading-snug flex-1">
                       Q. {faq.title}

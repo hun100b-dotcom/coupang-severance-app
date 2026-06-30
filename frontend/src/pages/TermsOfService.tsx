@@ -74,7 +74,7 @@ export default function TermsOfServicePage() {
             <li><strong>계산 이력 저장·조회:</strong> 회원에 한해 계산 결과를 저장하고 언제든지 조회할 수 있습니다.</li>
             <li><strong>1:1 문의:</strong> 회원은 서비스 이용 관련 문의를 제출할 수 있습니다.</li>
           </ul>
-          <p className="text-sm text-up-sub bg-gray-50 rounded-lg p-3">
+          <p className="text-sm text-up-sub bg-up-sunken rounded-lg p-3">
             서비스는 사전 통보 없이 기능을 추가하거나 변경할 수 있습니다. 중요 변경사항은 공지사항을 통해 안내합니다.
           </p>
         </div>
@@ -158,8 +158,8 @@ export default function TermsOfServicePage() {
       content: (
         <div className="space-y-3">
           {/* 핵심 면책 조항 — 시각적으로 강조 */}
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-            <p className="font-semibold text-amber-800 mb-3 text-base">
+          <div className="bg-warning/10 border border-warning/30 rounded-xl p-4">
+            <p className="font-semibold text-[#B45309] mb-3 text-base">
               ⚠️ 중요: 계산 결과의 법적 효력에 관한 고지
             </p>
             <ol className="list-decimal pl-5 space-y-2 text-up-body leading-relaxed">
@@ -292,7 +292,7 @@ export default function TermsOfServicePage() {
         </div>
 
         {/* 약관 서문 */}
-        <p className="text-sm text-up-sub leading-relaxed mb-8 bg-gray-50 rounded-xl p-4">
+        <p className="text-sm text-up-sub leading-relaxed mb-8 bg-up-sunken rounded-xl p-4">
           CATCH(이하 "회사")는 일용직 근로자의 퇴직금·실업급여·주휴수당·연차수당 계산 및
           채용정보 제공 서비스를 운영합니다. 본 약관은 회사와 이용자 간의 서비스 이용에 관한
           기본적인 사항을 규정합니다. 서비스 이용 전 반드시 본 약관을 확인하시기 바랍니다.
@@ -304,7 +304,7 @@ export default function TermsOfServicePage() {
             <div
               key={section.id}
               // 조항 구분선 — 마지막 항목 제외
-              className={`py-6 ${index < sections.length - 1 ? 'border-b border-gray-100' : ''}`}
+              className={`py-6 ${index < sections.length - 1 ? 'border-b border-up-hair' : ''}`}
             >
               {/* 조항 제목 */}
               <h2 className="font-semibold text-up-navy mb-3 text-base">
@@ -319,7 +319,7 @@ export default function TermsOfServicePage() {
         </div>
 
         {/* 하단 시행일 안내 */}
-        <div className="mt-8 pt-6 border-t border-gray-100">
+        <div className="mt-8 pt-6 border-t border-up-hair">
           <p className="text-sm text-up-sub leading-relaxed">
             본 약관은 <strong>2026년 4월 5일</strong>부터 시행됩니다.<br />
             이전 버전의 약관은 서비스 내 공지사항에서 확인할 수 있습니다.

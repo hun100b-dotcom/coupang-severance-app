@@ -151,10 +151,10 @@ export default function UnemploymentFlow() {
         <CalcContentArea>
           <div className="text-center py-6">
             <div className="text-5xl mb-4">😔</div>
-            <h2 className="text-[22px] font-extrabold text-[#191f28] mb-3">
+            <h2 className="text-[22px] font-extrabold text-ink-900 mb-3">
               아직은 실업급여를 받기 어려워요
             </h2>
-            <p className="text-[14px] text-[#8b95a1] leading-relaxed mb-6">
+            <p className="text-[14px] text-ink-500 leading-relaxed mb-6">
               {s.failReason}
             </p>
             <div className="flex flex-col gap-3">
@@ -316,7 +316,7 @@ export default function UnemploymentFlow() {
                     placeholder="회사명을 직접 입력해 주세요"
                     value={s.companyOther}
                     onChange={e => setS(p => ({ ...p, companyOther: e.target.value }))}
-                    className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
+                    className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                   />
                 </CalcInputCard>
               )}
@@ -427,21 +427,21 @@ export default function UnemploymentFlow() {
 
               {/* PDF 발급 가이드 */}
               <button type="button" onClick={() => setPdfGuideOpen(true)}
-                className="text-[13px] text-[#8b95a1] underline underline-offset-2 hover:text-brand transition-colors">
+                className="text-[13px] text-ink-500 underline underline-offset-2 hover:text-brand transition-colors">
                 ❓ 근로내역서 PDF는 어디서 받나요?
               </button>
 
               {/* 사업장 선택 */}
               {extractLoading && (
                 <CalcInputCard className="text-center">
-                  <p className="text-[14px] text-[#8b95a1]">📂 PDF 분석 중…</p>
+                  <p className="text-[14px] text-ink-500">📂 PDF 분석 중…</p>
                 </CalcInputCard>
               )}
               {!extractLoading && pdfCompanies.length > 0 && (
                 <CalcInputCard>
-                  <p className="text-[14px] font-bold text-[#191f28] mb-3">
+                  <p className="text-[14px] font-bold text-ink-900 mb-3">
                     계산할 사업장을 선택하세요
-                    <span className="text-[12px] font-normal text-[#8b95a1] ml-2">
+                    <span className="text-[12px] font-normal text-ink-500 ml-2">
                       ({pdfCompanies.length}개 추출됨)
                     </span>
                   </p>
@@ -452,15 +452,15 @@ export default function UnemploymentFlow() {
                         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
                           selectedPdfCompany === name
                             ? 'bg-brand-bg border border-brand-200'
-                            : 'bg-white border border-line hover:bg-[#F7F9FC]'
+                            : 'bg-white border border-line hover:bg-page'
                         }`}>
                         <span className="shrink-0">
                           {selectedPdfCompany === name
                             ? <Check size={14} strokeWidth={2.5} className="text-brand" />
-                            : <span className="w-3.5 h-3.5 rounded-full border-[1.5px] border-slate-300 inline-block" />
+                            : <span className="w-3.5 h-3.5 rounded-full border-[1.5px] border-up-hair inline-block" />
                           }
                         </span>
-                        <span className="text-[14px] font-medium text-[#191f28]">{name}</span>
+                        <span className="text-[14px] font-medium text-ink-900">{name}</span>
                       </button>
                     ))}
                   </div>
@@ -469,11 +469,11 @@ export default function UnemploymentFlow() {
 
               {/* 마지막 근무일 */}
               <CalcInputCard>
-                <label className="block text-[14px] font-semibold text-[#191f28] mb-2">
+                <label className="block text-[14px] font-semibold text-ink-900 mb-2">
                   마지막 근무일 (선택)
                 </label>
                 <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
-                  className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
+                  className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                 />
               </CalcInputCard>
 
@@ -484,8 +484,8 @@ export default function UnemploymentFlow() {
                     onChange={e => setS(p => ({ ...p, age50: e.target.checked }))}
                     className="w-5 h-5 rounded-md border-2 border-brand-200 text-brand focus:ring-brand/30"
                   />
-                  <span className="text-[14px] font-semibold text-[#191f28]">
-                    50세 이상이에요 <span className="text-[12px] text-[#8b95a1] font-normal">(수급일수 더 길어요)</span>
+                  <span className="text-[14px] font-semibold text-ink-900">
+                    50세 이상이에요 <span className="text-[12px] text-ink-500 font-normal">(수급일수 더 길어요)</span>
                   </span>
                 </label>
               </CalcInputCard>
@@ -518,23 +518,23 @@ export default function UnemploymentFlow() {
               <CalcInputCard>
                 <div className="flex flex-col gap-5">
                   <div>
-                    <label className="block text-[14px] font-semibold text-[#191f28] mb-2">최근 18개월 고용보험 가입일수</label>
+                    <label className="block text-[14px] font-semibold text-ink-900 mb-2">최근 18개월 고용보험 가입일수</label>
                     <input
                       type="number"
                       placeholder="예: 200"
                       value={insuredDays}
                       onChange={e => setInsuredDays(e.target.value)}
-                      className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
+                      className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                     />
                   </div>
                   <div>
-                    <label className="block text-[14px] font-semibold text-[#191f28] mb-2">평균 일당 (원)</label>
+                    <label className="block text-[14px] font-semibold text-ink-900 mb-2">평균 일당 (원)</label>
                     <input
                       type="number"
                       placeholder="예: 150000"
                       value={avgWage}
                       onChange={e => setAvgWage(e.target.value)}
-                      className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
+                      className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                     />
                   </div>
                 </div>
@@ -547,7 +547,7 @@ export default function UnemploymentFlow() {
                     onChange={e => setS(p => ({ ...p, age50: e.target.checked }))}
                     className="w-5 h-5 rounded-md border-2 border-brand-200 text-brand focus:ring-brand/30"
                   />
-                  <span className="text-[14px] font-semibold text-[#191f28]">
+                  <span className="text-[14px] font-semibold text-ink-900">
                     50세 이상이에요
                   </span>
                 </label>

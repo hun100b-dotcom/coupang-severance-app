@@ -53,7 +53,7 @@ function SeveranceDetail({ p }: { p: SeverancePayload }) {
       ))}
       {p.eligibility_message && (
         <div className={`mt-1 px-4 py-3 rounded-xl text-[12px] font-semibold leading-relaxed flex gap-2 ${
-          p.eligible ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
+          p.eligible ? 'bg-accent-bg text-accent-700 border border-accent/30' : 'bg-danger/10 text-danger border border-danger/30'
         }`}>
           {p.eligible ? <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" /> : <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />}
           <span>{p.eligibility_message}</span>

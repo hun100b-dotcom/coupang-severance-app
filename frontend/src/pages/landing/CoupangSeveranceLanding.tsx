@@ -110,10 +110,10 @@ export default function CoupangSeveranceLanding() {
       />
 
       {/* 전체 배경 */}
-      <div className="min-h-screen bg-[#F2F4F6]">
+      <div className="min-h-screen bg-up-sunken">
 
         {/* ── 상단 히어로 ──────────────────────────────────── */}
-        <div className="bg-gradient-to-br from-[#1a6ff4] to-[#3182f6] text-white px-5 pt-14 pb-10">
+        <div className="bg-gradient-to-br from-[#1a6ff4] to-brand text-white px-5 pt-14 pb-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -141,7 +141,7 @@ export default function CoupangSeveranceLanding() {
             <motion.button
               onClick={() => navigate('/severance')}
               whileTap={{ scale: 0.97 }}
-              className="w-full bg-white text-[#3182f6] font-bold rounded-2xl py-4 text-base flex items-center justify-center gap-2 shadow-lg"
+              className="w-full bg-white text-brand font-bold rounded-2xl py-4 text-base flex items-center justify-center gap-2 shadow-lg"
             >
               <Calculator size={20} />
               지금 무료로 계산하기
@@ -159,24 +159,24 @@ export default function CoupangSeveranceLanding() {
             transition={{ delay: 0.1 }}
             className="bg-white rounded-2xl p-5 shadow-sm"
           >
-            <h2 className="text-[1.05rem] font-bold text-[#191F28] mb-4">
+            <h2 className="text-[1.05rem] font-bold text-ink-900 mb-4">
               📋 퇴직금 수급 조건
             </h2>
             <ul className="space-y-3">
               {ELIGIBILITY_ITEMS.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
                   {item.ok
-                    ? <CheckCircle size={18} className="text-[#3182f6] flex-shrink-0 mt-0.5" />
-                    : <AlertTriangle size={18} className="text-[#F04452] flex-shrink-0 mt-0.5" />
+                    ? <CheckCircle size={18} className="text-brand flex-shrink-0 mt-0.5" />
+                    : <AlertTriangle size={18} className="text-danger flex-shrink-0 mt-0.5" />
                   }
-                  <span className={`text-sm leading-relaxed ${item.ok ? 'text-[#333D4B]' : 'text-[#565D6A]'}`}>
+                  <span className={`text-sm leading-relaxed ${item.ok ? 'text-up-body' : 'text-up-sub'}`}>
                     {item.text}
                   </span>
                 </li>
               ))}
             </ul>
-            <div className="mt-4 p-3 bg-[#F2F4F6] rounded-xl">
-              <p className="text-xs text-[#565D6A] leading-relaxed">
+            <div className="mt-4 p-3 bg-up-sunken rounded-xl">
+              <p className="text-xs text-up-sub leading-relaxed">
                 💡 쿠팡·CFS는 공백 3개월 미만이면 하나의 연속 근로로 인정됩니다.
                 여러 계약이 이어졌어도 합산 1년 이상이면 퇴직금이 발생합니다.
               </p>
@@ -190,34 +190,34 @@ export default function CoupangSeveranceLanding() {
             transition={{ delay: 0.15 }}
             className="bg-white rounded-2xl p-5 shadow-sm"
           >
-            <h2 className="text-[1.05rem] font-bold text-[#191F28] mb-4">
+            <h2 className="text-[1.05rem] font-bold text-ink-900 mb-4">
               🧮 퇴직금 계산 공식
             </h2>
 
             {/* 공식 박스 */}
-            <div className="bg-[#EFF6FF] rounded-xl p-4 mb-4 border border-[#3182f6]/20">
+            <div className="bg-[#EFF6FF] rounded-xl p-4 mb-4 border border-brand/20">
               <p className="text-sm font-mono text-[#1a6ff4] leading-relaxed">
                 퇴직금 = (1일 평균임금 × 30일) × (재직일수 ÷ 365)
               </p>
-              <p className="text-xs text-[#565D6A] mt-2">
+              <p className="text-xs text-up-sub mt-2">
                 1일 평균임금 = 최근 3개월 급여 합계 ÷ 90일
               </p>
             </div>
 
             {/* 예시 계산 */}
             <div className="space-y-2">
-              <p className="text-xs font-bold text-[#565D6A] uppercase tracking-wide">예시 계산</p>
-              <div className="flex justify-between items-center py-2 border-b border-[#F2F4F6]">
-                <span className="text-sm text-[#333D4B]">월 평균 급여</span>
-                <span className="text-sm font-bold text-[#191F28]">250만 원</span>
+              <p className="text-xs font-bold text-up-sub uppercase tracking-wide">예시 계산</p>
+              <div className="flex justify-between items-center py-2 border-b border-up-sunken">
+                <span className="text-sm text-up-body">월 평균 급여</span>
+                <span className="text-sm font-bold text-ink-900">250만 원</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-[#F2F4F6]">
-                <span className="text-sm text-[#333D4B]">근무 기간</span>
-                <span className="text-sm font-bold text-[#191F28]">2년 (730일)</span>
+              <div className="flex justify-between items-center py-2 border-b border-up-sunken">
+                <span className="text-sm text-up-body">근무 기간</span>
+                <span className="text-sm font-bold text-ink-900">2년 (730일)</span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-sm font-bold text-[#3182f6]">예상 퇴직금</span>
-                <span className="text-base font-bold text-[#3182f6]">약 164만 원</span>
+                <span className="text-sm font-bold text-brand">예상 퇴직금</span>
+                <span className="text-base font-bold text-brand">약 164만 원</span>
               </div>
             </div>
           </motion.section>
@@ -229,18 +229,18 @@ export default function CoupangSeveranceLanding() {
             transition={{ delay: 0.2 }}
             className="bg-white rounded-2xl p-5 shadow-sm"
           >
-            <h2 className="text-[1.05rem] font-bold text-[#191F28] mb-4">
+            <h2 className="text-[1.05rem] font-bold text-ink-900 mb-4">
               📌 계산하는 방법 (4단계)
             </h2>
             <div className="space-y-4">
               {STEPS.map((s) => (
                 <div key={s.step} className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-[#3182f6] text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-brand text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
                     {s.step}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-[#191F28]">{s.title}</p>
-                    <p className="text-xs text-[#565D6A] mt-0.5">{s.desc}</p>
+                    <p className="text-sm font-bold text-ink-900">{s.title}</p>
+                    <p className="text-xs text-up-sub mt-0.5">{s.desc}</p>
                   </div>
                 </div>
               ))}
@@ -254,7 +254,7 @@ export default function CoupangSeveranceLanding() {
             transition={{ delay: 0.25 }}
             className="bg-white rounded-2xl p-5 shadow-sm"
           >
-            <h2 className="text-[1.05rem] font-bold text-[#191F28] mb-4">
+            <h2 className="text-[1.05rem] font-bold text-ink-900 mb-4">
               ✅ CATCH 계산기가 다른 이유
             </h2>
             <div className="space-y-3">
@@ -265,10 +265,10 @@ export default function CoupangSeveranceLanding() {
                 { icon: <CheckCircle size={16} />, title: '완전 무료', desc: '광고·결제 없이 계산 결과를 바로 저장하고 공유할 수 있습니다' },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3">
-                  <div className="text-[#3182f6] flex-shrink-0 mt-0.5">{item.icon}</div>
+                  <div className="text-brand flex-shrink-0 mt-0.5">{item.icon}</div>
                   <div>
-                    <p className="text-sm font-bold text-[#191F28]">{item.title}</p>
-                    <p className="text-xs text-[#565D6A] mt-0.5">{item.desc}</p>
+                    <p className="text-sm font-bold text-ink-900">{item.title}</p>
+                    <p className="text-xs text-up-sub mt-0.5">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -282,14 +282,14 @@ export default function CoupangSeveranceLanding() {
             transition={{ delay: 0.3 }}
             className="bg-white rounded-2xl p-5 shadow-sm"
           >
-            <h2 className="text-[1.05rem] font-bold text-[#191F28] mb-4">
+            <h2 className="text-[1.05rem] font-bold text-ink-900 mb-4">
               ❓ 자주 묻는 질문
             </h2>
             <div className="space-y-4">
               {FAQ_SCHEMA.mainEntity.map((q, i) => (
-                <div key={i} className="border-b border-[#F2F4F6] last:border-0 pb-4 last:pb-0">
-                  <p className="text-sm font-bold text-[#333D4B] mb-1.5">Q. {q.name}</p>
-                  <p className="text-xs text-[#565D6A] leading-relaxed">{q.acceptedAnswer.text}</p>
+                <div key={i} className="border-b border-up-sunken last:border-0 pb-4 last:pb-0">
+                  <p className="text-sm font-bold text-up-body mb-1.5">Q. {q.name}</p>
+                  <p className="text-xs text-up-sub leading-relaxed">{q.acceptedAnswer.text}</p>
                 </div>
               ))}
             </div>
@@ -304,13 +304,13 @@ export default function CoupangSeveranceLanding() {
           >
             <button
               onClick={() => navigate('/severance')}
-              className="w-full bg-[#3182f6] text-white font-bold rounded-2xl py-4 text-base flex items-center justify-center gap-2 shadow-lg"
+              className="w-full bg-brand text-white font-bold rounded-2xl py-4 text-base flex items-center justify-center gap-2 shadow-lg"
             >
               <Calculator size={20} />
               지금 무료로 계산하기
               <ChevronRight size={18} />
             </button>
-            <p className="text-center text-xs text-[#565D6A] mt-3">
+            <p className="text-center text-xs text-up-sub mt-3">
               완전 무료 · 회원가입 없이도 계산 가능
             </p>
           </motion.div>

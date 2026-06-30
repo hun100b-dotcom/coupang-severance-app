@@ -145,10 +145,10 @@ export default function DayWorkerSeveranceGuide() {
         jsonLd={[FAQ_SCHEMA, ARTICLE_SCHEMA]}
       />
 
-      <div className="min-h-screen bg-[#F2F4F6]">
+      <div className="min-h-screen bg-up-sunken">
 
         {/* ── 히어로 ──────────────────────────────────────── */}
-        <div className="bg-gradient-to-br from-[#333D4B] to-[#4E5968] text-white px-5 pt-14 pb-10">
+        <div className="bg-gradient-to-br from-up-body to-ink-700 text-white px-5 pt-14 pb-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -174,7 +174,7 @@ export default function DayWorkerSeveranceGuide() {
             <motion.button
               onClick={() => navigate('/calculator')}
               whileTap={{ scale: 0.97 }}
-              className="w-full bg-white text-[#333D4B] font-bold rounded-2xl py-4 text-base flex items-center justify-center gap-2 shadow-lg"
+              className="w-full bg-white text-up-body font-bold rounded-2xl py-4 text-base flex items-center justify-center gap-2 shadow-lg"
             >
               <Calculator size={20} />
               내 권리 무료로 계산하기
@@ -191,7 +191,7 @@ export default function DayWorkerSeveranceGuide() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <h2 className="text-[1.05rem] font-bold text-[#191F28] mb-4">
+            <h2 className="text-[1.05rem] font-bold text-ink-900 mb-4">
               💼 일용직 근로자가 받을 수 있는 4가지 권리
             </h2>
             <div className="space-y-3">
@@ -208,7 +208,7 @@ export default function DayWorkerSeveranceGuide() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <p className="text-[0.95rem] font-bold text-[#191F28]">{r.title}</p>
+                      <p className="text-[0.95rem] font-bold text-ink-900">{r.title}</p>
                       <span
                         className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                         style={{ backgroundColor: r.bg, color: r.color }}
@@ -216,7 +216,7 @@ export default function DayWorkerSeveranceGuide() {
                         {r.subtitle}
                       </span>
                     </div>
-                    <p className="text-xs text-[#565D6A] mb-2">{r.desc}</p>
+                    <p className="text-xs text-up-sub mb-2">{r.desc}</p>
                     <button
                       onClick={() => navigate(r.action)}
                       className="text-xs font-bold flex items-center gap-1"
@@ -238,22 +238,22 @@ export default function DayWorkerSeveranceGuide() {
             transition={{ delay: 0.15 }}
             className="bg-white rounded-2xl p-5 shadow-sm"
           >
-            <h2 className="text-[1.05rem] font-bold text-[#191F28] mb-4">
+            <h2 className="text-[1.05rem] font-bold text-ink-900 mb-4">
               📊 근무 조건별 예상 퇴직금
             </h2>
             <div className="space-y-3">
               {CASES.map((c, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-[#F2F4F6] last:border-0">
+                <div key={i} className="flex items-center justify-between py-2 border-b border-up-sunken last:border-0">
                   <div>
-                    <p className="text-sm text-[#333D4B]">{c.label}</p>
-                    {c.note && <p className="text-xs text-[#565D6A]">{c.note}</p>}
+                    <p className="text-sm text-up-body">{c.label}</p>
+                    {c.note && <p className="text-xs text-up-sub">{c.note}</p>}
                   </div>
-                  <span className="text-sm font-bold text-[#3182f6]">{c.amount}</span>
+                  <span className="text-sm font-bold text-brand">{c.amount}</span>
                 </div>
               ))}
             </div>
-            <div className="mt-4 p-3 bg-[#F2F4F6] rounded-xl">
-              <p className="text-xs text-[#565D6A] leading-relaxed">
+            <div className="mt-4 p-3 bg-up-sunken rounded-xl">
+              <p className="text-xs text-up-sub leading-relaxed">
                 💡 실제 금액은 근무일 패턴·공백 기간·수당 내역에 따라 달라집니다.
                 CATCH 계산기에서 정확하게 계산해보세요.
               </p>
@@ -267,7 +267,7 @@ export default function DayWorkerSeveranceGuide() {
             transition={{ delay: 0.2 }}
             className="bg-white rounded-2xl p-5 shadow-sm"
           >
-            <h2 className="text-[1.05rem] font-bold text-[#191F28] mb-4">
+            <h2 className="text-[1.05rem] font-bold text-ink-900 mb-4">
               ⚖️ 알아두면 유용한 노동 법률
             </h2>
             <div className="space-y-3">
@@ -278,11 +278,11 @@ export default function DayWorkerSeveranceGuide() {
                 { law: '고용보험법 제40조', desc: '피보험단위기간 180일 이상 + 비자발적 이직 시 실업급여 지급' },
                 { law: '근로기준법 제49조', desc: '퇴직금 청구권 소멸시효: 퇴직일로부터 3년' },
               ].map((item, i) => (
-                <div key={i} className="flex items-start gap-3 py-2 border-b border-[#F2F4F6] last:border-0">
-                  <div className="w-2 h-2 rounded-full bg-[#3182f6] flex-shrink-0 mt-2" />
+                <div key={i} className="flex items-start gap-3 py-2 border-b border-up-sunken last:border-0">
+                  <div className="w-2 h-2 rounded-full bg-brand flex-shrink-0 mt-2" />
                   <div>
-                    <p className="text-xs font-bold text-[#3182f6]">{item.law}</p>
-                    <p className="text-sm text-[#333D4B] mt-0.5">{item.desc}</p>
+                    <p className="text-xs font-bold text-brand">{item.law}</p>
+                    <p className="text-sm text-up-body mt-0.5">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -296,14 +296,14 @@ export default function DayWorkerSeveranceGuide() {
             transition={{ delay: 0.25 }}
             className="bg-white rounded-2xl p-5 shadow-sm"
           >
-            <h2 className="text-[1.05rem] font-bold text-[#191F28] mb-4">
+            <h2 className="text-[1.05rem] font-bold text-ink-900 mb-4">
               ❓ 자주 묻는 질문
             </h2>
             <div className="space-y-4">
               {FAQ_SCHEMA.mainEntity.map((q, i) => (
-                <div key={i} className="border-b border-[#F2F4F6] last:border-0 pb-4 last:pb-0">
-                  <p className="text-sm font-bold text-[#333D4B] mb-1.5">Q. {q.name}</p>
-                  <p className="text-xs text-[#565D6A] leading-relaxed">{q.acceptedAnswer.text}</p>
+                <div key={i} className="border-b border-up-sunken last:border-0 pb-4 last:pb-0">
+                  <p className="text-sm font-bold text-up-body mb-1.5">Q. {q.name}</p>
+                  <p className="text-xs text-up-sub leading-relaxed">{q.acceptedAnswer.text}</p>
                 </div>
               ))}
             </div>
@@ -318,7 +318,7 @@ export default function DayWorkerSeveranceGuide() {
           >
             <button
               onClick={() => navigate('/severance')}
-              className="w-full bg-[#3182f6] text-white font-bold rounded-2xl py-4 text-base flex items-center justify-center gap-2 shadow-lg"
+              className="w-full bg-brand text-white font-bold rounded-2xl py-4 text-base flex items-center justify-center gap-2 shadow-lg"
             >
               <Calculator size={20} />
               퇴직금 무료 계산하기
@@ -331,7 +331,7 @@ export default function DayWorkerSeveranceGuide() {
               <ShieldCheck size={18} />
               실업급여 수급 자격 확인하기
             </button>
-            <p className="text-center text-xs text-[#565D6A]">
+            <p className="text-center text-xs text-up-sub">
               완전 무료 · 회원가입 없이도 계산 가능
             </p>
           </motion.div>

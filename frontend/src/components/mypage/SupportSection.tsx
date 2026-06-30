@@ -45,7 +45,7 @@ const CATEGORY_TABS = ['전체', '퇴직금/실업급여', '서류발급', '오�
 function StatusBadge({ status, answered }: { status: string | null; answered: boolean }) {
   if (answered || status === '답변완료' || status === 'answered') {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-600">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-accent-bg text-accent-700">
         <CheckCircle2 className="w-3 h-3" />
         완료
       </span>
@@ -61,7 +61,7 @@ function StatusBadge({ status, answered }: { status: string | null; answered: bo
   }
   // 기본: 접수됨 (대기중)
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-600">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-warning/10 text-[#B45309]">
       <Clock className="w-3 h-3" />
       접수됨
     </span>

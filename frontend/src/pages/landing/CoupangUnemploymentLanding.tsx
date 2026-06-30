@@ -117,7 +117,7 @@ export default function CoupangUnemploymentLanding() {
       />
 
       {/* 전체 배경 */}
-      <div className="min-h-screen bg-[#F2F4F6]">
+      <div className="min-h-screen bg-up-sunken">
 
         {/* ── 히어로 ──────────────────────────────────────── */}
         <div className="bg-gradient-to-br from-[#0f8456] to-[#12a769] text-white px-5 pt-14 pb-10">
@@ -164,7 +164,7 @@ export default function CoupangUnemploymentLanding() {
             transition={{ delay: 0.1 }}
             className="bg-white rounded-2xl p-5 shadow-sm"
           >
-            <h2 className="text-[1.05rem] font-bold text-[#191F28] mb-4">
+            <h2 className="text-[1.05rem] font-bold text-ink-900 mb-4">
               📋 실업급여 수급 조건
             </h2>
 
@@ -173,17 +173,17 @@ export default function CoupangUnemploymentLanding() {
               {CONDITIONS_OK.map((c, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <CheckCircle size={16} className="text-[#0f8456] flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-[#333D4B]">{c}</span>
+                  <span className="text-sm text-up-body">{c}</span>
                 </li>
               ))}
             </ul>
 
-            <p className="text-xs font-bold text-[#F04452] mb-2 uppercase tracking-wide">❌ 아래 해당하면 신청 불가</p>
+            <p className="text-xs font-bold text-danger mb-2 uppercase tracking-wide">❌ 아래 해당하면 신청 불가</p>
             <ul className="space-y-2">
               {CONDITIONS_NO.map((c, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <XCircle size={16} className="text-[#F04452] flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-[#565D6A]">{c}</span>
+                  <XCircle size={16} className="text-danger flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-up-sub">{c}</span>
                 </li>
               ))}
             </ul>
@@ -196,7 +196,7 @@ export default function CoupangUnemploymentLanding() {
             transition={{ delay: 0.15 }}
             className="bg-white rounded-2xl p-5 shadow-sm"
           >
-            <h2 className="text-[1.05rem] font-bold text-[#191F28] mb-4">
+            <h2 className="text-[1.05rem] font-bold text-ink-900 mb-4">
               💰 실업급여 금액 계산법
             </h2>
 
@@ -204,21 +204,21 @@ export default function CoupangUnemploymentLanding() {
               <p className="text-sm font-mono text-[#0f8456] leading-relaxed">
                 1일 실업급여 = 기초일액 × 60%
               </p>
-              <p className="text-xs text-[#565D6A] mt-2">
+              <p className="text-xs text-up-sub mt-2">
                 기초일액 = 퇴직 전 3개월 평균임금
               </p>
             </div>
 
             {/* 2026년 상·하한액 */}
             <div className="space-y-2">
-              <p className="text-xs font-bold text-[#565D6A] uppercase tracking-wide">2026년 기준</p>
-              <div className="flex justify-between items-center py-2 border-b border-[#F2F4F6]">
-                <span className="text-sm text-[#333D4B]">1일 상한액</span>
-                <span className="text-sm font-bold text-[#191F28]">68,100원</span>
+              <p className="text-xs font-bold text-up-sub uppercase tracking-wide">2026년 기준</p>
+              <div className="flex justify-between items-center py-2 border-b border-up-sunken">
+                <span className="text-sm text-up-body">1일 상한액</span>
+                <span className="text-sm font-bold text-ink-900">68,100원</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-[#F2F4F6]">
-                <span className="text-sm text-[#333D4B]">최대 수급 기간</span>
-                <span className="text-sm font-bold text-[#191F28]">최대 270일</span>
+              <div className="flex justify-between items-center py-2 border-b border-up-sunken">
+                <span className="text-sm text-up-body">최대 수급 기간</span>
+                <span className="text-sm font-bold text-ink-900">최대 270일</span>
               </div>
               <div className="flex justify-between items-center py-2">
                 <span className="text-sm font-bold text-[#0f8456]">최대 수령 총액</span>
@@ -226,8 +226,8 @@ export default function CoupangUnemploymentLanding() {
               </div>
             </div>
 
-            <div className="mt-4 p-3 bg-[#F2F4F6] rounded-xl">
-              <p className="text-xs text-[#565D6A] leading-relaxed">
+            <div className="mt-4 p-3 bg-up-sunken rounded-xl">
+              <p className="text-xs text-up-sub leading-relaxed">
                 <AlertTriangle size={12} className="inline mr-1" />
                 정확한 금액은 나이·피보험기간·임금에 따라 달라집니다.
                 CATCH 계산기에서 내 상황에 맞게 계산해보세요.
@@ -242,7 +242,7 @@ export default function CoupangUnemploymentLanding() {
             transition={{ delay: 0.2 }}
             className="bg-white rounded-2xl p-5 shadow-sm"
           >
-            <h2 className="text-[1.05rem] font-bold text-[#191F28] mb-4">
+            <h2 className="text-[1.05rem] font-bold text-ink-900 mb-4">
               📌 실업급여 신청 방법 (5단계)
             </h2>
             <div className="space-y-4">
@@ -252,8 +252,8 @@ export default function CoupangUnemploymentLanding() {
                     {s.step}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-[#191F28]">{s.title}</p>
-                    <p className="text-xs text-[#565D6A] mt-0.5">{s.desc}</p>
+                    <p className="text-sm font-bold text-ink-900">{s.title}</p>
+                    <p className="text-xs text-up-sub mt-0.5">{s.desc}</p>
                   </div>
                 </div>
               ))}
@@ -267,14 +267,14 @@ export default function CoupangUnemploymentLanding() {
             transition={{ delay: 0.25 }}
             className="bg-white rounded-2xl p-5 shadow-sm"
           >
-            <h2 className="text-[1.05rem] font-bold text-[#191F28] mb-4">
+            <h2 className="text-[1.05rem] font-bold text-ink-900 mb-4">
               ❓ 자주 묻는 질문
             </h2>
             <div className="space-y-4">
               {FAQ_SCHEMA.mainEntity.map((q, i) => (
-                <div key={i} className="border-b border-[#F2F4F6] last:border-0 pb-4 last:pb-0">
-                  <p className="text-sm font-bold text-[#333D4B] mb-1.5">Q. {q.name}</p>
-                  <p className="text-xs text-[#565D6A] leading-relaxed">{q.acceptedAnswer.text}</p>
+                <div key={i} className="border-b border-up-sunken last:border-0 pb-4 last:pb-0">
+                  <p className="text-sm font-bold text-up-body mb-1.5">Q. {q.name}</p>
+                  <p className="text-xs text-up-sub leading-relaxed">{q.acceptedAnswer.text}</p>
                 </div>
               ))}
             </div>
@@ -297,12 +297,12 @@ export default function CoupangUnemploymentLanding() {
             </button>
             <button
               onClick={() => navigate('/severance')}
-              className="w-full bg-white text-[#3182f6] border border-[#3182f6]/30 font-bold rounded-2xl py-3.5 text-sm flex items-center justify-center gap-2"
+              className="w-full bg-white text-brand border border-brand/30 font-bold rounded-2xl py-3.5 text-sm flex items-center justify-center gap-2"
             >
               <Briefcase size={18} />
               퇴직금도 같이 계산하기
             </button>
-            <p className="text-center text-xs text-[#565D6A]">
+            <p className="text-center text-xs text-up-sub">
               완전 무료 · 회원가입 없이도 계산 가능
             </p>
           </motion.div>

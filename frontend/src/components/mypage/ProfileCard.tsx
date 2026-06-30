@@ -49,7 +49,7 @@ export function ProfileCard({ name, email, avatarUrl, joinedAt, daysWithCatch, o
               <img src={avatarUrl} alt=""
                 className="w-16 h-16 rounded-2xl object-cover border-4 border-white shadow-[0_4px_20px_rgba(15,23,42,0.15)]" />
             ) : (
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#3182f6] to-[#60a5fa] flex items-center justify-center border-4 border-white shadow-[0_4px_20px_rgba(49,130,246,0.4)]">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand to-[#60a5fa] flex items-center justify-center border-4 border-white shadow-[0_4px_20px_rgba(49,130,246,0.4)]">
                 <span className="text-2xl font-extrabold text-white">{getInitial(name)}</span>
               </div>
             )}

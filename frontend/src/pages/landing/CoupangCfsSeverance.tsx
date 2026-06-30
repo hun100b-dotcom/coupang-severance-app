@@ -120,7 +120,7 @@ export default function CoupangCfsSeverance() {
         jsonLd={[FAQ_SCHEMA, ARTICLE_SCHEMA]}
       />
 
-      <div className="min-h-screen bg-[#F2F4F6] pb-20">
+      <div className="min-h-screen bg-up-sunken pb-20">
         {/* ── 헤더 히어로 ── */}
         <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] px-4 pt-12 pb-10 text-white">
           <motion.div
@@ -163,21 +163,21 @@ export default function CoupangCfsSeverance() {
             transition={{ delay: 0.1 }}
           >
             <h2 className="text-base font-bold text-up-navy mb-4 flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500" />
+              <CheckCircle className="w-4 h-4 text-accent-700" />
               CFS 퇴직금 수급 조건
             </h2>
             <div className="space-y-3">
               {CFS_CONDITIONS.map((c, i) => (
                 <div key={i} className="flex items-start gap-3">
                   {c.ok
-                    ? <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    ? <CheckCircle className="w-4 h-4 text-accent-700 mt-0.5 flex-shrink-0" />
                     : <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                   }
                   <p className="text-sm text-up-body">{c.text}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-4 bg-slate-50 rounded-xl p-3 text-xs text-up-sub">
+            <div className="mt-4 bg-up-sunken rounded-xl p-3 text-xs text-up-sub">
               <strong>⚖️ 법적 근거:</strong> 근로자퇴직급여보장법 제4조. CFS 소속 일용직도 동일 적용.
               재판 진행과 무관하게 근로자의 청구권은 별개로 보호됩니다.
             </div>
@@ -191,13 +191,13 @@ export default function CoupangCfsSeverance() {
             transition={{ delay: 0.2 }}
           >
             <h2 className="text-base font-bold text-up-navy mb-4 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-blue-500" />
+              <FileText className="w-4 h-4 text-brand" />
               CFS 퇴직금 계산 4단계
             </h2>
             <div className="space-y-4">
               {CALC_STEPS.map((s) => (
                 <div key={s.step} className="flex gap-3">
-                  <div className="w-7 h-7 rounded-full bg-slate-800 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-up-navy text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
                     {s.step}
                   </div>
                   <div>
@@ -224,10 +224,10 @@ export default function CoupangCfsSeverance() {
               일반 월급제 계산(30일 기준)으로는 블록 경계에서 근무일 계산 오류가 발생합니다.
               정확한 퇴직금은 반드시 <strong>28일 단위 블록 알고리즘</strong>을 적용해야 합니다.
             </p>
-            <div className="bg-gray-50 rounded-xl p-3 font-mono text-xs text-up-body space-y-1">
+            <div className="bg-up-sunken rounded-xl p-3 font-mono text-xs text-up-body space-y-1">
               <p>퇴직금 = (1일 평균임금 × 30) × (적격근무일수 ÷ 365)</p>
-              <p className="text-green-700 font-bold">예: 적격일수 450일, 평균일급 80,000원</p>
-              <p className="text-green-700">→ 80,000 × 30 × (450÷365) ≒ <strong>295만 원</strong></p>
+              <p className="text-accent-700 font-bold">예: 적격일수 450일, 평균일급 80,000원</p>
+              <p className="text-accent-700">→ 80,000 × 30 × (450÷365) ≒ <strong>295만 원</strong></p>
             </div>
           </motion.section>
 
@@ -253,16 +253,16 @@ export default function CoupangCfsSeverance() {
 
           {/* 소멸시효 */}
           <motion.section
-            className="bg-red-50 border border-red-200 rounded-2xl p-4"
+            className="bg-danger/10 border border-danger/30 rounded-2xl p-4"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
             <div className="flex items-start gap-3">
-              <Clock className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+              <Clock className="w-5 h-5 text-danger mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-bold text-red-800">소멸시효 — 퇴직 후 3년</p>
-                <p className="text-xs text-red-700 mt-1">
+                <p className="text-sm font-bold text-danger">소멸시효 — 퇴직 후 3년</p>
+                <p className="text-xs text-danger mt-1">
                   2023년 이후 퇴직자는 아직 청구 가능합니다.
                   2022년 퇴직자는 2025년 말까지만 청구 가능합니다. 지금 확인하세요.
                 </p>
@@ -296,7 +296,7 @@ export default function CoupangCfsSeverance() {
                   a: '고용노동부 민원마당(moel.go.kr)에 진정을 접수하면 근로감독관이 조사합니다. 퇴직금 미지급은 3년 이하 징역 또는 2,000만 원 이하 벌금에 해당합니다.',
                 },
               ].map((faq, i) => (
-                <div key={i} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                <div key={i} className="border-b border-up-hair pb-4 last:border-0 last:pb-0">
                   <p className="text-sm font-semibold text-up-navy mb-1">Q. {faq.q}</p>
                   <p className="text-sm text-up-sub">A. {faq.a}</p>
                 </div>
@@ -312,13 +312,13 @@ export default function CoupangCfsSeverance() {
           >
             <button
               onClick={() => navigate('/severance')}
-              className="w-full bg-slate-800 text-white font-bold py-4 rounded-2xl text-base shadow-lg hover:bg-slate-900 transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-up-navy text-white font-bold py-4 rounded-2xl text-base shadow-lg hover:bg-ink-900 transition-colors flex items-center justify-center gap-2"
             >
               <Calculator className="w-5 h-5" />
               CFS 퇴직금 지금 계산하기
               <ChevronRight className="w-5 h-5" />
             </button>
-            <p className="text-center text-xs text-gray-400 mt-2">28일 블록 자동 적용 · PDF 업로드 · 3분 · 완전 무료</p>
+            <p className="text-center text-xs text-up-sub mt-2">28일 블록 자동 적용 · PDF 업로드 · 3분 · 완전 무료</p>
           </motion.div>
 
         </div>

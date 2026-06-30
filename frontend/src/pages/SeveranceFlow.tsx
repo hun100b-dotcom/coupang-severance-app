@@ -469,7 +469,7 @@ export default function SeveranceFlow() {
               )}
               {!extractLoading && pdfCompanies.length > 0 && (
                 <CalcInputCard>
-                  <p className="text-[14px] font-bold text-[#191f28] mb-3">
+                  <p className="text-[14px] font-bold text-ink-900 mb-3">
                     계산할 사업장을 선택하세요
                     <span className="text-[12px] font-normal text-up-sub ml-2">
                       ({pdfCompanies.length}개 추출됨)
@@ -487,7 +487,7 @@ export default function SeveranceFlow() {
                         <span className="shrink-0">
                           {selectedPdfCompany === name
                             ? <Check size={14} strokeWidth={2.5} className="text-brand" />
-                            : <span className="w-3.5 h-3.5 rounded-full border-[1.5px] border-slate-300 inline-block" />
+                            : <span className="w-3.5 h-3.5 rounded-full border-[1.5px] border-up-hair inline-block" />
                           }
                         </span>
                         <span className="text-[14px] font-medium text-up-navy">{name}</span>
@@ -499,7 +499,7 @@ export default function SeveranceFlow() {
 
               {/* 마지막 근무일 */}
               <CalcInputCard>
-                <label className="block text-[14px] font-semibold text-[#191f28] mb-2">
+                <label className="block text-[14px] font-semibold text-ink-900 mb-2">
                   마지막 근무일 (선택)
                 </label>
                 <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
@@ -538,7 +538,7 @@ export default function SeveranceFlow() {
               <CalcInputCard>
                 <div className="flex flex-col gap-5">
                   <div>
-                    <label className="block text-[14px] font-semibold text-[#191f28] mb-2">전체 근무일수 (일)</label>
+                    <label className="block text-[14px] font-semibold text-ink-900 mb-2">전체 근무일수 (일)</label>
                     <input
                       type="number"
                       placeholder="예: 400"
@@ -549,7 +549,7 @@ export default function SeveranceFlow() {
                     <p className="text-[12px] text-up-sub mt-1.5">첫 출근 ~ 마지막 퇴근까지의 총 일수</p>
                   </div>
                   <div>
-                    <label className="block text-[14px] font-semibold text-[#191f28] mb-2">평균 일당 (원)</label>
+                    <label className="block text-[14px] font-semibold text-ink-900 mb-2">평균 일당 (원)</label>
                     <input
                       type="number"
                       placeholder="예: 150000"
@@ -581,11 +581,11 @@ export default function SeveranceFlow() {
           className="w-full max-w-[520px] mx-auto px-4 pb-8 mt-2"
         >
           {/* ── 계산기 소개 ── */}
-          <div className="bg-blue-50 rounded-2xl p-5 mb-4">
-            <h1 className="text-base font-black text-blue-900 mb-2">
+          <div className="bg-brand-bg rounded-2xl p-5 mb-4">
+            <h1 className="text-base font-black text-brand-strong mb-2">
               쿠팡·CFS 일용직 퇴직금 계산기
             </h1>
-            <p className="text-sm text-blue-800 leading-relaxed">
+            <p className="text-sm text-brand-strong leading-relaxed">
               쿠팡·쿠팡풀필먼트서비스(CFS)·마켓컬리·CJ대한통운 등 일용직 근로자도
               <strong> 1년 이상·주 15시간 이상</strong> 근무했다면 퇴직금을 받을 권리가 있습니다.
               CATCH 계산기는 PDF 급여명세서를 업로드하면 <strong>28일 블록 알고리즘</strong>으로
@@ -595,32 +595,32 @@ export default function SeveranceFlow() {
           </div>
 
           {/* ── 자주 묻는 질문 ── */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-100">
-            <h2 className="text-sm font-black text-gray-900 mb-3">자주 묻는 질문</h2>
+          <div className="bg-white rounded-2xl p-5 border border-up-hair">
+            <h2 className="text-sm font-black text-up-navy mb-3">자주 묻는 질문</h2>
             <div className="space-y-3">
-              <details className="border-b border-gray-100 pb-3">
-                <summary className="text-sm font-semibold text-gray-800 cursor-pointer">
+              <details className="border-b border-up-hair pb-3">
+                <summary className="text-sm font-semibold text-up-body cursor-pointer">
                   쿠팡 CFS 퇴직금도 계산할 수 있나요?
                 </summary>
-                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                <p className="text-xs text-up-sub mt-2 leading-relaxed">
                   네, 가능합니다. 쿠팡·CFS·마켓컬리·CJ대한통운 급여명세서 PDF를 업로드하면
                   자동으로 인식하여 계산합니다. 간편계산의 경우 근무일수와 평균임금만 입력하면 됩니다.
                 </p>
               </details>
-              <details className="border-b border-gray-100 pb-3">
-                <summary className="text-sm font-semibold text-gray-800 cursor-pointer">
+              <details className="border-b border-up-hair pb-3">
+                <summary className="text-sm font-semibold text-up-body cursor-pointer">
                   퇴직금 계산에 필요한 서류는?
                 </summary>
-                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                <p className="text-xs text-up-sub mt-2 leading-relaxed">
                   정밀계산: 쿠팡 앱 → 근로내역 → PDF 저장한 급여명세서
                   간편계산: 총 근무일수 + 최근 3개월 평균 일급
                 </p>
               </details>
               <details>
-                <summary className="text-sm font-semibold text-gray-800 cursor-pointer">
+                <summary className="text-sm font-semibold text-up-body cursor-pointer">
                   퇴직금 소멸시효는 언제인가요?
                 </summary>
-                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                <p className="text-xs text-up-sub mt-2 leading-relaxed">
                   퇴직금 청구권의 소멸시효는 퇴직일로부터 <strong>3년</strong>입니다.
                   3년이 지나면 법적 청구가 불가하므로 지금 바로 확인하세요.
                 </p>

@@ -120,9 +120,9 @@ export default function CoupangPartTimeSeverance() {
         jsonLd={[FAQ_SCHEMA, ARTICLE_SCHEMA]}
       />
 
-      <div className="min-h-screen bg-[#F2F4F6] pb-20">
+      <div className="min-h-screen bg-up-sunken pb-20">
         {/* ── 헤더 히어로 섹션 ── */}
-        <div className="bg-gradient-to-br from-[#3182f6] to-[#1751B5] px-4 pt-12 pb-10 text-white">
+        <div className="bg-gradient-to-br from-brand to-[#1751B5] px-4 pt-12 pb-10 text-white">
           <motion.div
             className="max-w-lg mx-auto"
             initial={{ opacity: 0, y: 20 }}
@@ -147,7 +147,7 @@ export default function CoupangPartTimeSeverance() {
 
             <button
               onClick={() => navigate('/severance')}
-              className="flex items-center gap-2 bg-white text-[#3182f6] font-bold px-6 py-3 rounded-full text-sm shadow-lg hover:shadow-xl transition-all"
+              className="flex items-center gap-2 bg-white text-brand font-bold px-6 py-3 rounded-full text-sm shadow-lg hover:shadow-xl transition-all"
             >
               <Calculator className="w-4 h-4" />
               무료로 퇴직금 계산하기
@@ -168,21 +168,21 @@ export default function CoupangPartTimeSeverance() {
           >
             {/* H2 */}
             <h2 className="text-base font-bold text-up-navy mb-4 flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500" />
+              <CheckCircle className="w-4 h-4 text-accent-700" />
               쿠팡 알바 퇴직금 수급 조건
             </h2>
             <div className="space-y-3">
               {CONDITIONS.map((c, i) => (
                 <div key={i} className="flex items-start gap-3">
                   {c.ok
-                    ? <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    ? <CheckCircle className="w-4 h-4 text-accent-700 mt-0.5 flex-shrink-0" />
                     : <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                   }
                   <p className="text-sm text-up-body">{c.text}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-4 bg-blue-50 rounded-xl p-3 text-xs text-blue-700">
+            <div className="mt-4 bg-brand-bg rounded-xl p-3 text-xs text-brand-strong">
               <strong>핵심:</strong> "알바"·"일용직"·"파트타임" 명칭과 무관하게 실제 근무 기간과 시간이 기준입니다.
               근로자퇴직급여보장법 제4조 적용.
             </div>
@@ -196,13 +196,13 @@ export default function CoupangPartTimeSeverance() {
             transition={{ delay: 0.2 }}
           >
             <h2 className="text-base font-bold text-up-navy mb-4 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-blue-500" />
+              <FileText className="w-4 h-4 text-brand" />
               퇴직금 신청 4단계
             </h2>
             <div className="space-y-4">
               {STEPS.map((s) => (
                 <div key={s.step} className="flex gap-3">
-                  <div className="w-7 h-7 rounded-full bg-[#3182f6] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
                     {s.step}
                   </div>
                   <div>
@@ -225,8 +225,8 @@ export default function CoupangPartTimeSeverance() {
               <Calculator className="w-4 h-4 text-brand" />
               퇴직금 계산 공식 (2026년 기준)
             </h2>
-            <div className="bg-gray-50 rounded-xl p-4 font-mono text-sm text-center text-up-body mb-3">
-              퇴직금 = <span className="text-[#3182f6] font-bold">(1일 평균임금 × 30일)</span> × (재직일수 ÷ 365)
+            <div className="bg-up-sunken rounded-xl p-4 font-mono text-sm text-center text-up-body mb-3">
+              퇴직금 = <span className="text-brand font-bold">(1일 평균임금 × 30일)</span> × (재직일수 ÷ 365)
             </div>
             <div className="space-y-2 text-sm text-up-sub">
               <p>• <strong>1일 평균임금</strong> = 퇴직 직전 3개월 급여 합계 ÷ 90일</p>
@@ -280,7 +280,7 @@ export default function CoupangPartTimeSeverance() {
                   a: 'CATCH는 수동 입력 간편계산도 지원합니다. 고용24(www.work.go.kr)에서 근로내역 조회도 가능합니다.',
                 },
               ].map((faq, i) => (
-                <div key={i} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                <div key={i} className="border-b border-up-hair pb-4 last:border-0 last:pb-0">
                   <p className="text-sm font-semibold text-up-navy mb-1">Q. {faq.q}</p>
                   <p className="text-sm text-up-sub">A. {faq.a}</p>
                 </div>
@@ -296,13 +296,13 @@ export default function CoupangPartTimeSeverance() {
           >
             <button
               onClick={() => navigate('/severance')}
-              className="w-full bg-[#3182f6] text-white font-bold py-4 rounded-2xl text-base shadow-lg hover:bg-[#1B64DA] transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white font-bold py-4 rounded-2xl text-base shadow-lg hover:bg-brand-strong transition-colors flex items-center justify-center gap-2"
             >
               <Calculator className="w-5 h-5" />
               내 퇴직금 무료로 계산하기
               <ChevronRight className="w-5 h-5" />
             </button>
-            <p className="text-center text-xs text-gray-400 mt-2">3분 소요 · 완전 무료 · PDF 업로드 지원</p>
+            <p className="text-center text-xs text-up-sub mt-2">3분 소요 · 완전 무료 · PDF 업로드 지원</p>
           </motion.div>
 
         </div>

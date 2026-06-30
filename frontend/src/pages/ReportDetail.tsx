@@ -65,21 +65,21 @@ export default function ReportDetail() {
 
   if (loading) {
     return (
-      <div className="relative z-[1] min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4">
-        <div className="w-8 h-8 border-2 border-[#3182F6] border-t-transparent rounded-full animate-spin" />
-        <p className="mt-3 text-sm text-[#8B95A1]">리포트 불러오는 중...</p>
+      <div className="relative z-[1] min-h-screen bg-up-sunken flex flex-col items-center justify-center px-4">
+        <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+        <p className="mt-3 text-sm text-ink-500">리포트 불러오는 중...</p>
       </div>
     )
   }
 
   if (error || !report) {
     return (
-      <div className="relative z-[1] min-h-screen bg-[#F2F4F6] flex flex-col items-center justify-center px-4">
-        <p className="text-[#191F28] font-medium">{error ?? '존재하지 않는 리포트입니다.'}</p>
+      <div className="relative z-[1] min-h-screen bg-up-sunken flex flex-col items-center justify-center px-4">
+        <p className="text-ink-900 font-medium">{error ?? '존재하지 않는 리포트입니다.'}</p>
         <button
           type="button"
           onClick={() => navigate('/mypage')}
-          className="mt-4 text-sm text-[#3182F6] font-medium"
+          className="mt-4 text-sm text-brand font-medium"
         >
           마이페이지로 돌아가기
         </button>
@@ -94,7 +94,7 @@ export default function ReportDetail() {
           <button
             type="button"
             onClick={() => navigate('/mypage')}
-            className="flex items-center justify-center w-11 h-11 -ml-2 rounded-md text-ink-700 hover:bg-[#F2F4F6] transition-colors"
+            className="flex items-center justify-center w-11 h-11 -ml-2 rounded-md text-ink-700 hover:bg-up-sunken transition-colors"
             aria-label="뒤로"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -127,7 +127,7 @@ export default function ReportDetail() {
                 <div className="inline-flex items-center gap-2 mt-2">
                   <span className={`inline-block px-3 py-1 rounded-pill text-xs font-bold ${
                     (report.payload as SeverancePayload).eligible
-                      ? 'bg-accent-bg text-[#047857]'
+                      ? 'bg-accent-bg text-accent-700'
                       : 'bg-danger/10 text-danger'
                   }`}>
                     {(report.payload as SeverancePayload).eligible ? '✓ 수급 가능' : '✗ 요건 미충족'}
@@ -155,7 +155,7 @@ export default function ReportDetail() {
               </div>
 
               {(report.payload as SeverancePayload).eligibility_message && (
-                <div className="p-3 bg-[#F7F9FC] border border-up-hair rounded-md mb-4">
+                <div className="p-3 bg-page border border-up-hair rounded-md mb-4">
                   <p className="text-xs text-ink-700 font-medium mb-1">자격 판정</p>
                   <p className="text-sm text-ink-900 break-keep">{(report.payload as SeverancePayload).eligibility_message}</p>
                 </div>

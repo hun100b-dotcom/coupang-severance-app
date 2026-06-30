@@ -99,7 +99,7 @@ export function InquiryModal({ open, onClose, onSubmit }: InquiryModalProps) {
             <button
               type="submit"
               disabled={!title.trim() || !content.trim() || submitting}
-              className="w-full mt-2 inline-flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-white bg-brand-strong disabled:bg-slate-300 shadow-[0_14px_40px_rgba(49,130,246,0.35)] hover:bg-[#1b64da] transition-colors"
+              className="w-full mt-2 inline-flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-white bg-brand-strong disabled:bg-up-hair shadow-[0_14px_40px_rgba(49,130,246,0.35)] hover:bg-brand-strong transition-colors"
             >
               {submitting ? (
                 <>

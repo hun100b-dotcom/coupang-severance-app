@@ -98,8 +98,8 @@ export default function MyFavoritesTab({ userId }: Props) {
   if (fetchError) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-4">
-        <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
-          <AlertCircle className="w-8 h-8 text-red-300" />
+        <div className="w-16 h-16 rounded-full bg-danger/10 flex items-center justify-center">
+          <AlertCircle className="w-8 h-8 text-danger" />
         </div>
         <p className="text-[14px] font-bold text-up-sub">{fetchError}</p>
         <button
@@ -153,7 +153,7 @@ export default function MyFavoritesTab({ userId }: Props) {
               {/* 즐겨찾기 해제 버튼 */}
               <button
                 onClick={() => handleUnfavorite(fav.favorite_type, fav.favorite_value)}
-                className="ml-0.5 text-brand hover:text-red-400 transition-colors"
+                className="ml-0.5 text-brand hover:text-danger transition-colors"
                 title="즐겨찾기 해제"
               >
                 <Star className="w-3.5 h-3.5 fill-current" />
@@ -178,7 +178,7 @@ export default function MyFavoritesTab({ userId }: Props) {
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-[15px] font-extrabold text-up-navy">{job.company_name}</span>
                     {job.is_urgent && (
-                      <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold">급구</span>
+                      <span className="px-1.5 py-0.5 rounded-full bg-danger/10 text-danger text-[10px] font-bold">급구</span>
                     )}
                   </div>
                   <p className="text-[12px] text-up-sub mt-0.5">{job.center_name}</p>

@@ -112,9 +112,9 @@ export default function DailyWorker28Days() {
         jsonLd={[FAQ_SCHEMA, ARTICLE_SCHEMA]}
       />
 
-      <div className="min-h-screen bg-[#F2F4F6] pb-20">
+      <div className="min-h-screen bg-up-sunken pb-20">
         {/* ── 헤더 히어로 ── */}
-        <div className="bg-gradient-to-br from-[#1A2434] to-[#1e40af] px-4 pt-12 pb-10 text-white">
+        <div className="bg-gradient-to-br from-up-navy to-[#1e40af] px-4 pt-12 pb-10 text-white">
           <motion.div
             className="max-w-lg mx-auto"
             initial={{ opacity: 0, y: 20 }}
@@ -155,7 +155,7 @@ export default function DailyWorker28Days() {
             transition={{ delay: 0.1 }}
           >
             <h2 className="text-base font-bold text-up-navy mb-3 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-blue-500" />
+              <BarChart3 className="w-4 h-4 text-brand" />
               28일 블록이란 무엇인가?
             </h2>
             <p className="text-sm text-up-body leading-relaxed mb-3">
@@ -163,7 +163,7 @@ export default function DailyWorker28Days() {
               계산할 때, 마지막 근무일에서 역순으로 28일씩 블록을 나눕니다.
               각 블록에서 <strong>실제 근무일이 8일 이상이면 "적격 블록"</strong>으로 인정됩니다.
             </p>
-            <div className="bg-blue-50 rounded-xl p-3 text-xs text-blue-700 space-y-1">
+            <div className="bg-brand-bg rounded-xl p-3 text-xs text-brand-strong space-y-1">
               <p>✅ <strong>적격 블록</strong>: 블록 내 근무일 8일 이상 → 해당 28일 전체 적격 인정</p>
               <p>❌ <strong>비적격 블록</strong>: 근무일 7일 이하 → 해당 블록 제외</p>
             </div>
@@ -182,7 +182,7 @@ export default function DailyWorker28Days() {
                 <div
                   key={b.block}
                   className={`flex items-center justify-between p-3 rounded-xl text-sm ${
-                    b.eligible ? 'bg-green-50' : 'bg-red-50'
+                    b.eligible ? 'bg-accent-bg' : 'bg-danger/10'
                   }`}
                 >
                   <div>
@@ -192,8 +192,8 @@ export default function DailyWorker28Days() {
                   <div className="text-right">
                     <p className="font-bold">{b.workDays}일 근무</p>
                     {b.eligible
-                      ? <CheckCircle className="w-4 h-4 text-green-500 ml-auto" />
-                      : <AlertTriangle className="w-4 h-4 text-red-400 ml-auto" />
+                      ? <CheckCircle className="w-4 h-4 text-accent-700 ml-auto" />
+                      : <AlertTriangle className="w-4 h-4 text-danger ml-auto" />
                     }
                   </div>
                 </div>
@@ -214,21 +214,21 @@ export default function DailyWorker28Days() {
             <h2 className="text-base font-bold text-up-navy mb-3">퇴직금 계산 전체 공식</h2>
             <div className="space-y-2 text-sm text-up-body">
               <div className="flex gap-3">
-                <span className="w-5 h-5 rounded-full bg-[#3182f6] text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">1</span>
+                <span className="w-5 h-5 rounded-full bg-brand text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">1</span>
                 <p>적격 블록 일수 합산 = <strong>qualifying_days</strong></p>
               </div>
               <div className="flex gap-3">
-                <span className="w-5 h-5 rounded-full bg-[#3182f6] text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">2</span>
+                <span className="w-5 h-5 rounded-full bg-brand text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">2</span>
                 <p>qualifying_days ÷ 365 ≥ 1이면 <strong>퇴직금 대상</strong></p>
               </div>
               <div className="flex gap-3">
-                <span className="w-5 h-5 rounded-full bg-[#3182f6] text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">3</span>
+                <span className="w-5 h-5 rounded-full bg-brand text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">3</span>
                 <p>퇴직금 = <strong>(1일 평균임금 × 30) × (qualifying_days ÷ 365)</strong></p>
               </div>
             </div>
-            <div className="mt-4 bg-gray-50 rounded-xl p-3 font-mono text-xs text-up-body">
+            <div className="mt-4 bg-up-sunken rounded-xl p-3 font-mono text-xs text-up-body">
               예시: qualifying_days=420일, 1일 평균임금 77,000원<br />
-              → 77,000 × 30 × (420 ÷ 365) ≒ <span className="font-bold text-green-700">266만 원</span>
+              → 77,000 × 30 × (420 ÷ 365) ≒ <span className="font-bold text-accent-700">266만 원</span>
             </div>
           </motion.section>
 
@@ -258,7 +258,7 @@ export default function DailyWorker28Days() {
                   a: '물류센터 운영 방식에 따라 다를 수 있습니다. 급여명세서의 지급 주기를 확인하세요. CATCH에 PDF를 업로드하면 자동으로 판별합니다.',
                 },
               ].map((faq, i) => (
-                <div key={i} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                <div key={i} className="border-b border-up-hair pb-4 last:border-0 last:pb-0">
                   <p className="text-sm font-semibold text-up-navy mb-1">Q. {faq.q}</p>
                   <p className="text-sm text-up-sub">A. {faq.a}</p>
                 </div>
@@ -280,7 +280,7 @@ export default function DailyWorker28Days() {
               28일 블록 자동 계산하기
               <ChevronRight className="w-5 h-5" />
             </button>
-            <p className="text-center text-xs text-gray-400 mt-2">PDF 업로드 → 3분 안에 자동 계산 · 완전 무료</p>
+            <p className="text-center text-xs text-up-sub mt-2">PDF 업로드 → 3분 안에 자동 계산 · 완전 무료</p>
           </motion.div>
 
         </div>

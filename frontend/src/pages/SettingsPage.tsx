@@ -22,8 +22,8 @@ export default function SettingsPage() {
   // 인증 확인 중 로딩 표시
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F2F4F6] flex items-center justify-center relative z-[1]">
-        <p className="text-sm text-ink-500">로딩 중...</p>
+      <div className="min-h-screen bg-up-sunken flex items-center justify-center relative z-[1]">
+        <p className="text-sm text-ink-700">로딩 중...</p>
       </div>
     )
   }
@@ -31,17 +31,17 @@ export default function SettingsPage() {
   // 비로그인 상태 (리다이렉트 전 잠깐 표시)
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-[#F2F4F6] flex items-center justify-center relative z-[1]">
-        <p className="text-sm text-ink-500">로그인이 필요합니다. 이동 중...</p>
+      <div className="min-h-screen bg-up-sunken flex items-center justify-center relative z-[1]">
+        <p className="text-sm text-ink-700">로그인이 필요합니다. 이동 중...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F4F6] pb-24 relative z-[1]">
+    <div className="min-h-screen bg-up-sunken pb-24 relative z-[1]">
 
       {/* ── 헤더 ── */}
-      <header className="sticky top-0 z-30 bg-[#F2F4F6] border-b border-line">
+      <header className="sticky top-0 z-30 bg-up-sunken border-b border-line">
         <div className="max-w-[640px] mx-auto px-4 h-14 flex items-center gap-2">
           {/* 뒤로가기 버튼 */}
           <button
@@ -55,7 +55,7 @@ export default function SettingsPage() {
 
           {/* 페이지 제목 */}
           <div className="flex items-center gap-1.5">
-            <Settings className="w-4 h-4 text-ink-500" />
+            <Settings className="w-4 h-4 text-ink-600" />
             <h1 className="text-[17px] font-extrabold text-ink-900 tracking-tight">설정</h1>
           </div>
         </div>
