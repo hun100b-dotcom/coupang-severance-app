@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { UP } from '../shared/adminTheme'
-import { getSettings, getBlockedIps, patchSetting } from '../../../lib/api'
+import { getSettings, getBlockedIps, patchSetting, setUnmaskKey, getUnmaskKeyStatus } from '../../../lib/api'
+import { supabase } from '../../../lib/supabase'
 import type { SystemSettings, BlockedIp } from '../../../types/admin'
 import DiscordSettings from '../settings/DiscordSettings'
 import CmsSettings from '../settings/CmsSettings'
@@ -191,35 +192,37 @@ function PermissionLevelsSection({ onSaved }: { onSaved: () => void }) {
 }
 
 // ── 개인정보 보안키 섹션 (슈퍼어드민 전용) ───────────────────
+// 보안 재설계(🔴#4): 과거에는 보안키를 system_settings 에 "평문 저장 + 공개 읽기"해서
+// 누구나 키를 조회할 수 있었다. 이제 서버가 PBKDF2 해시만 보관하므로 원문은 어디에도
+// 노출되지 않는다. 따라서 "현재 키 보기"는 불가능하고, "설정 여부"만 표시한다.
 function MaskingKeySection() {
-  const [currentKey, setCurrentKey] = useState('')
+  const [configured, setConfigured] = useState(false)
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null)
   const [newKey, setNewKey] = useState('')
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
-  const [revealed, setRevealed] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const { data } = await (await import('../../../lib/supabase')).supabase!
-          .from('system_settings').select('value').eq('key', 'member_unmask_key').single()
-        setCurrentKey(data?.value ?? '')
-      } catch { setCurrentKey('') }
-      finally { setLoading(false) }
-    }
-    load()
-  }, [])
+  async function loadStatus() {
+    try {
+      const res = await getUnmaskKeyStatus()
+      setConfigured(!!res.configured)
+      setUpdatedAt(res.updated_at ?? null)
+    } catch { setConfigured(false) }
+    finally { setLoading(false) }
+  }
+
+  useEffect(() => { loadStatus() }, [])
 
   async function save() {
     if (!newKey.trim()) { setMsg('새 보안키를 입력하세요.'); return }
     setSaving(true); setMsg('')
     try {
-      await patchSetting('member_unmask_key', newKey.trim())
-      setCurrentKey(newKey.trim())
+      const email = (await supabase?.auth.getUser())?.data.user?.email ?? ''
+      await setUnmaskKey(newKey.trim(), email)
       setNewKey('')
-      setRevealed(false)
-      setMsg('보안키가 저장되었습니다.')
+      setMsg('보안키가 저장되었습니다. (서버에 해시로만 보관됩니다)')
+      await loadStatus()
     } catch { setMsg('저장 실패') }
     finally { setSaving(false) }
   }
@@ -228,27 +231,28 @@ function MaskingKeySection() {
     <div style={cardSt}>
       <p style={titleSt}>개인정보 마스킹 해제 보안키 <span style={{ fontSize: '0.7rem', color: UP.danger, fontWeight: 700, marginLeft: 8 }}>● 최고관리자 전용</span></p>
       <p style={{ fontSize: '0.78rem', color: UP.sub, marginBottom: 14, lineHeight: 1.5 }}>
-        회원 관리 탭에서 이메일/ID 마스킹을 해제할 때 필요한 보안키입니다. 최고관리자만 설정·조회 가능합니다.
+        회원 관리 탭에서 평문 정보를 단건 확인할 때 필요한 보안키입니다. 서버에 해시로만 저장되어
+        원문은 다시 조회할 수 없으니, 분실 시 새 키로 재설정하세요.
       </p>
 
       {!loading && (
         <div style={{ marginBottom: 14, padding: '10px 12px', borderRadius: 8, background: UP.sunken, border: `1px solid ${UP.hair}` }}>
-          <div style={{ fontSize: '0.72rem', color: UP.sub, marginBottom: 4 }}>현재 보안키</div>
+          <div style={{ fontSize: '0.72rem', color: UP.sub, marginBottom: 4 }}>현재 상태</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <code style={{ fontSize: '0.88rem', color: revealed ? UP.green : UP.caption, letterSpacing: '0.1em' }}>
-              {currentKey ? (revealed ? currentKey : '●'.repeat(Math.min(currentKey.length, 12))) : '(미설정)'}
-            </code>
-            {currentKey && (
-              <button onClick={() => setRevealed(r => !r)} style={{ ...btnSmOutline, fontSize: '0.68rem' }}>
-                {revealed ? '숨기기' : '보기'}
-              </button>
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: configured ? UP.green : UP.caption }}>
+              {configured ? '🔐 설정됨 (서버 해시 보관)' : '(미설정)'}
+            </span>
+            {configured && updatedAt && (
+              <span style={{ fontSize: '0.72rem', color: UP.caption }}>
+                · 최종 변경 {new Date(updatedAt).toLocaleString('ko-KR')}
+              </span>
             )}
           </div>
         </div>
       )}
 
       <label style={{ fontSize: '0.75rem', color: UP.sub, display: 'block', marginBottom: 6 }}>
-        새 보안키 {currentKey ? '(변경)' : '(설정)'}
+        새 보안키 {configured ? '(변경)' : '(설정)'}
       </label>
       <div style={{ display: 'flex', gap: 8 }}>
         <input

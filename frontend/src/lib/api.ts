@@ -719,3 +719,56 @@ export const postAuditLog = (body: {
   after_val?: Record<string, unknown> | null
   before_val?: Record<string, unknown> | null
 }) => api.post('/admin/audit-log', body, { headers: H() }).then(r => r.data)
+
+// ── 회원 관리 (서버측 마스킹 + 단건 평문 해제) ────────────────────────
+// 보안 재설계(🔴#4): 과거 프론트는 supabase.from('profiles').select('*')로 PII를
+// 평문 통째 수신했다(네트워크 탭 노출 = 가짜 마스킹). 이제 백엔드(service-role)가
+// 마스킹된 데이터만 내려보내고, 평문은 보안키를 통과한 reveal 단건 호출로만 받는다.
+
+// 서버측 마스킹된 회원 한 행 (평문 PII 없음 / id는 reveal 타깃팅용 내부 UUID)
+export interface MaskedMember {
+  id: string
+  email: string            // 마스킹됨: ab***@gmail.com
+  full_name: string        // 마스킹됨: 김**
+  birthdate: string        // 마스킹됨: 1990-**-**
+  phone_number: string     // 마스킹됨: 010-****-5678
+  provider: string | null
+  created_at: string
+  marketing_sms: boolean
+  marketing_email: boolean
+  marketing_phone: boolean
+  onboarding_completed: boolean
+}
+
+// reveal 응답 (단건 평문 — 보기 클릭 시에만 수신)
+export interface RevealedMember {
+  id: string
+  email: string | null
+  full_name: string | null
+  birthdate: string | null
+  phone_number: string | null
+  display_name: string | null
+}
+
+export const getAdminMembers = (params: {
+  page?: number; limit?: number; search?: string; marketing?: '' | 'true' | 'false'
+}) =>
+  api.get<{ members: MaskedMember[]; total: number }>('/admin/members', {
+    params, headers: H(),
+  }).then(r => r.data)
+
+// 단건 평문 해제 — 보안키 + 회원 id 전송. 서버가 해시 검증 후 1명 원본 반환 + 감사기록.
+export const revealMember = (memberId: string, key: string, adminEmail: string) =>
+  api.post<RevealedMember>('/admin/members/reveal',
+    { member_id: memberId, key, admin_email: adminEmail },
+    { headers: H() }).then(r => r.data)
+
+// 보안키 설정/변경 — 원문은 저장 안 되고 서버가 해시만 보관
+export const setUnmaskKey = (key: string, adminEmail: string) =>
+  api.post('/admin/members/unmask-key', { key, admin_email: adminEmail }, { headers: H() }).then(r => r.data)
+
+// 보안키 설정 여부 (해시 값은 절대 반환되지 않음)
+export const getUnmaskKeyStatus = () =>
+  api.get<{ configured: boolean; updated_at: string | null }>('/admin/members/unmask-key/status', {
+    headers: H(),
+  }).then(r => r.data)
