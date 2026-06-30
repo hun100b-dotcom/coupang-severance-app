@@ -1,6 +1,7 @@
 // 어드민 — 채용 Summary 대시보드 (Phase D-2)
 // 사업장별 공고현황, 전환율, 충원율, 일별 트렌드 차트, 채용소요일
 import { useEffect, useState, useCallback } from 'react'
+import { UP } from '../shared/adminTheme'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Legend,
@@ -203,13 +204,13 @@ export default function RecruitSummaryMenu() {
   }
 
   const thStyle: React.CSSProperties = {
-    padding: '10px 12px', borderBottom: '1px solid #f1f5f9',
-    color: '#64748b', fontWeight: 600,
+    padding: '10px 12px', borderBottom: `1px solid ${UP.hairSoft}`,
+    color: UP.sub, fontWeight: 600,
     fontSize: '0.75rem', textTransform: 'uppercase' as const, letterSpacing: '0.05em',
   }
   const cellStyle: React.CSSProperties = {
-    padding: '10px 12px', borderBottom: '1px solid #f1f5f9',
-    fontSize: '0.83rem', color: '#334155', verticalAlign: 'middle',
+    padding: '10px 12px', borderBottom: `1px solid ${UP.hairSoft}`,
+    fontSize: '0.83rem', color: UP.body, verticalAlign: 'middle',
   }
 
   return (
@@ -218,7 +219,7 @@ export default function RecruitSummaryMenu() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
         <div>
           <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px' }}>📈 채용 Summary</h2>
-          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
+          <p style={{ fontSize: '0.8rem', color: UP.sub, margin: 0 }}>
             채용 전반 현황 및 전환율 분석
           </p>
         </div>
@@ -227,25 +228,25 @@ export default function RecruitSummaryMenu() {
           <select value={companyFilter} onChange={e => setCompanyFilter(e.target.value)}
             style={{
               padding: '6px 12px', borderRadius: 8,
-              border: '1px solid #e2e8f0',
-              background: '#fff', color: '#0f172a', /* 불투명 배경: option 텍스트 가시성 확보 */
+              border: `1px solid ${UP.hair}`,
+              background: '#fff', color: UP.navy, /* 불투명 배경: option 텍스트 가시성 확보 */
               fontSize: '0.82rem', cursor: 'pointer', outline: 'none',
             }}>
-            <option value="all" style={{ background: '#fff', color: '#0f172a' }}>전체 사업장</option>
-            {companies.map(c => <option key={c} value={c} style={{ background: '#fff', color: '#0f172a' }}>{c}</option>)}
+            <option value="all" style={{ background: '#fff', color: UP.navy }}>전체 사업장</option>
+            {companies.map(c => <option key={c} value={c} style={{ background: '#fff', color: UP.navy }}>{c}</option>)}
           </select>
           <button onClick={fetchData}
             style={{
-              padding: '6px 14px', borderRadius: 8, border: '1px solid #e2e8f0',
-              background: '#f8fafc', color: '#475569',
+              padding: '6px 14px', borderRadius: 8, border: `1px solid ${UP.hair}`,
+              background: UP.sunken, color: UP.body,
               fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
             }}>
             ↻ 새로고침
           </button>
           <button onClick={handleExportCsv}
             style={{
-              padding: '6px 14px', borderRadius: 8, border: '1px solid #e2e8f0',
-              background: 'rgba(49,200,100,0.1)', color: '#3fc878',
+              padding: '6px 14px', borderRadius: 8, border: `1px solid ${UP.hair}`,
+              background: 'rgba(49,200,100,0.1)', color: UP.green,
               fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
             }}>
             📥 CSV
@@ -258,65 +259,65 @@ export default function RecruitSummaryMenu() {
         <div style={{
           background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
           borderRadius: 10, padding: '12px 16px', marginBottom: 20,
-          color: '#ff6b6b', fontSize: '0.82rem',
+          color: UP.danger, fontSize: '0.82rem',
         }}>
           ⚠️ {error}
         </div>
       )}
 
       {loading ? (
-        <p style={{ color: '#64748b', fontSize: '0.85rem' }}>불러오는 중...</p>
+        <p style={{ color: UP.sub, fontSize: '0.85rem' }}>불러오는 중...</p>
       ) : (
         <>
           {/* ── KPI 카드 ── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12, marginBottom: 28 }}>
             {[
-              { label: '전체 지원',  value: kpi.total,       color: '#3182f6' },
-              { label: '검토중',     value: kpi.reviewing,   color: '#ffb400' },
-              { label: '출근확정',   value: kpi.confirmed,   color: '#3fc878' },
-              { label: '지원거절',   value: kpi.rejected,    color: '#f04452' },
-              { label: '활성 공고',  value: kpi.activeJobs,  color: '#a78bfa' },
-              { label: '전환율',     value: `${kpi.conversionRate}%`, color: '#3fc878', isStr: true },
-              { label: '충원율',     value: `${kpi.fillRate}%`,       color: kpi.fillRate >= 80 ? '#3fc878' : '#ffb400', isStr: true },
-              { label: '채용소요일', value: kpi.avgDays !== null ? `${kpi.avgDays}일` : '-', color: '#60a5fa', isStr: true },
+              { label: '전체 지원',  value: kpi.total,       color: UP.brand },
+              { label: '검토중',     value: kpi.reviewing,   color: UP.amber },
+              { label: '출근확정',   value: kpi.confirmed,   color: UP.green },
+              { label: '지원거절',   value: kpi.rejected,    color: UP.danger },
+              { label: '활성 공고',  value: kpi.activeJobs,  color: UP.strong },
+              { label: '전환율',     value: `${kpi.conversionRate}%`, color: UP.green, isStr: true },
+              { label: '충원율',     value: `${kpi.fillRate}%`,       color: kpi.fillRate >= 80 ? UP.green : UP.amber, isStr: true },
+              { label: '채용소요일', value: kpi.avgDays !== null ? `${kpi.avgDays}일` : '-', color: UP.brand, isStr: true },
             ].map(k => (
               <div key={k.label} style={{
-                background: '#f8fafc', border: '1px solid #e2e8f0',
+                background: UP.sunken, border: `1px solid ${UP.hair}`,
                 borderRadius: 14, padding: '16px 14px',
               }}>
                 <div style={{ fontSize: '1.9rem', fontWeight: 900, color: k.color, lineHeight: 1 }}>
                   {k.value}
                 </div>
-                <div style={{ fontSize: '0.73rem', color: '#64748b', marginTop: 6 }}>{k.label}</div>
+                <div style={{ fontSize: '0.73rem', color: UP.sub, marginTop: 6 }}>{k.label}</div>
               </div>
             ))}
           </div>
 
           {/* ── 일별 트렌드 차트 ── */}
           <div style={{
-            background: '#fff', border: '1px solid #e2e8f0',
+            background: '#fff', border: `1px solid ${UP.hair}`,
             borderRadius: 14, padding: '20px 16px', marginBottom: 24,
           }}>
-            <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', margin: '0 0 16px' }}>
+            <p style={{ fontSize: '0.85rem', fontWeight: 700, color: UP.body, margin: '0 0 16px' }}>
               📈 일별 지원 트렌드 (최근 14일)
             </p>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={dailyTrend} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={UP.hairSoft} />
+                <XAxis dataKey="date" tick={{ fill: UP.sub, fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: UP.sub, fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip
-                  contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 12 }}
-                  labelStyle={{ color: '#475569', marginBottom: 4 }}
+                  contentStyle={{ background: '#fff', border: `1px solid ${UP.hair}`, borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: UP.body, marginBottom: 4 }}
                 />
-                <Line type="monotone" dataKey="지원" stroke="#3182f6" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="확정" stroke="#3fc878" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="거절" stroke="#f04452" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="지원" stroke={UP.brand} strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="확정" stroke={UP.green} strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="거절" stroke={UP.danger} strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
             <div style={{ display: 'flex', gap: 16, marginTop: 10, justifyContent: 'center' }}>
-              {[{ label: '지원', color: '#3182f6' }, { label: '확정', color: '#3fc878' }, { label: '거절', color: '#f04452' }].map(l => (
-                <span key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: '#64748b' }}>
+              {[{ label: '지원', color: UP.brand }, { label: '확정', color: UP.green }, { label: '거절', color: UP.danger }].map(l => (
+                <span key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: UP.sub }}>
                   <span style={{ width: 12, height: 3, borderRadius: 2, background: l.color, display: 'inline-block' }} />
                   {l.label}
                 </span>
@@ -327,24 +328,24 @@ export default function RecruitSummaryMenu() {
           {/* ── 사업장별 막대 차트 ── */}
           {companyBarData.length > 0 && (
             <div style={{
-              background: '#fff', border: '1px solid #e2e8f0',
+              background: '#fff', border: `1px solid ${UP.hair}`,
               borderRadius: 14, padding: '20px 16px', marginBottom: 24,
             }}>
-              <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', margin: '0 0 16px' }}>
+              <p style={{ fontSize: '0.85rem', fontWeight: 700, color: UP.body, margin: '0 0 16px' }}>
                 🏢 사업장별 지원 현황
               </p>
               <ResponsiveContainer width="100%" height={180}>
                 <BarChart data={companyBarData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={UP.hairSoft} />
+                  <XAxis dataKey="name" tick={{ fill: UP.sub, fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: UP.sub, fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
                   <Tooltip
-                    contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 12 }}
+                    contentStyle={{ background: '#fff', border: `1px solid ${UP.hair}`, borderRadius: 8, fontSize: 12 }}
                   />
-                  <Legend wrapperStyle={{ fontSize: '0.72rem', color: '#64748b' }} />
-                  <Bar dataKey="지원" fill="#3182f6" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="확정" fill="#3fc878" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="목표" fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                  <Legend wrapperStyle={{ fontSize: '0.72rem', color: UP.sub }} />
+                  <Bar dataKey="지원" fill={UP.brand} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="확정" fill={UP.green} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="목표" fill={UP.caption} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -353,12 +354,12 @@ export default function RecruitSummaryMenu() {
           {/* ── 사업장별 상세 테이블 ── */}
           <div style={{
             background: '#fff', borderRadius: 14, overflow: 'hidden',
-            border: '1px solid #e2e8f0',
+            border: `1px solid ${UP.hair}`,
           }}>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
                 <thead>
-                  <tr style={{ background: '#f8fafc' }}>
+                  <tr style={{ background: UP.sunken }}>
                     <th style={thStyle}>사업장</th>
                     <th style={{ ...thStyle, textAlign: 'center', width: 80 }}>활성공고</th>
                     <th style={{ ...thStyle, textAlign: 'center', width: 80 }}>마감공고</th>
@@ -373,7 +374,7 @@ export default function RecruitSummaryMenu() {
                 <tbody>
                   {companyStats.length === 0 && (
                     <tr>
-                      <td colSpan={9} style={{ ...cellStyle, textAlign: 'center', color: '#94a3b8' }}>
+                      <td colSpan={9} style={{ ...cellStyle, textAlign: 'center', color: UP.caption }}>
                         데이터가 없습니다.
                       </td>
                     </tr>
@@ -384,16 +385,16 @@ export default function RecruitSummaryMenu() {
                     return (
                       <tr key={stat.company}>
                         <td style={{ ...cellStyle, fontWeight: 700 }}>{stat.company}</td>
-                        <td style={{ ...cellStyle, textAlign: 'center', color: '#a78bfa' }}>{stat.activeJobs}</td>
-                        <td style={{ ...cellStyle, textAlign: 'center', color: '#64748b' }}>{stat.closedJobs}</td>
-                        <td style={{ ...cellStyle, textAlign: 'center', color: '#475569' }}>{stat.headcount}</td>
-                        <td style={{ ...cellStyle, textAlign: 'center', color: '#3182f6' }}>{stat.applied}</td>
-                        <td style={{ ...cellStyle, textAlign: 'center', color: '#3fc878' }}>{stat.confirmed}</td>
-                        <td style={{ ...cellStyle, textAlign: 'center', color: '#f04452' }}>{stat.rejected}</td>
-                        <td style={{ ...cellStyle, textAlign: 'center', fontWeight: 700, color: convRate >= 50 ? '#3fc878' : '#ffb400' }}>
+                        <td style={{ ...cellStyle, textAlign: 'center', color: UP.strong }}>{stat.activeJobs}</td>
+                        <td style={{ ...cellStyle, textAlign: 'center', color: UP.sub }}>{stat.closedJobs}</td>
+                        <td style={{ ...cellStyle, textAlign: 'center', color: UP.body }}>{stat.headcount}</td>
+                        <td style={{ ...cellStyle, textAlign: 'center', color: UP.brand }}>{stat.applied}</td>
+                        <td style={{ ...cellStyle, textAlign: 'center', color: UP.green }}>{stat.confirmed}</td>
+                        <td style={{ ...cellStyle, textAlign: 'center', color: UP.danger }}>{stat.rejected}</td>
+                        <td style={{ ...cellStyle, textAlign: 'center', fontWeight: 700, color: convRate >= 50 ? UP.green : UP.amber }}>
                           {convRate}%
                         </td>
-                        <td style={{ ...cellStyle, textAlign: 'center', fontWeight: 700, color: fillRate >= 80 ? '#3fc878' : fillRate >= 50 ? '#ffb400' : '#f04452' }}>
+                        <td style={{ ...cellStyle, textAlign: 'center', fontWeight: 700, color: fillRate >= 80 ? UP.green : fillRate >= 50 ? UP.amber : UP.danger }}>
                           {fillRate}%
                         </td>
                       </tr>

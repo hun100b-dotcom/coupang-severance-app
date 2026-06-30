@@ -1,6 +1,7 @@
 // 어드민 — 채용현황 대시보드 전면 개편
 // 기능: 2단계 필터(사업장→센터), KPI 대시보드, 일별 지원/확정 차트(Recharts), 교대/업무별 분포
 import { useEffect, useState, useCallback } from 'react'
+import { UP } from '../shared/adminTheme'
 import {
   ComposedChart, Bar, Line,
   XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer,
@@ -43,8 +44,8 @@ const SHIFT_LABEL: Record<string, string> = {
 // 공통 셀렉트 스타일 (어두운 배경)
 const filterSelectStyle: React.CSSProperties = {
   padding: '8px 14px', borderRadius: 10,
-  border: '1px solid #e2e8f0',
-  background: '#fff', color: '#0f172a',
+  border: `1px solid ${UP.hair}`,
+  background: '#fff', color: UP.navy,
   fontSize: '0.85rem', cursor: 'pointer', outline: 'none',
   flex: 1, minWidth: 160,
 }
@@ -196,7 +197,7 @@ export default function ConfirmedMenu() {
   // ── 공통 카드 스타일 ──
   const baseCard: React.CSSProperties = {
     background: '#fff',
-    border: '1px solid #e2e8f0',
+    border: `1px solid ${UP.hair}`,
     borderRadius: 14, padding: '18px 16px',
   }
 
@@ -209,10 +210,10 @@ export default function ConfirmedMenu() {
         marginBottom: 20, gap: 12, flexWrap: 'wrap',
       }}>
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px', color: '#0f172a' }}>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px', color: UP.navy }}>
             📈 채용현황
           </h2>
-          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
+          <p style={{ fontSize: '0.8rem', color: UP.sub, margin: 0 }}>
             지원 현황을 사업장·센터별로 분석합니다. 총 {total}명
           </p>
         </div>
@@ -220,8 +221,8 @@ export default function ConfirmedMenu() {
           onClick={fetchData}
           style={{
             padding: '7px 16px', borderRadius: 10,
-            border: '1px solid #e2e8f0',
-            background: 'rgba(49,130,246,0.1)', color: '#3182f6',
+            border: `1px solid ${UP.hair}`,
+            background: 'rgba(49,130,246,0.1)', color: UP.brand,
             fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
           }}
         >
@@ -262,19 +263,19 @@ export default function ConfirmedMenu() {
         <div style={{
           background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
           borderRadius: 10, padding: '12px 16px', marginBottom: 16,
-          color: '#ff6b6b', fontSize: '0.82rem',
+          color: UP.danger, fontSize: '0.82rem',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <span>⚠️ {error}</span>
           <button onClick={fetchData}
-            style={{ background: 'none', border: 'none', color: '#ff6b6b', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}>
+            style={{ background: 'none', border: 'none', color: UP.danger, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}>
             다시 시도 ↻
           </button>
         </div>
       )}
 
       {loading ? (
-        <p style={{ color: '#64748b', fontSize: '0.85rem' }}>불러오는 중...</p>
+        <p style={{ color: UP.sub, fontSize: '0.85rem' }}>불러오는 중...</p>
       ) : (
         <>
           {/* ── 2×2 메인 KPI 카드 ── */}
@@ -285,9 +286,9 @@ export default function ConfirmedMenu() {
             marginBottom: 12,
           }}>
             {[
-              { label: '전체 지원', value: total,     color: '#3182f6', icon: '📋' },
-              { label: '출근 확정', value: confirmed, color: '#10b981', icon: '✅' },
-              { label: '지원 거절', value: rejected,  color: '#f04452', icon: '❌' },
+              { label: '전체 지원', value: total,     color: UP.brand, icon: '📋' },
+              { label: '출근 확정', value: confirmed, color: UP.green, icon: '✅' },
+              { label: '지원 거절', value: rejected,  color: UP.danger, icon: '❌' },
               { label: '취소',      value: cancelled, color: 'rgba(180,180,180,0.8)', icon: '↩️' },
             ].map(card => (
               <div key={card.label} style={{
@@ -299,7 +300,7 @@ export default function ConfirmedMenu() {
                 <div style={{ fontSize: '2rem', fontWeight: 900, color: card.color, lineHeight: 1 }}>
                   {card.value}
                 </div>
-                <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 6, fontWeight: 600 }}>
+                <div style={{ fontSize: '0.72rem', color: UP.sub, marginTop: 6, fontWeight: 600 }}>
                   {card.label}
                 </div>
               </div>
@@ -318,11 +319,11 @@ export default function ConfirmedMenu() {
               <div key={pill.label} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '6px 14px', borderRadius: 999,
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
+                background: UP.sunken,
+                border: `1px solid ${UP.hair}`,
               }}>
-                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{pill.label}</span>
-                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>{pill.value}</span>
+                <span style={{ fontSize: '0.72rem', color: UP.sub }}>{pill.label}</span>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: UP.navy }}>{pill.value}</span>
               </div>
             ))}
           </div>
@@ -331,7 +332,7 @@ export default function ConfirmedMenu() {
           <div style={{ ...baseCard, marginBottom: 20 }}>
             <div style={{
               fontSize: '0.72rem', fontWeight: 700,
-              color: '#64748b',
+              color: UP.sub,
               marginBottom: 14, letterSpacing: '0.06em',
               textTransform: 'uppercase' as const,
             }}>
@@ -341,27 +342,27 @@ export default function ConfirmedMenu() {
             {/* 범례 */}
             <div style={{ display: 'flex', gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 12, height: 12, borderRadius: 3, background: '#3182f6' }} />
-                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>일별 지원자</span>
+                <div style={{ width: 12, height: 12, borderRadius: 3, background: UP.brand }} />
+                <span style={{ fontSize: '0.72rem', color: UP.sub }}>일별 지원자</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 16, height: 2, background: '#10b981', borderRadius: 1 }} />
-                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>일별 확정자</span>
+                <div style={{ width: 16, height: 2, background: UP.green, borderRadius: 1 }} />
+                <span style={{ fontSize: '0.72rem', color: UP.sub }}>일별 확정자</span>
               </div>
             </div>
 
             <ResponsiveContainer width="100%" height={220}>
               <ComposedChart data={dailyData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" stroke={UP.hairSoft} />
                 <XAxis
                   dataKey="date"
-                  tick={{ fill: '#64748b', fontSize: 10 }}
+                  tick={{ fill: UP.sub, fontSize: 10 }}
                   tickLine={false}
                   axisLine={false}
                   interval={4}
                 />
                 <YAxis
-                  tick={{ fill: '#64748b', fontSize: 10 }}
+                  tick={{ fill: UP.sub, fontSize: 10 }}
                   tickLine={false}
                   axisLine={false}
                   allowDecimals={false}
@@ -369,9 +370,9 @@ export default function ConfirmedMenu() {
                 <Tooltip
                   contentStyle={{
                     background: '#fff',
-                    border: '1px solid #e2e8f0',
+                    border: `1px solid ${UP.hair}`,
                     borderRadius: 10,
-                    color: '#0f172a',
+                    color: UP.navy,
                     fontSize: '0.78rem',
                   }}
                   formatter={(value: number, name: string) => {
@@ -379,18 +380,18 @@ export default function ConfirmedMenu() {
                     if (name === 'applied') return [`${value}명`, '지원자']
                     return [`${value}명`, '확정자']
                   }}
-                  labelStyle={{ color: '#64748b', marginBottom: 4 }}
+                  labelStyle={{ color: UP.sub, marginBottom: 4 }}
                 />
                 {/* Bar: 일별 지원자 수 (파랑) */}
-                <Bar dataKey="applied" fill="#3182f6" radius={[3, 3, 0, 0]} maxBarSize={20} />
+                <Bar dataKey="applied" fill={UP.brand} radius={[3, 3, 0, 0]} maxBarSize={20} />
                 {/* Line: 일별 확정자 수 (초록) */}
                 <Line
                   type="monotone"
                   dataKey="confirmed"
-                  stroke="#10b981"
+                  stroke={UP.green}
                   strokeWidth={2}
                   dot={false}
-                  activeDot={{ r: 4, fill: '#10b981' }}
+                  activeDot={{ r: 4, fill: UP.green }}
                 />
               </ComposedChart>
             </ResponsiveContainer>
@@ -406,7 +407,7 @@ export default function ConfirmedMenu() {
             <div style={baseCard}>
               <div style={{
                 fontSize: '0.72rem', fontWeight: 700,
-                color: '#64748b',
+                color: UP.sub,
                 marginBottom: 14, letterSpacing: '0.06em',
                 textTransform: 'uppercase' as const,
               }}>
@@ -414,23 +415,23 @@ export default function ConfirmedMenu() {
               </div>
 
               {shiftDist.length === 0 ? (
-                <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0 }}>데이터 없음</p>
+                <p style={{ fontSize: '0.8rem', color: UP.caption, margin: 0 }}>데이터 없음</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {shiftDist.map(item => (
                     <div key={item.label}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontSize: '0.78rem', color: '#475569' }}>{item.label}</span>
-                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0f172a' }}>
+                        <span style={{ fontSize: '0.78rem', color: UP.body }}>{item.label}</span>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: UP.navy }}>
                           {item.count}명 ({item.pct}%)
                         </span>
                       </div>
                       {/* 프로그레스 바 */}
-                      <div style={{ height: 6, background: '#f1f5f9', borderRadius: 999 }}>
+                      <div style={{ height: 6, background: UP.hairSoft, borderRadius: 999 }}>
                         <div style={{
                           height: '100%',
                           width: `${item.pct}%`,
-                          background: '#3182f6',
+                          background: UP.brand,
                           borderRadius: 999,
                           transition: 'width 0.5s ease',
                         }} />
@@ -445,7 +446,7 @@ export default function ConfirmedMenu() {
             <div style={baseCard}>
               <div style={{
                 fontSize: '0.72rem', fontWeight: 700,
-                color: '#64748b',
+                color: UP.sub,
                 marginBottom: 14, letterSpacing: '0.06em',
                 textTransform: 'uppercase' as const,
               }}>
@@ -453,7 +454,7 @@ export default function ConfirmedMenu() {
               </div>
 
               {taskDist.length === 0 ? (
-                <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0 }}>데이터 없음</p>
+                <p style={{ fontSize: '0.8rem', color: UP.caption, margin: 0 }}>데이터 없음</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {taskDist.map(item => (
@@ -461,20 +462,20 @@ export default function ConfirmedMenu() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, gap: 8 }}>
                         {/* 긴 업무명은 말줄임 처리 */}
                         <span style={{
-                          fontSize: '0.78rem', color: '#475569',
+                          fontSize: '0.78rem', color: UP.body,
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                           maxWidth: '60%',
                         }}>{item.label}</span>
-                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0f172a', flexShrink: 0 }}>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: UP.navy, flexShrink: 0 }}>
                           {item.count}명 ({item.pct}%)
                         </span>
                       </div>
                       {/* 프로그레스 바 */}
-                      <div style={{ height: 6, background: '#f1f5f9', borderRadius: 999 }}>
+                      <div style={{ height: 6, background: UP.hairSoft, borderRadius: 999 }}>
                         <div style={{
                           height: '100%',
                           width: `${item.pct}%`,
-                          background: '#10b981',
+                          background: UP.green,
                           borderRadius: 999,
                           transition: 'width 0.5s ease',
                         }} />
@@ -488,7 +489,7 @@ export default function ConfirmedMenu() {
 
           {/* 데이터 없음 */}
           {total === 0 && (
-            <p style={{ color: '#94a3b8', fontSize: '0.85rem', textAlign: 'center', padding: '48px 0' }}>
+            <p style={{ color: UP.caption, fontSize: '0.85rem', textAlign: 'center', padding: '48px 0' }}>
               데이터가 없습니다.
             </p>
           )}
