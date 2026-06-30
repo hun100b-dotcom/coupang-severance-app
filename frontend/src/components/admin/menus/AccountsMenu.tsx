@@ -3,6 +3,7 @@
 // → 최초 super_admin 등록은 Supabase SQL Editor에서 직접 INSERT 필요
 
 import { useState, useEffect, useCallback } from 'react'
+import { UP } from '../shared/adminTheme'
 import { supabase } from '../../../lib/supabase'
 
 interface AdminAccount {
@@ -26,9 +27,9 @@ interface Props {
 }
 
 const DEFAULT_ROLE_COLORS: Record<string, string> = {
-  super_admin: '#f04040',
-  admin: '#3182f6',
-  viewer: '#6b7280',
+  super_admin: UP.danger,
+  admin: UP.brand,
+  viewer: UP.sub,
 }
 
 const EMPTY_FORM = {
@@ -45,9 +46,9 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
 
   // 커스텀 권한 레벨 (system_settings에서 로드)
   const [permLevels, setPermLevels] = useState<Record<string, PermissionLevel>>({
-    super_admin: { label: '슈퍼 관리자', color: '#f04040', permissions: {} },
-    admin: { label: '관리자', color: '#3182f6', permissions: {} },
-    viewer: { label: '뷰어', color: '#6b7280', permissions: {} },
+    super_admin: { label: '슈퍼 관리자', color: UP.danger, permissions: {} },
+    admin: { label: '관리자', color: UP.brand, permissions: {} },
+    viewer: { label: '뷰어', color: UP.sub, permissions: {} },
   })
 
   const fetchAccounts = useCallback(async () => {
@@ -160,7 +161,7 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
     return permLevels[role]?.label ?? role
   }
   function getRoleColor(role: string) {
-    return permLevels[role]?.color ?? DEFAULT_ROLE_COLORS[role] ?? '#6b7280'
+    return permLevels[role]?.color ?? DEFAULT_ROLE_COLORS[role] ?? UP.sub
   }
 
   function formatDate(iso: string) {
@@ -175,8 +176,8 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>관리자 계정 관리</h2>
-          <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 2 }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: UP.navy, margin: 0 }}>관리자 계정 관리</h2>
+          <p style={{ fontSize: '0.75rem', color: UP.sub, marginTop: 2 }}>
             admin_accounts 테이블 · 슈퍼 관리자만 추가/수정/삭제 가능
           </p>
         </div>
@@ -207,7 +208,7 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
           fontSize: '0.8rem', color: 'rgba(255,220,50,0.85)', lineHeight: 1.6,
         }}>
           ⚠️ 등록된 관리자 계정이 없습니다. 최초 슈퍼 관리자는 <strong>Supabase SQL Editor</strong>에서 직접 INSERT해야 합니다:<br />
-          <code style={{ fontSize: '0.72rem', background: '#f1f5f9', padding: '2px 6px', borderRadius: 4, display: 'inline-block', marginTop: 4 }}>
+          <code style={{ fontSize: '0.72rem', background: UP.hairSoft, padding: '2px 6px', borderRadius: 4, display: 'inline-block', marginTop: 4 }}>
             INSERT INTO admin_accounts (email, role) VALUES ('catchmasterdmin@gmail.com', 'super_admin');
           </code>
         </div>
@@ -216,21 +217,21 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
       {/* 계정 목록 */}
       <div style={{
         background: '#fff',
-        border: '1px solid #e2e8f0',
+        border: `1px solid ${UP.hair}`,
         borderRadius: 14, overflow: 'hidden',
       }}>
         {loading ? (
-          <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0', fontSize: '0.85rem' }}>로딩 중...</p>
+          <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>로딩 중...</p>
         ) : accounts.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0', fontSize: '0.85rem' }}>등록된 관리자 계정이 없습니다.</p>
+          <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>등록된 관리자 계정이 없습니다.</p>
         ) : (
           <>
             <div className="hidden md:grid" style={{
               gridTemplateColumns: '1fr 120px 120px 80px 110px',
               padding: '10px 16px',
-              borderBottom: '1px solid #f1f5f9',
+              borderBottom: `1px solid ${UP.hairSoft}`,
               fontSize: '0.7rem', fontWeight: 700,
-              color: '#94a3b8',
+              color: UP.caption,
               textTransform: 'uppercase', letterSpacing: '0.05em',
             }}>
               <span>이메일 / 이름</span><span>권한</span><span>등록일</span><span>상태</span>
@@ -243,13 +244,13 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
                 <div className="hidden md:grid" style={{
                   gridTemplateColumns: isSuperAdmin ? '1fr 120px 120px 80px 110px' : '1fr 120px 120px 80px',
                   padding: '12px 16px',
-                  borderBottom: '1px solid #f1f5f9',
+                  borderBottom: `1px solid ${UP.hairSoft}`,
                   alignItems: 'center',
                 }}>
                   <div>
-                    <div style={{ fontSize: '0.86rem', color: '#0f172a', fontWeight: 600 }}>{account.email}</div>
+                    <div style={{ fontSize: '0.86rem', color: UP.navy, fontWeight: 600 }}>{account.email}</div>
                     {account.display_name && (
-                      <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{account.display_name}</div>
+                      <div style={{ fontSize: '0.72rem', color: UP.sub }}>{account.display_name}</div>
                     )}
                   </div>
                   <div>
@@ -262,12 +263,12 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
                       {getRoleLabel(account.role)}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{formatDate(account.created_at)}</div>
+                  <div style={{ fontSize: '0.78rem', color: UP.sub }}>{formatDate(account.created_at)}</div>
                   <div>
                     <span style={{
                       fontSize: '0.7rem', fontWeight: 700,
-                      color: account.is_active ? '#22c55e' : '#94a3b8',
-                      background: account.is_active ? 'rgba(34,197,94,0.12)' : '#f8fafc',
+                      color: account.is_active ? UP.green : UP.caption,
+                      background: account.is_active ? 'rgba(34,197,94,0.12)' : UP.sunken,
                       padding: '3px 8px', borderRadius: 999,
                     }}>
                       {account.is_active ? '활성' : '비활성'}
@@ -282,9 +283,9 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
                 </div>
 
                 {/* 모바일 카드 */}
-                <div className="md:hidden" style={{ padding: '13px 14px', borderBottom: '1px solid #f1f5f9' }}>
+                <div className="md:hidden" style={{ padding: '13px 14px', borderBottom: `1px solid ${UP.hairSoft}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
-                    <div style={{ fontSize: '0.84rem', color: '#0f172a', fontWeight: 600, wordBreak: 'break-all', flex: 1 }}>
+                    <div style={{ fontSize: '0.84rem', color: UP.navy, fontWeight: 600, wordBreak: 'break-all', flex: 1 }}>
                       {account.email}
                     </div>
                     <span style={{
@@ -297,9 +298,9 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    {account.display_name && <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{account.display_name}</span>}
-                    <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{formatDate(account.created_at)}</span>
-                    <span style={{ fontSize: '0.7rem', color: account.is_active ? '#22c55e' : '#94a3b8' }}>
+                    {account.display_name && <span style={{ fontSize: '0.72rem', color: UP.sub }}>{account.display_name}</span>}
+                    <span style={{ fontSize: '0.7rem', color: UP.caption }}>{formatDate(account.created_at)}</span>
+                    <span style={{ fontSize: '0.7rem', color: account.is_active ? UP.green : UP.caption }}>
                       {account.is_active ? '● 활성' : '○ 비활성'}
                     </span>
                     {isSuperAdmin && (
@@ -320,7 +321,7 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
       {modal !== null && isSuperAdmin && (
         <div style={overlayStyle} onClick={() => setModal(null)}>
           <div style={modalStyle} onClick={e => e.stopPropagation()}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', marginBottom: 18 }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: UP.navy, marginBottom: 18 }}>
               {modal === 'create' ? '관리자 계정 추가' : '관리자 계정 수정'}
             </h3>
 
@@ -346,7 +347,7 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
               <div style={{
                 marginTop: 10, padding: '10px 12px', borderRadius: 8,
                 background: 'rgba(240,64,64,0.1)', border: '1px solid rgba(240,64,64,0.25)',
-                fontSize: '0.78rem', color: '#ff6b6b', lineHeight: 1.5,
+                fontSize: '0.78rem', color: UP.danger, lineHeight: 1.5,
               }}>
                 ⚠️ {saveError}
               </div>
@@ -365,11 +366,11 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
   )
 }
 
-const outlineBtn: React.CSSProperties = { padding: '7px 14px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#475569', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600 }
-const btnPrimary: React.CSSProperties = { padding: '7px 16px', borderRadius: 8, border: 'none', background: '#3182f6', color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700 }
-const smallOutlineBtn: React.CSSProperties = { padding: '4px 10px', borderRadius: 6, border: '1px solid #e2e8f0', background: 'transparent', color: '#475569', fontSize: '0.75rem', cursor: 'pointer' }
-const smallDangerBtn: React.CSSProperties = { padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(240,68,82,0.25)', background: 'rgba(240,68,82,0.08)', color: '#f04052', fontSize: '0.75rem', cursor: 'pointer' }
+const outlineBtn: React.CSSProperties = { padding: '7px 14px', borderRadius: 8, border: `1px solid ${UP.hair}`, background: UP.sunken, color: UP.body, fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600 }
+const btnPrimary: React.CSSProperties = { padding: '7px 16px', borderRadius: 8, border: 'none', background: UP.brand, color: '#fff', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700 }
+const smallOutlineBtn: React.CSSProperties = { padding: '4px 10px', borderRadius: 6, border: `1px solid ${UP.hair}`, background: 'transparent', color: UP.body, fontSize: '0.75rem', cursor: 'pointer' }
+const smallDangerBtn: React.CSSProperties = { padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(240,68,82,0.25)', background: 'rgba(240,68,82,0.08)', color: UP.danger, fontSize: '0.75rem', cursor: 'pointer' }
 const overlayStyle: React.CSSProperties = { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 16 }
-const modalStyle: React.CSSProperties = { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 20, padding: '26px 22px', width: '100%', maxWidth: 440, maxHeight: '90vh', overflowY: 'auto' }
-const labelSt: React.CSSProperties = { display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: 6, marginTop: 14 }
-const inputSt: React.CSSProperties = { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid #e2e8f0', background: '#fff', color: '#0f172a', fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box' }
+const modalStyle: React.CSSProperties = { background: '#fff', border: `1px solid ${UP.hair}`, borderRadius: 20, padding: '26px 22px', width: '100%', maxWidth: 440, maxHeight: '90vh', overflowY: 'auto' }
+const labelSt: React.CSSProperties = { display: 'block', fontSize: '0.75rem', fontWeight: 600, color: UP.sub, marginBottom: 6, marginTop: 14 }
+const inputSt: React.CSSProperties = { width: '100%', padding: '10px 12px', borderRadius: 10, border: `1px solid ${UP.hair}`, background: '#fff', color: UP.navy, fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box' }
