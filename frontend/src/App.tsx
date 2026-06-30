@@ -81,8 +81,8 @@ function HomeGuard() {
   // 세션 확인 중이면 스피너 표시 (깜빡임 방지)
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F2F4F6] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#3182F6] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-up-sunken flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -247,7 +247,7 @@ export default function App() {
         {/* 배포 버전과 빌드 날짜를 화면 오른쪽 아래에 작게 표시합니다.
             BottomNav(60px) 위에 표시되도록 bottom-[68px]로 조정합니다. */}
         <div
-          className="fixed bottom-[76px] right-2 text-[10px] text-slate-400/80 select-none pointer-events-none z-[1]"
+          className="fixed bottom-[76px] right-2 text-[10px] text-up-caption/80 select-none pointer-events-none z-[1]"
           aria-hidden
         >
           v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '?'}

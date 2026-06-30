@@ -92,7 +92,7 @@ export default function TopNav() {
                 key={link.path}
                 onClick={() => navigate(link.path)}
                 className={`px-3.5 h-9 rounded-md text-[15px] font-bold transition-colors ${
-                  active ? 'text-brand bg-brand-bg' : 'text-ink-700 hover:text-ink-900 hover:bg-[#F2F4F6]'
+                  active ? 'text-brand bg-brand-bg' : 'text-ink-700 hover:text-ink-900 hover:bg-up-sunken'
                 }`}
                 aria-current={active ? 'page' : undefined}
               >
@@ -108,7 +108,7 @@ export default function TopNav() {
           {/* 고객센터 — 데스크톱에서만 텍스트 노출 */}
           <button
             onClick={() => navigate('/inquiry')}
-            className="hidden md:flex items-center gap-1.5 px-3 h-9 rounded-md text-[14px] font-semibold text-ink-700 hover:bg-[#F2F4F6] transition-colors"
+            className="hidden md:flex items-center gap-1.5 px-3 h-9 rounded-md text-[14px] font-semibold text-ink-700 hover:bg-up-sunken transition-colors"
             aria-label="고객센터"
           >
             <Headphones size={16} />
@@ -117,13 +117,13 @@ export default function TopNav() {
 
           {/* 초기 로딩 중: 스켈레톤 */}
           {loading ? (
-            <div className="w-9 h-9 rounded-full bg-[#F2F4F6] animate-pulse" />
+            <div className="w-9 h-9 rounded-full bg-up-sunken animate-pulse" />
           ) : isLoggedIn && user ? (
             /* ── 로그인 상태: 아바타 + 드롭다운 ── */
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(prev => !prev)}
-                className="flex items-center gap-2 rounded-pill pl-1 pr-2 py-1 min-h-[44px] hover:bg-[#F2F4F6] transition-colors"
+                className="flex items-center gap-2 rounded-pill pl-1 pr-2 py-1 min-h-[44px] hover:bg-up-sunken transition-colors"
                 aria-expanded={dropdownOpen}
                 aria-haspopup="true"
                 aria-label="내 메뉴 열기"
@@ -167,14 +167,14 @@ export default function TopNav() {
                     </div>
                     <button
                       onClick={() => { setDropdownOpen(false); navigate('/mypage') }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-ink-700 hover:bg-[#F2F4F6] transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-ink-700 hover:bg-up-sunken transition-colors"
                     >
                       <LayoutDashboard size={15} className="text-ink-400" />
                       마이페이지
                     </button>
                     <button
                       onClick={() => { setDropdownOpen(false); navigate('/settings') }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-ink-700 hover:bg-[#F2F4F6] transition-colors border-t border-line"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-ink-700 hover:bg-up-sunken transition-colors border-t border-line"
                     >
                       <Settings size={15} className="text-ink-400" />
                       설정

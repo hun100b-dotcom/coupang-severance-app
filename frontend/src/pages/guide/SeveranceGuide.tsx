@@ -227,7 +227,7 @@ function GuideCard({ title, icon, href }: { title: string; icon: React.ReactNode
   return (
     <Link
       to={href}
-      className="block bg-gradient-to-br from-blue-50 to-brand-strong border border-brand-200 rounded-xl p-4 hover:shadow-md transition-all"
+      className="block bg-gradient-to-br from-brand-bg to-brand-strong border border-brand-200 rounded-xl p-4 hover:shadow-md transition-all"
     >
       <div className="flex items-center gap-3">
         <div className="text-2xl">{icon}</div>
@@ -279,7 +279,7 @@ export default function SeveranceGuide() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 p-6 text-white overflow-hidden relative"
+          className="rounded-2xl bg-gradient-to-br from-brand to-brand-strong p-6 text-white overflow-hidden relative"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-up-surface/10 rounded-full blur-2xl -z-10" />
           {/* H1 — SEO 타겟 키워드 포함 */}
@@ -582,7 +582,7 @@ export default function SeveranceGuide() {
         >
           <button
             onClick={() => navigate('/severance')}
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl py-4 font-bold text-base flex items-center justify-center gap-2 hover:shadow-lg transition-all mb-4"
+            className="w-full bg-gradient-to-r from-brand to-brand-strong text-white rounded-xl py-4 font-bold text-base flex items-center justify-center gap-2 hover:shadow-lg transition-all mb-4"
           >
             <Calculator className="w-5 h-5" />
             지금 바로 CATCH로 퇴직금 계산하기

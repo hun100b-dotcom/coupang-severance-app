@@ -14,7 +14,7 @@ const VARIANT: Record<Variant, string> = {
   // 보조 — 흰 배경 + 블루 보더
   secondary: 'bg-white text-brand-strong border border-brand-200 hover:bg-brand-bg',
   // 고스트 — 배경 없음
-  ghost:     'bg-transparent text-ink-700 hover:bg-[#F2F4F6]',
+  ghost:     'bg-transparent text-ink-700 hover:bg-up-sunken',
 }
 
 const SIZE: Record<Size, string> = {

@@ -41,14 +41,14 @@ export default function LoadingOverlay({ message = '데이터를 분석 중이�
 
       {/* 텍스트 */}
       <div className="text-center">
-        <p className="text-lg font-extrabold text-[#191F28] tracking-tight mb-2">
+        <p className="text-lg font-extrabold text-ink-900 tracking-tight mb-2">
           {message}
         </p>
         <div className="flex gap-1.5 justify-center">
           {[0, 1, 2].map(i => (
             <span
               key={i}
-              className="w-2 h-2 rounded-full bg-[#3182F6]"
+              className="w-2 h-2 rounded-full bg-brand"
               style={{
                 animation: 'pulseDot 1.4s ease-in-out infinite',
                 animationDelay: `${i * 0.2}s`,

@@ -15,8 +15,8 @@ import type { SavedPdf } from '../../types/supabase'
 const ACCENT_CLASSES = {
   blue:    { bg: 'bg-brand', text: 'text-brand', light: 'bg-brand-bg', border: 'border-brand-200' },
   sky:     { bg: 'bg-brand', text: 'text-brand', light: 'bg-brand-bg', border: 'border-brand-200' },
-  amber:   { bg: 'bg-accent', text: 'text-[#047857]', light: 'bg-accent-bg', border: 'border-accent/30' },
-  emerald: { bg: 'bg-accent', text: 'text-[#047857]', light: 'bg-accent-bg', border: 'border-accent/30' },
+  amber:   { bg: 'bg-accent', text: 'text-accent-700', light: 'bg-accent-bg', border: 'border-accent/30' },
+  emerald: { bg: 'bg-accent', text: 'text-accent-700', light: 'bg-accent-bg', border: 'border-accent/30' },
 } as const
 
 interface PdfSourceSelectorProps {
@@ -122,13 +122,13 @@ export default function PdfSourceSelector({
             <>
               <div className="text-3xl mb-2">✅</div>
               <p className={`font-bold ${a.text}`}>{currentFile.name}</p>
-              <p className="text-[12px] text-[#8b95a1] mt-1">다른 파일로 교체하려면 클릭하세요</p>
+              <p className="text-[12px] text-ink-500 mt-1">다른 파일로 교체하려면 클릭하세요</p>
             </>
           ) : (
             <>
               <div className="text-4xl mb-2">📤</div>
-              <p className="font-bold text-[#191f28]">여기를 클릭해서 PDF 업로드</p>
-              <p className="text-[12px] text-[#8b95a1] mt-1">PDF 파일만 가능해요</p>
+              <p className="font-bold text-ink-900">여기를 클릭해서 PDF 업로드</p>
+              <p className="text-[12px] text-ink-500 mt-1">PDF 파일만 가능해요</p>
             </>
           )}
           <input
@@ -172,14 +172,14 @@ export default function PdfSourceSelector({
       {tab === 'saved' && (
         <CalcInputCard>
           {loadingList ? (
-            <div className="flex items-center justify-center py-6 gap-2 text-[#8b95a1]">
+            <div className="flex items-center justify-center py-6 gap-2 text-ink-500">
               <Loader2 className="w-4 h-4 animate-spin" />
               <span className="text-[13px]">불러오는 중…</span>
             </div>
           ) : savedPdfs.length === 0 ? (
             <div className="text-center py-6">
               <FolderOpen className="w-8 h-8 text-[#c8cdd2] mx-auto mb-2" />
-              <p className="text-[13px] text-[#8b95a1]">저장된 PDF가 없어요</p>
+              <p className="text-[13px] text-ink-500">저장된 PDF가 없어요</p>
               <p className="text-[12px] text-[#c8cdd2] mt-1">새로 업로드하면 저장할 수 있어요</p>
             </div>
           ) : (
@@ -191,19 +191,19 @@ export default function PdfSourceSelector({
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
                     loadingDownload === pdf.id
                       ? `${a.light} ${a.border} border`
-                      : `bg-white border border-line hover:bg-[#F7F9FC] active:scale-[0.98]`
+                      : `bg-white border border-line hover:bg-page active:scale-[0.98]`
                   }`}>
                   <FileText className={`w-5 h-5 shrink-0 ${a.text}`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-bold text-[#191f28] truncate">
+                    <p className="text-[13px] font-bold text-ink-900 truncate">
                       {pdf.file_name}
                     </p>
-                    <p className="text-[11px] text-[#8b95a1]">
+                    <p className="text-[11px] text-ink-500">
                       {formatFileSize(pdf.file_size)} · {new Date(pdf.created_at).toLocaleDateString('ko-KR')}
                     </p>
                   </div>
                   {loadingDownload === pdf.id ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-[#8b95a1] shrink-0" />
+                    <Loader2 className="w-4 h-4 animate-spin text-ink-500 shrink-0" />
                   ) : (
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${a.light} ${a.text}`}>
                       선택
@@ -227,13 +227,13 @@ export default function PdfSourceSelector({
               <>
                 <div className="text-3xl mb-2">✅</div>
                 <p className={`font-bold ${a.text}`}>{currentFile.name}</p>
-                <p className="text-[12px] text-[#8b95a1] mt-1">다른 파일로 교체하려면 클릭하세요</p>
+                <p className="text-[12px] text-ink-500 mt-1">다른 파일로 교체하려면 클릭하세요</p>
               </>
             ) : (
               <>
                 <div className="text-4xl mb-2">📤</div>
-                <p className="font-bold text-[#191f28]">여기를 클릭해서 PDF 업로드</p>
-                <p className="text-[12px] text-[#8b95a1] mt-1">PDF 파일만 가능해요</p>
+                <p className="font-bold text-ink-900">여기를 클릭해서 PDF 업로드</p>
+                <p className="text-[12px] text-ink-500 mt-1">PDF 파일만 가능해요</p>
               </>
             )}
             <input
@@ -289,7 +289,7 @@ export default function PdfSourceSelector({
                 <div className="text-center py-2">
                   <div className={`w-12 h-12 rounded-full ${saveResult.ok ? 'bg-accent-bg' : 'bg-danger/10'} flex items-center justify-center mx-auto mb-3`}>
                     {saveResult.ok
-                      ? <Check className="w-6 h-6 text-[#047857]" />
+                      ? <Check className="w-6 h-6 text-accent-700" />
                       : <X className="w-6 h-6 text-danger" />
                     }
                   </div>
@@ -302,8 +302,8 @@ export default function PdfSourceSelector({
                     <div className={`w-12 h-12 rounded-2xl ${a.light} flex items-center justify-center mx-auto mb-3`}>
                       <FileText className={`w-6 h-6 ${a.text}`} />
                     </div>
-                    <p className="text-[17px] font-extrabold text-[#191f28]">이 PDF를 저장해둘까요?</p>
-                    <p className="text-[13px] text-[#8b95a1] mt-1.5">
+                    <p className="text-[17px] font-extrabold text-ink-900">이 PDF를 저장해둘까요?</p>
+                    <p className="text-[13px] text-ink-500 mt-1.5">
                       저장하면 다음에 다른 계산기에서도 바로 사용할 수 있어요
                     </p>
                     {pendingFile && (
@@ -320,7 +320,7 @@ export default function PdfSourceSelector({
                   <div className="flex gap-3">
                     <button type="button"
                       onClick={() => setShowSavePopup(false)}
-                      className="flex-1 min-h-[48px] rounded-lg text-[14px] font-semibold text-ink-600 bg-[#F2F4F6] hover:bg-line transition-all active:scale-[0.98]">
+                      className="flex-1 min-h-[48px] rounded-lg text-[14px] font-semibold text-ink-600 bg-up-sunken hover:bg-line transition-all active:scale-[0.98]">
                       괜찮아요
                     </button>
                     <button type="button"
@@ -328,7 +328,7 @@ export default function PdfSourceSelector({
                       disabled={savingPdf || savedPdfs.length >= MAX_PDFS}
                       className={`flex-1 py-3.5 rounded-2xl text-[14px] font-bold text-white transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
                         savedPdfs.length >= MAX_PDFS
-                          ? 'bg-gray-300 cursor-not-allowed'
+                          ? 'bg-up-hair cursor-not-allowed'
                           : `${a.bg} shadow-lg hover:opacity-90`
                       }`}>
                       {savingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : null}

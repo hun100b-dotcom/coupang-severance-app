@@ -179,7 +179,7 @@ export default function OnboardingPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-brand-bg via-white to-white flex items-center justify-center relative z-[1]">
-        <p className="text-[#191F28] font-medium">로딩 중...</p>
+        <p className="text-ink-900 font-medium">로딩 중...</p>
       </div>
     )
   }
@@ -189,19 +189,19 @@ export default function OnboardingPage() {
       <div className="w-full max-w-[520px]">
         {/* 상단 로고 */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#3182F6] overflow-hidden mb-4 shadow-lg shadow-blue-500/30">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand overflow-hidden mb-4 shadow-lg shadow-brand/30">
             <img src="/catch-logo.png" alt="CATCH" className="w-full h-full object-contain p-2" />
           </div>
-          <h1 className="text-2xl font-bold text-[#191F28] mb-2">환영합니다!</h1>
-          <p className="text-sm text-[#4E5968]">서비스 이용을 위해 추가 정보를 입력해 주세요.</p>
+          <h1 className="text-2xl font-bold text-ink-900 mb-2">환영합니다!</h1>
+          <p className="text-sm text-ink-700">서비스 이용을 위해 추가 정보를 입력해 주세요.</p>
         </div>
 
         {/* 폼 카드 — 모바일(375px) px-4 최소 확보, 데스크탑 p-8 유지 */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-gray-100/50 p-4 sm:p-8">
+        <form onSubmit={handleSubmit} className="bg-white rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-up-hair/50 p-4 sm:p-8">
           {/* 이름 */}
           <div className="mb-5">
-            <label className="block text-sm font-semibold text-[#191F28] mb-2">
-              이름 (실명) <span className="text-red-500">*</span>
+            <label className="block text-sm font-semibold text-ink-900 mb-2">
+              이름 (실명) <span className="text-danger">*</span>
             </label>
             <input
               type="text"
@@ -209,28 +209,28 @@ export default function OnboardingPage() {
               onChange={(e) => setFullName(e.target.value)}
               placeholder="홍길동"
               maxLength={50}
-              className="w-full h-12 px-4 rounded-xl border border-gray-200 text-[#191F28] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full h-12 px-4 rounded-xl border border-up-hair text-ink-900 placeholder-up-caption focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
           </div>
 
           {/* 생년월일 */}
           <div className="mb-5">
-            <label className="block text-sm font-semibold text-[#191F28] mb-2">
-              생년월일 <span className="text-red-500">*</span>
+            <label className="block text-sm font-semibold text-ink-900 mb-2">
+              생년월일 <span className="text-danger">*</span>
             </label>
             <input
               type="date"
               value={birthdate}
               onChange={(e) => setBirthdate(e.target.value)}
               max={new Date().toISOString().split('T')[0]}
-              className="w-full h-12 px-4 rounded-xl border border-gray-200 text-[#191F28] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full h-12 px-4 rounded-xl border border-up-hair text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
           </div>
 
           {/* 핸드폰 번호 */}
           <div className="mb-5">
-            <label className="block text-sm font-semibold text-[#191F28] mb-2">
-              핸드폰 번호 <span className="text-red-500">*</span>
+            <label className="block text-sm font-semibold text-ink-900 mb-2">
+              핸드폰 번호 <span className="text-danger">*</span>
             </label>
             <input
               type="tel"
@@ -238,15 +238,15 @@ export default function OnboardingPage() {
               onChange={(e) => handlePhoneChange(e.target.value)}
               placeholder="010-1234-5678"
               maxLength={13}
-              className="w-full h-12 px-4 rounded-xl border border-gray-200 text-[#191F28] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full h-12 px-4 rounded-xl border border-up-hair text-ink-900 placeholder-up-caption focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
           </div>
 
           {/* 성별 — 라디오 버튼 (남/여) */}
           {/* 성별 필드 추가됨 (2026-04-11): 채용 지원 시 자동 prefill에 활용 */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-[#191F28] mb-2">
-              성별 <span className="text-red-500">*</span>
+            <label className="block text-sm font-semibold text-ink-900 mb-2">
+              성별 <span className="text-danger">*</span>
             </label>
             <div className="flex gap-3">
               {(['male', 'female'] as const).map((g) => (
@@ -256,8 +256,8 @@ export default function OnboardingPage() {
                   onClick={() => setGender(g)}
                   className={`flex-1 h-12 rounded-xl border text-sm font-semibold transition-colors ${
                     gender === g
-                      ? 'bg-[#3182F6] border-[#3182F6] text-white shadow-lg shadow-blue-500/25'
-                      : 'bg-white border-gray-200 text-[#4E5968] hover:border-[#3182F6] hover:text-[#3182F6]'
+                      ? 'bg-brand border-brand text-white shadow-lg shadow-brand/25'
+                      : 'bg-white border-up-hair text-ink-700 hover:border-brand hover:text-brand'
                   }`}
                 >
                   {g === 'male' ? '남성' : '여성'}
@@ -267,8 +267,8 @@ export default function OnboardingPage() {
           </div>
 
           {/* 개인정보 수집 안내 */}
-          <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
-            <p className="font-semibold text-sm text-[#191F28] mb-3">개인정보 수집 안내</p>
+          <div className="mb-6 p-4 bg-brand-bg rounded-xl border border-brand-100">
+            <p className="font-semibold text-sm text-ink-900 mb-3">개인정보 수집 안내</p>
             <ul className="text-xs text-up-body space-y-1.5 leading-relaxed">
               <li>• <span className="font-semibold">수집 목적:</span> 퇴직금 계산 결과 저장 및 1:1 상담 제공</li>
               <li>• <span className="font-semibold">수집 항목:</span> 이메일, 실명, 생년월일, <strong>성별</strong>, 핸드폰번호</li>
@@ -278,7 +278,7 @@ export default function OnboardingPage() {
             {/* 온보딩 화면은 푸터 없음 → 본문 내부에 처리방침 링크 직접 제공 */}
             <p className="text-xs text-up-sub mt-2">
               자세한 내용은{' '}
-              <a href="/terms/privacy" target="_blank" className="text-[#3182F6] underline">
+              <a href="/terms/privacy" target="_blank" className="text-brand underline">
                 개인정보처리방침
               </a>
               에서 확인하세요.
@@ -292,10 +292,10 @@ export default function OnboardingPage() {
                 type="checkbox"
                 checked={agreePersonalInfo}
                 onChange={(e) => setAgreePersonalInfo(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-500 mt-0.5"
+                className="w-5 h-5 rounded border-up-hair text-brand focus:ring-2 focus:ring-brand mt-0.5"
               />
-              <span className="text-sm text-[#191F28] group-hover:text-blue-600 transition-colors">
-                <span className="font-semibold text-red-500">[필수]</span> 개인정보 수집 이용에 동의합니다.
+              <span className="text-sm text-ink-900 group-hover:text-brand-strong transition-colors">
+                <span className="font-semibold text-danger">[필수]</span> 개인정보 수집 이용에 동의합니다.
               </span>
             </label>
             <label className="flex items-start gap-3 cursor-pointer group">
@@ -303,10 +303,10 @@ export default function OnboardingPage() {
                 type="checkbox"
                 checked={agreeTerms}
                 onChange={(e) => setAgreeTerms(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-500 mt-0.5"
+                className="w-5 h-5 rounded border-up-hair text-brand focus:ring-2 focus:ring-brand mt-0.5"
               />
-              <span className="text-sm text-[#191F28] group-hover:text-blue-600 transition-colors">
-                <span className="font-semibold text-red-500">[필수]</span> <a href="/terms/service" target="_blank" className="underline">서비스 이용약관</a>에 동의합니다.
+              <span className="text-sm text-ink-900 group-hover:text-brand-strong transition-colors">
+                <span className="font-semibold text-danger">[필수]</span> <a href="/terms/service" target="_blank" className="underline">서비스 이용약관</a>에 동의합니다.
               </span>
             </label>
             <label className="flex items-start gap-3 cursor-pointer group">
@@ -314,23 +314,23 @@ export default function OnboardingPage() {
                 type="checkbox"
                 checked={agreePrivacy}
                 onChange={(e) => setAgreePrivacy(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-500 mt-0.5"
+                className="w-5 h-5 rounded border-up-hair text-brand focus:ring-2 focus:ring-brand mt-0.5"
               />
-              <span className="text-sm text-[#191F28] group-hover:text-blue-600 transition-colors">
-                <span className="font-semibold text-red-500">[필수]</span> <a href="/terms/privacy" target="_blank" className="underline">개인정보 처리방침</a>에 동의합니다.
+              <span className="text-sm text-ink-900 group-hover:text-brand-strong transition-colors">
+                <span className="font-semibold text-danger">[필수]</span> <a href="/terms/privacy" target="_blank" className="underline">개인정보 처리방침</a>에 동의합니다.
               </span>
             </label>
 
-            <div className="border-t border-gray-200 pt-3 mt-4">
+            <div className="border-t border-up-hair pt-3 mt-4">
               <p className="text-xs text-up-sub mb-2">선택 동의 (마케팅 정보 수신)</p>
               <label className="flex items-start gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={agreeMarketingSMS}
                   onChange={(e) => setAgreeMarketingSMS(e.target.checked)}
-                  className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-500 mt-0.5"
+                  className="w-5 h-5 rounded border-up-hair text-brand focus:ring-2 focus:ring-brand mt-0.5"
                 />
-                <span className="text-sm text-up-sub group-hover:text-blue-600 transition-colors">
+                <span className="text-sm text-up-sub group-hover:text-brand-strong transition-colors">
                   [선택] SMS/문자 마케팅 수신 동의
                 </span>
               </label>
@@ -339,9 +339,9 @@ export default function OnboardingPage() {
                   type="checkbox"
                   checked={agreeMarketingEmail}
                   onChange={(e) => setAgreeMarketingEmail(e.target.checked)}
-                  className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-500 mt-0.5"
+                  className="w-5 h-5 rounded border-up-hair text-brand focus:ring-2 focus:ring-brand mt-0.5"
                 />
-                <span className="text-sm text-up-sub group-hover:text-blue-600 transition-colors">
+                <span className="text-sm text-up-sub group-hover:text-brand-strong transition-colors">
                   [선택] 이메일 마케팅 수신 동의
                 </span>
               </label>
@@ -350,9 +350,9 @@ export default function OnboardingPage() {
                   type="checkbox"
                   checked={agreeMarketingPhone}
                   onChange={(e) => setAgreeMarketingPhone(e.target.checked)}
-                  className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-500 mt-0.5"
+                  className="w-5 h-5 rounded border-up-hair text-brand focus:ring-2 focus:ring-brand mt-0.5"
                 />
-                <span className="text-sm text-up-sub group-hover:text-blue-600 transition-colors">
+                <span className="text-sm text-up-sub group-hover:text-brand-strong transition-colors">
                   [선택] 전화(음성) 마케팅 수신 동의
                 </span>
               </label>
@@ -361,8 +361,8 @@ export default function OnboardingPage() {
 
           {/* 에러 메시지 */}
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200">
-              <p className="text-sm text-red-600">{error}</p>
+            <div className="mb-4 p-3 rounded-lg bg-danger/10 border border-danger/30">
+              <p className="text-sm text-danger">{error}</p>
             </div>
           )}
 
@@ -370,12 +370,12 @@ export default function OnboardingPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-12 rounded-full bg-[#3182F6] text-white font-semibold text-sm disabled:opacity-60 disabled:cursor-not-allowed hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/30"
+            className="w-full h-12 rounded-full bg-brand text-white font-semibold text-sm disabled:opacity-60 disabled:cursor-not-allowed hover:bg-brand-strong transition-colors shadow-lg shadow-brand/30"
           >
             {loading ? '저장 중...' : '시작하기'}
           </button>
 
-          <p className="text-xs text-gray-400 text-center mt-4">
+          <p className="text-xs text-up-sub text-center mt-4">
             입력하신 개인정보는 안전하게 보호됩니다.
           </p>
         </form>

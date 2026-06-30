@@ -134,7 +134,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
               key={i}
               className={`
                 w-2.5 h-2.5 rounded-full transition
-                ${step === i ? 'bg-toss-blue scale-110' : 'bg-slate-300'}
+                ${step === i ? 'bg-brand scale-110' : 'bg-up-hair'}
               `}
             />
           ))}
@@ -160,19 +160,19 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[11px] font-bold mb-3">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-bg text-brand-strong text-[11px] font-bold mb-3">
                     <span>진단 결과</span>
                   </div>
-                  <h2 className="text-[26px] leading-[1.3] font-extrabold tracking-tight text-[#191F28] mb-2">
+                  <h2 className="text-[26px] leading-[1.3] font-extrabold tracking-tight text-ink-900 mb-2">
                     아직은 퇴직금을 받기에는
                     <br />
-                    <span className="text-toss-blue">조금 이른 상태예요</span>
+                    <span className="text-brand">조금 이른 상태예요</span>
                   </h2>
-                  <p className="text-[13px] text-[#4E5968] mb-6">
+                  <p className="text-[13px] text-ink-700 mb-6">
                     {reason}
                   </p>
                   <div>
-                    <p className="text-[13px] font-semibold text-[#191F28] mb-2">
+                    <p className="text-[13px] font-semibold text-ink-900 mb-2">
                       첫 출근일을 알려주세요
                     </p>
                     <button
@@ -183,23 +183,23 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                         px-4 py-3
                         rounded-2xl
                         bg-[#F9FAFB]
-                        border border-gray-100
+                        border border-up-hair
                         text-[14px]
-                        hover:bg-gray-50
+                        hover:bg-up-sunken
                         transition
                       "
                     >
-                      <span className={selectedDate ? 'text-[#191F28]' : 'text-[#9CA3AF]'}>
+                      <span className={selectedDate ? 'text-ink-900' : 'text-[#9CA3AF]'}>
                         {selectedDate ? formatKoreanDate(selectedDate) : '날짜를 선택해 주세요'}
                       </span>
                       <Calendar className="w-4 h-4 text-[#A0AEC0]" />
                     </button>
                     {errorMessage && (
-                      <p className="mt-1 text-[11px] text-red-500">
+                      <p className="mt-1 text-[11px] text-danger">
                         {errorMessage}
                       </p>
                     )}
-                    <p className="mt-4 text-[13px] text-[#8B95A1]">
+                    <p className="mt-4 text-[13px] text-ink-500">
                       첫 출근일부터 1년이 되는 날을 기준으로, 계속근로 1년과 4주 평균 15시간 이상 근무 요건을 함께 살펴볼 수 있어요.
                     </p>
                     <div className="mt-5 flex flex-col gap-2">
@@ -224,29 +224,29 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                   className="px-0 sm:px-1 md:px-2"
                 >
                   <div className="mb-4">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[11px] font-bold mb-3">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-bg text-brand-strong text-[11px] font-bold mb-3">
                       <span>D-Day 계산</span>
                     </div>
-                    <h2 className="text-[26px] leading-[1.3] font-extrabold tracking-tight text-[#191F28] mb-2">
-                      첫 출근일 기준 <span className="text-toss-blue">1년 D-Day</span>입니다
+                    <h2 className="text-[26px] leading-[1.3] font-extrabold tracking-tight text-ink-900 mb-2">
+                      첫 출근일 기준 <span className="text-brand">1년 D-Day</span>입니다
                     </h2>
-                    <p className="text-[13px] text-[#4E5968]">
+                    <p className="text-[13px] text-ink-700">
                       퇴직금은 계속근로기간 1년 이상, 4주 평균 15시간 이상 근무해야 받을 수 있어요.
                       이 D-Day 전후로 근무 시간과 계약 상태를 한 번 더 점검해 보시면 좋아요.
                     </p>
                   </div>
                   <div className="rounded-2xl bg-gradient-to-br from-[#e8f1ff] to-[#f4f7ff] px-4 py-3 mb-5">
-                    <p className="text-[12px] text-[#8B95A1] mb-1">첫 출근일</p>
-                    <p className="text-[15px] font-semibold text-[#191F28] mb-3">
+                    <p className="text-[12px] text-ink-500 mb-1">첫 출근일</p>
+                    <p className="text-[15px] font-semibold text-ink-900 mb-3">
                       {formatKoreanDate(selectedDate)}
                     </p>
-                    <p className="text-[12px] text-[#8B95A1] mb-1">목표 달성일</p>
-                    <p className="text-[22px] font-extrabold text-toss-blue font-sans tracking-tight">
+                    <p className="text-[12px] text-ink-500 mb-1">목표 달성일</p>
+                    <p className="text-[22px] font-extrabold text-brand font-sans tracking-tight">
                       {formatKoreanDate(dDayDate)}
                     </p>
                   </div>
                   <div className="mb-5">
-                    <p className="text-[13px] text-[#4E5968] mb-3">
+                    <p className="text-[13px] text-ink-700 mb-3">
                       이 날짜를 놓치지 않도록, 간편 로그인으로 알림을 받아보세요.
                     </p>
                     <div className="flex flex-col gap-2">
@@ -277,13 +277,13 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                         disabled={authStatus.google === 'loading'}
                         className="
                           w-full h-12 rounded-full
-                          bg-white text-[#191F28]
-                          border border-gray-200
+                          bg-white text-ink-900
+                          border border-up-hair
                           flex items-center justify-center gap-2
                           text-[14px] font-semibold
                         "
                       >
-                        <span className="w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[11px] font-bold">
+                        <span className="w-5 h-5 rounded-md border border-up-hair flex items-center justify-center text-[11px] font-bold">
                           G
                         </span>
                         <span>
@@ -295,7 +295,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                       <button
                         type="button"
                         onClick={() => { setSkipLogin(true); setStep(3) }}
-                        className="mt-1 text-[12px] text-[#8B95A1] underline self-center"
+                        className="mt-1 text-[12px] text-ink-500 underline self-center"
                       >
                         로그인은 나중에 할게요
                       </button>
@@ -318,33 +318,33 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                   transition={{ duration: 0.2 }}
                   className="px-0 sm:px-1 md:px-2"
                 >
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[11px] font-bold mb-3">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-bg text-brand-strong text-[11px] font-bold mb-3">
                     <span>다른 혜택</span>
                   </div>
-                  <h2 className="text-[26px] leading-[1.3] font-extrabold tracking-tight text-[#191F28] mb-2">
+                  <h2 className="text-[26px] leading-[1.3] font-extrabold tracking-tight text-ink-900 mb-2">
                     지금은 비대상자여도
                     <br />
                     놓치지 말아야 할 혜택이 있어요
                   </h2>
-                  <p className="text-[13px] text-[#4E5968] mb-5">
+                  <p className="text-[13px] text-ink-700 mb-5">
                     퇴직금 외에도 근로장려금, 긴급복지 등 다양한 지원 제도가 있어요.
                   </p>
                   <div className="flex flex-col gap-3 mb-5">
                     <div className="rounded-2xl bg-[rgba(232,241,255,0.8)] border border-[rgba(148,163,184,0.35)] px-4 py-3">
-                      <p className="text-[13px] font-semibold text-[#191F28] mb-1">근로장려금(EITC)</p>
-                      <p className="text-[12px] text-[#8B95A1] mt-1">
+                      <p className="text-[13px] font-semibold text-ink-900 mb-1">근로장려금(EITC)</p>
+                      <p className="text-[12px] text-ink-500 mt-1">
                         소득이 일정 기준 이하인 근로자에게 연 1회 현금으로 지급되는 제도예요.
                       </p>
                     </div>
                     <div className="rounded-2xl bg-[rgba(240,249,255,0.85)] border border-[rgba(148,163,184,0.35)] px-4 py-3">
-                      <p className="text-[13px] font-semibold text-[#191F28] mb-1">긴급복지지원</p>
-                      <p className="text-[12px] text-[#8B95A1] mt-1">
+                      <p className="text-[13px] font-semibold text-ink-900 mb-1">긴급복지지원</p>
+                      <p className="text-[12px] text-ink-500 mt-1">
                         갑작스러운 소득 상실로 생계가 어려울 때, 생계·주거비 등을 일시적으로 지원받을 수 있어요.
                       </p>
                     </div>
                     <div className="rounded-2xl bg-[rgba(243,244,246,0.9)] border border-[rgba(148,163,184,0.35)] px-4 py-3">
-                      <p className="text-[13px] font-semibold text-[#191F28] mb-1">지자체 청년·근로자 지원</p>
-                      <p className="text-[12px] text-[#8B95A1] mt-1">
+                      <p className="text-[13px] font-semibold text-ink-900 mb-1">지자체 청년·근로자 지원</p>
+                      <p className="text-[12px] text-ink-500 mt-1">
                         거주 지역의 청년·근로자 대상 지원금을 함께 확인해 보세요.
                       </p>
                     </div>
@@ -390,7 +390,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
               <div
                 className="
                   w-10 h-1 rounded-full
-                  bg-slate-200
+                  bg-up-hair
                   mx-auto mb-3
                 "
               />
@@ -406,14 +406,14 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                   onClick={() => handleMonthChange(-1)}
                   className="
                     border-none bg-none cursor-pointer
-                    text-xl text-slate-600 p-2
+                    text-xl text-up-sub p-2
                   "
                 >
                   ‹
                 </button>
                 <span
                   className="
-                    text-sm font-bold text-[#191F28]
+                    text-sm font-bold text-ink-900
                   "
                 >
                   {calendarYear}.{`${calendarMonth + 1}`.padStart(2, '0')}
@@ -423,7 +423,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                   onClick={() => handleMonthChange(1)}
                   className="
                     border-none bg-none cursor-pointer
-                    text-xl text-slate-600 p-2
+                    text-xl text-up-sub p-2
                   "
                 >
                   ›
@@ -433,7 +433,7 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
               <div
                 className="
                   grid grid-cols-7 gap-1
-                  text-center text-[11px] text-slate-600
+                  text-center text-[11px] text-up-sub
                   mb-2
                 "
               >
@@ -459,8 +459,8 @@ export default function NonEligibleResult({ reason, onRestart }: Props) {
                       onClick={() => handleSelectCalendarDate(date)}
                       className={`
                         h-9 flex items-center justify-center rounded-full text-[11px]
-                        ${isSelected ? 'bg-toss-blue text-white' :
-                          !inMonth ? 'text-slate-300' : 'text-[#191F28] hover:bg-slate-100'}
+                        ${isSelected ? 'bg-brand text-white' :
+                          !inMonth ? 'text-up-caption' : 'text-ink-900 hover:bg-up-sunken'}
                         relative cursor-pointer
                       `}
                     >

@@ -32,7 +32,7 @@ function formatDate(iso: string) {
 export function InquiryHistory({ items }: InquiryHistoryProps) {
   return (
     <motion.section
-      className="bg-white rounded-[32px] shadow-[0_18px_60px_rgba(15,23,42,0.08)] border border-slate-100 px-5 py-5 space-y-3"
+      className="bg-white rounded-[32px] shadow-[0_18px_60px_rgba(15,23,42,0.08)] border border-up-hair px-5 py-5 space-y-3"
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
@@ -49,10 +49,10 @@ export function InquiryHistory({ items }: InquiryHistoryProps) {
       </div>
 
       {items.length === 0 ? (
-        <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+        <div className="flex items-center justify-between rounded-2xl bg-up-sunken px-4 py-3">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-              <MessageCircle className="w-4 h-4 text-slate-400" />
+              <MessageCircle className="w-4 h-4 text-up-caption" />
             </div>
             <div>
               <p className="text-sm font-semibold text-[#191f28]">아직 남긴 문의가 없어요</p>
@@ -70,15 +70,15 @@ export function InquiryHistory({ items }: InquiryHistoryProps) {
             return (
               <li
                 key={item.id}
-                className="rounded-2xl border border-slate-100 bg-slate-50/40 px-4 py-3 space-y-1"
+                className="rounded-2xl border border-up-hair bg-up-sunken/40 px-4 py-3 space-y-1"
               >
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-xs text-[#8b95a1]">{formatDate(item.created_at)}</p>
                   <span
                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                       answered
-                        ? 'bg-emerald-50 text-emerald-600'
-                        : 'bg-amber-50 text-amber-600'
+                        ? 'bg-accent-bg text-accent-700'
+                        : 'bg-warning/10 text-[#B45309]'
                     }`}
                   >
                     {answered ? (
@@ -99,7 +99,7 @@ export function InquiryHistory({ items }: InquiryHistoryProps) {
                 </p>
                 <p className="text-[11px] text-[#4e5968] line-clamp-2">{item.content}</p>
                 {item.answer && (
-                  <div className="mt-2 rounded-xl bg-white border border-slate-100 px-3 py-2">
+                  <div className="mt-2 rounded-xl bg-white border border-up-hair px-3 py-2">
                     <p className="text-[10px] font-semibold text-[#4e5968] mb-1">
                       CATCH 답변
                     </p>

@@ -36,15 +36,15 @@ export default class ErrorBoundary extends Component<Props, State> {
           </div>
 
           {/* 아이콘 */}
-          <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mb-5">
-            <AlertTriangle className="w-7 h-7 text-amber-500" />
+          <div className="w-14 h-14 rounded-2xl bg-warning/10 flex items-center justify-center mb-5">
+            <AlertTriangle className="w-7 h-7 text-warning" />
           </div>
 
           {/* 메시지 */}
-          <h2 className="text-lg font-extrabold text-[#191F28] tracking-tight mb-2">
+          <h2 className="text-lg font-extrabold text-ink-900 tracking-tight mb-2">
             일시적인 오류가 발생했어요
           </h2>
-          <p className="text-sm text-[#8B95A1] mb-6 text-center max-w-xs leading-relaxed">
+          <p className="text-sm text-up-sub mb-6 text-center max-w-xs leading-relaxed">
             새로고침하거나 잠시 후 다시 시도해 주세요.
             <br />
             문제가 지속되면 고객센터로 문의해 주세요.
@@ -63,20 +63,20 @@ export default class ErrorBoundary extends Component<Props, State> {
           <button
             type="button"
             onClick={() => this.setState(s => ({ showDetail: !s.showDetail }))}
-            className="mt-6 text-xs text-[#8B95A1] hover:text-[#4E5968] transition-colors"
+            className="mt-6 text-xs text-ink-500 hover:text-ink-700 transition-colors"
           >
             {this.state.showDetail ? '기술 정보 숨기기' : '기술 정보 보기'}
           </button>
 
           {this.state.showDetail && (
-            <pre className="w-full max-w-lg mt-3 p-4 bg-white/60 backdrop-blur-md border border-white/50 rounded-2xl text-left text-xs text-[#4E5968] overflow-auto max-h-40 shadow-sm">
+            <pre className="w-full max-w-lg mt-3 p-4 bg-white/60 backdrop-blur-md border border-white/50 rounded-2xl text-left text-xs text-ink-700 overflow-auto max-h-40 shadow-sm">
               {err.message}
               {err.stack ? `\n\n${err.stack}` : ''}
             </pre>
           )}
 
           {import.meta.env.DEV && (
-            <p className="mt-4 text-[10px] text-[#8B95A1] font-mono">
+            <p className="mt-4 text-[10px] text-ink-500 font-mono">
               [DEV] {err.message?.slice(0, 100)}
             </p>
           )}

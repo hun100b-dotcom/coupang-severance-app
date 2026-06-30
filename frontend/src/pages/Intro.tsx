@@ -54,7 +54,7 @@ export default function Intro() {
             {sparkles.map((s, i) => (
               <motion.div
                 key={i}
-                className="absolute rounded-full bg-[#3182F6]"
+                className="absolute rounded-full bg-brand"
                 style={{ width: s.size, height: s.size }}
                 initial={{ opacity: 0, x: 0, y: 0, scale: 0 }}
                 animate={{
@@ -125,7 +125,7 @@ export default function Intro() {
 
             {/* 태그라인 */}
             <motion.p
-              className="mt-3 text-[14px] text-[#4E5968] font-medium tracking-tight text-center leading-relaxed"
+              className="mt-3 text-[14px] text-ink-700 font-medium tracking-tight text-center leading-relaxed"
               initial={{ opacity: 0, y: 10 }}
               animate={phase !== 'logo' ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
@@ -138,7 +138,7 @@ export default function Intro() {
           <motion.button
             type="button"
             onClick={handleSkip}
-            className="mt-8 w-[240px] max-w-[80vw] py-3.5 rounded-[20px] bg-[#3182F6] text-white font-bold text-[15px] tracking-tight shadow-[0_12px_40px_rgba(49,130,246,0.3)]"
+            className="mt-8 w-[240px] max-w-[80vw] py-3.5 rounded-[20px] bg-brand text-white font-bold text-[15px] tracking-tight shadow-[0_12px_40px_rgba(49,130,246,0.3)]"
             initial={{ opacity: 0, y: 16 }}
             animate={phase === 'ready' ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -155,7 +155,7 @@ export default function Intro() {
 
           {/* 하단 브랜드 */}
           <motion.p
-            className="absolute bottom-8 text-[11px] text-[#565D6A]/70 font-medium tracking-wide"
+            className="absolute bottom-8 text-[11px] text-up-sub/70 font-medium tracking-wide"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5, duration: 0.8 }}

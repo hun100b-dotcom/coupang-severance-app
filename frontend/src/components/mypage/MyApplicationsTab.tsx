@@ -310,8 +310,8 @@ export default function MyApplicationsTab({ userId }: Props) {
   if (fetchError) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-4">
-        <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
-          <AlertCircle className="w-8 h-8 text-red-300" />
+        <div className="w-16 h-16 rounded-full bg-danger/10 flex items-center justify-center">
+          <AlertCircle className="w-8 h-8 text-danger" />
         </div>
         <p className="text-[14px] font-bold text-up-body">{fetchError}</p>
         <button
@@ -507,14 +507,14 @@ export default function MyApplicationsTab({ userId }: Props) {
                 <div className="flex items-center justify-between text-[12px] text-up-sub mb-2">
                   <span>지원일 {fmtDate(app.applied_at)}</span>
                   {app.work_date && app.status === 'confirmed' && (
-                    <span className="flex items-center gap-1 font-bold text-emerald-600">
+                    <span className="flex items-center gap-1 font-bold text-accent-700">
                       <Calendar className="w-3 h-3" />
                       출근일 {new Date(app.work_date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                     </span>
                   )}
                   {app.status === 'completed' && (
                     <span className="flex items-center gap-1 font-bold text-up-sub">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-accent-700" />
                       완료
                     </span>
                   )}
@@ -522,7 +522,7 @@ export default function MyApplicationsTab({ userId }: Props) {
 
                 {/* 출근확정 안내 문구 */}
                 {app.status === 'confirmed' && (
-                  <p className="text-[11px] text-emerald-600 text-center mb-2">
+                  <p className="text-[11px] text-accent-700 text-center mb-2">
                     ✅ 출근 확정됨 — 출근 완료 처리는 관리자가 진행합니다
                   </p>
                 )}
@@ -721,16 +721,16 @@ export default function MyApplicationsTab({ userId }: Props) {
               <div className="px-5 py-4 space-y-4">
                 {/* 수정 불가 안내 */}
                 {statusLock && (
-                  <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                    <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
-                    <p className="text-[12px] text-amber-700 font-medium">{statusLock}</p>
+                  <div className="flex items-center gap-2 bg-warning/10 border border-warning/30 rounded-xl px-4 py-3">
+                    <AlertCircle className="w-4 h-4 text-warning shrink-0" />
+                    <p className="text-[12px] text-[#B45309] font-medium">{statusLock}</p>
                   </div>
                 )}
                 {/* 수정 에러 */}
                 {editError && (
-                  <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                  <div className="flex items-center gap-2 bg-danger/10 border border-danger/30 rounded-xl px-4 py-3">
                     <AlertCircle className="w-4 h-4 text-up-danger shrink-0" />
-                    <p className="text-[12px] text-red-700">{editError}</p>
+                    <p className="text-[12px] text-danger">{editError}</p>
                   </div>
                 )}
                 {/* 공고 정보 */}

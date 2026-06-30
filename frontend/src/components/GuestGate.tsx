@@ -52,24 +52,24 @@ export function GuestGateModal({ isOpen, onClose, featureName }: GuestGateModalP
             <button
               type="button"
               onClick={onClose}
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-up-sunken text-up-sub hover:bg-up-hair transition-colors"
               aria-label="닫기"
             >
               <X size={16} />
             </button>
 
             {/* 아이콘 */}
-            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-50 mb-4">
-              <LogIn className="w-7 h-7 text-[#3182F6]" />
+            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-bg mb-4">
+              <LogIn className="w-7 h-7 text-brand" />
             </div>
 
             {/* 제목 & 설명 */}
-            <h2 className="text-[18px] font-bold text-[#191F28] mb-2">
+            <h2 className="text-[18px] font-bold text-ink-900 mb-2">
               로그인이 필요해요
             </h2>
-            <p className="text-[14px] text-[#6B7684] leading-relaxed mb-6">
+            <p className="text-[14px] text-ink-600 leading-relaxed mb-6">
               {featureName
-                ? <><strong className="text-[#191F28]">{featureName}</strong>은</>
+                ? <><strong className="text-ink-900">{featureName}</strong>은</>
                 : '이 기능은'
               }{' '}
               로그인한 회원만 이용할 수 있어요.
@@ -83,7 +83,7 @@ export function GuestGateModal({ isOpen, onClose, featureName }: GuestGateModalP
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="w-full h-12 rounded-full bg-[#3182F6] text-white text-[14px] font-semibold hover:bg-[#1a6cdf] transition-colors"
+                className="w-full h-12 rounded-full bg-brand text-white text-[14px] font-semibold hover:bg-[#1a6cdf] transition-colors"
               >
                 로그인 / 회원가입
               </button>
@@ -91,7 +91,7 @@ export function GuestGateModal({ isOpen, onClose, featureName }: GuestGateModalP
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full h-12 rounded-full bg-[#F2F4F6] text-[#6B7684] text-[14px] font-medium hover:bg-[#E8EAED] transition-colors"
+                className="w-full h-12 rounded-full bg-up-sunken text-ink-600 text-[14px] font-medium hover:bg-[#E8EAED] transition-colors"
               >
                 나중에 하기
               </button>

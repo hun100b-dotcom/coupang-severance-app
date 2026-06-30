@@ -24,7 +24,7 @@ export default function PaymentGuide() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex items-center justify-center w-11 h-11 -ml-2 rounded-md text-ink-700 hover:bg-[#F2F4F6] transition-colors"
+            className="flex items-center justify-center w-11 h-11 -ml-2 rounded-md text-ink-700 hover:bg-up-sunken transition-colors"
             aria-label="뒤로"
           >
             <ChevronLeft className="w-5 h-5" />

@@ -56,10 +56,10 @@ const BENEFITS: BenefitCard[] = [
   {
     id: 'eitc',
     badge: '💰 현금 지급',
-    badgeColor: 'bg-[#047857] text-white',
+    badgeColor: 'bg-accent-700 text-white',
     icon: Sparkles,
     iconBg: 'bg-accent-bg',
-    iconColor: 'text-[#047857]',
+    iconColor: 'text-accent-700',
     title: '근로장려금 (EITC)',
     subtitle: '저소득 근로자 세금 환급형 지원금',
     highlight: '연 소득 3,800만 원 미만 단독 가구도 신청 가능',
@@ -116,7 +116,7 @@ const BENEFITS: BenefitCard[] = [
     badge: '🛡️ 고용보험',
     badgeColor: 'bg-ink-700 text-white',
     icon: Users,
-    iconBg: 'bg-[#F2F4F6]',
+    iconBg: 'bg-up-sunken',
     iconColor: 'text-ink-700',
     title: '고용보험 피보험자 혜택',
     subtitle: '실업급여·출산급여·육아휴직급여 수급 자격',
@@ -219,7 +219,7 @@ function GovernmentBenefitsSection() {
 
             {/* 핵심 수치 */}
             <div className="px-4 pb-3">
-              <div className="rounded-xl bg-[#F7F9FC] border border-up-hair px-3 py-2 flex items-center justify-between">
+              <div className="rounded-xl bg-page border border-up-hair px-3 py-2 flex items-center justify-between">
                 <p className="text-[11px] text-up-sub">{benefit.amountLabel}</p>
                 <p className="text-sm font-extrabold text-brand-strong">{benefit.amount}</p>
               </div>
@@ -249,7 +249,7 @@ function GovernmentBenefitsSection() {
                   </ul>
                 </div>
 
-                <div className="rounded-xl bg-[#F7F9FC] border border-up-hair px-3 py-2.5">
+                <div className="rounded-xl bg-page border border-up-hair px-3 py-2.5">
                   <p className="text-[11px] font-bold text-ink-700 mb-0.5">💡 신청 방법</p>
                   <p className="text-[12px] text-ink-700 leading-relaxed">{benefit.tip}</p>
                 </div>
@@ -305,9 +305,9 @@ export default function MyBenefitsPage() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex items-center justify-center w-11 h-11 -ml-1 rounded-md hover:bg-[#F2F4F6] transition-colors active:scale-95"
+            className="flex items-center justify-center w-11 h-11 -ml-1 rounded-md hover:bg-up-sunken transition-colors active:scale-95"
           >
-            <ChevronLeft className="w-5 h-5 text-[#191f28]" />
+            <ChevronLeft className="w-5 h-5 text-ink-900" />
           </button>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-xl bg-brand-bg flex items-center justify-center">

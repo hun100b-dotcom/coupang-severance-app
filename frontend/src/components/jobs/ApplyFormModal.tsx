@@ -282,14 +282,14 @@ export default function ApplyFormModal({
   const canSubmit = !isSubmitting
 
   // 섹션 공통 헤더 스타일
-  const sectionHeader = 'text-[13px] font-bold text-gray-500 uppercase tracking-wide mb-3 mt-1'
+  const sectionHeader = 'text-[13px] font-bold text-up-sub uppercase tracking-wide mb-3 mt-1'
 
   // 라디오 그룹 옵션 공통 버튼 스타일 — py-3으로 터치 타겟 최소 44px 확보
   function radioBtn(selected: boolean) {
     return `flex-1 py-3 rounded-xl border text-sm font-medium transition-colors ${
       selected
-        ? 'bg-blue-500 border-blue-500 text-white'
-        : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-blue-300'
+        ? 'bg-brand border-brand text-white'
+        : 'bg-up-sunken border-up-hair text-up-body hover:border-brand-200'
     }`
   }
 
@@ -313,16 +313,16 @@ export default function ApplyFormModal({
             className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto"
           >
             {/* ── 헤더 (sticky) ── */}
-            <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-white border-b border-up-hair px-5 py-4 flex items-center justify-between z-10">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">지원하기</h2>
-                <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{jobTitle}</p>
+                <h2 className="text-lg font-bold text-up-navy">지원하기</h2>
+                <p className="text-xs text-up-sub mt-0.5 line-clamp-1">{jobTitle}</p>
               </div>
               <button
                 onClick={onClose}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-up-sunken transition-colors"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-5 h-5 text-up-sub" />
               </button>
             </div>
 
@@ -330,7 +330,7 @@ export default function ApplyFormModal({
             <form onSubmit={handleSubmit} className="px-5 py-6 space-y-5">
 
               {/* 안내 문구 */}
-              <p className="text-xs text-gray-400 leading-relaxed">
+              <p className="text-xs text-up-sub leading-relaxed">
                 수집된 정보는 해당 공고 지원 및 안전보건교육 대상 판별 목적으로 사용됩니다.
               </p>
 
@@ -342,9 +342,9 @@ export default function ApplyFormModal({
 
                 {/* 자동 연계 배너 */}
                 {prefilled && (
-                  <div className="flex items-center gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-4">
-                    <Sparkles className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                    <p className="text-xs text-blue-700 leading-relaxed">
+                  <div className="flex items-center gap-2.5 bg-brand-bg border border-brand-100 rounded-xl px-4 py-3 mb-4">
+                    <Sparkles className="w-4 h-4 text-brand flex-shrink-0" />
+                    <p className="text-xs text-brand-strong leading-relaxed">
                       <span className="font-semibold">회원 정보에서 자동으로 불러왔어요.</span>
                       <br />내용이 다르다면 수정 후 제출하세요.
                     </p>
@@ -354,27 +354,27 @@ export default function ApplyFormModal({
                 {/* 성명 */}
                 {/* text-base(16px): iOS에서 input 16px 미만 → 자동 줌인 발생 방지 */}
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    <span className="text-red-500 mr-1">*</span>성명
+                  <label className="block text-sm font-semibold text-up-body mb-1.5">
+                    <span className="text-danger mr-1">*</span>성명
                   </label>
                   <input
                     type="text"
                     placeholder="실명을 입력해주세요"
                     value={form.applicant_name}
                     onChange={(e) => setForm(f => ({ ...f, applicant_name: e.target.value }))}
-                    className={`w-full px-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                      errors.applicant_name ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                    className={`w-full px-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-brand transition-colors ${
+                      errors.applicant_name ? 'border-danger bg-danger/10' : 'border-up-hair bg-up-sunken'
                     }`}
                   />
                   {errors.applicant_name && (
-                    <p className="text-xs text-red-500 mt-1">{errors.applicant_name}</p>
+                    <p className="text-xs text-danger mt-1">{errors.applicant_name}</p>
                   )}
                 </div>
 
                 {/* 생년월일 — 연/월/일 3열 그리드: 375px에서도 안정적 레이아웃 */}
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    <span className="text-red-500 mr-1">*</span>생년월일
+                  <label className="block text-sm font-semibold text-up-body mb-1.5">
+                    <span className="text-danger mr-1">*</span>생년월일
                   </label>
                   <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
                     {/* 연도 — flex-1로 남은 공간 모두 사용 */}
@@ -386,11 +386,11 @@ export default function ApplyFormModal({
                         maxLength={4}
                         value={form.birth_year}
                         onChange={(e) => setForm(f => ({ ...f, birth_year: e.target.value.replace(/\D/g, '') }))}
-                        className={`w-full px-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                        className={`w-full px-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-brand ${
+                          errors.birth_year ? 'border-danger bg-danger/10' : 'border-up-hair bg-up-sunken'
                         }`}
                       />
-                      <span className="text-[11px] text-gray-400 mt-0.5 block text-center">년</span>
+                      <span className="text-[11px] text-up-sub mt-0.5 block text-center">년</span>
                     </div>
                     {/* 월 — 고정 너비 60px (375px에서 안전) */}
                     <div className="w-[60px]">
@@ -401,11 +401,11 @@ export default function ApplyFormModal({
                         maxLength={2}
                         value={form.birth_month}
                         onChange={(e) => setForm(f => ({ ...f, birth_month: e.target.value.replace(/\D/g, '') }))}
-                        className={`w-full text-center py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                        className={`w-full text-center py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-brand ${
+                          errors.birth_year ? 'border-danger bg-danger/10' : 'border-up-hair bg-up-sunken'
                         }`}
                       />
-                      <span className="text-[11px] text-gray-400 mt-0.5 block text-center">월</span>
+                      <span className="text-[11px] text-up-sub mt-0.5 block text-center">월</span>
                     </div>
                     {/* 일 — 고정 너비 60px */}
                     <div className="w-[60px]">
@@ -416,22 +416,22 @@ export default function ApplyFormModal({
                         maxLength={2}
                         value={form.birth_day}
                         onChange={(e) => setForm(f => ({ ...f, birth_day: e.target.value.replace(/\D/g, '') }))}
-                        className={`w-full text-center py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          errors.birth_year ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                        className={`w-full text-center py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-brand ${
+                          errors.birth_year ? 'border-danger bg-danger/10' : 'border-up-hair bg-up-sunken'
                         }`}
                       />
-                      <span className="text-[11px] text-gray-400 mt-0.5 block text-center">일</span>
+                      <span className="text-[11px] text-up-sub mt-0.5 block text-center">일</span>
                     </div>
                   </div>
                   {errors.birth_year && (
-                    <p className="text-xs text-red-500 mt-1">{errors.birth_year}</p>
+                    <p className="text-xs text-danger mt-1">{errors.birth_year}</p>
                   )}
                 </div>
 
                 {/* 성별 — py-3으로 터치 타겟 44px 확보 */}
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    <span className="text-red-500 mr-1">*</span>성별
+                  <label className="block text-sm font-semibold text-up-body mb-1.5">
+                    <span className="text-danger mr-1">*</span>성별
                   </label>
                   <div className="flex gap-3">
                     {(['male', 'female'] as const).map((g) => (
@@ -446,36 +446,36 @@ export default function ApplyFormModal({
                     ))}
                   </div>
                   {errors.applicant_gender && (
-                    <p className="text-xs text-red-500 mt-1">{errors.applicant_gender}</p>
+                    <p className="text-xs text-danger mt-1">{errors.applicant_gender}</p>
                   )}
                 </div>
 
                 {/* 휴대폰 번호 — text-base(16px)로 iOS 줌인 방지 */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    <span className="text-red-500 mr-1">*</span>휴대폰 번호
+                  <label className="block text-sm font-semibold text-up-body mb-1.5">
+                    <span className="text-danger mr-1">*</span>휴대폰 번호
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-up-sub" />
                     <input
                       type="tel"
                       inputMode="tel"
                       placeholder="010-0000-0000"
                       value={form.applicant_phone}
                       onChange={(e) => setForm(f => ({ ...f, applicant_phone: formatPhone(e.target.value) }))}
-                      className={`w-full pl-9 pr-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.applicant_phone ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                      className={`w-full pl-9 pr-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-brand ${
+                        errors.applicant_phone ? 'border-danger bg-danger/10' : 'border-up-hair bg-up-sunken'
                       }`}
                     />
                   </div>
                   {errors.applicant_phone && (
-                    <p className="text-xs text-red-500 mt-1">{errors.applicant_phone}</p>
+                    <p className="text-xs text-danger mt-1">{errors.applicant_phone}</p>
                   )}
                 </div>
               </div>
 
               {/* 섹션 구분선 */}
-              <div className="border-t border-gray-100" />
+              <div className="border-t border-up-hair" />
 
               {/* ─────────────────────────────────────
                   섹션 2 — 근무 관련
@@ -485,16 +485,16 @@ export default function ApplyFormModal({
 
                 {/* 5. 지원 업무 선택 — text-base(16px): iOS 줌인 방지 */}
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    <span className="text-red-500 mr-1">*</span>지원 업무
+                  <label className="block text-sm font-semibold text-up-body mb-1.5">
+                    <span className="text-danger mr-1">*</span>지원 업무
                   </label>
                   <div className="relative">
-                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-up-sub pointer-events-none" />
                     <select
                       value={form.applied_task}
                       onChange={(e) => setForm(f => ({ ...f, applied_task: e.target.value }))}
-                      className={`w-full pl-9 pr-8 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-no-repeat ${
-                        errors.applied_task ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                      className={`w-full pl-9 pr-8 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-brand appearance-none bg-no-repeat ${
+                        errors.applied_task ? 'border-danger bg-danger/10' : 'border-up-hair bg-up-sunken'
                       }`}
                     >
                       <option value="">업무를 선택해주세요</option>
@@ -502,20 +502,20 @@ export default function ApplyFormModal({
                         <option key={opt} value={opt}>{opt}</option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-up-sub pointer-events-none" />
                   </div>
                   {errors.applied_task && (
-                    <p className="text-xs text-red-500 mt-1">{errors.applied_task}</p>
+                    <p className="text-xs text-danger mt-1">{errors.applied_task}</p>
                   )}
                 </div>
 
                 {/* 6. 90일 이내 센터 근무 경험 */}
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    <span className="text-red-500 mr-1">*</span>
+                  <label className="block text-sm font-semibold text-up-body mb-1">
+                    <span className="text-danger mr-1">*</span>
                     해당 센터에서 지난 90일 이내 근무한 경험이 있나요?
                   </label>
-                  <p className="text-xs text-gray-400 mb-2 leading-relaxed">
+                  <p className="text-xs text-up-sub mb-2 leading-relaxed">
                     신규 근로자 안전보건교육 대상 판별을 위해 수집합니다.
                     (산업안전보건법 제29조)
                   </p>
@@ -532,14 +532,14 @@ export default function ApplyFormModal({
                     ))}
                   </div>
                   {errors.prior_experience_90d && (
-                    <p className="text-xs text-red-500 mt-1">{errors.prior_experience_90d}</p>
+                    <p className="text-xs text-danger mt-1">{errors.prior_experience_90d}</p>
                   )}
                 </div>
 
                 {/* 7. 희망 출근 시간대 */}
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    <span className="text-red-500 mr-1">*</span>희망 출근 시간대
+                  <label className="block text-sm font-semibold text-up-body mb-1.5">
+                    <span className="text-danger mr-1">*</span>희망 출근 시간대
                   </label>
                   {/* 공고에 설정된 근무조만 표시 (미설정이면 전체) */}
                   <div className={`grid gap-2 ${effectiveShifts.length <= 2 ? 'grid-cols-2' : effectiveShifts.length === 3 ? 'grid-cols-3' : 'grid-cols-4'}`}>
@@ -555,14 +555,14 @@ export default function ApplyFormModal({
                     ))}
                   </div>
                   {errors.preferred_shift && (
-                    <p className="text-xs text-red-500 mt-1">{errors.preferred_shift}</p>
+                    <p className="text-xs text-danger mt-1">{errors.preferred_shift}</p>
                   )}
                 </div>
 
                 {/* 8. 교통 수단 */}
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    <span className="text-red-500 mr-1">*</span>교통 수단
+                  <label className="block text-sm font-semibold text-up-body mb-1.5">
+                    <span className="text-danger mr-1">*</span>교통 수단
                   </label>
                   <div className="flex gap-2">
                     {([
@@ -581,22 +581,22 @@ export default function ApplyFormModal({
                     ))}
                   </div>
                   {errors.transportation && (
-                    <p className="text-xs text-red-500 mt-1">{errors.transportation}</p>
+                    <p className="text-xs text-danger mt-1">{errors.transportation}</p>
                   )}
                 </div>
 
                 {/* 9. 안전화 사이즈 — text-base(16px): iOS 줌인 방지 */}
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    <span className="text-red-500 mr-1">*</span>안전화 사이즈
-                    <span className="text-xs font-normal text-gray-400 ml-2">(안전화 지급용)</span>
+                  <label className="block text-sm font-semibold text-up-body mb-1.5">
+                    <span className="text-danger mr-1">*</span>안전화 사이즈
+                    <span className="text-xs font-normal text-up-sub ml-2">(안전화 지급용)</span>
                   </label>
                   <div className="relative">
                     <select
                       value={form.shoe_size}
                       onChange={(e) => setForm(f => ({ ...f, shoe_size: e.target.value }))}
-                      className={`w-full px-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none ${
-                        errors.shoe_size ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                      className={`w-full px-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-brand appearance-none ${
+                        errors.shoe_size ? 'border-danger bg-danger/10' : 'border-up-hair bg-up-sunken'
                       }`}
                     >
                       <option value="">사이즈 선택 (mm)</option>
@@ -604,18 +604,18 @@ export default function ApplyFormModal({
                         <option key={sz} value={sz}>{sz}mm</option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-up-sub pointer-events-none" />
                   </div>
                   {errors.shoe_size && (
-                    <p className="text-xs text-red-500 mt-1">{errors.shoe_size}</p>
+                    <p className="text-xs text-danger mt-1">{errors.shoe_size}</p>
                   )}
                 </div>
 
                 {/* 10. 특이사항 / 건강상 이슈 (선택) — text-base(16px): iOS 줌인 방지 */}
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <label className="block text-sm font-semibold text-up-body mb-1.5">
                     특이사항 / 건강상 이슈
-                    <span className="text-xs font-normal text-gray-400 ml-2">(선택, 최대 300자)</span>
+                    <span className="text-xs font-normal text-up-sub ml-2">(선택, 최대 300자)</span>
                   </label>
                   <textarea
                     placeholder="작업 배치 시 참고할 특이사항이나 건강상 이슈를 입력해주세요 (예: 허리 디스크, 오른손 부상 중)"
@@ -623,38 +623,38 @@ export default function ApplyFormModal({
                     onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))}
                     rows={3}
                     maxLength={300}
-                    className={`w-full px-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
-                      errors.notes ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                    className={`w-full px-3 py-3 rounded-xl border text-base focus:outline-none focus:ring-2 focus:ring-brand resize-none ${
+                      errors.notes ? 'border-danger bg-danger/10' : 'border-up-hair bg-up-sunken'
                     }`}
                   />
-                  <p className="text-xs text-gray-400 text-right mt-0.5">{form.notes.length}/300자</p>
+                  <p className="text-xs text-up-sub text-right mt-0.5">{form.notes.length}/300자</p>
                   {errors.notes && (
-                    <p className="text-xs text-red-500 mt-1">{errors.notes}</p>
+                    <p className="text-xs text-danger mt-1">{errors.notes}</p>
                   )}
                 </div>
 
                 {/* 11. 비상 연락처 (선택) — text-base(16px): iOS 줌인 방지 */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  <label className="block text-sm font-semibold text-up-body mb-1.5">
                     비상 연락처
-                    <span className="text-xs font-normal text-gray-400 ml-2">(선택, 산재 대비)</span>
+                    <span className="text-xs font-normal text-up-sub ml-2">(선택, 산재 대비)</span>
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-up-sub" />
                     <input
                       type="tel"
                       inputMode="tel"
                       placeholder="010-0000-0000"
                       value={form.emergency_contact}
                       onChange={(e) => setForm(f => ({ ...f, emergency_contact: formatPhone(e.target.value) }))}
-                      className="w-full pl-9 pr-3 py-3 rounded-xl border border-gray-200 bg-gray-50 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-9 pr-3 py-3 rounded-xl border border-up-hair bg-up-sunken text-base focus:outline-none focus:ring-2 focus:ring-brand"
                     />
                   </div>
                 </div>
               </div>
 
               {/* 섹션 구분선 */}
-              <div className="border-t border-gray-100" />
+              <div className="border-t border-up-hair" />
 
               {/* ─────────────────────────────────────
                   섹션 3 — 동의 (제3자 제공 1개)
@@ -662,7 +662,7 @@ export default function ApplyFormModal({
               <div>
                 <p className={sectionHeader}>동의</p>
 
-                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <div className="border border-up-hair rounded-xl overflow-hidden">
                   {/* 제3자 제공 동의 */}
                   <div>
                     <div className="flex items-center gap-3 px-4 py-3">
@@ -671,21 +671,21 @@ export default function ApplyFormModal({
                         onClick={() => setForm(f => ({ ...f, consent_third_party: !f.consent_third_party }))}
                         className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors flex-shrink-0 ${
                           form.consent_third_party
-                            ? 'bg-blue-500 border-blue-500'
-                            : 'border-gray-300 bg-white'
+                            ? 'bg-brand border-brand'
+                            : 'border-up-hair bg-white'
                         }`}
                       >
                         {form.consent_third_party && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
                       </button>
-                      <span className="text-sm text-gray-800 flex-1">
-                        <span className="text-red-500 font-medium">[필수] </span>
+                      <span className="text-sm text-up-body flex-1">
+                        <span className="text-danger font-medium">[필수] </span>
                         위 정보를 공고 등록사(고객사)에게 제공하는 것에 동의합니다.{' '}
-                        <span className="font-semibold text-blue-600">제3자 제공</span>
+                        <span className="font-semibold text-brand-strong">제3자 제공</span>
                       </span>
                       <button
                         type="button"
                         onClick={() => setThirdPartyOpen(!thirdPartyOpen)}
-                        className="text-gray-400 hover:text-gray-600 flex items-center gap-0.5 text-xs flex-shrink-0"
+                        className="text-up-sub hover:text-up-sub flex items-center gap-0.5 text-xs flex-shrink-0"
                       >
                         상세
                         {thirdPartyOpen
@@ -703,7 +703,7 @@ export default function ApplyFormModal({
                           exit={{ height: 0, opacity: 0 }}
                           className="overflow-hidden"
                         >
-                          <pre className="text-xs text-gray-500 bg-gray-50 px-4 pb-3 whitespace-pre-wrap font-sans leading-relaxed">
+                          <pre className="text-xs text-up-sub bg-up-sunken px-4 pb-3 whitespace-pre-wrap font-sans leading-relaxed">
                             {THIRD_PARTY_DETAIL}
                           </pre>
                         </motion.div>
@@ -714,8 +714,8 @@ export default function ApplyFormModal({
 
                 {errors.consent_third_party && (
                   <div className="flex items-center gap-1.5 mt-2">
-                    <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
-                    <p className="text-xs text-red-500">{errors.consent_third_party}</p>
+                    <AlertCircle className="w-3.5 h-3.5 text-danger flex-shrink-0" />
+                    <p className="text-xs text-danger">{errors.consent_third_party}</p>
                   </div>
                 )}
               </div>
@@ -726,8 +726,8 @@ export default function ApplyFormModal({
                 disabled={!canSubmit}
                 className={`w-full py-4 rounded-xl text-sm font-bold transition-all ${
                   canSubmit
-                    ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/25'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    ? 'bg-brand hover:bg-brand text-white shadow-lg shadow-brand/25'
+                    : 'bg-up-hair text-up-sub cursor-not-allowed'
                 }`}
               >
                 {isSubmitting ? (
@@ -741,7 +741,7 @@ export default function ApplyFormModal({
               </button>
 
               {/* 하단 안내 */}
-              <p className="text-xs text-gray-400 text-center leading-relaxed pb-2">
+              <p className="text-xs text-up-sub text-center leading-relaxed pb-2">
                 입력하신 정보는 채용 목적으로만 사용됩니다.
               </p>
             </form>

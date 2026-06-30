@@ -87,7 +87,7 @@ export default function SavedPdfList() {
                 <button type="button"
                   onClick={() => handleDelete(pdf)}
                   disabled={deleting === pdf.id}
-                  className="p-2 rounded-xl text-up-caption hover:text-red-500 hover:bg-red-50 transition-all active:scale-90 shrink-0">
+                  className="p-2 rounded-xl text-up-caption hover:text-danger hover:bg-danger/10 transition-all active:scale-90 shrink-0">
                   {deleting === pdf.id
                     ? <Loader2 className="w-4 h-4 animate-spin" />
                     : <Trash2 className="w-4 h-4" />

@@ -470,7 +470,7 @@ export default function AnnualLeaveAllowancePage() {
                   className="flex flex-col gap-4">
                   <div className="text-center pt-2 pb-1">
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
-                      <User className="w-7 h-7 text-[#047857]" />
+                      <User className="w-7 h-7 text-accent-700" />
                     </div>
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       현재 재직 중이신가요?
@@ -486,8 +486,8 @@ export default function AnnualLeaveAllowancePage() {
                         onClick={() => setSurvey(s => ({ ...s, isStillWorking: opt.value, endDate: opt.value ? '' : s.endDate }))}
                         className={`w-full px-5 py-5 rounded-lg text-left transition-all active:scale-[0.98] border ${
                           survey.isStillWorking === opt.value
-                            ? 'bg-[#047857] text-white border-accent/40 shadow-[0_8px_24px_rgba(6,190,123,0.28)]'
-                            : 'bg-white border-line text-[#191f28] hover:bg-[#F7F9FC]'
+                            ? 'bg-accent-700 text-white border-accent/40 shadow-[0_8px_24px_rgba(6,190,123,0.28)]'
+                            : 'bg-white border-line text-ink-900 hover:bg-page'
                         }`}>
                         <p className="font-bold text-[15px]">{opt.icon} {opt.label}</p>
                         <p className={`text-[12px] mt-0.5 ${survey.isStillWorking === opt.value ? 'text-white/80' : 'text-up-sub'}`}>
@@ -499,8 +499,8 @@ export default function AnnualLeaveAllowancePage() {
                   <button type="button" onClick={handleNext} disabled={!stepReady()}
                     className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       stepReady()
-                        ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
-                        : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
+                        ? 'bg-accent-700 text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
+                        : 'bg-up-sunken text-ink-400 border border-line cursor-not-allowed'
                     }`}>
                     다음 <ChevronRight className="w-4 h-4" />
                   </button>
@@ -515,7 +515,7 @@ export default function AnnualLeaveAllowancePage() {
                   className="flex flex-col gap-4">
                   <div className="text-center pt-2 pb-1">
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
-                      <Calendar className="w-7 h-7 text-[#047857]" />
+                      <Calendar className="w-7 h-7 text-accent-700" />
                     </div>
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       입사일이 언제인가요?
@@ -526,11 +526,11 @@ export default function AnnualLeaveAllowancePage() {
                     <input type="date" value={survey.hireDate} autoFocus
                       onChange={e => setSurvey(s => ({ ...s, hireDate: e.target.value }))}
                       max={new Date().toISOString().slice(0, 10)}
-                      className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 text-center"
+                      className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-ink-900 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 text-center"
                     />
                     {survey.hireDate && (
                       <div className="mt-3 rounded-xl bg-accent-bg border border-accent/20 px-4 py-2.5 text-center">
-                        <p className="text-sm font-extrabold text-[#047857]">
+                        <p className="text-sm font-extrabold text-accent-700">
                           {survey.hireDate.replace(/-/g, '.')} 입사
                         </p>
                       </div>
@@ -539,8 +539,8 @@ export default function AnnualLeaveAllowancePage() {
                   <button type="button" onClick={handleNext} disabled={!stepReady()}
                     className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       stepReady()
-                        ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
-                        : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
+                        ? 'bg-accent-700 text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
+                        : 'bg-up-sunken text-ink-400 border border-line cursor-not-allowed'
                     }`}>
                     다음 <ChevronRight className="w-4 h-4" />
                   </button>
@@ -555,7 +555,7 @@ export default function AnnualLeaveAllowancePage() {
                   className="flex flex-col gap-4">
                   <div className="text-center pt-2 pb-1">
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
-                      <Clock className="w-7 h-7 text-[#047857]" />
+                      <Clock className="w-7 h-7 text-accent-700" />
                     </div>
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       퇴직일이 언제인가요?
@@ -567,11 +567,11 @@ export default function AnnualLeaveAllowancePage() {
                       onChange={e => setSurvey(s => ({ ...s, endDate: e.target.value }))}
                       min={survey.hireDate || undefined}
                       max={new Date().toISOString().slice(0, 10)}
-                      className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-[#191f28] focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 text-center"
+                      className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-ink-900 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 text-center"
                     />
                     {survey.endDate && survey.hireDate && (
                       <div className="mt-3 rounded-xl bg-accent-bg border border-accent/20 px-4 py-2.5 text-center">
-                        <p className="text-sm font-extrabold text-[#047857]">
+                        <p className="text-sm font-extrabold text-accent-700">
                           {survey.hireDate.replace(/-/g, '.')} ~ {survey.endDate.replace(/-/g, '.')}
                         </p>
                       </div>
@@ -580,8 +580,8 @@ export default function AnnualLeaveAllowancePage() {
                   <button type="button" onClick={handleNext} disabled={!stepReady()}
                     className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       stepReady()
-                        ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
-                        : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
+                        ? 'bg-accent-700 text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
+                        : 'bg-up-sunken text-ink-400 border border-line cursor-not-allowed'
                     }`}>
                     다음 <ChevronRight className="w-4 h-4" />
                   </button>
@@ -596,7 +596,7 @@ export default function AnnualLeaveAllowancePage() {
                   className="flex flex-col gap-4">
                   <div className="text-center pt-2 pb-1">
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
-                      <Info className="w-7 h-7 text-[#047857]" />
+                      <Info className="w-7 h-7 text-accent-700" />
                     </div>
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       무엇이 궁금하세요?
@@ -609,8 +609,8 @@ export default function AnnualLeaveAllowancePage() {
                         onClick={() => setSurvey(s => ({ ...s, purpose: p.value }))}
                         className={`w-full px-5 py-4 rounded-lg text-left transition-all active:scale-[0.98] border ${
                           survey.purpose === p.value
-                            ? 'bg-[#047857] text-white border-accent/40 shadow-[0_8px_24px_rgba(6,190,123,0.28)]'
-                            : 'bg-white border-line text-[#191f28] hover:bg-[#F7F9FC]'
+                            ? 'bg-accent-700 text-white border-accent/40 shadow-[0_8px_24px_rgba(6,190,123,0.28)]'
+                            : 'bg-white border-line text-ink-900 hover:bg-page'
                         }`}>
                         <p className="font-bold text-[15px]">{p.icon} {p.label}</p>
                         <p className={`text-[12px] mt-0.5 ${survey.purpose === p.value ? 'text-white/80' : 'text-up-sub'}`}>
@@ -622,8 +622,8 @@ export default function AnnualLeaveAllowancePage() {
                   <button type="button" onClick={handleNext} disabled={!stepReady()}
                     className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       stepReady()
-                        ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
-                        : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
+                        ? 'bg-accent-700 text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
+                        : 'bg-up-sunken text-ink-400 border border-line cursor-not-allowed'
                     }`}>
                     다음 <ChevronRight className="w-4 h-4" />
                   </button>
@@ -638,7 +638,7 @@ export default function AnnualLeaveAllowancePage() {
                   className="flex flex-col gap-4">
                   <div className="text-center pt-2 pb-1">
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
-                      <CheckCircle2 className="w-7 h-7 text-[#047857]" />
+                      <CheckCircle2 className="w-7 h-7 text-accent-700" />
                     </div>
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       이미 사용한 연차는<br />며칠인가요?
@@ -650,13 +650,13 @@ export default function AnnualLeaveAllowancePage() {
                       <input type="number" value={survey.usedDays} autoFocus
                         onChange={e => setSurvey(s => ({ ...s, usedDays: e.target.value }))}
                         placeholder="0" min={0}
-                        className="w-full px-4 py-4 pr-12 rounded-2xl border border-line bg-white text-[24px] font-extrabold text-[#191f28] placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 text-center"
+                        className="w-full px-4 py-4 pr-12 rounded-2xl border border-line bg-white text-[24px] font-extrabold text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 text-center"
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-up-sub font-semibold">일</span>
                     </div>
                   </div>
                   <button type="button" onClick={handleNext}
-                    className="w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                    className="w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight bg-accent-700 text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
                     {nextStep(surveyStep) === 'mode' ? '계산 방법 선택하기' : '다음'} <ChevronRight className="w-4 h-4" />
                   </button>
                 </motion.div>
@@ -670,7 +670,7 @@ export default function AnnualLeaveAllowancePage() {
                   className="flex flex-col gap-4">
                   <div className="text-center pt-2 pb-1">
                     <div className="w-14 h-14 rounded-3xl bg-accent-bg flex items-center justify-center mx-auto mb-3">
-                      <span className="text-2xl font-extrabold text-[#047857]">₩</span>
+                      <span className="text-2xl font-extrabold text-accent-700">₩</span>
                     </div>
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
                       평균 일급은 얼마인가요?
@@ -682,22 +682,22 @@ export default function AnnualLeaveAllowancePage() {
                       <input type="number" value={survey.avgDailyWage} autoFocus
                         onChange={e => setSurvey(s => ({ ...s, avgDailyWage: e.target.value }))}
                         placeholder="예) 100000" min={0}
-                        className="w-full px-4 py-4 pr-10 rounded-2xl border border-line bg-white text-[24px] font-extrabold text-[#191f28] placeholder:text-ink-400 placeholder:text-[18px] focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 text-center"
+                        className="w-full px-4 py-4 pr-10 rounded-2xl border border-line bg-white text-[24px] font-extrabold text-ink-900 placeholder:text-ink-400 placeholder:text-[18px] focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 text-center"
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-up-sub font-semibold">원</span>
                     </div>
                     {wage > 0 && (
                       <div className="mt-2 flex items-center justify-center gap-1">
-                        <CheckCircle2 className="w-4 h-4 text-[#047857]" />
-                        <p className="text-[12px] text-[#047857] font-semibold">일급 {formatWon(wage)}</p>
+                        <CheckCircle2 className="w-4 h-4 text-accent-700" />
+                        <p className="text-[12px] text-accent-700 font-semibold">일급 {formatWon(wage)}</p>
                       </div>
                     )}
                   </div>
                   <button type="button" onClick={handleNext} disabled={!stepReady()}
                     className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       stepReady()
-                        ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
-                        : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
+                        ? 'bg-accent-700 text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
+                        : 'bg-up-sunken text-ink-400 border border-line cursor-not-allowed'
                     }`}>
                     계산 방법 선택하기 <ChevronRight className="w-4 h-4" />
                   </button>
@@ -715,7 +715,7 @@ export default function AnnualLeaveAllowancePage() {
               className="flex flex-col gap-4">
               {/* 입력값 요약 */}
               <div className="rounded-xl bg-white border border-line px-4 py-4">
-                <p className="text-xs font-bold text-[#4e5968] mb-3">입력하신 정보</p>
+                <p className="text-xs font-bold text-ink-700 mb-3">입력하신 정보</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: '재직 상태', value: survey.isStillWorking ? '재직 중' : '퇴직' },
@@ -728,25 +728,25 @@ export default function AnnualLeaveAllowancePage() {
                   ].map(({ label, value }) => (
                     <div key={label} className="rounded-xl bg-white border border-line px-3 py-2">
                       <p className="text-[10px] text-up-sub">{label}</p>
-                      <p className="text-sm font-extrabold text-[#191f28] truncate">{value}</p>
+                      <p className="text-sm font-extrabold text-ink-900 truncate">{value}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <p className="text-base font-extrabold text-[#191f28] px-1">계산 방법을 선택하세요</p>
+              <p className="text-base font-extrabold text-ink-900 px-1">계산 방법을 선택하세요</p>
 
               <button type="button" onClick={runSimple}
                 className="rounded-xl bg-white border border-line shadow-[0_12px_40px_rgba(49,130,246,0.08)] p-5 flex items-start gap-4 text-left hover:bg-white active:scale-[0.98] transition-all">
                 <div className="w-12 h-12 rounded-2xl bg-accent-bg flex items-center justify-center flex-shrink-0">
-                  <Calculator className="w-6 h-6 text-[#047857]" />
+                  <Calculator className="w-6 h-6 text-accent-700" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-base font-extrabold text-[#191f28]">간편 계산</p>
-                    <span className="text-[10px] font-bold bg-accent-bg text-[#047857] px-2 py-0.5 rounded-full">즉시 확인</span>
+                    <p className="text-base font-extrabold text-ink-900">간편 계산</p>
+                    <span className="text-[10px] font-bold bg-accent-bg text-accent-700 px-2 py-0.5 rounded-full">즉시 확인</span>
                   </div>
-                  <p className="text-[12px] text-[#4e5968] leading-relaxed">
+                  <p className="text-[12px] text-ink-700 leading-relaxed">
                     입력하신 정보로 연차 발생일수와<br />미지급 수당을 바로 계산해요.
                   </p>
                 </div>
@@ -756,14 +756,14 @@ export default function AnnualLeaveAllowancePage() {
               <button type="button" onClick={() => setStep('pdf')}
                 className="rounded-xl bg-white border border-line shadow-[0_12px_40px_rgba(49,130,246,0.08)] p-5 flex items-start gap-4 text-left hover:bg-white active:scale-[0.98] transition-all">
                 <div className="w-12 h-12 rounded-2xl bg-accent-bg flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-6 h-6 text-[#047857]" />
+                  <FileText className="w-6 h-6 text-accent-700" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-base font-extrabold text-[#191f28]">PDF 정밀 계산</p>
-                    <span className="text-[10px] font-bold bg-accent-bg text-[#047857] px-2 py-0.5 rounded-full">월별 분석</span>
+                    <p className="text-base font-extrabold text-ink-900">PDF 정밀 계산</p>
+                    <span className="text-[10px] font-bold bg-accent-bg text-accent-700 px-2 py-0.5 rounded-full">월별 분석</span>
                   </div>
-                  <p className="text-[12px] text-[#4e5968] leading-relaxed">
+                  <p className="text-[12px] text-ink-700 leading-relaxed">
                     근로복지공단 일용근로내역서 PDF로<br />월별 개근 기록을 분석해 정밀하게 계산해요.
                   </p>
                 </div>
@@ -780,17 +780,17 @@ export default function AnnualLeaveAllowancePage() {
               className="flex flex-col gap-4">
               <div className="rounded-xl bg-white border border-line shadow-[0_12px_40px_rgba(49,130,246,0.08)] px-5 py-6 space-y-4">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-[#047857]" />
-                  <p className="text-sm font-extrabold text-[#191f28]">연차수당 계산 결과</p>
+                  <CheckCircle2 className="w-5 h-5 text-accent-700" />
+                  <p className="text-sm font-extrabold text-ink-900">연차수당 계산 결과</p>
                 </div>
 
                 {(survey.purpose === '미지급청구' || survey.purpose === '남은일수') && simpleResult.unpaidAllowance !== null && (
                   <div className="rounded-2xl bg-accent-bg border border-accent/20 px-5 py-5 text-center">
-                    <p className="text-[11px] font-semibold text-[#047857] mb-1">미지급 연차수당</p>
-                    <p className="text-[clamp(25px,7vw,38px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none break-keep">
+                    <p className="text-[11px] font-semibold text-accent-700 mb-1">미지급 연차수당</p>
+                    <p className="text-[clamp(25px,7vw,38px)] font-mono tabular-nums font-extrabold text-accent-700 tracking-tight leading-none break-keep">
                       {formatWon(simpleResult.unpaidAllowance)}
                     </p>
-                    <p className="text-[11px] text-[#047857] mt-1">
+                    <p className="text-[11px] text-accent-700 mt-1">
                       남은 {simpleResult.remainingDays}일 × 일급 {formatWon(wage)}
                     </p>
                   </div>
@@ -807,8 +807,8 @@ export default function AnnualLeaveAllowancePage() {
                       : [['연간 발생 연차 (현재 연도)', `${simpleResult.annualDays}일`]]),
                   ].map(([label, value]) => (
                     <div key={label} className="flex justify-between items-center px-4 py-2.5 rounded-xl bg-white border border-line">
-                      <span className="text-[12px] text-[#4e5968]">{label}</span>
-                      <span className="text-sm font-bold text-[#191f28]">{value}</span>
+                      <span className="text-[12px] text-ink-700">{label}</span>
+                      <span className="text-sm font-bold text-ink-900">{value}</span>
                     </div>
                   ))}
                 </div>
@@ -822,7 +822,7 @@ export default function AnnualLeaveAllowancePage() {
                   saveState === 'saved' ? 'bg-accent-bg/80 border-accent/30' : 'bg-accent-bg border-accent/30'
                 }`}>
                   <div>
-                    <p className="text-[13px] font-bold text-[#191f28]">
+                    <p className="text-[13px] font-bold text-ink-900">
                       {saveState === 'saved' ? '✅ 마이페이지에 저장됐어요' : '📌 계산결과 저장하기'}
                     </p>
                     <p className="text-[11px] text-up-sub mt-0.5">
@@ -834,7 +834,7 @@ export default function AnnualLeaveAllowancePage() {
                   </div>
                   {saveState !== 'saved' && (
                     <button type="button" onClick={handleSave} disabled={saveState === 'saving'}
-                      className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#047857] text-white text-xs font-bold shadow-[0_4px_12px_rgba(6,190,123,0.28)] hover:bg-[#036848] transition-colors disabled:opacity-60">
+                      className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-accent-700 text-white text-xs font-bold shadow-[0_4px_12px_rgba(6,190,123,0.28)] hover:bg-[#036848] transition-colors disabled:opacity-60">
                       {saveState === 'saving' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                       {saveState === 'saving' ? '저장중...' : saveState === 'login_required' ? '로그인 필요' : '저장'}
                     </button>
@@ -843,7 +843,7 @@ export default function AnnualLeaveAllowancePage() {
 
                 <button type="button"
                   onClick={() => { setPdfResult(null); setPdfFile(null); setPdfCompanies(null); setStep('pdf') }}
-                  className="w-full py-3.5 rounded-2xl text-sm font-bold border border-accent/30 text-[#047857] hover:bg-accent-bg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                  className="w-full py-3.5 rounded-2xl text-sm font-bold border border-accent/30 text-accent-700 hover:bg-accent-bg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
                   <FileText className="w-4 h-4" />PDF로 정밀 계산하기
                 </button>
               </div>
@@ -858,8 +858,8 @@ export default function AnnualLeaveAllowancePage() {
               className="flex flex-col gap-4">
               {!pdfResult && (
                 <div className="rounded-xl bg-white border border-line shadow-[0_12px_40px_rgba(49,130,246,0.08)] px-5 py-6 space-y-4">
-                  <p className="text-sm font-extrabold text-[#191f28]">PDF 정밀 계산</p>
-                  <p className="text-[12px] text-[#4e5968]">
+                  <p className="text-sm font-extrabold text-ink-900">PDF 정밀 계산</p>
+                  <p className="text-[12px] text-ink-700">
                     근로복지공단에서 발급받은 <strong>일용근로내역서 PDF</strong>를 업로드하면<br />
                     월별 개근 기록을 분석해 연차를 정밀하게 계산해 드려요.
                   </p>
@@ -873,14 +873,14 @@ export default function AnnualLeaveAllowancePage() {
 
                   {/* PDF 발급 가이드 버튼 */}
                   <button type="button" onClick={() => setPdfGuideOpen(true)}
-                    className="text-[13px] text-up-sub underline underline-offset-2 hover:text-[#047857] transition-colors">
+                    className="text-[13px] text-up-sub underline underline-offset-2 hover:text-accent-700 transition-colors">
                     ❓ 근로내역서 PDF는 어디서 받나요?
                   </button>
 
                   {pdfLoading && (
                     <div className="flex items-center justify-center gap-2 py-2">
-                      <Loader2 className="w-4 h-4 animate-spin text-[#047857]" />
-                      <p className="text-sm text-[#4e5968]">PDF 분석 중...</p>
+                      <Loader2 className="w-4 h-4 animate-spin text-accent-700" />
+                      <p className="text-sm text-ink-700">PDF 분석 중...</p>
                     </div>
                   )}
 
@@ -893,14 +893,14 @@ export default function AnnualLeaveAllowancePage() {
 
                   {pdfCompanies && pdfCompanies.length > 0 && (
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold text-[#4e5968]">사업장 선택</label>
+                      <label className="text-xs font-semibold text-ink-700">사업장 선택</label>
                       <div className="space-y-1.5">
                         {pdfCompanies.map(c => (
                           <button key={c} type="button" onClick={() => setPdfCompany(c)}
                             className={`w-full px-4 py-3 rounded-2xl text-sm font-semibold text-left transition-all ${
                               pdfCompany === c
-                                ? 'bg-[#047857] text-white shadow-md'
-                                : 'bg-white border border-line text-[#191f28] hover:bg-white'
+                                ? 'bg-accent-700 text-white shadow-md'
+                                : 'bg-white border border-line text-ink-900 hover:bg-white'
                             }`}>
                             {c}
                           </button>
@@ -908,8 +908,8 @@ export default function AnnualLeaveAllowancePage() {
                         <button type="button" onClick={() => setPdfCompany('기타')}
                           className={`w-full px-4 py-3 rounded-2xl text-sm font-semibold text-left transition-all ${
                             pdfCompany === '기타'
-                              ? 'bg-[#047857] text-white shadow-md'
-                              : 'bg-white border border-line text-[#191f28] hover:bg-white'
+                              ? 'bg-accent-700 text-white shadow-md'
+                              : 'bg-white border border-line text-ink-900 hover:bg-white'
                           }`}>
                           직접 입력
                         </button>
@@ -917,7 +917,7 @@ export default function AnnualLeaveAllowancePage() {
                       {pdfCompany === '기타' && (
                         <input type="text" value={pdfOther} onChange={e => setPdfOther(e.target.value)}
                           placeholder="사업장명 직접 입력"
-                          className="w-full px-4 py-3 rounded-2xl border border-line bg-white text-sm text-[#191f28] focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                          className="w-full px-4 py-3 rounded-2xl border border-line bg-white text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-accent/30" />
                       )}
                     </div>
                   )}
@@ -925,8 +925,8 @@ export default function AnnualLeaveAllowancePage() {
                   <button type="button" onClick={runPrecise} disabled={!canRunPrecise}
                     className={`w-full min-h-[56px] py-4 rounded-lg text-[16px] font-bold tracking-tight transition-all flex items-center justify-center gap-2 ${
                       canRunPrecise
-                        ? 'bg-[#047857] text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
-                        : 'bg-[#F2F4F6] text-ink-400 border border-line cursor-not-allowed'
+                        ? 'bg-accent-700 text-white shadow-[0_8px_24px_rgba(6,190,123,0.28)] hover:bg-[#036848] active:scale-[0.98]'
+                        : 'bg-up-sunken text-ink-400 border border-line cursor-not-allowed'
                     }`}>
                     {pdfLoading ? <><Loader2 className="w-4 h-4 animate-spin" />계산 중...</> : '월별 개근 기록 분석하기'}
                   </button>
@@ -937,17 +937,17 @@ export default function AnnualLeaveAllowancePage() {
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3">
                   <div className="rounded-xl bg-white border border-line shadow-[0_12px_40px_rgba(49,130,246,0.08)] px-5 py-6">
                     <div className="flex items-center gap-2 mb-4">
-                      <CheckCircle2 className="w-5 h-5 text-[#047857]" />
-                      <p className="text-sm font-extrabold text-[#191f28]">연차 정밀 분석 완료</p>
+                      <CheckCircle2 className="w-5 h-5 text-accent-700" />
+                      <p className="text-sm font-extrabold text-ink-900">연차 정밀 분석 완료</p>
                     </div>
 
                     {pdfResult.unpaid_allowance !== null && (
                       <div className="rounded-2xl bg-accent-bg border border-accent/20 px-5 py-4 text-center mb-4">
-                        <p className="text-[11px] font-semibold text-[#047857] mb-1">미지급 연차수당</p>
-                        <p className="text-[clamp(25px,7vw,38px)] font-mono tabular-nums font-extrabold text-[#047857] tracking-tight leading-none break-keep">
+                        <p className="text-[11px] font-semibold text-accent-700 mb-1">미지급 연차수당</p>
+                        <p className="text-[clamp(25px,7vw,38px)] font-mono tabular-nums font-extrabold text-accent-700 tracking-tight leading-none break-keep">
                           {formatWon(pdfResult.unpaid_allowance)}
                         </p>
-                        <p className="text-[11px] text-[#047857] mt-1">
+                        <p className="text-[11px] text-accent-700 mt-1">
                           남은 {pdfResult.remaining_days}일 × 일급 {formatWon(pdfResult.avg_daily_wage)}
                         </p>
                       </div>
@@ -963,8 +963,8 @@ export default function AnnualLeaveAllowancePage() {
                         ['남은 연차', `${pdfResult.remaining_days}일`],
                       ].map(([label, value]) => (
                         <div key={label} className="flex justify-between items-center px-4 py-2.5 rounded-xl bg-white border border-line">
-                          <span className="text-[12px] text-[#4e5968]">{label}</span>
-                          <span className="text-sm font-bold text-[#191f28]">{value}</span>
+                          <span className="text-[12px] text-ink-700">{label}</span>
+                          <span className="text-sm font-bold text-ink-900">{value}</span>
                         </div>
                       ))}
                     </div>
@@ -972,19 +972,19 @@ export default function AnnualLeaveAllowancePage() {
 
                   {pdfResult.monthly_detail.length > 0 && (
                     <div className="rounded-xl bg-white border border-line shadow-[0_8px_32px_rgba(49,130,246,0.06)] px-4 py-4">
-                      <p className="text-sm font-extrabold text-[#191f28] mb-3">월별 근무 현황</p>
+                      <p className="text-sm font-extrabold text-ink-900 mb-3">월별 근무 현황</p>
                       <div className="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
                         {pdfResult.monthly_detail.map(m => (
                           <div key={m.month}
                             className={`rounded-xl px-3 py-2 flex items-center justify-between ${
-                              m.attended ? 'bg-accent-bg/60 border border-accent/20' : 'bg-[#F2F4F6] border border-line'
+                              m.attended ? 'bg-accent-bg/60 border border-accent/20' : 'bg-up-sunken border border-line'
                             }`}>
-                            <p className="text-[12px] font-semibold text-[#191f28]">{m.month}</p>
+                            <p className="text-[12px] font-semibold text-ink-900">{m.month}</p>
                             <div className="flex items-center gap-2">
                               <p className="text-[11px] text-up-sub">{m.work_days}일 근무</p>
                               {m.attended
-                                ? <span className="text-[10px] font-bold text-[#047857] bg-accent-bg px-2 py-0.5 rounded-full">개근</span>
-                                : <span className="text-[10px] font-bold text-up-sub bg-gray-100 px-2 py-0.5 rounded-full">미개근</span>
+                                ? <span className="text-[10px] font-bold text-accent-700 bg-accent-bg px-2 py-0.5 rounded-full">개근</span>
+                                : <span className="text-[10px] font-bold text-up-sub bg-up-sunken px-2 py-0.5 rounded-full">미개근</span>
                               }
                             </div>
                           </div>
@@ -995,7 +995,7 @@ export default function AnnualLeaveAllowancePage() {
 
                   <button type="button"
                     onClick={() => { setPdfResult(null); setPdfFile(null); setPdfCompanies(null); setPdfError('') }}
-                    className="w-full py-3.5 rounded-2xl text-sm font-bold border border-line bg-white text-[#4e5968] hover:bg-white active:scale-[0.98] transition-all">
+                    className="w-full py-3.5 rounded-2xl text-sm font-bold border border-line bg-white text-ink-700 hover:bg-white active:scale-[0.98] transition-all">
                     다시 계산하기
                   </button>
 
