@@ -107,7 +107,7 @@ export function SavedResultsList({ reports, loading, onSelectReport, onGoCalcula
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${
                 activeTab === tab.key
                   ? 'bg-brand-strong text-white shadow-[0_4px_12px_rgba(49,130,246,0.3)]'
-                  : 'bg-up-sunken text-up-sub hover:bg-slate-200'
+                  : 'bg-up-sunken text-up-sub hover:bg-up-hair'
               }`}>
               {tab.icon} {tab.label}
             </button>

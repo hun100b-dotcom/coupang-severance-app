@@ -173,7 +173,7 @@ export function SavedResultDetail({ report, onClose }: Props) {
           >
             {/* 드래그 핸들 */}
             <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-slate-200" />
+              <div className="w-10 h-1 rounded-full bg-up-hair" />
             </div>
 
             <div className="px-5 pb-8 pt-3">

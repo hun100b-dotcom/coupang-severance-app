@@ -116,7 +116,7 @@ export default function MyScheduleTab({ userId }: Props) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
         <div className="w-20 h-20 rounded-full bg-brand-bg flex items-center justify-center">
-          <Calendar className="w-10 h-10 text-blue-200" />
+          <Calendar className="w-10 h-10 text-brand-200" />
         </div>
         <div>
           <p className="text-[16px] font-extrabold text-up-navy mb-1.5">아직 일정이 없어요</p>

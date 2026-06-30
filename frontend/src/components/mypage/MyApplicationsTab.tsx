@@ -803,7 +803,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                               onClick={() => setEditForm(f => ({ ...f, applicant_gender: g }))}
                               className={`flex-1 py-2 rounded-xl border text-sm font-medium transition-colors ${
                                 editForm.applicant_gender === g
-                                  ? 'bg-brand-bg0 border-brand text-white'
+                                  ? 'bg-brand border-brand text-white'
                                   : 'bg-up-sunken border-up-hair text-up-body'
                               }`}
                             >
@@ -854,7 +854,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                               onClick={() => setEditForm(f => ({ ...f, prior_experience_90d: v }))}
                               className={`flex-1 py-2 rounded-xl border text-sm font-medium transition-colors ${
                                 editForm.prior_experience_90d === v
-                                  ? 'bg-brand-bg0 border-brand text-white'
+                                  ? 'bg-brand border-brand text-white'
                                   : 'bg-up-sunken border-up-hair text-up-body'
                               }`}
                             >
@@ -872,7 +872,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                               onClick={() => setEditForm(f => ({ ...f, preferred_shift: s }))}
                               className={`px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${
                                 editForm.preferred_shift === s
-                                  ? 'bg-brand-bg0 border-brand text-white'
+                                  ? 'bg-brand border-brand text-white'
                                   : 'bg-up-sunken border-up-hair text-up-body'
                               }`}
                             >
@@ -890,7 +890,7 @@ export default function MyApplicationsTab({ userId }: Props) {
                               onClick={() => setEditForm(f => ({ ...f, transportation: t }))}
                               className={`flex-1 py-2 rounded-xl border text-[12px] font-medium transition-colors ${
                                 editForm.transportation === t
-                                  ? 'bg-brand-bg0 border-brand text-white'
+                                  ? 'bg-brand border-brand text-white'
                                   : 'bg-up-sunken border-up-hair text-up-body'
                               }`}
                             >

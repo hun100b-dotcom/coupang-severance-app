@@ -53,7 +53,7 @@ function StatusBadge({ status, answered }: { status: string | null; answered: bo
   }
   if (status === '처리중' || status === 'in_progress') {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-500">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-brand-bg text-brand-strong">
         <Clock className="w-3 h-3" />
         처리중
       </span>
@@ -229,7 +229,7 @@ export function SupportSection({
 
                   {/* 카테고리 + 제목 */}
                   {item.category && (
-                    <p className="text-[10px] font-semibold text-brand">{item.category}</p>
+                    <p className="text-[10px] font-semibold text-brand-strong">{item.category}</p>
                   )}
                   <p className="text-[13px] font-semibold text-up-navy truncate">
                     {item.title || '제목 없음'}
@@ -242,7 +242,7 @@ export function SupportSection({
                       <button
                         type="button"
                         onClick={() => toggleAnswer(item.id)}
-                        className="flex items-center gap-1 text-[11px] font-bold text-brand hover:text-brand-strong transition-colors"
+                        className="flex items-center gap-1 text-[11px] font-bold text-brand-strong hover:text-brand-700 transition-colors"
                       >
                         <span>{isAnswerOpen ? '답변 접기' : '답변 보기'}</span>
                         <motion.div
