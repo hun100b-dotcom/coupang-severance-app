@@ -54,6 +54,8 @@ SELECT public.is_super_admin()          -- super(역할) OR 하드코딩 super �
 | 템플릿 추가·수정·삭제 (inquiry_templates write) | ❌ | ✅ | ✅ | **is_admin_writer** |
 | 알림 발송 (notifications INSERT, 타인) | ❌ | ✅ | ✅ | **is_admin_writer** |
 | 본인 알림 자가삽입 (notifications INSERT, 본인) | ✅ | ✅ | ✅ | self |
+| 법정변수 조회 (legal_variables SELECT) | ✅ | ✅ | ✅ | 공개(true) |
+| 법정변수 변경 (legal_variables write) `P1b` | ❌ | ✅ | ✅ | **is_admin_writer** |
 | **관리자 계정 관리 (admin_accounts write)** | ❌ | ❌ | ✅ | is_super_admin (비변경) |
 | 감사로그 기록 (audit_logs INSERT) | ✅ | ✅ | ✅ | is_admin (의도적 유지) |
 
@@ -129,4 +131,25 @@ SELECT public.is_super_admin()          -- super(역할) OR 하드코딩 super �
   UPDATE/DELETE라 **차단이 무음**(error=null)일 수 있다(조사 보고서의 기존 이슈).
   → viewer에게 "권한 없음"을 보여주려면 프론트에서 쓰기 버튼을 role로 숨기거나,
     UPDATE/DELETE에 `.select()`+에러표시를 붙이는 별도 작업 필요(다른 세션 영역).
+
+---
+
+## 10. P1b 후속 — legal_variables 쓰기 과도권한 축소
+
+> **마이그레이션**: `supabase/migrations/20260630_p1b_legal_variables_writer.sql`
+> **상태**: 파일 작성 완료, DB 미적용(Dispatch가 MCP로 적용).
+
+P1 본 마이그레이션(7테이블)은 "`is_admin()` → `is_admin_writer()` 교체"가 스코프였다.
+그런데 `legal_variables`의 쓰기 정책은 원래부터 `is_admin()`이 아니라 **더 느슨한**
+`"legal_variables 수정 허용" FOR ALL USING (auth.role()='authenticated')`
+(20260603) 라서 그 스코프에서 빠졌다. 결과적으로 **로그인한 아무 일반 회원이 최저시급 등
+법정변수를 수정**할 수 있는 상태가 남아 있었다.
+
+- **위험**: `legal_variables`(min_hourly_wage 등)는 4개 계산기의 입력값 → 임의 변조 시 전
+  사용자 계산 결과 오염(데이터 무결성).
+- **조치**: `FOR ALL authenticated` 정책 제거 → INSERT/UPDATE/DELETE를 `is_admin_writer()`
+  전용으로 재생성. SELECT(`조회 허용`=true)는 그대로 유지(법정변수는 공개 정보).
+- **의존성**: `is_admin_writer()` 선행 필요 → 본 마이그레이션이 §0에서 함수 존재를 가드(없으면 중단).
+- **영향**: 운영 관리자 전원 super_admin → 정상 동작, 무중단. (비공식적으로 일반 회원이
+  쓰던 경로가 있었다면 차단 = 의도된 보안 강화.)
 - 즉 **이번 P1은 "서버가 진짜 막는다"를 보장**하고, UX 메시지는 후속 과제다.
