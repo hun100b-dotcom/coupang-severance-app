@@ -218,19 +218,18 @@ export default function RecruitSummaryMenu() {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px' }}>📈 채용 Summary</h2>
-          <p style={{ fontSize: '0.8rem', color: UP.sub, margin: 0 }}>
+          <h2 className="text-a20" style={{ fontWeight: 800, margin: '0 0 4px' }}>📈 채용 Summary</h2>
+          <p className="text-a13" style={{ color: UP.sub, margin: 0 }}>
             채용 전반 현황 및 전환율 분석
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {/* 사업장 필터 */}
           <select value={companyFilter} onChange={e => setCompanyFilter(e.target.value)}
-            style={{
+            className="text-a13" style={{
               padding: '6px 12px', borderRadius: 8,
               border: `1px solid ${UP.hair}`,
-              background: '#fff', color: UP.navy, /* 불투명 배경: option 텍스트 가시성 확보 */
-              fontSize: '0.82rem', cursor: 'pointer', outline: 'none',
+              background: '#fff', color: UP.navy, /* 불투명 배경: option 텍스트 가시성 확보 */ cursor: 'pointer', outline: 'none',
             }}>
             <option value="all" style={{ background: '#fff', color: UP.navy }}>전체 사업장</option>
             {companies.map(c => <option key={c} value={c} style={{ background: '#fff', color: UP.navy }}>{c}</option>)}
@@ -246,17 +245,17 @@ export default function RecruitSummaryMenu() {
 
       {/* 에러 */}
       {error && (
-        <div style={{
+        <div className="text-a13" style={{
           background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
           borderRadius: 10, padding: '12px 16px', marginBottom: 20,
-          color: UP.danger, fontSize: '0.82rem',
+          color: UP.danger,
         }}>
           ⚠️ {error}
         </div>
       )}
 
       {loading ? (
-        <p style={{ color: UP.sub, fontSize: '0.85rem' }}>불러오는 중...</p>
+        <p className="text-a13" style={{ color: UP.sub, }}>불러오는 중...</p>
       ) : (
         <>
           {/* ── KPI 카드 ── */}
@@ -275,10 +274,10 @@ export default function RecruitSummaryMenu() {
                 background: UP.sunken, border: `1px solid ${UP.hair}`,
                 borderRadius: RADIUS.card, padding: '16px 14px',
               }}>
-                <div style={{ fontSize: '1.9rem', fontWeight: 900, color: k.color, lineHeight: 1 }}>
+                <div className="text-a30" style={{ fontWeight: 900, color: k.color, lineHeight: 1 }}>
                   {k.value}
                 </div>
-                <div style={{ fontSize: '0.73rem', color: UP.sub, marginTop: 6 }}>{k.label}</div>
+                <div className="text-a12" style={{ color: UP.sub, marginTop: 6 }}>{k.label}</div>
               </div>
             ))}
           </div>
@@ -288,7 +287,7 @@ export default function RecruitSummaryMenu() {
             background: '#fff', border: `1px solid ${UP.hair}`,
             borderRadius: RADIUS.card, padding: '20px 16px', marginBottom: 24,
           }}>
-            <p style={{ fontSize: '0.85rem', fontWeight: 700, color: UP.body, margin: '0 0 16px' }}>
+            <p className="text-a13" style={{ fontWeight: 700, color: UP.body, margin: '0 0 16px' }}>
               📈 일별 지원 트렌드 (최근 14일)
             </p>
             <ResponsiveContainer width="100%" height={200}>
@@ -307,7 +306,7 @@ export default function RecruitSummaryMenu() {
             </ResponsiveContainer>
             <div style={{ display: 'flex', gap: 16, marginTop: 10, justifyContent: 'center' }}>
               {[{ label: '지원', color: UP.brand }, { label: '확정', color: UP.green }, { label: '거절', color: UP.danger }].map(l => (
-                <span key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', color: UP.sub }}>
+                <span key={l.label} className="text-a11" style={{ display: 'flex', alignItems: 'center', gap: 5, color: UP.sub }}>
                   <span style={{ width: 12, height: 3, borderRadius: 2, background: l.color, display: 'inline-block' }} />
                   {l.label}
                 </span>
@@ -321,7 +320,7 @@ export default function RecruitSummaryMenu() {
               background: '#fff', border: `1px solid ${UP.hair}`,
               borderRadius: RADIUS.card, padding: '20px 16px', marginBottom: 24,
             }}>
-              <p style={{ fontSize: '0.85rem', fontWeight: 700, color: UP.body, margin: '0 0 16px' }}>
+              <p className="text-a13" style={{ fontWeight: 700, color: UP.body, margin: '0 0 16px' }}>
                 🏢 사업장별 지원 현황
               </p>
               <ResponsiveContainer width="100%" height={180}>
