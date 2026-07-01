@@ -57,14 +57,11 @@
 - ✅ 접근성 AA(색대비 실측): 필수 텍스트 navy 15.6·body 11·sub 6.63·strong 5.41·green 5.48·amber 5.02·danger 4.96 = 본문 AA(≥4.5). brand 3.71·caption 3.12 = 큰텍스트/UI AA(≥3). caption-on-sunken 2.85은 토큰상 "비필수" 전용.
 - ⏳ 잔여 follow-up(회귀위험 회피로 병합 후 별도): 아이콘전용 버튼 aria-label 전수·키보드 focus-visible 링(어드민 인라인 outline:none 다수) — 별도 접근성 태스크 권장.
 
-### P5 — 마감
-- 잔여 하드코딩 hex(어드민은 `MembersMenu`의 `#FEE500` 카카오톤 정도) 토큰화.
-- **TargetMenu 다색 팔레트(gold/purple/orange `C.*`) 정돈** — 규칙2 무지개 금지 위반. 계획서상 "다색 차트 별도 정돈"으로 P3-c에서 유예함. `CHART_SERIES`(adminTheme) 기반 절제 팔레트로 치환 검토(차트 가독성 영향 있어 디자인 판단 필요).
-- dead export `AdminSidebar.tsx:19 SUPER_ADMIN_EMAIL` 제거(라이브 참조 0 — 단 grep 재확인 후).
-- 전 메뉴 4상태 전수 · 접근성 AA · 사용자앱 0px 전수.
-
-### 최종
-통합검수(5축 + 회귀 전/후 수치표) → **main 병합·push(자동배포)** → **[승인2] 대기 보고**.
+### ✅ 최종 — 병합·배포 완료 (2026-07-02)
+- 통합검수 5축 PASS. **최종 회귀(main↔재설계 브랜치, 사용자앱)**: /home `h1 16·h2 44·p 15.5·button 15.5` / /calculator `h1 30·h2 18.5·p 16.5·button 16` / /severance `h1 18·h2 15.5·p 26·button 16` — 전 라우트 picks+히스토그램 **0px 일치**.
+- **main FF 병합·push 완료**(`5306964..d4a1a79`, 24커밋) → Vercel(프론트)+Render(백엔드) 자동배포 트리거. 브랜치는 로컬 보존.
+- → **[승인2] 대기**.
+- 배포 후 확인 권장: `/admin` 공지 추가·수정·토글·삭제(백엔드 경로), 문의 검색(서버측 sanitized ilike) 정상 동작.
 
 ---
 
