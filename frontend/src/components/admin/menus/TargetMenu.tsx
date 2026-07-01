@@ -8,6 +8,7 @@ import { getTargetInsights } from '../../../lib/api'
 import type { TargetInsights } from '../../../types/admin'
 import { logAdminAction } from '../../../lib/adminAuditLog'
 import { UP, btnSecondary } from '../shared/adminTheme'
+import { AdminLoading } from '../shared/AdminState' // 공통 로딩 상태(인라인 스피너+@keyframes 대체)
 
 /* ── Color Palette ──────────────────────────────────────────
    무지개색 금지 — 브랜드 블루/그린/앰버/네이비 계열로 절제(up.* 토큰 기반).
@@ -76,17 +77,7 @@ export default function TargetMenu() {
   useEffect(() => { load() }, [])
 
   /* ── Loading ──────────────────────────────────────────── */
-  if (loading) return (
-    <div style={{ padding: '60px 20px', textAlign: 'center' }}>
-      <div style={{
-        width: 36, height: 36, border: `3px solid ${UP.hair}`,
-        borderTopColor: C.blue, borderRadius: '50%',
-        animation: 'spin .8s linear infinite', margin: '0 auto 16px',
-      }} />
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      <p style={{ color: UP.sub, fontSize: '0.85rem' }}>인사이트 데이터 분석 중...</p>
-    </div>
-  )
+  if (loading) return <AdminLoading label="인사이트 데이터를 분석하는 중이에요…" />
 
   /* ── Error ────────────────────────────────────────────── */
   if (error || !data) return (

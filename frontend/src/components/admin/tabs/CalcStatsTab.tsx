@@ -10,6 +10,7 @@ import { supabase } from '../../../lib/supabase'
 import { exportXlsx } from '../../../lib/exportXlsx'
 import PageHeader from '../shared/PageHeader'
 import { UP, numeric } from '../shared/adminTheme'
+import { AdminLoading } from '../shared/AdminState' // 공통 로딩 상태(인라인 스피너+@keyframes 대체)
 
 interface Report {
   id: string
@@ -123,13 +124,7 @@ export default function CalcStatsTab() {
     })), `calc_stats_${range}일_${new Date().toISOString().slice(0, 10)}`)
   }
 
-  if (loading) return (
-    <div style={{ padding: '60px 40px', textAlign: 'center' }}>
-      <div style={{ width: 32, height: 32, border: `3px solid ${UP.hair}`, borderTopColor: UP.brand, borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-      <p style={{ color: UP.sub, fontSize: '0.85rem' }}>계산기 통계 로딩 중...</p>
-    </div>
-  )
+  if (loading) return <AdminLoading label="계산기 통계를 불러오는 중이에요…" />
 
   if (error) return (
     <div style={{ padding: 20 }}>

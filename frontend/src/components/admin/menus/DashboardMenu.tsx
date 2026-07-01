@@ -6,7 +6,7 @@
 
 import { useState, lazy, Suspense } from 'react'
 import DashboardSubTabs, { type DashboardSubTab } from '../DashboardSubTabs'
-import { UP } from '../shared/adminTheme'
+import { AdminLoading } from '../shared/AdminState' // 공통 로딩 상태(인라인 스피너+@keyframes 대체)
 
 // 탭별 콘텐츠 컴포넌트를 lazy로 로딩 (대시보드가 무거우므로 코드 분할)
 const OverviewTab   = lazy(() => import('../tabs/OverviewTab'))
@@ -15,22 +15,9 @@ const CalcStatsTab  = lazy(() => import('../tabs/CalcStatsTab'))
 const RecruitTab    = lazy(() => import('../tabs/RecruitTab'))
 const TargetTab     = lazy(() => import('../tabs/TargetTab'))
 
-// 탭 로딩 중 보여줄 스피너
+// 탭 로딩 중 보여줄 스피너 — 공통 AdminLoading 재사용
 function TabLoading() {
-  return (
-    <div style={{ padding: '60px 40px', textAlign: 'center' }}>
-      <div style={{
-        width: 32, height: 32,
-        border: `3px solid ${UP.hair}`,
-        borderTopColor: UP.brand,
-        borderRadius: '50%',
-        animation: 'spin 0.8s linear infinite',
-        margin: '0 auto 16px',
-      }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-      <p style={{ color: UP.sub, fontSize: '0.85rem' }}>탭 로딩 중...</p>
-    </div>
-  )
+  return <AdminLoading label="탭을 불러오는 중이에요…" />
 }
 
 export default function DashboardMenu() {

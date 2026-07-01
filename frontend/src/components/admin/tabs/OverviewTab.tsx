@@ -10,6 +10,7 @@ import ServiceBarChart from '../dashboard/ServiceBarChart'
 import RecentActivity from '../dashboard/RecentActivity'
 import PageHeader from '../shared/PageHeader'
 import { UP, numeric } from '../shared/adminTheme'
+import { AdminLoading } from '../shared/AdminState' // 공통 로딩 상태(인라인 스피너+@keyframes 대체)
 
 function fmtMoney(n: number) {
   if (n >= 100000000) return `${(n / 100000000).toFixed(1)}억`
@@ -74,20 +75,7 @@ export default function OverviewTab() {
 
   // 로딩 스피너
   if (loading) {
-    return (
-      <div style={{ padding: '60px 40px', textAlign: 'center' }}>
-        <div style={{
-          width: 32, height: 32,
-          border: `3px solid ${UP.hair}`,
-          borderTopColor: UP.brand,
-          borderRadius: '50%',
-          animation: 'spin 0.8s linear infinite',
-          margin: '0 auto 16px',
-        }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-        <p style={{ color: UP.sub, fontSize: '0.85rem' }}>대시보드 로딩 중...</p>
-      </div>
-    )
+    return <AdminLoading label="대시보드를 불러오는 중이에요…" />
   }
 
   // 에러 상태

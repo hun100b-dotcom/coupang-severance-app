@@ -2,6 +2,7 @@
 // system_logs: DB 트리거 기반 자동 기록 + Supabase Realtime 구독
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { UP, RADIUS, badge, btnSecondary } from '../shared/adminTheme'
+import { AdminLoading } from '../shared/AdminState' // 공통 로딩 상태(인라인 스피너+@keyframes 대체)
 import { supabase } from '../../../lib/supabase'
 import { getAuditLogs } from '../../../lib/api'
 import type { AuditLog } from '../../../types/admin'
@@ -257,15 +258,7 @@ export default function ServerLogsMenu() {
             </div>
 
             {sysLoading ? (
-              <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <div style={{
-                  width: 24, height: 24, border: `2px solid ${UP.hair}`,
-                  borderTopColor: UP.brand, borderRadius: '50%',
-                  animation: 'spin 0.8s linear infinite', margin: '0 auto 12px',
-                }} />
-                <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-                <p style={{ color: UP.sub, fontSize: '0.82rem' }}>로딩 중...</p>
-              </div>
+              <AdminLoading label="로그를 불러오는 중이에요…" />
             ) : sysLogs.length === 0 ? (
               <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>로그 없음</p>
             ) : sysLogs.map(log => {
