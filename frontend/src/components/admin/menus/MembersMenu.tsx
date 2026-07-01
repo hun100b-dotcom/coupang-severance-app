@@ -131,6 +131,8 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
 
   function providerBadge(provider: string | null) {
     if (!provider) return null
+    // OAuth 공급자 브랜드 정체성색 — 로그인 수단 식별용(구글 빨강·카카오 노랑·깃허브 보라).
+    //   (P5) 테마 팔레트 대상 아님: 토큰화하면 공급자 구분이 사라지므로 브랜드 원색을 의도적으로 유지.
     const colors: Record<string, string> = {
       google: '#ea4335', kakao: '#fee500', github: '#6e40c9',
     }

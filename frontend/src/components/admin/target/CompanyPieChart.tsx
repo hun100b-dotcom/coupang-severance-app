@@ -2,8 +2,10 @@
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
 import type { CompanyTarget } from '../../../types/admin'
+import { UP, CHART_SERIES } from '../shared/adminTheme'
 
-const COLORS = ['#3182f6', '#00c48c', '#f08c00', '#cc2233', '#6c5ce7', '#fd79a8', '#00cec9', '#fdcb6e']
+// (P5) 무지개 리터럴 팔레트(purple/pink/teal/gold) → 규정 CHART_SERIES(브랜드/그린/앰버/네이비/회색) 절제 팔레트로 정돈
+const COLORS = CHART_SERIES
 
 interface Props {
   companies: CompanyTarget[]
@@ -14,16 +16,16 @@ export default function CompanyPieChart({ companies }: Props) {
 
   return (
     <div style={{
-      background: '#f1f5f9',
-      border: '1px solid #e2e8f0',
-      borderRadius: 12,
+      background: UP.sunken,
+      border: `1px solid ${UP.hair}`,
+      borderRadius: 16,
       padding: 'clamp(12px,3vw,20px)',
     }}>
-      <p style={{ fontSize: 'clamp(0.75rem,2.5vw,0.82rem)', fontWeight: 700, color: '#475569', marginBottom: 12 }}>
+      <p style={{ fontSize: 'clamp(0.75rem,2.5vw,0.82rem)', fontWeight: 700, color: UP.sub, marginBottom: 12 }}>
         사업장별 계산 비중
       </p>
       {top.length === 0 ? (
-        <p className="text-a13" style={{ color: '#94a3b8', textAlign: 'center', padding: '40px 0' }}>데이터 없음</p>
+        <p className="text-a13" style={{ color: UP.caption, textAlign: 'center', padding: '40px 0' }}>데이터 없음</p>
       ) : (
         <ResponsiveContainer width="100%" height={240}>
           <PieChart>
@@ -40,10 +42,10 @@ export default function CompanyPieChart({ companies }: Props) {
               {top.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
             </Pie>
             <Tooltip
-              contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 11 }}
+              contentStyle={{ background: UP.surface, border: `1px solid ${UP.hair}`, borderRadius: 8, fontSize: 11 }}
               formatter={(v: number, name: string) => [`${v}건`, name]}
             />
-            <Legend wrapperStyle={{ fontSize: 10, color: '#64748b' }} />
+            <Legend wrapperStyle={{ fontSize: 10, color: UP.sub }} />
           </PieChart>
         </ResponsiveContainer>
       )}

@@ -16,7 +16,8 @@ export type AdminMenu =
   | 'inquiries' | 'notices' | 'members' | 'accounts'
   | 'settings' | 'audit_logs' | 'server_logs' | 'security'
 
-export const SUPER_ADMIN_EMAIL = 'catchmasterdmin@gmail.com'
+// (P5) dead export SUPER_ADMIN_EMAIL 제거 — 라이브 참조 0.
+//   어드민 진입 판정은 AdminPage 에서 DB(admin_accounts) 로만 수행(2026-07-01 보안강화).
 
 interface MenuItem {
   key: AdminMenu

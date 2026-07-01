@@ -28,7 +28,7 @@ interface AuditRow {
 
 // 역할 라벨/색 매핑 (사이드바 권한 레벨과 톤 일치)
 const ROLE_META: Record<string, { label: string; color: string }> = {
-  super_admin: { label: '슈퍼 관리자', color: '#e11d48' },
+  super_admin: { label: '슈퍼 관리자', color: UP.danger }, // (P5) 리터럴 #e11d48 → 팔레트 위험톤 토큰
   admin:       { label: '관리자',      color: UP.brand },
   viewer:      { label: '뷰어',        color: UP.sub },
 }
