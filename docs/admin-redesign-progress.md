@@ -35,10 +35,13 @@
 - **방법**: 결정적 코드모드(`scratchpad/codemod.mjs`) — 문자열인지 균형스캔으로 `style={{}}` 내 리터럴 fontSize만 추출→매핑 text-a* className 이동(+기존 반응형 className 자동 병합), 카드 radius 18|20→16. rem→a토큰 매핑 앵커: 0.85rem→a13(AdminButton), 0.66rem→a10(badge).
 - **의도적 잔여(정상)**: 각 파일 2~5개 = ⓐ공유 CSSProperties 상수(inputStyle·cellStyle·thStyle 등 DRY 단일출처) ⓑrecharts `contentStyle`/`wrapperStyle`/`tick`(숫자·대문자 S 프롭) ⓒclamp() 반응형 KPI값. 이들은 "인라인 난립"이 아니라 유지가 타당.
 
-### ⏭️ P3-c 잔여(대시보드군, P3-c 열거 밖 — 후속 스윕 후보)
-아직 인라인 fontSize 있는 어드민 파일(코드모드 재적용 대상). **BulkActionBar는 대량선택 보호 대상 — 무변경 유지**:
-- `AdminSidebar`(9)·`DashboardSubTabs`(1)·`dashboard/`(DailyTrendChart7·KpiCard1·RecentActivity5·ServiceBarChart6)·`tabs/`(CalcStatsTab13·OverviewTab7·RecruitTab12·VisitorTab23)·`target/`(CompanyPieChart2·UserTagsPanel4·WageSegment2·WorkDurationSegment2)·`logs/AuditLogTable`(3)·`menus/JobsMenu`(3, 레거시 래퍼)·`shared/PageHeader`(clamp 1개, 유지).
-- 코드모드는 `scratchpad/codemod.mjs` 그대로 사용(MAP 이미 0.58~2rem 커버). 신규 rem값 나오면 MAP만 추가.
+### ✅ P3-c 대시보드군도 완료(2026-07-02 동일 세션, 열거 밖이나 "인라인 박멸"로 마저 처리)
+- 셸/카드: AdminSidebar(10)·DashboardSubTabs(3)·DailyTrendChart(7)·KpiCard(4)·RecentActivity(9)·ServiceBarChart(6)·JobsMenu(3) — 커밋 `2fdfb38`.
+- 탭/타겟/감사표: CalcStatsTab(10)·OverviewTab(9)·RecruitTab(11)·VisitorTab(23)·CompanyPieChart(1)·UserTagsPanel(5)·WageSegment(1)·WorkDurationSegment(1)·AuditLogTable(5) — 커밋 `d662b6d`.
+- shared/PageHeader 프리미티브(아이콘 a20·서브타이틀 a13) — 커밋 `a132be1`.
+
+**→ P3-c 결과: 어드민 전역 인라인 fontSize 스윕 완결.** `text-a*` 사용 521개(어드민). 전 커밋 회귀 0px. **최종 잔여 인라인 fontSize는 전부 의도적**: ⓐclamp() 반응형 헤딩/KPI ⓑ차트 마이크로라벨 0.4/0.45rem(a10=10px보다 작아 확대 시 차트 레이아웃 위험) ⓒ공유 CSSProperties 상수(DRY) ⓓrecharts contentStyle/wrapperStyle/tick(숫자·대문자S) ⓔ**BulkActionBar(대량선택 보호 — 무변경)**.
+- ⚠️ 측정 노이즈: `/home` 16px·56px **개수** 지터가 첫로드 레이스로 가끔 뜸(picks는 항상 일치=폰트변화 아님). FAIL 뜨면 **재측정 1회**로 확정(재측정하면 baseline과 일치). picks가 진실 소스.
 
 ### P4 — 정합 (기능)
 - **공지**: `NoticesMenu` 쓰기를 Supabase 직접(RLS is_admin 의존)에서 **백엔드 경로**로 이관(게이트 정합). ※현재도 에러 표시는 됨(무음 아님).
