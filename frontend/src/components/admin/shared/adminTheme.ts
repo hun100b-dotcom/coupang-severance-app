@@ -83,6 +83,15 @@ export const adminCard: CSSProperties = {
 // 깊이감 강조 카드(ui<Card variant="float">) — 히어로/모달성 카드용
 export const adminCardFloat: CSSProperties = { ...adminCard, boxShadow: SHADOW.float }
 
+// (P3-b) 공용 카드 박스 — 대시보드 탭/타겟 등에서 각자 정의하던 로컬 CARD 상수(5파일) 중복 대체.
+//   radius 16(승인: 20/12 혼재 → 16 통일) + flat 소프트섀도우. 사용자앱 업비트풍 카드 톤과 일치.
+export const cardBox: CSSProperties = {
+  background: UP.surface,
+  border: `1px solid ${UP.hair}`,
+  borderRadius: 16,
+  boxShadow: '0 1px 2px rgba(16,24,40,0.04)',
+}
+
 // ── 버튼 헬퍼 — 사용자앱 ui<Button> primary/secondary/ghost 와 동일 톤 ──
 export const btnPrimary: CSSProperties = {
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,

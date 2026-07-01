@@ -6,7 +6,7 @@ import { supabase } from '../../../lib/supabase'
 import { lookupMaskedProfiles } from '../../../lib/api'
 import { exportXlsx } from '../../../lib/exportXlsx'
 import PageHeader from '../shared/PageHeader'
-import { UP, numeric, CHART_SERIES } from '../shared/adminTheme'
+import { UP, numeric, CHART_SERIES, cardBox } from '../shared/adminTheme'
 import { AdminLoading } from '../shared/AdminState' // 공통 로딩 상태(인라인 스피너+@keyframes 대체)
 
 interface VisitorLog {
@@ -270,13 +270,8 @@ export default function VisitorTab() {
   )
 }
 
-const CARD: React.CSSProperties = {
-  background: UP.surface,
-  border: `1px solid ${UP.hair}`,
-  borderRadius: 12,
-  boxShadow: '0 1px 2px rgba(16,24,40,0.04)',
-}
-
+// (P3-b) 공용 cardBox 참조 — radius 16 통일.
+const CARD: React.CSSProperties = cardBox
 const CARD_PAD: React.CSSProperties = { ...CARD, padding: 'clamp(14px, 3vw, 20px)' }
 
 function rangeBtn(active: boolean): React.CSSProperties {

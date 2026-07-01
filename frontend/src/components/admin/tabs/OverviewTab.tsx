@@ -9,7 +9,7 @@ import DailyTrendChart from '../dashboard/DailyTrendChart'
 import ServiceBarChart from '../dashboard/ServiceBarChart'
 import RecentActivity from '../dashboard/RecentActivity'
 import PageHeader from '../shared/PageHeader'
-import { UP, numeric } from '../shared/adminTheme'
+import { UP, numeric, cardBox } from '../shared/adminTheme'
 import { AdminLoading } from '../shared/AdminState' // 공통 로딩 상태(인라인 스피너+@keyframes 대체)
 
 function fmtMoney(n: number) {
@@ -243,12 +243,8 @@ export default function OverviewTab() {
 }
 
 // 공용 카드
-const CARD: React.CSSProperties = {
-  background: UP.surface,
-  border: `1px solid ${UP.hair}`,
-  borderRadius: 12,
-  boxShadow: '0 1px 2px rgba(16,24,40,0.04)',
-}
+// (P3-b) 공용 cardBox 참조 — radius 16 통일.
+const CARD: React.CSSProperties = cardBox
 
 // 날짜 범위 토글 버튼
 function rangeBtn(active: boolean): React.CSSProperties {

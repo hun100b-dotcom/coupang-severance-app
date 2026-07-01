@@ -7,7 +7,7 @@ import {
 import { getTargetInsights } from '../../../lib/api'
 import type { TargetInsights } from '../../../types/admin'
 import { logAdminAction } from '../../../lib/adminAuditLog'
-import { UP, btnSecondary } from '../shared/adminTheme'
+import { UP, btnSecondary, cardBox } from '../shared/adminTheme'
 import { AdminLoading } from '../shared/AdminState' // 공통 로딩 상태(인라인 스피너+@keyframes 대체)
 
 /* ── Color Palette ──────────────────────────────────────────
@@ -35,13 +35,8 @@ function fmtW(n: number) {
   return `${n.toLocaleString()}원`
 }
 
-const CARD: React.CSSProperties = {
-  background: UP.surface,
-  border: `1px solid ${UP.hair}`,
-  borderRadius: 12,
-  padding: 'clamp(16px, 3vw, 24px)',
-  boxShadow: '0 1px 2px rgba(16,24,40,0.04)',
-}
+// (P3-b) 공용 cardBox 참조(+padding) — radius 16 통일.
+const CARD: React.CSSProperties = { ...cardBox, padding: 'clamp(16px, 3vw, 24px)' }
 
 // 차트 툴팁 — 라이트 톤(과거 다크 #12122a 잔재 제거)
 const TT: React.CSSProperties = {

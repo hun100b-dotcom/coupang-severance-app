@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { exportXlsx } from '../../../lib/exportXlsx'
 import PageHeader from '../shared/PageHeader'
-import { UP, numeric } from '../shared/adminTheme'
+import { UP, numeric, cardBox } from '../shared/adminTheme'
 import { AdminLoading } from '../shared/AdminState' // 공통 로딩 상태(인라인 스피너+@keyframes 대체)
 
 interface JobPosting {
@@ -200,13 +200,8 @@ export default function RecruitTab() {
   )
 }
 
-const CARD: React.CSSProperties = {
-  background: UP.surface,
-  border: `1px solid ${UP.hair}`,
-  borderRadius: 12,
-  boxShadow: '0 1px 2px rgba(16,24,40,0.04)',
-}
-
+// (P3-b) 공용 cardBox 참조 — radius 16 통일.
+const CARD: React.CSSProperties = cardBox
 const CARD_PAD: React.CSSProperties = { ...CARD, padding: 'clamp(14px, 3vw, 20px)' }
 
 const iconBtn: React.CSSProperties = {
