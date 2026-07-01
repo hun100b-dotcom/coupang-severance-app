@@ -174,8 +174,8 @@ export default function NoticesMenu() {
       {/* ── 헤더 영역 ────────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0 }}>📢 공지사항 관리</h2>
-          <p style={{ fontSize: '0.8rem', color: UP.sub, margin: '4px 0 0' }}>
+          <h2 className="text-a20" style={{ fontWeight: 800, margin: 0 }}>📢 공지사항 관리</h2>
+          <p className="text-a13" style={{ color: UP.sub, margin: '4px 0 0' }}>
             홈 화면 배너에 표시되는 공지를 관리합니다. 제목은 배너에, 본문은 상세 페이지에 표시됩니다.
           </p>
         </div>
@@ -189,10 +189,10 @@ export default function NoticesMenu() {
 
       {/* ── 에러 배너 (목록/저장/토글/삭제 실패) ──────────────────────────────── */}
       {error && (
-        <div style={{
+        <div className="text-a13" style={{
           background: UP.dangerBg, border: `1px solid ${UP.dangerLine}`,
           borderRadius: 10, padding: '12px 16px', marginBottom: 16,
-          color: UP.danger, fontSize: '0.82rem', fontWeight: 600,
+          color: UP.danger, fontWeight: 600,
         }}>
           ⚠️ {error}
         </div>
@@ -200,7 +200,7 @@ export default function NoticesMenu() {
 
       {/* ── 공지 목록 테이블 ─────────────────────────────────────────────────── */}
       {loading ? (
-        <p style={{ color: UP.sub, fontSize: '0.85rem' }}>불러오는 중...</p>
+        <p className="text-a13" style={{ color: UP.sub, }}>불러오는 중...</p>
       ) : (
         <div style={{ background: '#fff', borderRadius: RADIUS.card, overflow: 'hidden', border: `1px solid ${UP.hair}` }}>
           <div style={{ overflowX: 'auto' }}>
@@ -306,13 +306,13 @@ export default function NoticesMenu() {
               maxWidth: 480,
             }}
           >
-            <h3 style={{ margin: '0 0 20px', fontSize: '1.05rem', fontWeight: 800 }}>
+            <h3 className="text-a16" style={{ margin: '0 0 20px', fontWeight: 800 }}>
               {editTarget ? '공지 수정' : '새 공지 추가'}
             </h3>
 
             {/* ── 제목 입력 (배너에 표시되는 짧은 텍스트) ── */}
             <label style={{ display: 'block', marginBottom: 14 }}>
-              <span style={{ fontSize: '0.78rem', color: UP.sub, display: 'block', marginBottom: 6 }}>
+              <span className="text-a12" style={{ color: UP.sub, display: 'block', marginBottom: 6 }}>
                 제목 <span style={{ color: UP.danger }}>*</span>
                 <span style={{ color: UP.caption, marginLeft: 6 }}>홈 화면 배너에 표시됩니다</span>
               </span>
@@ -325,14 +325,14 @@ export default function NoticesMenu() {
                 style={inputStyle}
               />
               {/* 글자 수 카운터 */}
-              <span style={{ fontSize: '0.7rem', color: UP.caption, marginTop: 4, display: 'block', textAlign: 'right' }}>
+              <span className="text-a11" style={{ color: UP.caption, marginTop: 4, display: 'block', textAlign: 'right' }}>
                 {form.title.length}/60
               </span>
             </label>
 
             {/* ── 본문 입력 (상세 페이지에서 표시) ── */}
             <label style={{ display: 'block', marginBottom: 14 }}>
-              <span style={{ fontSize: '0.78rem', color: UP.sub, display: 'block', marginBottom: 6 }}>
+              <span className="text-a12" style={{ color: UP.sub, display: 'block', marginBottom: 6 }}>
                 본문 <span style={{ color: UP.danger }}>*</span>
                 <span style={{ color: UP.caption, marginLeft: 6 }}>공지사항 상세 페이지에 표시됩니다</span>
               </span>
@@ -348,7 +348,7 @@ export default function NoticesMenu() {
             {/* ── 우선순위 + 활성 토글 ── */}
             <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
               <label style={{ flex: 1 }}>
-                <span style={{ fontSize: '0.78rem', color: UP.sub, display: 'block', marginBottom: 6 }}>
+                <span className="text-a12" style={{ color: UP.sub, display: 'block', marginBottom: 6 }}>
                   우선순위 (높을수록 먼저 표시)
                 </span>
                 <input
@@ -361,7 +361,7 @@ export default function NoticesMenu() {
 
               {/* 활성 토글 스위치 */}
               <label style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                <span style={{ fontSize: '0.78rem', color: UP.sub, display: 'block', marginBottom: 6 }}>
+                <span className="text-a12" style={{ color: UP.sub, display: 'block', marginBottom: 6 }}>
                   활성
                 </span>
                 <div
@@ -392,7 +392,7 @@ export default function NoticesMenu() {
 
             {/* 저장 실패 에러 (모달 내부 — 오버레이가 상단 배너를 가리므로) */}
             {error && (
-              <p style={{ fontSize: '0.78rem', color: UP.danger, marginBottom: 12, fontWeight: 600 }}>
+              <p className="text-a12" style={{ color: UP.danger, marginBottom: 12, fontWeight: 600 }}>
                 ⚠️ {error}
               </p>
             )}
