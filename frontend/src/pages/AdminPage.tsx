@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { logAdminAction } from '../lib/adminAuditLog'
-import AdminSidebar, { type AdminMenu, SUPER_ADMIN_EMAIL } from '../components/admin/AdminSidebar'
+import AdminSidebar, { type AdminMenu } from '../components/admin/AdminSidebar'
 import { UP } from '../components/admin/shared/adminTheme'
 import DashboardMenu from '../components/admin/menus/DashboardMenu'
 import TargetMenu from '../components/admin/menus/TargetMenu'
@@ -86,44 +86,49 @@ export default function AdminPage() {
   const [adminChecked, setAdminChecked] = useState(false)
   const loginLogged = useRef(false)
 
-  // DB admin_accounts 테이블에서 관리자 여부 확인
+  // ── 어드민 진입 판정 — DB(admin_accounts)로만 실제 관리자 여부 검증 ──
+  // ⚠️ 보안 강화(2026-07-01): 과거엔 프론트 하드코딩 이메일(SUPER_ADMIN_EMAIL)·
+  //   VITE_ADMIN_EMAIL 만으로 통과시켜, admin_accounts 에 등록 안 된 이메일도
+  //   어드민 셸(화면)에 들어왔습니다(데이터는 RLS 로 막혀도 화면은 뜸).
+  //   → "하드코딩/환경변수 단독 통과"를 제거하고, DB 에 is_active=true 로 등록된
+  //     관리자만 입장할 수 있게 막습니다. (RLS·DB·어드민 기능은 불변, 입장 판정만 교체)
   useEffect(() => {
-    if (loading) return  // 세션 확인이 끝날 때까지 대기 (이 동안 화면은 의도적으로 null)
-    // 비로그인(게스트 모드 포함)이면 관리자 확인 절차 자체를 진행할 수 없습니다.
-    // ⚠️ 과거 버그(하얀 화면의 근본 원인): 여기서 그냥 return 하면 adminChecked가
-    //   영원히 false로 남아, 아래 `if (loading || !adminChecked) return null` 에서
-    //   화면이 null(=하얀 화면)로 멈추고, 리다이렉트 effect(adminChecked && !isAdmin)도
-    //   발동하지 못했습니다. 그래서 비로그인/게스트로 /admin 진입 시 영구 하얀 화면이 떴습니다.
-    // ✅ 해결: 확인 절차를 "완료(true)"로 표시해, 아래 리다이렉트 effect가
-    //   로그인/홈 페이지로 안전하게 내보내도록 합니다.
-    if (!isLoggedIn || !user?.email) { setAdminChecked(true); return }
+    if (loading) return  // 세션 확인이 끝날 때까지 대기(이 동안 아래에서 스피너 표시)
+
+    // 비로그인(게스트 포함)/이메일 없음 → 확인 절차를 "완료(true)"로 표시해
+    //   아래 리다이렉트 effect 가 로그인 페이지로 안전하게 내보내도록 합니다.
+    //   (과거 하얀 화면 버그: 여기서 adminChecked 를 안 올리면 영구 null 화면)
+    if (!isLoggedIn || !user?.email) { setAdminRole(null); setAdminChecked(true); return }
+
+    // supabase 클라이언트가 없으면 DB 검증 자체가 불가 → 안전하게 관리자 아님으로 차단.
+    if (!supabase) { setAdminRole(null); setAdminChecked(true); return }
+
     const email = user.email
+    const client = supabase
+    let cancelled = false
+    setAdminChecked(false)  // 이메일(세션) 바뀌면 재검증 — 스피너 재표시
 
-    if (email === SUPER_ADMIN_EMAIL) {
-      setAdminRole('super_admin')
-      setAdminChecked(true)
-      return
-    }
-
-    const envAdminEmail = import.meta.env.VITE_ADMIN_EMAIL ?? ''
-    if (envAdminEmail && email === envAdminEmail) {
-      setAdminRole('super_admin')
-      setAdminChecked(true)
-      return
-    }
-
-    if (!supabase) { setAdminChecked(true); return }
     ;(async () => {
       try {
-        const { data } = await supabase
+        // admin_accounts 에서 "본인 이메일 행"을 조회.
+        //   비관리자 이메일은 이 테이블에 없어 0행 → maybeSingle()=null → 입장 차단.
+        //   관리자라도 is_active=false 면 차단. 역할(super/admin/viewer)은 DB 값을 그대로 사용.
+        //   → DB 등록 여부가 유일한 입장 근거. (하드코딩/VITE_ADMIN_EMAIL 단독 통과 완전 제거)
+        const { data } = await client
           .from('admin_accounts')
           .select('role, is_active')
           .eq('email', email)
           .maybeSingle()  // 행 없을 때 406(PGRST116) 콘솔오염 방지(비관리자 진입 시)
-        if (data?.is_active) setAdminRole(data.role)
-      } catch { /* 관리자 아님 */ }
-      setAdminChecked(true)
+        if (cancelled) return
+        setAdminRole(data?.is_active ? data.role : null)
+      } catch {
+        // 조회 실패(네트워크 등) → 안전측(관리자 아님)으로 처리해 입장 차단
+        if (!cancelled) setAdminRole(null)
+      }
+      if (!cancelled) setAdminChecked(true)
     })()
+
+    return () => { cancelled = true }  // 세션 전환 중 늦게 도착한 응답 무시(레이스 방지)
   }, [loading, isLoggedIn, user?.email])
 
   const isAdmin = adminChecked && adminRole !== null
@@ -159,8 +164,11 @@ export default function AdminPage() {
     })()
   }, [])
 
-  if (loading || !adminChecked) return null
-  if (!isAdmin) return null
+  // 로딩(세션 확인 or DB 검증 중) — 하얀 화면 금지: 스피너 표시(과거 사고 재발 방지)
+  if (loading || !adminChecked) return <AdminGateLoading />
+  // 확인 완료했는데 관리자 아님 — 위 리다이렉트 effect 가 곧 내보냄.
+  //   그 찰나에 하얀 화면 대신 "권한 없음" 안내를 보여줍니다.
+  if (!isAdmin) return <AdminGateDenied loggedIn={isLoggedIn} />
 
   const handleLogout = () => { logout(); navigate('/home') }
 
@@ -409,6 +417,51 @@ function AccessDenied({ label }: { label: string }) {
       </div>
       <div style={{ fontSize: '1rem', fontWeight: 700, color: UP.navy, marginBottom: 8 }}>접근 제한</div>
       <div style={{ fontSize: '0.85rem', color: UP.sub, lineHeight: 1.6 }}>{label}</div>
+    </div>
+  )
+}
+
+// 입장 검증 중 로딩 화면 — 하얀 화면 대신 스피너를 꽉 채워 표시(과거 하얀화면 사고 방지)
+function AdminGateLoading() {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 100,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      gap: 14, background: UP.page, color: UP.sub,
+    }}>
+      <div
+        className="animate-spin"
+        style={{
+          width: 34, height: 34, borderRadius: '50%',
+          border: `3px solid ${UP.hair}`, borderTopColor: UP.brand,
+        }}
+      />
+      <div style={{ fontSize: '0.85rem', fontWeight: 600, color: UP.sub }}>관리자 권한 확인 중…</div>
+    </div>
+  )
+}
+
+// 관리자 아님(미등록/비활성/비로그인) — 리다이렉트 직전 잠깐 보이는 "권한 없음" 안내
+//   loggedIn: true=로그인했으나 미등록 관리자 → 홈으로, false=비로그인 → 로그인으로
+function AdminGateDenied({ loggedIn }: { loggedIn: boolean }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 100,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      gap: 12, padding: '0 24px', textAlign: 'center', background: UP.page,
+    }}>
+      <div style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        width: 56, height: 56, borderRadius: '50%',
+        background: UP.dangerBg, border: `1px solid ${UP.dangerLine}`, marginBottom: 4,
+      }}>
+        <span style={{ fontSize: '1.6rem' }}>🔒</span>
+      </div>
+      <div style={{ fontSize: '1rem', fontWeight: 700, color: UP.navy }}>접근 권한이 없습니다</div>
+      <div style={{ fontSize: '0.85rem', color: UP.sub, lineHeight: 1.6 }}>
+        등록된 관리자만 입장할 수 있습니다.<br />
+        {loggedIn ? '홈으로 이동합니다…' : '로그인 페이지로 이동합니다…'}
+      </div>
     </div>
   )
 }

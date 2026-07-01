@@ -13,7 +13,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { UP, RADIUS, badge, btnSecondary } from '../shared/adminTheme'
 import { supabase } from '../../../lib/supabase'
-import { SUPER_ADMIN_EMAIL } from '../AdminSidebar'
 import {
   getAdminApplications, revealApplicant,
   type MaskedApplication, type RevealedApplicant,
@@ -101,20 +100,18 @@ export default function ApplicantsMenu() {
   const [jobs, setJobs] = useState<{ id: string; company_name: string; center_name: string }[]>([])
   const [companies, setCompanies] = useState<string[]>([])
 
-  // 현재 로그인 관리자 이메일 + 슈퍼관리자 여부 판정 (AdminPage 와 동일 규칙)
+  // 현재 로그인 관리자 이메일 + 슈퍼관리자 여부 판정 (AdminPage 와 동일 규칙: DB 전용)
+  //   ⚠️ 보안(2026-07-01): 하드코딩 이메일/VITE_ADMIN_EMAIL 단독 통과 제거.
+  //     서버 판정(is_super_admin) 과 정합되도록 admin_accounts.role === 'super_admin'
+  //     AND is_active=true 인 경우에만 슈퍼관리자로 인정합니다.
   useEffect(() => {
     if (!supabase) return
     ;(async () => {
       const { data } = await supabase!.auth.getUser()
       const email = data.user?.email ?? ''
       setAdminEmail(email)
-      // 1) 슈퍼관리자 이메일 또는 환경변수 관리자 이메일
-      const envAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL as string | undefined) ?? ''
-      if (email === SUPER_ADMIN_EMAIL || (envAdminEmail && email === envAdminEmail)) {
-        setIsSuperAdmin(true)
-        return
-      }
-      // 2) admin_accounts.role === 'super_admin'
+      if (!email) return
+      // admin_accounts.role === 'super_admin' (활성) 만 슈퍼관리자 — DB 가 유일한 근거
       try {
         const { data: row } = await supabase!
           .from('admin_accounts')
