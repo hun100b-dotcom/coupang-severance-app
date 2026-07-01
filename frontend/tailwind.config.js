@@ -87,6 +87,27 @@ export default {
         sans: ['Pretendard', 'Apple SD Gothic Neo', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
+      // ── 어드민 전용 폰트 스케일 (P0 폰트 관문) ──
+      //   목적: index.css 의 `.text-[Npx]` / `.text-xs` / `.text-sm` `!important` 폰트 override(+1.5px)를
+      //         "회피"하기 위한 별도 클래스명. CSS 셀렉터는 리터럴 일치라 다른 이름(text-a12 등)은
+      //         override 규칙에 절대 걸리지 않음 → 사용자앱 폰트에 0px 영향(회귀 없음).
+      //   용도: 어드민이 지금까지 override 회피용으로 쓰던 인라인 fontSize(rem/px)를 이 유틸로 대체(P1~P3).
+      //   형식: [fontSize(px 고정), line-height] 튜플. px 고정이라 회귀 예측 가능.
+      //   ⚠️ 사용자앱 컴포넌트에는 쓰지 않는다(어드민 전용). 사용해도 신규 스타일이라 회귀는 아님.
+      fontSize: {
+        a10: ['10px', '1.4'],
+        a11: ['11px', '1.45'],
+        a12: ['12px', '1.5'],
+        a13: ['13px', '1.5'],
+        a14: ['14px', '1.55'],
+        a15: ['15px', '1.55'],
+        a16: ['16px', '1.6'],
+        a18: ['18px', '1.5'],
+        a20: ['20px', '1.4'],
+        a24: ['24px', '1.35'],
+        a28: ['28px', '1.3'],
+        a30: ['30px', '1.25'],
+      },
       // ── 콘텐츠 컨테이너 폭 토큰 (Phase 3 업스케일: 1080→1280) ──
       //   max-w-content = 데스크톱 와이드 콘텐츠 폭(홈에서 검증된 1280)
       //   max-w-content-narrow = 폼/리포트 등 읽기 흐름용
