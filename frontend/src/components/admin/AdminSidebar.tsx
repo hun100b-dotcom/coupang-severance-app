@@ -185,18 +185,18 @@ export default function AdminSidebar({ active, onChange, collapsed = false }: Pr
                   key={item.key}
                   onClick={() => onChange(item.key)}
                   title={item.label}
+                  // 비활성 항목은 .admin-navitem 로 CSS :hover 적용(인라인 background 미설정)
+                  className={isActive ? undefined : 'admin-navitem'}
                   style={{
                     position: 'relative',
                     width: 44, height: 40,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     borderRadius: 10,
                     border: 'none',
-                    background: isActive ? UP.brandBg : 'transparent',
+                    background: isActive ? UP.brandBg : undefined,
                     cursor: 'pointer',
                     transition: 'background 0.12s',
                   }}
-                  onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = UP.sunken }}
-                  onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
                 >
                   <span style={{ fontSize: '1.05rem', opacity: isActive ? 1 : 0.78 }}>{item.icon}</span>
                   {/* 활성 좌측 바 */}
@@ -226,16 +226,15 @@ export default function AdminSidebar({ active, onChange, collapsed = false }: Pr
                 <button
                   key={group.groupKey}
                   onClick={() => onChange(group.singleMenu!)}
+                  className={isActive ? undefined : 'admin-navitem'}
                   style={{
                     ...leafBtn,
                     marginBottom: 4,
-                    background: isActive ? UP.brandBg : 'transparent',
+                    background: isActive ? UP.brandBg : undefined,
                     color: isActive ? UP.strong : UP.body,
                     fontWeight: isActive ? 700 : 600,
                     borderLeft: isActive ? `3px solid ${UP.brand}` : '3px solid transparent',
                   }}
-                  onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = UP.sunken }}
-                  onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
                 >
                   <span style={{ fontSize: '0.98rem', flexShrink: 0 }}>{group.singleIcon ?? group.groupIcon}</span>
                   <span style={{ flex: 1 }}>{group.groupLabel}</span>
@@ -273,17 +272,16 @@ export default function AdminSidebar({ active, onChange, collapsed = false }: Pr
                         <button
                           key={item.key}
                           onClick={() => onChange(item.key)}
+                          className={isActive ? undefined : 'admin-navitem'}
                           style={{
                             ...leafBtn,
                             paddingLeft: 22,
                             marginBottom: 1,
-                            background: isActive ? UP.brandBg : 'transparent',
+                            background: isActive ? UP.brandBg : undefined,
                             color: isActive ? UP.strong : UP.sub,
                             fontWeight: isActive ? 700 : 500,
                             borderLeft: isActive ? `3px solid ${UP.brand}` : '3px solid transparent',
                           }}
-                          onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = UP.sunken }}
-                          onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
                         >
                           <span style={{ fontSize: '0.82rem', flexShrink: 0 }}>{item.icon}</span>
                           <span style={{ flex: 1 }}>{item.label}</span>

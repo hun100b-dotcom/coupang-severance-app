@@ -979,3 +979,10 @@ input:focus {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+
+/* ── 어드민 사이드바 내비 호버 (P2) ──
+   기존 onMouseEnter/Leave JS 직조작을 대체하는 CSS :hover.
+   비활성 항목에만 .admin-navitem 클래스를 붙이고(활성은 인라인 brandBg 유지),
+   비활성은 인라인 background를 두지 않아 이 규칙이 정상 적용됨.
+   ※ 폰트와 무관(배경색만) → 폰트 회귀 영향 없음. */
+.admin-navitem:hover { background: #F2F5FA; }
