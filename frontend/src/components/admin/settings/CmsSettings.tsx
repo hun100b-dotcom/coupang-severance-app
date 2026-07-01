@@ -64,7 +64,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
   return (
     <div style={cardStyle}>
       <p style={titleStyle}>공지/배너 CMS</p>
-      <p style={{ fontSize: '0.72rem', color: UP.sub, marginBottom: 16, marginTop: -8 }}>
+      <p className="text-a11" style={{ color: UP.sub, marginBottom: 16, marginTop: -8 }}>
         저장 즉시 홈 화면에 반영 (백엔드 경유 저장)
       </p>
 
@@ -73,7 +73,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <span style={labelStyle}>긴급 공지 배너 (홈 상단 노란 띠)</span>
           <Toggle on={annoEnabled} onToggle={() => setAnnoEnabled(e => !e)} />
-          <span style={{ fontSize: '0.72rem', color: annoEnabled ? UP.brand : UP.caption }}>
+          <span className="text-a11" style={{ color: annoEnabled ? UP.brand : UP.caption }}>
             {annoEnabled ? 'ON' : 'OFF'}
           </span>
         </div>
@@ -91,7 +91,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <span style={labelStyle}>팝업 배너 (진입 시 모달 팝업)</span>
           <Toggle on={bannerEnabled} onToggle={() => setBannerEnabled(e => !e)} />
-          <span style={{ fontSize: '0.72rem', color: bannerEnabled ? UP.brand : UP.caption }}>
+          <span className="text-a11" style={{ color: bannerEnabled ? UP.brand : UP.caption }}>
             {bannerEnabled ? 'ON' : 'OFF'}
           </span>
         </div>
@@ -102,7 +102,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
           rows={3}
           style={{ ...inputStyle, resize: 'vertical' }}
         />
-        <p style={{ fontSize: '0.68rem', color: UP.caption, marginTop: 5 }}>
+        <p className="text-a11" style={{ color: UP.caption, marginTop: 5 }}>
           * 사용자가 "오늘 하루 보지 않기" 클릭 시 24시간 비표시
         </p>
       </div>
@@ -113,7 +113,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
         {saving ? '저장 중...' : '설정 저장'}
       </button>
       {msg && (
-        <p style={{ fontSize: '0.78rem', color: msg.ok ? UP.green : UP.danger, marginTop: 8 }}>
+        <p className="text-a12" style={{ color: msg.ok ? UP.green : UP.danger, marginTop: 8 }}>
           {msg.text}
         </p>
       )}

@@ -55,7 +55,7 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
 
       {/* 에러 표시 (차단/해제 실패) */}
       {error && (
-        <p style={{ fontSize: '0.78rem', color: UP.danger, marginBottom: 12, fontWeight: 600 }}>
+        <p className="text-a12" style={{ color: UP.danger, marginBottom: 12, fontWeight: 600 }}>
           ⚠️ {error}
         </p>
       )}
@@ -75,7 +75,7 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
       )}
 
       {ips.length === 0 && !showForm && (
-        <p style={{ fontSize: '0.82rem', color: UP.sub, textAlign: 'center', padding: '16px 0' }}>
+        <p className="text-a13" style={{ color: UP.sub, textAlign: 'center', padding: '16px 0' }}>
           차단된 IP가 없습니다.
         </p>
       )}
@@ -83,10 +83,10 @@ export default function IpBlockManager({ ips, onRefresh }: Props) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {ips.map(ip => (
           <div key={ip.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(240,68,82,0.05)', borderRadius: 8, border: '1px solid rgba(240,68,82,0.1)' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: UP.danger, flex: 1 }}>{ip.ip_address}</span>
-            <span style={{ fontSize: '0.75rem', color: UP.sub }}>{ip.reason ?? '사유 없음'}</span>
-            <span style={{ fontSize: '0.72rem', color: UP.caption }}>~{fmt(ip.expires_at)}</span>
-            <button onClick={() => handleUnblock(ip.id)} style={{ background: 'none', border: 'none', color: UP.sub, cursor: 'pointer', fontSize: '0.82rem' }}>
+            <span className="text-a13" style={{ fontWeight: 700, color: UP.danger, flex: 1 }}>{ip.ip_address}</span>
+            <span className="text-a12" style={{ color: UP.sub }}>{ip.reason ?? '사유 없음'}</span>
+            <span className="text-a11" style={{ color: UP.caption }}>~{fmt(ip.expires_at)}</span>
+            <button onClick={() => handleUnblock(ip.id)} className="text-a13" style={{ background: 'none', border: 'none', color: UP.sub, cursor: 'pointer', }}>
               해제
             </button>
           </div>

@@ -51,7 +51,7 @@ export default function LegalVariables({ settings, onRefresh }: Props) {
       <button onClick={save} disabled={saving} style={btnPrimary}>
         {saving ? '저장 중...' : '변수 저장'}
       </button>
-      {msg && <p style={{ fontSize: '0.78rem', color: UP.green, marginTop: 8 }}>{msg}</p>}
+      {msg && <p className="text-a12" style={{ color: UP.green, marginTop: 8 }}>{msg}</p>}
     </div>
   )
 }

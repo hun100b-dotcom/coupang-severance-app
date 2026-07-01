@@ -82,7 +82,7 @@ export default function DiscordSettings({ settings, onRefresh }: Props) {
               background: '#fff', transition: 'left 0.2s',
             }} />
           </div>
-          <span style={{ fontSize: '0.85rem', color: UP.body }}>
+          <span className="text-a13" style={{ color: UP.body }}>
             Discord 알림 {enabled ? '활성화' : '비활성화'}
           </span>
         </label>
@@ -104,7 +104,7 @@ export default function DiscordSettings({ settings, onRefresh }: Props) {
         </button>
       </div>
       {/* 설정 안내 메시지 */}
-      <p style={{ fontSize: '0.72rem', color: UP.caption, marginTop: 10, lineHeight: 1.7 }}>
+      <p className="text-a11" style={{ color: UP.caption, marginTop: 10, lineHeight: 1.7 }}>
         저장된 URL은 <strong style={{ color: UP.sub }}>문의 접수 시 실제 알림</strong>에 사용됩니다.
         (백엔드 FastAPI + Supabase Edge Function 양쪽 모두 이 값을 우선 조회)<br />
         📡 테스트 버튼은 Edge Function 경로로 즉시 발송합니다.<br />
@@ -112,8 +112,7 @@ export default function DiscordSettings({ settings, onRefresh }: Props) {
         이 값이 없을 때 폴백으로 사용됩니다.
       </p>
       {msg && (
-        <p style={{
-          fontSize: '0.78rem',
+        <p className="text-a12" style={{
           color: msg.startsWith('✅') ? UP.green : msg.startsWith('⚠️') ? UP.amber : UP.danger,
           marginTop: 8,
         }}>{msg}</p>
