@@ -5,10 +5,10 @@
 
 export default function JobsMenu() {
   return (
-    <div style={{ padding: 32, textAlign: 'center', color: '#64748b', fontSize: '0.9rem' }}>
-      <div style={{ fontSize: '2rem', marginBottom: 12 }}>💼</div>
+    <div className="text-a14" style={{ padding: 32, textAlign: 'center', color: '#64748b', }}>
+      <div className="text-a30" style={{ marginBottom: 12 }}>💼</div>
       <p>채용공고 메뉴는 사이드바의 <strong style={{ color: '#fff' }}>채용 및 인원 관리</strong> 아코디언으로 이동됐습니다.</p>
-      <p style={{ fontSize: '0.8rem', marginTop: 8 }}>
+      <p className="text-a13" style={{ marginTop: 8 }}>
         💼 채용공고 · 👥 지원자 · ✅ 확정인원 · 📈 Summary
       </p>
     </div>

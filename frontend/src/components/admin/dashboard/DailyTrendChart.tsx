@@ -25,12 +25,12 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
       padding: '10px 14px',
       boxShadow: '0 4px 16px rgba(16,24,40,0.12)',
     }}>
-      <p style={{ fontSize: '0.72rem', color: UP.sub, marginBottom: 6, fontWeight: 600 }}>{label}</p>
+      <p className="text-a11" style={{ color: UP.sub, marginBottom: 6, fontWeight: 600 }}>{label}</p>
       {payload.map((p, i) => (
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: p.color }} />
-          <span style={{ fontSize: '0.75rem', color: UP.body }}>{p.name}</span>
-          <span style={{ fontSize: '0.75rem', color: UP.navy, fontWeight: 700, marginLeft: 'auto', ...numeric }}>{p.value}</span>
+          <span className="text-a12" style={{ color: UP.body }}>{p.name}</span>
+          <span className="text-a12" style={{ color: UP.navy, fontWeight: 700, marginLeft: 'auto', ...numeric }}>{p.value}</span>
         </div>
       ))}
     </div>
@@ -56,8 +56,8 @@ export default function DailyTrendChart({ data }: Props) {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
-          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: UP.navy, margin: 0 }}>일별 트렌드</p>
-          <p style={{ fontSize: '0.7rem', color: UP.caption, marginTop: 2 }}>기간 내 유저·계산·문의 추이</p>
+          <p className="text-a14" style={{ fontWeight: 700, color: UP.navy, margin: 0 }}>일별 트렌드</p>
+          <p className="text-a11" style={{ color: UP.caption, marginTop: 2 }}>기간 내 유저·계산·문의 추이</p>
         </div>
         <div style={{ display: 'flex', gap: 14 }}>
           {[
@@ -66,8 +66,8 @@ export default function DailyTrendChart({ data }: Props) {
             { label: '문의', value: totals.inquiries, color: S_INQUIRIES },
           ].map(item => (
             <div key={item.label} style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: '0.62rem', color: item.color, fontWeight: 700 }}>{item.label}</span>
-              <div style={{ fontSize: '0.9rem', fontWeight: 800, color: UP.navy, ...numeric }}>{item.value}</div>
+              <span className="text-a10" style={{ color: item.color, fontWeight: 700 }}>{item.label}</span>
+              <div className="text-a14" style={{ fontWeight: 800, color: UP.navy, ...numeric }}>{item.value}</div>
             </div>
           ))}
         </div>

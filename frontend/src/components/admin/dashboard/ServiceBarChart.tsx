@@ -23,9 +23,9 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <div style={{ width: 8, height: 8, borderRadius: '50%', background: d.color }} />
-        <span style={{ fontSize: '0.78rem', color: UP.navy, fontWeight: 600 }}>{d.name}</span>
+        <span className="text-a12" style={{ color: UP.navy, fontWeight: 600 }}>{d.name}</span>
       </div>
-      <div style={{ fontSize: '1rem', fontWeight: 800, color: d.color, marginTop: 4, ...numeric }}>
+      <div className="text-a16" style={{ fontWeight: 800, color: d.color, marginTop: 4, ...numeric }}>
         {d.value.toLocaleString()} 클릭
       </div>
     </div>
@@ -51,8 +51,8 @@ export default function ServiceBarChart({ severance, unemployment }: Props) {
       flexDirection: 'column',
     }}>
       <div style={{ marginBottom: 12 }}>
-        <p style={{ fontSize: '0.9rem', fontWeight: 700, color: UP.navy, margin: 0 }}>서비스별 클릭</p>
-        <p style={{ fontSize: '0.7rem', color: UP.caption, marginTop: 2, ...numeric }}>총 {total.toLocaleString()}회</p>
+        <p className="text-a14" style={{ fontWeight: 700, color: UP.navy, margin: 0 }}>서비스별 클릭</p>
+        <p className="text-a11" style={{ color: UP.caption, marginTop: 2, ...numeric }}>총 {total.toLocaleString()}회</p>
       </div>
 
       {/* 비율 바 */}
@@ -67,8 +67,8 @@ export default function ServiceBarChart({ severance, unemployment }: Props) {
         {data.map(d => (
           <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: d.color }} />
-            <span style={{ fontSize: '0.73rem', color: UP.body }}>{d.name}</span>
-            <span style={{ fontSize: '0.73rem', color: d.textColor, fontWeight: 700, ...numeric }}>{d.pct}%</span>
+            <span className="text-a12" style={{ color: UP.body }}>{d.name}</span>
+            <span className="text-a12" style={{ color: d.textColor, fontWeight: 700, ...numeric }}>{d.pct}%</span>
           </div>
         ))}
       </div>

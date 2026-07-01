@@ -44,8 +44,7 @@ export default function KpiCard({ label, value, sub, color = UP.brand, icon, tre
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 4 }}>
         <div style={{ minWidth: 0, flex: 1 }}>
           {/* 라벨 */}
-          <p style={{
-            fontSize: '0.625rem',
+          <p className="text-a10" style={{
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.06em',
@@ -70,8 +69,7 @@ export default function KpiCard({ label, value, sub, color = UP.brand, icon, tre
           {/* 트렌드 + 부제목 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
             {trend !== undefined && trend !== 0 && (
-              <span style={{
-                fontSize: '0.65rem',
+              <span className="text-a10" style={{
                 fontWeight: 700,
                 color: trend > 0 ? UP.green : UP.danger,
                 background: trend > 0 ? UP.greenBg : UP.dangerBg,
@@ -83,8 +81,7 @@ export default function KpiCard({ label, value, sub, color = UP.brand, icon, tre
               </span>
             )}
             {sub && (
-              <p style={{
-                fontSize: '0.66rem',
+              <p className="text-a10" style={{
                 color: UP.caption,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
@@ -107,7 +104,7 @@ export default function KpiCard({ label, value, sub, color = UP.brand, icon, tre
             justifyContent: 'center',
             flexShrink: 0,
           }}>
-            <span style={{ fontSize: '1.05rem', lineHeight: 1 }}>{icon}</span>
+            <span className="text-a16" style={{ lineHeight: 1 }}>{icon}</span>
           </div>
         )}
       </div>

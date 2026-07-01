@@ -159,13 +159,13 @@ export default function AdminSidebar({ active, onChange, collapsed = false }: Pr
         borderBottom: `1px solid ${UP.hairSoft}`,
         flexShrink: 0,
       }}>
-        <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>⚡</span>
+        <span className="text-a20" style={{ lineHeight: 1 }}>⚡</span>
         {!collapsed && (
           <div>
-            <div style={{ fontSize: '0.6rem', color: UP.caption, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', lineHeight: 1 }}>
+            <div className="text-a10" style={{ color: UP.caption, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', lineHeight: 1 }}>
               Admin OS
             </div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: UP.navy, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+            <div className="text-a16" style={{ fontWeight: 800, color: UP.navy, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
               CATCH
             </div>
           </div>
@@ -198,7 +198,7 @@ export default function AdminSidebar({ active, onChange, collapsed = false }: Pr
                     transition: 'background 0.12s',
                   }}
                 >
-                  <span style={{ fontSize: '1.05rem', opacity: isActive ? 1 : 0.78 }}>{item.icon}</span>
+                  <span className="text-a16" style={{ opacity: isActive ? 1 : 0.78 }}>{item.icon}</span>
                   {/* 활성 좌측 바 */}
                   {isActive && (
                     <span style={{ position: 'absolute', left: -8, top: 8, bottom: 8, width: 3, borderRadius: 999, background: UP.brand }} />
@@ -236,7 +236,7 @@ export default function AdminSidebar({ active, onChange, collapsed = false }: Pr
                     borderLeft: isActive ? `3px solid ${UP.brand}` : '3px solid transparent',
                   }}
                 >
-                  <span style={{ fontSize: '0.98rem', flexShrink: 0 }}>{group.singleIcon ?? group.groupIcon}</span>
+                  <span className="text-a16" style={{ flexShrink: 0 }}>{group.singleIcon ?? group.groupIcon}</span>
                   <span style={{ flex: 1 }}>{group.groupLabel}</span>
                 </button>
               )
@@ -247,18 +247,16 @@ export default function AdminSidebar({ active, onChange, collapsed = false }: Pr
               <div key={group.groupKey} style={{ marginBottom: 4 }}>
                 <button
                   onClick={() => toggleGroup(group.groupKey)}
-                  style={{
+                  className="text-a10" style={{
                     display: 'flex', alignItems: 'center', gap: 8, width: '100%',
                     padding: '8px 12px', borderRadius: 8, border: 'none',
-                    background: 'transparent', color: UP.caption,
-                    fontSize: '0.66rem', fontWeight: 800, cursor: 'pointer',
+                    background: 'transparent', color: UP.caption, fontWeight: 800, cursor: 'pointer',
                     textAlign: 'left', letterSpacing: '0.07em', textTransform: 'uppercase',
                   }}
                 >
-                  <span style={{ fontSize: '0.72rem' }}>{group.groupIcon}</span>
+                  <span className="text-a11">{group.groupIcon}</span>
                   <span style={{ flex: 1 }}>{group.groupLabel}</span>
-                  <span style={{
-                    fontSize: '0.6rem', transition: 'transform 0.2s',
+                  <span className="text-a10" style={{ transition: 'transform 0.2s',
                     transform: isOpen ? 'rotate(180deg)' : 'none',
                     display: 'inline-block', color: UP.caption,
                   }}>▾</span>
@@ -283,14 +281,14 @@ export default function AdminSidebar({ active, onChange, collapsed = false }: Pr
                             borderLeft: isActive ? `3px solid ${UP.brand}` : '3px solid transparent',
                           }}
                         >
-                          <span style={{ fontSize: '0.82rem', flexShrink: 0 }}>{item.icon}</span>
+                          <span className="text-a13" style={{ flexShrink: 0 }}>{item.icon}</span>
                           <span style={{ flex: 1 }}>{item.label}</span>
 
                           {/* 문의 대기 배지 */}
                           {item.badge && waitingCount > 0 && (
-                            <span style={{
+                            <span className="text-a10" style={{
                               background: UP.amber, color: '#fff', borderRadius: 999,
-                              padding: '1px 6px', fontSize: '0.62rem', fontWeight: 800, ...numeric,
+                              padding: '1px 6px', fontWeight: 800, ...numeric,
                             }}>
                               {waitingCount}
                             </span>

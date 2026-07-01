@@ -49,16 +49,14 @@ export default function DashboardSubTabs({ activeTab, onTabChange }: Props) {
               transition: 'color 0.12s',
             }}
           >
-            <span style={{ fontSize: '0.95rem' }}>{tab.icon}</span>
-            <span style={{
-              fontSize: '0.75rem',
+            <span className="text-a15">{tab.icon}</span>
+            <span className="text-a12" style={{
               fontWeight: isActive ? 700 : 500,
               lineHeight: 1,
             }}>
               {tab.label}
             </span>
-            <span style={{
-              fontSize: '0.6rem',
+            <span className="text-a10" style={{
               color: isActive ? UP.brand : UP.caption,
               lineHeight: 1,
             }}>

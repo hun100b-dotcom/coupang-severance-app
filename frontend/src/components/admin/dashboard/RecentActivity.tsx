@@ -46,8 +46,8 @@ export default function RecentActivity({ inquiries }: Props) {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div>
-          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: UP.navy, margin: 0 }}>최근 문의 활동</p>
-          <p style={{ fontSize: '0.7rem', color: UP.caption, marginTop: 2 }}>최근 8건</p>
+          <p className="text-a14" style={{ fontWeight: 700, color: UP.navy, margin: 0 }}>최근 문의 활동</p>
+          <p className="text-a11" style={{ color: UP.caption, marginTop: 2 }}>최근 8건</p>
         </div>
         {inquiries.length > 0 && (
           <div style={{ display: 'flex', gap: 6 }}>
@@ -55,8 +55,7 @@ export default function RecentActivity({ inquiries }: Props) {
               const count = inquiries.filter(i => i.status === s).length
               const meta = STATUS_META[s]
               return count > 0 ? (
-                <span key={s} style={{
-                  fontSize: '0.65rem',
+                <span key={s} className="text-a10" style={{
                   fontWeight: 700,
                   color: meta.color,
                   background: meta.bg,
@@ -74,8 +73,8 @@ export default function RecentActivity({ inquiries }: Props) {
 
       {inquiries.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '24px 0' }}>
-          <p style={{ fontSize: '1.5rem', marginBottom: 6 }}>📭</p>
-          <p style={{ fontSize: '0.82rem', color: UP.sub }}>문의 없음</p>
+          <p className="text-a24" style={{ marginBottom: 6 }}>📭</p>
+          <p className="text-a13" style={{ color: UP.sub }}>문의 없음</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -107,8 +106,7 @@ export default function RecentActivity({ inquiries }: Props) {
                 {/* 콘텐츠 */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
-                    <span style={{
-                      fontSize: '0.6rem', fontWeight: 700,
+                    <span className="text-a10" style={{ fontWeight: 700,
                       color: catColor,
                       background: `${catColor}14`,
                       padding: '1px 5px',
@@ -116,8 +114,7 @@ export default function RecentActivity({ inquiries }: Props) {
                     }}>
                       {inq.category}
                     </span>
-                    <span style={{
-                      fontSize: '0.6rem', fontWeight: 700,
+                    <span className="text-a10" style={{ fontWeight: 700,
                       color: status.color,
                       background: status.bg,
                       border: `1px solid ${status.border}`,
@@ -127,8 +124,7 @@ export default function RecentActivity({ inquiries }: Props) {
                       {status.label}
                     </span>
                   </div>
-                  <p style={{
-                    fontSize: '0.82rem',
+                  <p className="text-a13" style={{
                     color: UP.body,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -139,7 +135,7 @@ export default function RecentActivity({ inquiries }: Props) {
                   </p>
                 </div>
 
-                <span style={{ fontSize: '0.68rem', color: UP.caption, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                <span className="text-a11" style={{ color: UP.caption, flexShrink: 0, whiteSpace: 'nowrap' }}>
                   {fmtRelative(inq.created_at)}
                 </span>
               </div>
