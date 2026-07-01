@@ -43,10 +43,19 @@
 **→ P3-c 결과: 어드민 전역 인라인 fontSize 스윕 완결.** `text-a*` 사용 521개(어드민). 전 커밋 회귀 0px. **최종 잔여 인라인 fontSize는 전부 의도적**: ⓐclamp() 반응형 헤딩/KPI ⓑ차트 마이크로라벨 0.4/0.45rem(a10=10px보다 작아 확대 시 차트 레이아웃 위험) ⓒ공유 CSSProperties 상수(DRY) ⓓrecharts contentStyle/wrapperStyle/tick(숫자·대문자S) ⓔ**BulkActionBar(대량선택 보호 — 무변경)**.
 - ⚠️ 측정 노이즈: `/home` 16px·56px **개수** 지터가 첫로드 레이스로 가끔 뜸(picks는 항상 일치=폰트변화 아님). FAIL 뜨면 **재측정 1회**로 확정(재측정하면 baseline과 일치). picks가 진실 소스.
 
-### P4 — 정합 (기능)
-- **공지**: `NoticesMenu` 쓰기를 Supabase 직접(RLS is_admin 의존)에서 **백엔드 경로**로 이관(게이트 정합). ※현재도 에러 표시는 됨(무음 아님).
-- **문의**: 프론트 list `ilike` 미새니타이즈 vs 백엔드 `_sanitize_ilike` **필터 경로 일원화 확인**.
-- ※지원자 대량선택·서버로그는 **이미 동작**(audit 정정) — 건드리지 말 것.
+### ✅ P4 — 정합 (기능) 완료 (커밋 `28cc2a2`)
+- **공지 백엔드 이관**: backend `admin.py`에 GET/POST/PATCH/DELETE `/admin/notices` 신설(X-Admin-Token 게이트 + service-role + `_write_audit`, 없는 id는 404). `api.ts` getAdminNotices/createNotice/updateNotice/deleteNotice 추가. `NoticesMenu`가 이를 사용(supabase 클라이언트 제거, 실패는 HTTP 에러→표시). 공개 배너 `useNotices`는 supabase 유지.
+- **문의 필터 일원화**: 실측 결과 "이원화"의 실체 = 프론트 `getAdminInquiries`가 supabase 직접 ilike(원형주입+RLS), 백엔드 `/admin/inquiries`는 고아. → 프론트를 백엔드 경로로 전환 + 백엔드 `list_inquiries` search를 페이지내 파이썬 substring → 서버측 `_sanitize_ilike`+`or(title/content/category ilike)`로 보강(회원·지원자와 동일 패턴).
+- ⚠️ 백엔드 엔드포인트는 **main 병합 시 Render 배포**(프론트 Vercel과 동시). 배포순서 지연 시 어드민 공지/문의 일시 404 가능(어드민 한정, 수용).
+- ※지원자 대량선택·서버로그는 이미 동작 — 무변경.
+
+### ✅ P5 — 마감 (진행분 커밋 `5d8fc60`)
+- ✅ dead export `SUPER_ADMIN_EMAIL` 제거(라이브 참조 0).
+- ✅ 차트 무지개 팔레트 정돈: `target/*` 4파일 리터럴(purple/pink/teal/gold)+슬레이트 회색 → `CHART_SERIES`+UP 토큰, 카드 radius 12→16. SecurityMenu 역할뱃지 `#e11d48`→`UP.danger`. ※TargetMenu `C` 팔레트는 이미 UP 토큰(값은 규정색)이라 무변경.
+- ✅ 브랜드 정체성색(google/kakao/github, Discord blurple)은 식별 목적이라 의도적 유지(주석 명시).
+- ✅ 4상태 전수: 전 메뉴 로딩/빈/에러/성공 구비 확인(빈상태는 InquiryTable 등 하위서 처리).
+- ✅ 접근성 AA(색대비 실측): 필수 텍스트 navy 15.6·body 11·sub 6.63·strong 5.41·green 5.48·amber 5.02·danger 4.96 = 본문 AA(≥4.5). brand 3.71·caption 3.12 = 큰텍스트/UI AA(≥3). caption-on-sunken 2.85은 토큰상 "비필수" 전용.
+- ⏳ 잔여 follow-up(회귀위험 회피로 병합 후 별도): 아이콘전용 버튼 aria-label 전수·키보드 focus-visible 링(어드민 인라인 outline:none 다수) — 별도 접근성 태스크 권장.
 
 ### P5 — 마감
 - 잔여 하드코딩 hex(어드민은 `MembersMenu`의 `#FEE500` 카카오톤 정도) 토큰화.
