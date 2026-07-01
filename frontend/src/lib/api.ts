@@ -719,29 +719,20 @@ export const getTargetInsights = async () => {
   }
 }
 
-// Inquiries — FastAPI 대신 Supabase 직접 쿼리 (백엔드 의존 제거)
+// Inquiries — 백엔드 경로(경로 B)로 일원화 (P4)
+//   과거: 여기서 supabase 직접 ilike(검색어 원형 주입 + RLS 의존)로 조회했고, 쓰기(patch/bulk)만
+//         백엔드였다 → 읽기·쓰기 경로 이원화 + 검색어 미새니타이즈.
+//   현재: 백엔드 /admin/inquiries 가 X-Admin-Token 게이트 + service-role 로
+//         status/category/search(서버측 sanitized ilike, 전 행 대상)를 처리 → 경로 단일화.
 export const getAdminInquiries = async (params: {
   page?: number; limit?: number; status?: string; category?: string; search?: string
 }) => {
   const { page = 1, limit = 20, status = '', category = '', search = '' } = params
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = supabase!
-    .from('inquiries')
-    .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .range((page - 1) * limit, page * limit - 1)
-
-  if (status)   query = query.eq('status', status)
-  if (category) query = query.eq('category', category)
-  // 내용·제목·카테고리 중 하나라도 검색어를 포함하면 반환
-  if (search)   query = query.or(
-    `content.ilike.%${search}%,title.ilike.%${search}%,category.ilike.%${search}%`
-  )
-
-  const { data, count, error } = await query
-  if (error) throw new Error(error.message)
-  return { inquiries: data ?? [], total: count ?? 0 }
+  const res = await api.get('/admin/inquiries', {
+    params: { page, limit, status, category, search },
+    headers: H(),
+  })
+  return { inquiries: res.data?.inquiries ?? [], total: res.data?.total ?? 0 }
 }
 
 // ── 문의 상태/답변 변경 — 백엔드 정상 경로(경로 B) 사용 ─────────────────
@@ -760,6 +751,25 @@ export const patchInquiryAnswer = (id: string | number, answer: string) =>
 // 백엔드 BulkStatusPayload.ids 는 list[str] 이므로 문자열로 변환해 전송
 export const bulkInquiryStatus = (ids: Array<string | number>, status: string) =>
   api.post('/admin/inquiries/bulk-status', { ids: ids.map(String), status }, { headers: H() }).then(r => r.data)
+
+// ── Notices — 백엔드 경로(경로 B)로 이관 (P4) ─────────────────────────
+//   과거: NoticesMenu 가 supabase 직접 CRUD(RLS is_admin 의존) → 미등록/비-admin 은 쓰기 0행,
+//         비활성 공지 조회 누락 가능. 현재: X-Admin-Token 게이트 + service-role 로 통일.
+//   조회는 관리 화면 전용(비활성 포함). 공개 배너(useNotices)는 별개로 supabase 유지.
+export const getAdminNotices = () =>
+  api.get('/admin/notices', { headers: H() }).then(r => r.data?.notices ?? [])
+
+export const createNotice = (body: { title: string; content: string; priority: number; is_active: boolean }) =>
+  api.post('/admin/notices', body, { headers: H() }).then(r => r.data)
+
+// 부분 수정 — 전달한 필드만 반영(토글은 { is_active } 만 전송)
+export const updateNotice = (
+  id: string | number,
+  patch: Partial<{ title: string; content: string; priority: number; is_active: boolean }>,
+) => api.patch(`/admin/notices/${id}`, patch, { headers: H() }).then(r => r.data)
+
+export const deleteNotice = (id: string | number) =>
+  api.delete(`/admin/notices/${id}`, { headers: H() }).then(r => r.data)
 
 // Templates — 백엔드 경로(경로 B)로 통일.
 // 조회/생성/삭제를 모두 백엔드(service-role)로 맞춰, inquiry_templates RLS(is_admin)

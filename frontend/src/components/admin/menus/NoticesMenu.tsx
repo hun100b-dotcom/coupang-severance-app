@@ -4,7 +4,7 @@
 // - 활성/비활성 토글, 우선순위 설정, 삭제 기능 포함
 
 import { useEffect, useState } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { getAdminNotices, createNotice, updateNotice, deleteNotice } from '../../../lib/api'
 import type { Notice } from '../../../types/supabase'
 import { UP, RADIUS, btnPrimary, btnSecondary, badge } from '../shared/adminTheme'
 
@@ -28,17 +28,17 @@ export default function NoticesMenu() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Supabase에서 공지사항 전체 목록 조회 (우선순위 내림차순)
+  // 공지 전체 목록 조회 — 백엔드 경로(service-role, 비활성 공지 포함, 우선순위 내림차순)
   const fetchNotices = async () => {
-    if (!supabase) return
     setLoading(true)
-    const { data, error } = await supabase
-      .from('notices')
-      .select('*')
-      .order('priority', { ascending: false })
-    if (error) setError(error.message)
-    setNotices(data ?? [])
-    setLoading(false)
+    try {
+      const rows = await getAdminNotices()
+      setNotices(rows)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : '공지 목록을 불러오지 못했습니다.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { fetchNotices() }, [])
@@ -67,36 +67,27 @@ export default function NoticesMenu() {
   // 모달 닫기 (취소/오버레이) — 닫을 때 에러도 함께 비워 유령 배너 방지
   const closeModal = () => { setModalOpen(false); setError(null) }
 
-  // 공지 저장 (추가 or 수정)
-  // ★ .select() 필수: update/delete 는 RLS USING 으로 권한 없는 행이 "안 보임"
-  //   처리되어 error=null + 0행으로 조용히 통과(거짓 성공)한다. insert 는 WITH CHECK
-  //   위반 시 error 를 던지므로 throw 로 잡힌다. 두 경우 모두 사용자에게 표시.
+  // 공지 저장 (추가 or 수정) — 백엔드 경로(service-role). 실패 시 HTTP 에러를 throw 하므로
+  //   catch 로 잡아 사용자에게 표시(과거 RLS 무음 거짓성공 문제 해소). 존재하지 않는 id 는 404.
   const handleSave = async () => {
     // 제목 또는 본문 중 하나라도 비어있으면 저장 차단
-    if (!supabase || !form.title.trim() || !form.content.trim()) return
+    if (!form.title.trim() || !form.content.trim()) return
     setSaving(true); setError(null)
     try {
       if (editTarget) {
-        // 기존 공지 수정
-        const { data, error } = await supabase.from('notices').update({
+        await updateNotice(editTarget.id, {
           title: form.title.trim(),
           content: form.content.trim(),
           priority: form.priority,
           is_active: form.is_active,
-          updated_at: new Date().toISOString(),
-        }).eq('id', editTarget.id).select('id')
-        if (error) throw error
-        if (!data || data.length === 0) throw new Error('변경된 행이 없습니다 — 관리자 권한(RLS)을 확인하세요.')
+        })
       } else {
-        // 새 공지 추가
-        const { data, error } = await supabase.from('notices').insert({
+        await createNotice({
           title: form.title.trim(),
           content: form.content.trim(),
           priority: form.priority,
           is_active: form.is_active,
-        }).select('id')
-        if (error) throw error
-        if (!data || data.length === 0) throw new Error('추가된 행이 없습니다 — 관리자 권한(RLS)을 확인하세요.')
+        })
       }
       setModalOpen(false)
       fetchNotices()
@@ -108,34 +99,30 @@ export default function NoticesMenu() {
     }
   }
 
-  // 활성/비활성 토글
+  // 활성/비활성 토글 — is_active 만 부분 수정
   const handleToggleActive = async (n: Notice) => {
-    if (!supabase) return
     setError(null)
-    const { data, error } = await supabase.from('notices')
-      .update({ is_active: !n.is_active, updated_at: new Date().toISOString() })
-      .eq('id', n.id).select('id')
-    if (error || !data || data.length === 0) {
-      setError(error?.message ?? '상태 변경 실패 — 관리자 권한(RLS)을 확인하세요.')
+    try {
+      await updateNotice(n.id, { is_active: !n.is_active })
+      fetchNotices()
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : '상태 변경에 실패했습니다.')
       fetchNotices()  // 화면을 DB 진실과 재동기화 (옛 상태 잔류 방지)
-      return
     }
-    fetchNotices()
   }
 
   // 공지 삭제 (제목 앞 20자로 확인 팝업)
   const handleDelete = async (n: Notice) => {
     const preview = (n.title || n.content).slice(0, 20)
     if (!window.confirm(`"${preview}..." 공지를 삭제할까요?`)) return
-    if (!supabase) return
     setError(null)
-    const { data, error } = await supabase.from('notices').delete().eq('id', n.id).select('id')
-    if (error || !data || data.length === 0) {
-      setError(error?.message ?? '삭제 실패 — 관리자 권한(RLS)을 확인하세요.')
+    try {
+      await deleteNotice(n.id)
+      fetchNotices()
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : '삭제에 실패했습니다.')
       fetchNotices()  // 화면을 DB 진실과 재동기화
-      return
     }
-    fetchNotices()
   }
 
   // ── 공통 셀 스타일 (어두운 테마) ──────────────────────────────────────────

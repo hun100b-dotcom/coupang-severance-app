@@ -685,19 +685,21 @@ def list_inquiries(
         params["status"] = f"eq.{status}"
     if category:
         params["category"] = f"eq.{category}"
+    # 검색 일원화(P4): 과거엔 "페이지 내 파이썬 substring" 이라 2페이지 이후 매칭을 놓쳤고,
+    #   프론트는 별도로 supabase 직접 ilike(원형 주입)를 써 경로가 이원화돼 있었다.
+    #   → 회원/지원자와 동일하게 서버측 sanitized ilike 로 통일(전 행 대상, 메타문자 제거).
+    if search.strip():
+        safe = _sanitize_ilike(search.strip())
+        if safe:
+            params["or"] = (
+                f"(title.ilike.*{safe}*,content.ilike.*{safe}*,category.ilike.*{safe}*)"
+            )
 
     res = _sb_get("inquiries", params, count=True)
     # 206 Partial Content도 정상 응답으로 처리 (PostgREST count=exact 시 발생 가능)
     rows  = res.json() if res.status_code in (200, 206) else []
     total = _count_header(res)
     if total == 0:
-        total = len(rows)
-
-    if search:
-        rows = [r for r in rows if
-                search in (r.get("content") or "") or
-                search in (r.get("title") or "") or
-                search in (r.get("category") or "")]
         total = len(rows)
 
     return {"inquiries": rows, "total": total}
@@ -1476,6 +1478,106 @@ def list_audit_logs(
     total = _count_header(res)
 
     return {"logs": rows, "total": total}
+
+
+# ── Notices CMS (P4 백엔드 경로 이관) ─────────────────────
+#   과거: NoticesMenu 가 supabase 직접 CRUD(RLS is_admin 의존) → 미등록/비-admin 세션은
+#         쓰기 0행(RLS USING 이 행을 숨겨 "거짓 성공"). 조회도 anon RLS 라 비활성 공지 누락 가능.
+#   현재: 지원자/문의/템플릿과 동일하게 X-Admin-Token 게이트 + service-role 로 통일.
+#         RLS 와 무관하게 항상 반영되고, 실패는 HTTP 에러로 프론트에 표시된다.
+
+@router.get("/admin/notices")
+def list_notices(x_admin_token: Optional[str] = Header(default=None)):
+    _check_admin(x_admin_token)
+    # 우선순위 내림차순 — 비활성 공지도 포함(관리 화면은 전량 노출)
+    res = _sb_get("notices", {"select": "*", "order": "priority.desc"})
+    rows = res.json() if res.status_code in (200, 206) else []
+    return {"notices": rows}
+
+
+class NoticeCreatePayload(BaseModel):
+    title: str
+    content: str
+    priority: int = 0
+    is_active: bool = True
+
+
+class NoticeUpdatePayload(BaseModel):
+    # 부분 수정 허용 — 전달된 필드만 반영(토글은 is_active 만 보냄)
+    title: Optional[str] = None
+    content: Optional[str] = None
+    priority: Optional[int] = None
+    is_active: Optional[bool] = None
+
+
+@router.post("/admin/notices")
+def create_notice(
+    payload: NoticeCreatePayload,
+    request: Request,
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    _check_admin(x_admin_token)
+    res = _sb_post("notices", {
+        "title": payload.title.strip(),
+        "content": payload.content.strip(),
+        "priority": payload.priority,
+        "is_active": payload.is_active,
+    })
+    if res.status_code not in (200, 201):
+        raise HTTPException(status_code=res.status_code, detail="공지 추가 실패")
+    created = (res.json() or [{}])[0]
+    _write_audit(x_admin_token or "admin", "notice.create", "notice", created.get("id"),
+                 after_val={"title": payload.title, "priority": payload.priority,
+                            "is_active": payload.is_active},
+                 ip=request.client.host if request.client else None)
+    return {"ok": True, "notice": created}
+
+
+@router.patch("/admin/notices/{notice_id}")
+def update_notice(
+    notice_id: str,
+    payload: NoticeUpdatePayload,
+    request: Request,
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    _check_admin(x_admin_token)
+    # 전달된 필드만 부분 반영 + updated_at 갱신
+    patch: dict = {"updated_at": datetime.utcnow().isoformat()}
+    if payload.title is not None:     patch["title"] = payload.title.strip()
+    if payload.content is not None:   patch["content"] = payload.content.strip()
+    if payload.priority is not None:  patch["priority"] = payload.priority
+    if payload.is_active is not None: patch["is_active"] = payload.is_active
+
+    res = _sb_patch("notices", {"id": f"eq.{notice_id}"}, patch)
+    if res.status_code not in (200, 204):
+        raise HTTPException(status_code=res.status_code, detail="공지 수정 실패")
+    # service-role 라 RLS 무관하게 반영되지만, 존재하지 않는 id 는 0행 → 명시적 실패
+    updated = res.json() if res.status_code == 200 else []
+    if not updated:
+        raise HTTPException(status_code=404, detail="대상 공지를 찾을 수 없습니다.")
+    _write_audit(x_admin_token or "admin", "notice.update", "notice", notice_id,
+                 after_val={k: v for k, v in patch.items() if k != "updated_at"},
+                 ip=request.client.host if request.client else None)
+    return {"ok": True, "notice": updated[0]}
+
+
+@router.delete("/admin/notices/{notice_id}")
+def delete_notice(
+    notice_id: str,
+    request: Request,
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    _check_admin(x_admin_token)
+    res = _sb_delete("notices", {"id": f"eq.{notice_id}"})
+    if res.status_code not in (200, 204):
+        raise HTTPException(status_code=res.status_code, detail="공지 삭제 실패")
+    deleted = res.json() if res.status_code == 200 else []
+    if not deleted:
+        raise HTTPException(status_code=404, detail="대상 공지를 찾을 수 없습니다.")
+    _write_audit(x_admin_token or "admin", "notice.delete", "notice", notice_id,
+                 before_val={"title": (deleted[0] or {}).get("title")},
+                 ip=request.client.host if request.client else None)
+    return {"ok": True}
 
 
 # 클라이언트(프론트)에서 발생하는 행동(접속/조회/공지·계정 CRUD 등)을 감사로그에 기록.
