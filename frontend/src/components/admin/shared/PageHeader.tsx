@@ -39,12 +39,11 @@ export default function PageHeader({ title, subtitle, icon, actions }: Props) {
             width: 4, height: 18, borderRadius: 9999,
             background: UP.brand, flexShrink: 0,
           }} />
-          {icon && <span style={{ fontSize: '1.2rem' }}>{icon}</span>}
+          {icon && <span className="text-a20">{icon}</span>}
           {title}
         </h1>
         {subtitle && (
-          <p style={{
-            fontSize: '0.8rem',
+          <p className="text-a13" style={{
             color: UP.sub,
             marginTop: 5,
             marginBottom: 0,
