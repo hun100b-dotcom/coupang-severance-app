@@ -45,7 +45,7 @@ const TT: React.CSSProperties = {
 }
 
 const Empty = () => (
-  <div style={{ textAlign: 'center', padding: '28px 0', color: UP.sub, fontSize: '0.82rem' }}>
+  <div className="text-a13" style={{ textAlign: 'center', padding: '28px 0', color: UP.sub, }}>
     데이터 없음
   </div>
 )
@@ -79,11 +79,11 @@ export default function TargetMenu() {
     <div style={{ padding: 20 }}>
       <div style={{ ...CARD, background: UP.dangerBg, border: `1px solid ${UP.dangerLine}` }}>
         <div style={{ fontWeight: 700, color: UP.danger, marginBottom: 8 }}>타겟 인사이트 로드 실패</div>
-        <div style={{ fontSize: '0.82rem', color: UP.sub, marginBottom: 16 }}>{error || '데이터를 불러오지 못했습니다.'}</div>
-        <button onClick={load} style={{
+        <div className="text-a13" style={{ color: UP.sub, marginBottom: 16 }}>{error || '데이터를 불러오지 못했습니다.'}</div>
+        <button onClick={load} className="text-a13" style={{
           padding: '8px 24px', borderRadius: 10, border: 'none',
           background: `linear-gradient(135deg, ${UP.brand}, ${UP.strong})`,
-          color: '#fff', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer',
+          color: '#fff', fontWeight: 700, cursor: 'pointer',
         }}>재시도</button>
       </div>
     </div>
@@ -130,7 +130,7 @@ export default function TargetMenu() {
             fontSize: 'clamp(1.1rem, 3.5vw, 1.4rem)', fontWeight: 900, margin: 0,
             color: UP.navy,
           }}>Target Intelligence</h2>
-          <p style={{ fontSize: '0.7rem', color: UP.caption, marginTop: 2 }}>
+          <p className="text-a11" style={{ color: UP.caption, marginTop: 2 }}>
             사용자 인사이트 &middot; 수익 분석 &middot; 세그먼트 분류
           </p>
         </div>
@@ -152,10 +152,10 @@ export default function TargetMenu() {
             border: `1px solid ${m.c}22`, borderRadius: 14,
             padding: 'clamp(10px, 2vw, 16px)', position: 'relative', overflow: 'hidden',
           }}>
-            <div style={{ position: 'absolute', top: -6, right: -4, fontSize: '1.8rem', opacity: 0.06 }}>{m.i}</div>
-            <div style={{ fontSize: '0.58rem', color: UP.caption, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5 }}>{m.l}</div>
+            <div className="text-a28" style={{ position: 'absolute', top: -6, right: -4, opacity: 0.06 }}>{m.i}</div>
+            <div className="text-a10" style={{ color: UP.caption, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5 }}>{m.l}</div>
             <div style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.25rem)', fontWeight: 800, color: UP.navy, lineHeight: 1.1 }}>{m.v}</div>
-            <div style={{ fontSize: '0.58rem', color: `${m.c}bb`, marginTop: 3, fontWeight: 600 }}>{m.s}</div>
+            <div className="text-a10" style={{ color: `${m.c}bb`, marginTop: 3, fontWeight: 600 }}>{m.s}</div>
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${m.c}, transparent)` }} />
           </div>
         ))}
@@ -164,8 +164,8 @@ export default function TargetMenu() {
       {/* ═══ ACQUISITION FUNNEL ═══════════════════════════ */}
       <div style={{ ...CARD, marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 14 }}>
-          <span style={{ fontSize: '0.82rem', fontWeight: 700, color: UP.body }}>Acquisition Funnel</span>
-          <span style={{ fontSize: '0.65rem', color: UP.caption }}>방문 → 가입 → 계산 → 적격</span>
+          <span className="text-a13" style={{ fontWeight: 700, color: UP.body }}>Acquisition Funnel</span>
+          <span className="text-a10" style={{ color: UP.caption }}>방문 → 가입 → 계산 → 적격</span>
         </div>
         {funnelSteps.map((step, i) => {
           const pct = step.value / maxFunnel * 100
@@ -174,12 +174,11 @@ export default function TargetMenu() {
           return (
             <div key={step.label} style={{ marginBottom: i < funnelSteps.length - 1 ? 10 : 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <span style={{ fontSize: '0.73rem', color: UP.sub, fontWeight: 600 }}>{step.label}</span>
+                <span className="text-a12" style={{ color: UP.sub, fontWeight: 600 }}>{step.label}</span>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
-                  <span style={{ fontSize: '0.92rem', fontWeight: 800, color: UP.navy }}>{step.value.toLocaleString()}</span>
+                  <span className="text-a15" style={{ fontWeight: 800, color: UP.navy }}>{step.value.toLocaleString()}</span>
                   {conv && (
-                    <span style={{
-                      fontSize: '0.62rem', fontWeight: 700, color: step.color,
+                    <span className="text-a10" style={{ fontWeight: 700, color: step.color,
                       background: `${step.color}15`, padding: '1px 7px', borderRadius: 6,
                     }}>{conv}%</span>
                   )}
@@ -202,20 +201,20 @@ export default function TargetMenu() {
 
         {/* Revenue Intelligence */}
         <div style={CARD}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: UP.body, marginBottom: 2 }}>Revenue Intelligence</div>
-          <div style={{ fontSize: '0.65rem', color: UP.caption, marginBottom: 16 }}>퇴직금 규모별 분석</div>
+          <div className="text-a13" style={{ fontWeight: 700, color: UP.body, marginBottom: 2 }}>Revenue Intelligence</div>
+          <div className="text-a10" style={{ color: UP.caption, marginBottom: 16 }}>퇴직금 규모별 분석</div>
 
           <div style={{ display: 'flex', gap: 20, marginBottom: 18, flexWrap: 'wrap' }}>
             <div>
-              <div style={{ fontSize: '0.6rem', color: UP.sub, fontWeight: 600, marginBottom: 2 }}>총 적격 퇴직금</div>
+              <div className="text-a10" style={{ color: UP.sub, fontWeight: 600, marginBottom: 2 }}>총 적격 퇴직금</div>
               <div style={{ fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', fontWeight: 900, color: C.gold }}>{fmtW(revenue.total_eligible_severance)}</div>
             </div>
             <div>
-              <div style={{ fontSize: '0.6rem', color: UP.sub, fontWeight: 600, marginBottom: 2 }}>고가치 유저 (300만+)</div>
+              <div className="text-a10" style={{ color: UP.sub, fontWeight: 600, marginBottom: 2 }}>고가치 유저 (300만+)</div>
               <div style={{ fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', fontWeight: 900, color: C.purple }}>{revenue.high_value_count}명</div>
             </div>
             <div>
-              <div style={{ fontSize: '0.6rem', color: UP.sub, fontWeight: 600, marginBottom: 2 }}>평균 퇴직금</div>
+              <div className="text-a10" style={{ color: UP.sub, fontWeight: 600, marginBottom: 2 }}>평균 퇴직금</div>
               <div style={{ fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', fontWeight: 900, color: C.green }}>{fmtW(revenue.avg_severance)}</div>
             </div>
           </div>
@@ -223,8 +222,8 @@ export default function TargetMenu() {
           {revenue.segments.map((seg, i) => (
             <div key={seg.label} style={{ marginBottom: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                <span style={{ fontSize: '0.7rem', color: UP.sub, fontWeight: 600 }}>{seg.label}</span>
-                <span style={{ fontSize: '0.7rem', color: UP.body, fontWeight: 700 }}>{seg.count}건 &middot; {fmtW(seg.total)}</span>
+                <span className="text-a11" style={{ color: UP.sub, fontWeight: 600 }}>{seg.label}</span>
+                <span className="text-a11" style={{ color: UP.body, fontWeight: 700 }}>{seg.count}건 &middot; {fmtW(seg.total)}</span>
               </div>
               <div style={{ height: 8, background: UP.sunken, borderRadius: 4, overflow: 'hidden' }}>
                 <div style={{
@@ -239,8 +238,8 @@ export default function TargetMenu() {
 
         {/* Company Landscape */}
         <div style={CARD}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: UP.body, marginBottom: 2 }}>Company Landscape</div>
-          <div style={{ fontSize: '0.65rem', color: UP.caption, marginBottom: 14 }}>사업장별 이용 분포 &middot; 총 {companies.length}개사</div>
+          <div className="text-a13" style={{ fontWeight: 700, color: UP.body, marginBottom: 2 }}>Company Landscape</div>
+          <div className="text-a10" style={{ color: UP.caption, marginBottom: 14 }}>사업장별 이용 분포 &middot; 총 {companies.length}개사</div>
           {companies.length > 0 ? (<>
             <ResponsiveContainer width="100%" height={180}>
               <PieChart>
@@ -257,14 +256,14 @@ export default function TargetMenu() {
                 const maxC = companies[0]?.count || 1
                 return (
                   <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-                    <span style={{ fontSize: '0.62rem', color: UP.caption, width: 14, textAlign: 'right' }}>{i + 1}</span>
+                    <span className="text-a10" style={{ color: UP.caption, width: 14, textAlign: 'right' }}>{i + 1}</span>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: PIE[i % PIE.length], flexShrink: 0 }} />
-                    <span style={{ flex: 1, fontSize: '0.7rem', color: UP.sub, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
+                    <span className="text-a11" style={{ flex: 1, color: UP.sub, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
                     <div style={{ width: 60, height: 4, background: UP.sunken, borderRadius: 2, overflow: 'hidden', flexShrink: 0 }}>
                       <div style={{ width: `${c.count / maxC * 100}%`, height: '100%', background: PIE[i % PIE.length], borderRadius: 2 }} />
                     </div>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: PIE[i % PIE.length], width: 32, textAlign: 'right' }}>{c.count}</span>
-                    <span style={{ fontSize: '0.58rem', color: UP.caption, width: 32, textAlign: 'right' }}>{c.pct}%</span>
+                    <span className="text-a10" style={{ fontWeight: 700, color: PIE[i % PIE.length], width: 32, textAlign: 'right' }}>{c.count}</span>
+                    <span className="text-a10" style={{ color: UP.caption, width: 32, textAlign: 'right' }}>{c.pct}%</span>
                   </div>
                 )
               })}
@@ -276,7 +275,7 @@ export default function TargetMenu() {
       {/* ═══ SEGMENT ANALYSIS (2-col) ════════════════════ */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <div style={CARD}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: UP.body, marginBottom: 12 }}>근무기간별 분포</div>
+          <div className="text-a13" style={{ fontWeight: 700, color: UP.body, marginBottom: 12 }}>근무기간별 분포</div>
           {segments.by_duration.some(d => d.count > 0) ? (
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={segments.by_duration} layout="vertical" margin={{ top: 0, right: 16, left: 56, bottom: 0 }}>
@@ -292,7 +291,7 @@ export default function TargetMenu() {
           ) : <Empty />}
         </div>
         <div style={CARD}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: UP.body, marginBottom: 12 }}>급여수준별 분포</div>
+          <div className="text-a13" style={{ fontWeight: 700, color: UP.body, marginBottom: 12 }}>급여수준별 분포</div>
           {segments.by_wage.some(d => d.count > 0) ? (
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={segments.by_wage} layout="vertical" margin={{ top: 0, right: 16, left: 62, bottom: 0 }}>
@@ -312,8 +311,8 @@ export default function TargetMenu() {
       {/* ═══ CROSS-SEGMENT HEATMAP ═══════════════════════ */}
       <div style={{ ...CARD, marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 16 }}>
-          <span style={{ fontSize: '0.82rem', fontWeight: 700, color: UP.body }}>Cross-Segment Matrix</span>
-          <span style={{ fontSize: '0.65rem', color: UP.caption }}>근무기간 x 급여수준</span>
+          <span className="text-a13" style={{ fontWeight: 700, color: UP.body }}>Cross-Segment Matrix</span>
+          <span className="text-a10" style={{ color: UP.caption }}>근무기간 x 급여수준</span>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <div style={{
@@ -324,18 +323,17 @@ export default function TargetMenu() {
             {/* Header */}
             <div />
             {segments.wage_labels.map(l => (
-              <div key={l} style={{ textAlign: 'center', fontSize: '0.62rem', color: UP.caption, padding: '6px 2px', fontWeight: 600 }}>{l}</div>
+              <div key={l} className="text-a10" style={{ textAlign: 'center', color: UP.caption, padding: '6px 2px', fontWeight: 600 }}>{l}</div>
             ))}
             {/* Rows */}
             {segments.duration_labels.flatMap((rl, ri) => [
-              <div key={`rl-${ri}`} style={{ fontSize: '0.65rem', color: UP.sub, display: 'flex', alignItems: 'center', fontWeight: 600 }}>{rl}</div>,
+              <div key={`rl-${ri}`} className="text-a10" style={{ color: UP.sub, display: 'flex', alignItems: 'center', fontWeight: 600 }}>{rl}</div>,
               ...(segments.heatmap[ri] ?? []).map((val, ci) => {
                 const intensity = val / maxHeat
                 return (
-                  <div key={`c-${ri}-${ci}`} style={{
+                  <div key={`c-${ri}-${ci}`} className="text-a13" style={{
                     background: val === 0 ? UP.sunken : `rgba(49,130,246,${0.08 + intensity * 0.6})`,
-                    borderRadius: 10, padding: '12px 4px', textAlign: 'center',
-                    fontSize: '0.85rem', fontWeight: 700,
+                    borderRadius: 10, padding: '12px 4px', textAlign: 'center', fontWeight: 700,
                     color: intensity > 0.35 ? '#fff' : UP.sub,
                     border: val === 0 ? `1px solid ${UP.hairSoft}` : `1px solid rgba(49,130,246,${0.12 + intensity * 0.25})`,
                     transition: 'all .3s',
@@ -354,13 +352,13 @@ export default function TargetMenu() {
 
         {/* Demographics — demo가 null이면 빈 카드 표시 */}
         <div style={CARD}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: UP.body, marginBottom: 16 }}>User Demographics</div>
+          <div className="text-a13" style={{ fontWeight: 700, color: UP.body, marginBottom: 16 }}>User Demographics</div>
           {demo ? (
             <>
               <div className="grid grid-cols-2 gap-4">
                 {/* Auth Provider */}
                 <div>
-                  <div style={{ fontSize: '0.65rem', color: UP.sub, fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>인증 수단</div>
+                  <div className="text-a10" style={{ color: UP.sub, fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>인증 수단</div>
                   {demo.by_provider.length > 0 ? (<>
                     <ResponsiveContainer width="100%" height={110}>
                       <PieChart>
@@ -376,8 +374,8 @@ export default function TargetMenu() {
                       {demo.by_provider.map((p, i) => (
                         <div key={p.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <div style={{ width: 6, height: 6, borderRadius: '50%', background: [C.gold, C.red, C.blue, C.purple][i % 4] }} />
-                          <span style={{ fontSize: '0.62rem', color: UP.sub, flex: 1 }}>{p.label}</span>
-                          <span style={{ fontSize: '0.62rem', fontWeight: 700, color: UP.body }}>{p.count}</span>
+                          <span className="text-a10" style={{ color: UP.sub, flex: 1 }}>{p.label}</span>
+                          <span className="text-a10" style={{ fontWeight: 700, color: UP.body }}>{p.count}</span>
                         </div>
                       ))}
                     </div>
@@ -385,7 +383,7 @@ export default function TargetMenu() {
                 </div>
                 {/* Marketing Consent */}
                 <div>
-                  <div style={{ fontSize: '0.65rem', color: UP.sub, fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>마케팅 동의</div>
+                  <div className="text-a10" style={{ color: UP.sub, fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>마케팅 동의</div>
                   {(() => {
                     const mk = demo.marketing
                     const mdata = [
@@ -408,8 +406,8 @@ export default function TargetMenu() {
                         {mdata.map((d, i) => (
                           <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <div style={{ width: 6, height: 6, borderRadius: '50%', background: [C.blue, C.green, C.purple, UP.hair][i] }} />
-                            <span style={{ fontSize: '0.62rem', color: UP.sub, flex: 1 }}>{d.name}</span>
-                            <span style={{ fontSize: '0.62rem', fontWeight: 700, color: UP.body }}>{d.value}</span>
+                            <span className="text-a10" style={{ color: UP.sub, flex: 1 }}>{d.name}</span>
+                            <span className="text-a10" style={{ fontWeight: 700, color: UP.body }}>{d.value}</span>
                           </div>
                         ))}
                       </div>
@@ -420,14 +418,14 @@ export default function TargetMenu() {
 
               {/* Onboarding Bar */}
               <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${UP.hair}` }}>
-                <div style={{ fontSize: '0.68rem', color: UP.sub, fontWeight: 600, marginBottom: 6 }}>온보딩 현황</div>
+                <div className="text-a11" style={{ color: UP.sub, fontWeight: 600, marginBottom: 6 }}>온보딩 현황</div>
                 <div style={{ display: 'flex', gap: 2, height: 8, borderRadius: 99, overflow: 'hidden', marginBottom: 5 }}>
                   <div style={{ flex: Math.max(demo.onboarding_completed, 0.01), background: C.green, transition: 'flex .3s' }} />
                   <div style={{ flex: Math.max(demo.onboarding_pending, 0.01), background: UP.hairSoft, transition: 'flex .3s' }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.62rem', color: C.green, fontWeight: 700 }}>완료 {demo.onboarding_completed}</span>
-                  <span style={{ fontSize: '0.62rem', color: UP.caption, fontWeight: 700 }}>미완료 {demo.onboarding_pending}</span>
+                  <span className="text-a10" style={{ color: C.green, fontWeight: 700 }}>완료 {demo.onboarding_completed}</span>
+                  <span className="text-a10" style={{ color: UP.caption, fontWeight: 700 }}>미완료 {demo.onboarding_pending}</span>
                 </div>
               </div>
             </>
@@ -437,8 +435,8 @@ export default function TargetMenu() {
         {/* Smart Tags */}
         <div style={CARD}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 16 }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: UP.body }}>Smart User Tags</span>
-            <span style={{ fontSize: '0.65rem', color: UP.caption }}>데이터 기반 자동 분류</span>
+            <span className="text-a13" style={{ fontWeight: 700, color: UP.body }}>Smart User Tags</span>
+            <span className="text-a10" style={{ color: UP.caption }}>데이터 기반 자동 분류</span>
           </div>
           {tags.length > 0 ? (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -451,9 +449,8 @@ export default function TargetMenu() {
                     display: 'flex', alignItems: 'center', gap: 10,
                     transition: 'all .2s',
                   }}>
-                    <span style={{ fontSize: '0.75rem', color: clr, fontWeight: 700 }}>#{t.tag}</span>
-                    <span style={{
-                      fontSize: '0.7rem', fontWeight: 800,
+                    <span className="text-a12" style={{ color: clr, fontWeight: 700 }}>#{t.tag}</span>
+                    <span className="text-a11" style={{ fontWeight: 800,
                       background: `${clr}1a`, color: clr,
                       borderRadius: 8, padding: '2px 9px',
                     }}>{t.count}</span>
@@ -466,7 +463,7 @@ export default function TargetMenu() {
           {/* Service Usage — serviceUsage null 방어 */}
           {serviceUsage && (
             <div style={{ marginTop: 20, paddingTop: 14, borderTop: `1px solid ${UP.hair}` }}>
-              <div style={{ fontSize: '0.68rem', color: UP.sub, fontWeight: 600, marginBottom: 10 }}>서비스 이용 비율</div>
+              <div className="text-a11" style={{ color: UP.sub, fontWeight: 600, marginBottom: 10 }}>서비스 이용 비율</div>
               {(() => {
                 const other = Math.max(serviceUsage.total - serviceUsage.severance - serviceUsage.unemployment, 0)
                 const items = [
@@ -477,11 +474,11 @@ export default function TargetMenu() {
                 const mx = Math.max(1, ...items.map(i => i.v))
                 return items.map(item => (
                   <div key={item.l} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                    <span style={{ fontSize: '0.68rem', color: UP.sub, width: 50, flexShrink: 0 }}>{item.l}</span>
+                    <span className="text-a11" style={{ color: UP.sub, width: 50, flexShrink: 0 }}>{item.l}</span>
                     <div style={{ flex: 1, height: 6, background: UP.sunken, borderRadius: 3, overflow: 'hidden' }}>
                       <div style={{ width: `${item.v / mx * 100}%`, height: '100%', background: item.c, borderRadius: 3, minWidth: item.v > 0 ? 3 : 0 }} />
                     </div>
-                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: item.c, width: 40, textAlign: 'right' }}>{item.v.toLocaleString()}</span>
+                    <span className="text-a11" style={{ fontWeight: 700, color: item.c, width: 40, textAlign: 'right' }}>{item.v.toLocaleString()}</span>
                   </div>
                 ))
               })()}
@@ -493,7 +490,7 @@ export default function TargetMenu() {
       {/* ═══ GROWTH TIMELINE ═════════════════════════════ */}
       {growth.length > 1 && (
         <div style={{ ...CARD, marginBottom: 12 }}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: UP.body, marginBottom: 14 }}>Monthly Growth</div>
+          <div className="text-a13" style={{ fontWeight: 700, color: UP.body, marginBottom: 14 }}>Monthly Growth</div>
           <ResponsiveContainer width="100%" height={170}>
             <AreaChart data={growth} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
               <defs>
@@ -517,15 +514,15 @@ export default function TargetMenu() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Category breakdown */}
           <div style={CARD}>
-            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: UP.body, marginBottom: 14 }}>문의 카테고리 분석</div>
+            <div className="text-a13" style={{ fontWeight: 700, color: UP.body, marginBottom: 14 }}>문의 카테고리 분석</div>
             {inq.by_category.length > 0 ? (
               inq.by_category.slice(0, 6).map((cat, i) => {
                 const mx = inq.by_category[0]?.count || 1
                 return (
                   <div key={cat.label} style={{ marginBottom: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                      <span style={{ fontSize: '0.7rem', color: UP.sub, fontWeight: 600 }}>{cat.label}</span>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: PIE[i % PIE.length] }}>{cat.count}건</span>
+                      <span className="text-a11" style={{ color: UP.sub, fontWeight: 600 }}>{cat.label}</span>
+                      <span className="text-a11" style={{ fontWeight: 700, color: PIE[i % PIE.length] }}>{cat.count}건</span>
                     </div>
                     <div style={{ height: 5, background: UP.sunken, borderRadius: 3, overflow: 'hidden' }}>
                       <div style={{ width: `${cat.count / mx * 100}%`, height: '100%', background: PIE[i % PIE.length], borderRadius: 3 }} />
@@ -537,30 +534,30 @@ export default function TargetMenu() {
           </div>
           {/* Response metrics */}
           <div style={CARD}>
-            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: UP.body, marginBottom: 14 }}>문의 응답 분석</div>
+            <div className="text-a13" style={{ fontWeight: 700, color: UP.body, marginBottom: 14 }}>문의 응답 분석</div>
             <div className="grid grid-cols-2 gap-3" style={{ marginBottom: 16 }}>
               <div style={{ textAlign: 'center', padding: 14, background: UP.sunken, borderRadius: 12 }}>
-                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: C.blue }}>{inq.total}</div>
-                <div style={{ fontSize: '0.6rem', color: UP.caption, marginTop: 2 }}>전체 문의</div>
+                <div className="text-a24" style={{ fontWeight: 900, color: C.blue }}>{inq.total}</div>
+                <div className="text-a10" style={{ color: UP.caption, marginTop: 2 }}>전체 문의</div>
               </div>
               <div style={{ textAlign: 'center', padding: 14, background: UP.sunken, borderRadius: 12 }}>
-                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: inq.avg_response_hours > 24 ? C.orange : C.green }}>
+                <div className="text-a24" style={{ fontWeight: 900, color: inq.avg_response_hours > 24 ? C.orange : C.green }}>
                   {inq.avg_response_hours > 0 ? `${inq.avg_response_hours}h` : '-'}
                 </div>
-                <div style={{ fontSize: '0.6rem', color: UP.caption, marginTop: 2 }}>평균 응답시간</div>
+                <div className="text-a10" style={{ color: UP.caption, marginTop: 2 }}>평균 응답시간</div>
               </div>
             </div>
-            <div style={{ fontSize: '0.68rem', color: UP.sub, fontWeight: 600, marginBottom: 8 }}>상태별 분포</div>
+            <div className="text-a11" style={{ color: UP.sub, fontWeight: 600, marginBottom: 8 }}>상태별 분포</div>
             {inq.by_status.map(s => {
               const clr = STATUS_CLR[s.label] || C.purple
               return (
                 <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
                   <div style={{ width: 7, height: 7, borderRadius: '50%', background: clr }} />
-                  <span style={{ fontSize: '0.68rem', color: UP.sub, width: 36 }}>{STATUS_LBL[s.label] || s.label}</span>
+                  <span className="text-a11" style={{ color: UP.sub, width: 36 }}>{STATUS_LBL[s.label] || s.label}</span>
                   <div style={{ flex: 1, height: 5, background: UP.sunken, borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{ width: `${inq.total > 0 ? (s.count / inq.total * 100) : 0}%`, height: '100%', background: clr, borderRadius: 3 }} />
                   </div>
-                  <span style={{ fontSize: '0.68rem', fontWeight: 700, color: clr, width: 24, textAlign: 'right' }}>{s.count}</span>
+                  <span className="text-a11" style={{ fontWeight: 700, color: clr, width: 24, textAlign: 'right' }}>{s.count}</span>
                 </div>
               )
             })}
