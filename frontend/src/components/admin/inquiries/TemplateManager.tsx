@@ -52,12 +52,12 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
       padding: '20px',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-        <p style={{ fontSize: '0.88rem', fontWeight: 700, color: UP.body, flex: 1 }}>
+        <p className="text-a14" style={{ fontWeight: 700, color: UP.body, flex: 1 }}>
           답변 템플릿 ({templates.length}개)
         </p>
         <button
           onClick={() => { setShowForm(f => !f); setError(null) }}
-          style={{ ...btnPrimary, padding: '5px 12px', fontSize: '0.78rem' }}
+          className="text-a12" style={{ ...btnPrimary, padding: '5px 12px', }}
         >
           + 추가
         </button>
@@ -65,7 +65,7 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
 
       {/* 에러 표시 (생성/삭제 실패) */}
       {error && (
-        <p style={{ fontSize: '0.78rem', color: UP.danger, marginBottom: 10, fontWeight: 600 }}>
+        <p className="text-a12" style={{ color: UP.danger, marginBottom: 10, fontWeight: 600 }}>
           ⚠️ {error}
         </p>
       )}
@@ -102,7 +102,7 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
       )}
 
       {templates.length === 0 && !showForm && (
-        <p style={{ fontSize: '0.82rem', color: UP.sub, textAlign: 'center', padding: '16px 0' }}>
+        <p className="text-a13" style={{ color: UP.sub, textAlign: 'center', padding: '16px 0' }}>
           등록된 템플릿이 없습니다.
         </p>
       )}
@@ -119,9 +119,8 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
           }}>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: UP.navy }}>{t.title}</span>
-                <span style={{
-                  fontSize: '0.68rem',
+                <span className="text-a13" style={{ fontWeight: 700, color: UP.navy }}>{t.title}</span>
+                <span className="text-a11" style={{
                   background: UP.brandBg,
                   color: UP.brand,
                   padding: '1px 7px',
@@ -129,17 +128,17 @@ export default function TemplateManager({ templates, onRefresh }: Props) {
                 }}>
                   {t.category}
                 </span>
-                <span style={{ fontSize: '0.68rem', color: UP.caption, marginLeft: 'auto' }}>
+                <span className="text-a11" style={{ color: UP.caption, marginLeft: 'auto' }}>
                   사용 {t.use_count}회
                 </span>
               </div>
-              <p style={{ fontSize: '0.78rem', color: UP.sub, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <p className="text-a12" style={{ color: UP.sub, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {t.content}
               </p>
             </div>
-            <button onClick={() => handleDelete(t.id)} style={{
+            <button onClick={() => handleDelete(t.id)} className="text-a13" style={{
               background: 'none', border: 'none', color: UP.danger,
-              cursor: 'pointer', fontSize: '0.85rem', flexShrink: 0,
+              cursor: 'pointer', flexShrink: 0,
             }}>✕</button>
           </div>
         ))}

@@ -71,9 +71,9 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
     }}>
       {/* 헤더 */}
       <div style={{ padding: '16px 20px', borderBottom: `1px solid ${UP.hairSoft}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: UP.sub, fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
-        <span style={{ fontSize: '0.88rem', fontWeight: 700, color: UP.navy }}>문의 상세</span>
-        <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: UP.sub }}>{fmt(inquiry.created_at)}</span>
+        <button onClick={onClose} className="text-a20" style={{ background: 'none', border: 'none', color: UP.sub, cursor: 'pointer' }}>✕</button>
+        <span className="text-a14" style={{ fontWeight: 700, color: UP.navy }}>문의 상세</span>
+        <span className="text-a11" style={{ marginLeft: 'auto', color: UP.sub }}>{fmt(inquiry.created_at)}</span>
       </div>
 
       <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
@@ -82,24 +82,23 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
           <span style={{ ...badge('brand') }}>
             {inquiry.category}
           </span>
-          <span style={{ fontSize: '0.72rem', color: UP.sub }}>
+          <span className="text-a11" style={{ color: UP.sub }}>
             {inquiry.user_email ?? `UID: ${String(inquiry.user_id).slice(0, 12)}…`}
           </span>
         </div>
 
         {/* 제목 */}
         {inquiry.title && (
-          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: UP.navy, marginBottom: 10 }}>
+          <p className="text-a14" style={{ fontWeight: 700, color: UP.navy, marginBottom: 10 }}>
             {inquiry.title}
           </p>
         )}
 
         {/* 본문 */}
-        <div style={{
+        <div className="text-a13" style={{
           background: UP.sunken,
           borderRadius: 10,
           padding: '14px',
-          fontSize: '0.85rem',
           color: UP.body,
           lineHeight: 1.7,
           whiteSpace: 'pre-wrap',
@@ -110,7 +109,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
 
         {/* 상태 변경 */}
         <div style={{ marginBottom: 16 }}>
-          <p style={{ fontSize: '0.75rem', color: UP.sub, marginBottom: 8 }}>상태 변경</p>
+          <p className="text-a12" style={{ color: UP.sub, marginBottom: 8 }}>상태 변경</p>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {STATUSES.map(s => {
               const isBusy = busyStatus === s
@@ -119,11 +118,10 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
                   key={s}
                   onClick={() => handleStatusChange(s)}
                   disabled={busyStatus !== null}
-                  style={{
+                  className="text-a12" style={{
                     padding: '5px 12px',
                     borderRadius: RADIUS.pill,
                     border: 'none',
-                    fontSize: '0.75rem',
                     fontWeight: 700,
                     cursor: busyStatus !== null ? 'wait' : 'pointer',
                     // 현재 상태=brand 채움, 비선택=neutral 톤(badge('neutral')과 정합)
@@ -144,19 +142,18 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
         {/* 템플릿 선택 */}
         {templates.length > 0 && (
           <div style={{ marginBottom: 12 }}>
-            <p style={{ fontSize: '0.75rem', color: UP.sub, marginBottom: 8 }}>답변 템플릿</p>
+            <p className="text-a12" style={{ color: UP.sub, marginBottom: 8 }}>답변 템플릿</p>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {templates.map(t => (
                 <button
                   key={t.id}
                   onClick={() => setAnswer(t.content)}
-                  style={{
+                  className="text-a11" style={{
                     padding: '4px 10px',
                     borderRadius: 999,
                     border: `1px solid ${UP.hair}`,
                     background: UP.sunken,
                     color: UP.body,
-                    fontSize: '0.72rem',
                     cursor: 'pointer',
                   }}
                 >
@@ -176,8 +173,8 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
             padding: '12px 14px',
             marginBottom: 12,
           }}>
-            <p style={{ fontSize: '0.72rem', fontWeight: 700, color: UP.green, marginBottom: 6 }}>✓ 등록된 답변</p>
-            <p style={{ fontSize: '0.83rem', color: UP.body, whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>{inquiry.answer}</p>
+            <p className="text-a11" style={{ fontWeight: 700, color: UP.green, marginBottom: 6 }}>✓ 등록된 답변</p>
+            <p className="text-a13" style={{ color: UP.body, whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>{inquiry.answer}</p>
           </div>
         )}
 
@@ -187,13 +184,12 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
           onChange={e => setAnswer(e.target.value)}
           placeholder="답변 내용을 입력하세요..."
           rows={5}
-          style={{
+          className="text-a13" style={{
             width: '100%',
             background: UP.sunken,
             border: `1px solid ${UP.hair}`,
             borderRadius: 10,
             padding: '12px',
-            fontSize: '0.85rem',
             color: UP.navy,
             resize: 'vertical',
             outline: 'none',
@@ -202,7 +198,7 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
             boxSizing: 'border-box',
           }}
         />
-        {err && <p style={{ fontSize: '0.78rem', color: UP.danger, marginTop: 6 }}>{err}</p>}
+        {err && <p className="text-a12" style={{ color: UP.danger, marginTop: 6 }}>{err}</p>}
         <button
           onClick={handleSaveAnswer}
           disabled={saving}

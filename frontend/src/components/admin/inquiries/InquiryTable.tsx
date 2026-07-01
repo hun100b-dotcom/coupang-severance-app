@@ -36,7 +36,7 @@ export default function InquiryTable({ inquiries, selected, onToggle, onToggleAl
 
   return (
     <div style={{ overflow: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+      <table className="text-a13" style={{ width: '100%', borderCollapse: 'collapse', }}>
         <thead>
           <tr style={{ borderBottom: `1px solid ${UP.hairSoft}` }}>
             <th style={{ padding: 0, textAlign: 'left', width: 44 }}>
@@ -133,7 +133,7 @@ export default function InquiryTable({ inquiries, selected, onToggle, onToggleAl
         </tbody>
       </table>
       {inquiries.length === 0 && (
-        <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>
+        <p className="text-a13" style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', }}>
           문의가 없습니다.
         </p>
       )}

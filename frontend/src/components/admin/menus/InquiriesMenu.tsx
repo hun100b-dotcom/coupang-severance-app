@@ -192,8 +192,8 @@ export default function InquiriesMenu() {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20, gap: 12 }}>
         <div>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: UP.navy, margin: 0 }}>Inquiries CRM</h2>
-          <p style={{ fontSize: '0.78rem', color: UP.sub, marginTop: 2 }}>전체 {total}건</p>
+          <h2 className="text-a20" style={{ fontWeight: 800, color: UP.navy, margin: 0 }}>Inquiries CRM</h2>
+          <p className="text-a12" style={{ color: UP.sub, marginTop: 2 }}>전체 {total}건</p>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           <button onClick={() => setShowTemplates(s => !s)} style={outlineBtn}>
@@ -214,10 +214,10 @@ export default function InquiriesMenu() {
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
               placeholder="내용 검색..."
-              style={{
+              className="text-a13" style={{
                 flex: 1, minWidth: 140, background: UP.sunken,
                 border: `1px solid ${UP.hair}`, borderRadius: 8,
-                padding: '6px 12px', fontSize: '0.82rem', color: UP.navy,
+                padding: '6px 12px', color: UP.navy,
                 outline: 'none', fontFamily: 'inherit',
               }}
             />
@@ -242,7 +242,7 @@ export default function InquiriesMenu() {
 
           {/* 에러 표시 */}
           {apiError && (
-            <div style={{ background: UP.dangerBg, border: `1px solid ${UP.dangerLine}`, borderRadius: 10, padding: '14px 18px', marginBottom: 12, color: UP.danger, fontSize: '0.82rem' }}>
+            <div className="text-a13" style={{ background: UP.dangerBg, border: `1px solid ${UP.dangerLine}`, borderRadius: 10, padding: '14px 18px', marginBottom: 12, color: UP.danger, }}>
               ⚠️ {apiError}
               {' '}
               {/* 에러 유형에 따라 다른 안내 메시지 표시 */}
@@ -261,7 +261,7 @@ export default function InquiriesMenu() {
             borderRadius: RADIUS.card, overflow: 'hidden', marginBottom: 14,
           }}>
             {loading ? (
-              <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>
+              <p className="text-a13" style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', }}>
                 로딩 중...
               </p>
             ) : (
@@ -280,11 +280,10 @@ export default function InquiriesMenu() {
           {totalPages > 1 && (
             <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
               {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => i + 1).map(p => (
-                <button key={p} onClick={() => setPage(p)} style={{
+                <button key={p} onClick={() => setPage(p)} className="text-a12" style={{
                   padding: '4px 10px', borderRadius: 6, border: 'none',
                   background: p === page ? UP.brand : UP.hairSoft,
-                  color: p === page ? '#fff' : UP.sub,
-                  fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+                  color: p === page ? '#fff' : UP.sub, fontWeight: 600, cursor: 'pointer',
                 }}>{p}</button>
               ))}
             </div>
