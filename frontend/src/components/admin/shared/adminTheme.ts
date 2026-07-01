@@ -121,12 +121,4 @@ export function badge(tone: BadgeTone = 'brand'): CSSProperties {
   }
 }
 
-// 표 헤더 셀 공통 스타일(라벨)
-export const thLabel: CSSProperties = {
-  fontSize: '0.625rem',
-  fontWeight: 700,
-  textTransform: 'uppercase',
-  letterSpacing: '0.06em',
-  color: UP.sub,
-  whiteSpace: 'nowrap',
-}
+// (P1) dead export였던 thLabel 제거 — 전 코드 사용 0건. 표 헤더는 shared/AdminTable 의 <Th> 사용.
