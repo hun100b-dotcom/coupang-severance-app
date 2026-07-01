@@ -210,10 +210,10 @@ export default function ConfirmedMenu() {
         marginBottom: 20, gap: 12, flexWrap: 'wrap',
       }}>
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px', color: UP.navy }}>
+          <h2 className="text-a20" style={{ fontWeight: 800, margin: '0 0 4px', color: UP.navy }}>
             📈 채용현황
           </h2>
-          <p style={{ fontSize: '0.8rem', color: UP.sub, margin: 0 }}>
+          <p className="text-a13" style={{ color: UP.sub, margin: 0 }}>
             지원 현황을 사업장·센터별로 분석합니다. 총 {total}명
           </p>
         </div>
@@ -252,22 +252,22 @@ export default function ConfirmedMenu() {
 
       {/* ── 에러 ── */}
       {error && (
-        <div style={{
+        <div className="text-a13" style={{
           background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
           borderRadius: 10, padding: '12px 16px', marginBottom: 16,
-          color: UP.danger, fontSize: '0.82rem',
+          color: UP.danger,
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <span>⚠️ {error}</span>
           <button onClick={fetchData}
-            style={{ background: 'none', border: 'none', color: UP.danger, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}>
+            className="text-a13" style={{ background: 'none', border: 'none', color: UP.danger, cursor: 'pointer', fontWeight: 700 }}>
             다시 시도 ↻
           </button>
         </div>
       )}
 
       {loading ? (
-        <p style={{ color: UP.sub, fontSize: '0.85rem' }}>불러오는 중...</p>
+        <p className="text-a13" style={{ color: UP.sub, }}>불러오는 중...</p>
       ) : (
         <>
           {/* ── 2×2 메인 KPI 카드 ── */}
@@ -288,11 +288,11 @@ export default function ConfirmedMenu() {
                 border: `1px solid ${card.color}33`,
                 borderRadius: 16, padding: '20px 16px', textAlign: 'center',
               }}>
-                <div style={{ fontSize: '1.4rem', marginBottom: 4 }}>{card.icon}</div>
-                <div style={{ fontSize: '2rem', fontWeight: 900, color: card.color, lineHeight: 1 }}>
+                <div className="text-a24" style={{ marginBottom: 4 }}>{card.icon}</div>
+                <div className="text-a30" style={{ fontWeight: 900, color: card.color, lineHeight: 1 }}>
                   {card.value}
                 </div>
-                <div style={{ fontSize: '0.72rem', color: UP.sub, marginTop: 6, fontWeight: 600 }}>
+                <div className="text-a11" style={{ color: UP.sub, marginTop: 6, fontWeight: 600 }}>
                   {card.label}
                 </div>
               </div>
@@ -314,16 +314,15 @@ export default function ConfirmedMenu() {
                 background: UP.sunken,
                 border: `1px solid ${UP.hair}`,
               }}>
-                <span style={{ fontSize: '0.72rem', color: UP.sub }}>{pill.label}</span>
-                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: UP.navy }}>{pill.value}</span>
+                <span className="text-a11" style={{ color: UP.sub }}>{pill.label}</span>
+                <span className="text-a13" style={{ fontWeight: 700, color: UP.navy }}>{pill.value}</span>
               </div>
             ))}
           </div>
 
           {/* ── 일별 지원 vs 확정 차트 (Recharts ComposedChart) ── */}
           <div style={{ ...baseCard, marginBottom: 20 }}>
-            <div style={{
-              fontSize: '0.72rem', fontWeight: 700,
+            <div className="text-a11" style={{ fontWeight: 700,
               color: UP.sub,
               marginBottom: 14, letterSpacing: '0.06em',
               textTransform: 'uppercase' as const,
@@ -335,11 +334,11 @@ export default function ConfirmedMenu() {
             <div style={{ display: 'flex', gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <div style={{ width: 12, height: 12, borderRadius: 3, background: UP.brand }} />
-                <span style={{ fontSize: '0.72rem', color: UP.sub }}>일별 지원자</span>
+                <span className="text-a11" style={{ color: UP.sub }}>일별 지원자</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <div style={{ width: 16, height: 2, background: UP.green, borderRadius: 1 }} />
-                <span style={{ fontSize: '0.72rem', color: UP.sub }}>일별 확정자</span>
+                <span className="text-a11" style={{ color: UP.sub }}>일별 확정자</span>
               </div>
             </div>
 
@@ -397,8 +396,7 @@ export default function ConfirmedMenu() {
           }}>
             {/* 좌: 교대별 분포 (오전/오후/야간/무관) */}
             <div style={baseCard}>
-              <div style={{
-                fontSize: '0.72rem', fontWeight: 700,
+              <div className="text-a11" style={{ fontWeight: 700,
                 color: UP.sub,
                 marginBottom: 14, letterSpacing: '0.06em',
                 textTransform: 'uppercase' as const,
@@ -407,14 +405,14 @@ export default function ConfirmedMenu() {
               </div>
 
               {shiftDist.length === 0 ? (
-                <p style={{ fontSize: '0.8rem', color: UP.caption, margin: 0 }}>데이터 없음</p>
+                <p className="text-a13" style={{ color: UP.caption, margin: 0 }}>데이터 없음</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {shiftDist.map(item => (
                     <div key={item.label}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontSize: '0.78rem', color: UP.body }}>{item.label}</span>
-                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: UP.navy }}>
+                        <span className="text-a12" style={{ color: UP.body }}>{item.label}</span>
+                        <span className="text-a12" style={{ fontWeight: 700, color: UP.navy }}>
                           {item.count}명 ({item.pct}%)
                         </span>
                       </div>
@@ -436,8 +434,7 @@ export default function ConfirmedMenu() {
 
             {/* 우: 업무별 분포 (상위 8개, applied_task 자유텍스트 기준) */}
             <div style={baseCard}>
-              <div style={{
-                fontSize: '0.72rem', fontWeight: 700,
+              <div className="text-a11" style={{ fontWeight: 700,
                 color: UP.sub,
                 marginBottom: 14, letterSpacing: '0.06em',
                 textTransform: 'uppercase' as const,
@@ -446,19 +443,18 @@ export default function ConfirmedMenu() {
               </div>
 
               {taskDist.length === 0 ? (
-                <p style={{ fontSize: '0.8rem', color: UP.caption, margin: 0 }}>데이터 없음</p>
+                <p className="text-a13" style={{ color: UP.caption, margin: 0 }}>데이터 없음</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {taskDist.map(item => (
                     <div key={item.label}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, gap: 8 }}>
                         {/* 긴 업무명은 말줄임 처리 */}
-                        <span style={{
-                          fontSize: '0.78rem', color: UP.body,
+                        <span className="text-a12" style={{ color: UP.body,
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                           maxWidth: '60%',
                         }}>{item.label}</span>
-                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: UP.navy, flexShrink: 0 }}>
+                        <span className="text-a12" style={{ fontWeight: 700, color: UP.navy, flexShrink: 0 }}>
                           {item.count}명 ({item.pct}%)
                         </span>
                       </div>
@@ -481,7 +477,7 @@ export default function ConfirmedMenu() {
 
           {/* 데이터 없음 */}
           {total === 0 && (
-            <p style={{ color: UP.caption, fontSize: '0.85rem', textAlign: 'center', padding: '48px 0' }}>
+            <p className="text-a13" style={{ color: UP.caption, textAlign: 'center', padding: '48px 0' }}>
               데이터가 없습니다.
             </p>
           )}
