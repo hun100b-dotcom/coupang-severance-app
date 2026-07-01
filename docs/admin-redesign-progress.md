@@ -15,20 +15,30 @@
 | P2 | AdminSidebar 호버 JS직조작 3곳 → CSS `.admin-navitem:hover`(index.css) | ✅ `e7b6e58` |
 | P3-a | 로더 스피너 중복 7파일 인라인 `@keyframes spin` → `AdminLoading` | ✅ `f69076a` |
 | P3-b | CARD 상수 5파일 → 공용 `cardBox`(adminTheme, radius16·flat) | ✅ `43fe9e3` |
+| P3-c | 메뉴 순차 인라인 fontSize 제거(15파일 약 400개 → `text-a*`), 카드/모달 radius 20·18→16, JobPostings 버튼/4상태 프리미티브화 | ✅ `348c9d4`~`11e3421` (9커밋) |
 
-**측정 하네스**: `scratchpad/p0/measure.mjs`(Playwright headless getComputedStyle). baseline=`measure_before.json`.
-매 단계 `npm run preview -- --port 4173` 백그라운드 + `node measure.mjs http://localhost:4173 <label>` → `measure_before`와 대조(사용자앱 선택자 20개 0px 확인). dev 포그라운드 금지.
+**측정 하네스(2026-07-02 갱신)**: 이전 세션 스크래치패드 소멸 → 재작성. `frontend/_measure_tmp.mjs`(playwright 모듈해석 위해 frontend 내부 배치, 커밋X·임시). Playwright 헤드리스 + `reducedMotion:'reduce'`(홈 히어로 로테이션 정지) + **라우트별 reload→`document.fonts.ready`→1500ms 정착**(첫로드 레이스 제거로 완전 결정화). 전 요소 computed font-size 히스토그램(px→개수) + 대표셀렉터 picks 비교.
+- 라우트: `['/home','/calculator','/severance']` (`/`는 Intro 히어로 애니메이션 요소개수 지터 → /home이 동일컨텐츠 결정적 대체라 제외).
+- 절차: `npm run build` → `npm run preview --port 4173`(점유시 4174 자동) 백그라운드 → `node _measure_tmp.mjs http://localhost:<port> <label> > measure_after.json` → `measure_before.json`(baseline)과 picks+히스토그램 전량 대조. **1px/1개라도 다르면 FAIL**(단 애니메이션 라우트 요소개수 지터는 폰트변화 아님). dev 포그라운드 금지.
+- 코드모드/measure 스크립트 사본: 세션 scratchpad `4a2a3fd6-.../scratchpad/{codemod.mjs,measure.mjs}`.
 
 ---
 
 ## ⏭️ 다음 세션 인계 지점 (여기부터)
 
-### P3-c — 메뉴 순차 인라인 style 제거 (최대 덩어리, 메뉴 단위로)
-현재 어드민 `style={{` 잔여 **약 1120개**. 순서(재설계안): **채용군 → 콘텐츠 → 시스템**.
-- 채용군: `JobPostingsMenu`(154)·`ApplicantsMenu`(89)·`ConfirmedMenu`(50)·`RecruitSummaryMenu`(45)
-- 콘텐츠: `NoticesMenu`(48)·`InquiriesMenu` + `InquiryTable`(20)·`InquiryDetailPanel`(25)·`TemplateManager`(19)
-- 시스템: `MembersMenu`(53)·`AccountsMenu`(37)·`SecurityMenu`(41)·`ServerLogsMenu`(46)·`AuditMenu`(51)·`SettingsMenu`(47)
-**작업 패턴(메뉴당)**: 인라인 fontSize→`text-a*` / 버튼→`AdminButton` / 배지→`AdminBadge` / 카드→`AdminCard`(or cardBox) / 표→`AdminTable`(Th/Td) / 로딩·빈·에러→`AdminState` / radius16 / 숫자 mono+tabular. **데이터·핸들러·쿼리 절대 무변경**. 메뉴별 [빌더]→[리뷰어 5축]→회귀0px→커밋.
+### ✅ P3-c — 메뉴 순차 인라인 fontSize 제거 (2026-07-02 세션 완료)
+**열거 14파일 + TargetMenu = 15파일, 인라인 리터럴 fontSize 약 400개 → 어드민 전용 `text-a*` 유틸 이관.** 각 파일 빌드+회귀 0px PASS 후 커밋(브랜치 `redesign/admin-upbit-impl`, main 미병합).
+- 채용군: JobPostingsMenu(71)·ApplicantsMenu(40)·ConfirmedMenu(22)·RecruitSummaryMenu(10) — 커밋 `348c9d4`,`3564c83`,`1e7ab54`,`3ee565e`. JobPostings는 헤더버튼→AdminButton·로딩/빈→AdminState·카드 radius 20·18→16 추가.
+- 콘텐츠: NoticesMenu(11)·InquiriesMenu(6)·InquiryTable(2)·InquiryDetailPanel(14)·TemplateManager(9) — 커밋 `a126f05`,`317d768`.
+- 시스템: Members(28)·Accounts(21)·Security(17)·ServerLogs(27)·Audit(23)·Settings(22)·Cms(5)·Discord(3)·IpBlock(6)·Legal(1) — 커밋 `44843ee`,`202c938`,`0e6e55b`. Members·Accounts modalStyle radius 20→16.
+- +TargetMenu(61) 분석대시보드 잔여 박멸 — 커밋 `11e3421`.
+- **방법**: 결정적 코드모드(`scratchpad/codemod.mjs`) — 문자열인지 균형스캔으로 `style={{}}` 내 리터럴 fontSize만 추출→매핑 text-a* className 이동(+기존 반응형 className 자동 병합), 카드 radius 18|20→16. rem→a토큰 매핑 앵커: 0.85rem→a13(AdminButton), 0.66rem→a10(badge).
+- **의도적 잔여(정상)**: 각 파일 2~5개 = ⓐ공유 CSSProperties 상수(inputStyle·cellStyle·thStyle 등 DRY 단일출처) ⓑrecharts `contentStyle`/`wrapperStyle`/`tick`(숫자·대문자 S 프롭) ⓒclamp() 반응형 KPI값. 이들은 "인라인 난립"이 아니라 유지가 타당.
+
+### ⏭️ P3-c 잔여(대시보드군, P3-c 열거 밖 — 후속 스윕 후보)
+아직 인라인 fontSize 있는 어드민 파일(코드모드 재적용 대상). **BulkActionBar는 대량선택 보호 대상 — 무변경 유지**:
+- `AdminSidebar`(9)·`DashboardSubTabs`(1)·`dashboard/`(DailyTrendChart7·KpiCard1·RecentActivity5·ServiceBarChart6)·`tabs/`(CalcStatsTab13·OverviewTab7·RecruitTab12·VisitorTab23)·`target/`(CompanyPieChart2·UserTagsPanel4·WageSegment2·WorkDurationSegment2)·`logs/AuditLogTable`(3)·`menus/JobsMenu`(3, 레거시 래퍼)·`shared/PageHeader`(clamp 1개, 유지).
+- 코드모드는 `scratchpad/codemod.mjs` 그대로 사용(MAP 이미 0.58~2rem 커버). 신규 rem값 나오면 MAP만 추가.
 
 ### P4 — 정합 (기능)
 - **공지**: `NoticesMenu` 쓰기를 Supabase 직접(RLS is_admin 의존)에서 **백엔드 경로**로 이관(게이트 정합). ※현재도 에러 표시는 됨(무음 아님).
@@ -37,6 +47,7 @@
 
 ### P5 — 마감
 - 잔여 하드코딩 hex(어드민은 `MembersMenu`의 `#FEE500` 카카오톤 정도) 토큰화.
+- **TargetMenu 다색 팔레트(gold/purple/orange `C.*`) 정돈** — 규칙2 무지개 금지 위반. 계획서상 "다색 차트 별도 정돈"으로 P3-c에서 유예함. `CHART_SERIES`(adminTheme) 기반 절제 팔레트로 치환 검토(차트 가독성 영향 있어 디자인 판단 필요).
 - dead export `AdminSidebar.tsx:19 SUPER_ADMIN_EMAIL` 제거(라이브 참조 0 — 단 grep 재확인 후).
 - 전 메뉴 4상태 전수 · 접근성 AA · 사용자앱 0px 전수.
 
