@@ -159,8 +159,8 @@ export default function ServerLogsMenu() {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 18, gap: 10, flexWrap: 'wrap' }}>
         <div>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: UP.navy, margin: 0 }}>Server Logs</h2>
-          <p style={{ fontSize: '0.73rem', color: UP.sub, marginTop: 2 }}>
+          <h2 className="text-a18" style={{ fontWeight: 800, color: UP.navy, margin: 0 }}>Server Logs</h2>
+          <p className="text-a12" style={{ color: UP.sub, marginTop: 2 }}>
             배포 이력 · 시스템 이벤트 · 관리자 작업 로그
           </p>
         </div>
@@ -168,10 +168,9 @@ export default function ServerLogsMenu() {
           {/* 실시간 토글 */}
           <button
             onClick={() => setIsLive(prev => !prev)}
-            style={{
+            className="text-a12" style={{
               // LIVE 인디케이터 — 공용 green 배지 팔레트(greenBg/green)로 톤 정합
-              padding: '5px 10px', borderRadius: RADIUS.pill, border: 'none', cursor: 'pointer',
-              fontSize: '0.73rem', fontWeight: 700,
+              padding: '5px 10px', borderRadius: RADIUS.pill, border: 'none', cursor: 'pointer', fontWeight: 700,
               background: isLive ? UP.greenBg : UP.sunken,
               color: isLive ? UP.green : UP.caption,
               transition: 'all 0.15s',
@@ -201,11 +200,10 @@ export default function ServerLogsMenu() {
           { key: 'system', label: '시스템 / 배포 로그', icon: '🔧' },
           { key: 'audit',  label: '관리자 작업 로그',   icon: '📋' },
         ].map(tab => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key as 'system' | 'audit')} style={{
+          <button key={tab.key} onClick={() => setActiveTab(tab.key as 'system' | 'audit')} className="text-a12" style={{
             padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
             background: activeTab === tab.key ? UP.brand : 'transparent',
-            color: activeTab === tab.key ? '#fff' : UP.sub,
-            fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.15s',
+            color: activeTab === tab.key ? '#fff' : UP.sub, fontWeight: 600, transition: 'all 0.15s',
           }}>
             {tab.icon} {tab.label}
           </button>
@@ -234,7 +232,7 @@ export default function ServerLogsMenu() {
                   </span>
                 )
               })}
-              <span style={{ fontSize: '0.73rem', color: UP.caption }}>
+              <span className="text-a12" style={{ color: UP.caption }}>
                 총 {sysTotal}건
               </span>
             </div>
@@ -245,12 +243,11 @@ export default function ServerLogsMenu() {
             borderRadius: RADIUS.content, overflow: 'hidden',
           }}>
             {/* 컬럼 헤더 */}
-            <div className="hidden md:grid" style={{
+            <div className="hidden md:grid text-a11" style={{
               gridTemplateColumns: '80px 1fr 80px 140px',
               gap: 8, padding: '8px 16px',
               background: '#fff',
-              borderBottom: `1px solid ${UP.hairSoft}`,
-              fontSize: '0.68rem', fontWeight: 700,
+              borderBottom: `1px solid ${UP.hairSoft}`, fontWeight: 700,
               color: UP.caption,
               textTransform: 'uppercase', letterSpacing: '0.04em',
             }}>
@@ -260,7 +257,7 @@ export default function ServerLogsMenu() {
             {sysLoading ? (
               <AdminLoading label="로그를 불러오는 중이에요…" />
             ) : sysLogs.length === 0 ? (
-              <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>로그 없음</p>
+              <p className="text-a13" style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', }}>로그 없음</p>
             ) : sysLogs.map(log => {
               const meta = TYPE_META[log.type] ?? TYPE_META.INFO
               const isNew = newLogIds.has(log.id)
@@ -291,9 +288,8 @@ export default function ServerLogsMenu() {
                     transition: 'background 0.5s',
                     cursor: hasExtra ? 'pointer' : 'default',
                   }} onClick={hasExtra ? toggleExpand : undefined}>
-                    <span style={{
-                      padding: '3px 8px', borderRadius: 6,
-                      fontSize: '0.65rem', fontWeight: 700,
+                    <span className="text-a10" style={{
+                      padding: '3px 8px', borderRadius: 6, fontWeight: 700,
                       color: meta.color, background: meta.bg,
                       textAlign: 'center', width: 'fit-content',
                       display: 'inline-flex', alignItems: 'center', gap: 3,
@@ -301,38 +297,35 @@ export default function ServerLogsMenu() {
                       {meta.icon} {meta.label}
                     </span>
                     <div>
-                      <div style={{
-                        fontSize: '0.82rem', color: UP.navy,
+                      <div className="text-a13" style={{ color: UP.navy,
                         fontWeight: 500, lineHeight: 1.4,
                         display: 'flex', alignItems: 'center', gap: 6,
                       }}>
                         {log.title}
                         {isNew && (
-                          <span style={{
-                            fontSize: '0.58rem', fontWeight: 800,
+                          <span className="text-a10" style={{ fontWeight: 800,
                             color: UP.green, background: 'rgba(34,197,94,0.15)',
                             padding: '1px 5px', borderRadius: 4,
                           }}>NEW</span>
                         )}
                       </div>
                       {log.detail?.desc && (
-                        <div style={{ fontSize: '0.72rem', color: UP.sub, marginTop: 2 }}>{log.detail.desc}</div>
+                        <div className="text-a11" style={{ color: UP.sub, marginTop: 2 }}>{log.detail.desc}</div>
                       )}
                       {sourceLabel && (
-                        <div style={{ fontSize: '0.65rem', color: UP.caption, marginTop: 1 }}>via {sourceLabel}</div>
+                        <div className="text-a10" style={{ color: UP.caption, marginTop: 1 }}>via {sourceLabel}</div>
                       )}
                     </div>
-                    <span style={{ fontSize: '0.72rem', color: log.app_version ? UP.brand : UP.caption }}>
+                    <span className="text-a11" style={{ color: log.app_version ? UP.brand : UP.caption }}>
                       {log.app_version ?? '—'}
                     </span>
-                    <span style={{ fontSize: '0.7rem', color: UP.sub }}
+                    <span className="text-a11" style={{ color: UP.sub }}
                       title={fmtDate(log.created_at)}>
                       {fmtRelative(log.created_at)}
                     </span>
                     {/* 아코디언 펼침 버튼 — detail 추가 필드가 있을 때만 표시 */}
                     {hasExtra ? (
-                      <span style={{
-                        fontSize: '0.7rem', color: UP.sub,
+                      <span className="text-a11" style={{ color: UP.sub,
                         userSelect: 'none', textAlign: 'center', paddingTop: 2,
                       }}>
                         {isExpanded ? '▲' : '▼'}
@@ -349,11 +342,10 @@ export default function ServerLogsMenu() {
                       borderBottom: `1px solid ${UP.hairSoft}`,
                       background: 'rgba(49,130,246,0.04)',
                     }}>
-                      <div style={{ fontSize: '0.68rem', color: UP.brand, fontWeight: 700, marginBottom: 4 }}>
+                      <div className="text-a11" style={{ color: UP.brand, fontWeight: 700, marginBottom: 4 }}>
                         DETAIL
                       </div>
-                      <pre style={{
-                        fontSize: '0.72rem', color: UP.body,
+                      <pre className="text-a11" style={{ color: UP.body,
                         fontFamily: 'JetBrains Mono, monospace',
                         whiteSpace: 'pre-wrap', wordBreak: 'break-all',
                         margin: 0,
@@ -372,37 +364,36 @@ export default function ServerLogsMenu() {
                     background: isNew ? 'rgba(34,197,94,0.06)' : 'transparent',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{
-                        fontSize: '0.65rem', fontWeight: 700,
+                      <span className="text-a10" style={{ fontWeight: 700,
                         color: meta.color, background: meta.bg,
                         padding: '2px 6px', borderRadius: 6,
                         display: 'inline-flex', alignItems: 'center', gap: 3,
                       }}>
                         {meta.icon} {meta.label}
                       </span>
-                      <span style={{ fontSize: '0.68rem', color: UP.sub }}>{fmtRelative(log.created_at)}</span>
+                      <span className="text-a11" style={{ color: UP.sub }}>{fmtRelative(log.created_at)}</span>
                     </div>
-                    <div style={{ fontSize: '0.82rem', color: UP.navy, fontWeight: 500, lineHeight: 1.4 }}>
+                    <div className="text-a13" style={{ color: UP.navy, fontWeight: 500, lineHeight: 1.4 }}>
                       {log.title}
-                      {isNew && <span style={{ fontSize: '0.58rem', fontWeight: 800, color: UP.green, marginLeft: 6 }}>NEW</span>}
+                      {isNew && <span className="text-a10" style={{ fontWeight: 800, color: UP.green, marginLeft: 6 }}>NEW</span>}
                     </div>
                     {log.detail?.desc && (
-                      <div style={{ fontSize: '0.72rem', color: UP.sub, marginTop: 2 }}>{log.detail.desc}</div>
+                      <div className="text-a11" style={{ color: UP.sub, marginTop: 2 }}>{log.detail.desc}</div>
                     )}
                     {log.app_version && (
-                      <span style={{ fontSize: '0.68rem', color: UP.brand, marginTop: 2, display: 'inline-block' }}>{log.app_version}</span>
+                      <span className="text-a11" style={{ color: UP.brand, marginTop: 2, display: 'inline-block' }}>{log.app_version}</span>
                     )}
                     {/* 모바일 아코디언 버튼 */}
                     {hasExtra && (
                       <>
-                        <button onClick={toggleExpand} style={{
-                          ...outlineBtn, padding: '3px 8px', fontSize: '0.7rem', marginTop: 6,
+                        <button onClick={toggleExpand} className="text-a11" style={{
+                          ...outlineBtn, padding: '3px 8px', marginTop: 6,
                         }}>
                           상세 {isExpanded ? '접기 ▲' : '보기 ▼'}
                         </button>
                         {isExpanded && (
-                          <pre style={{
-                            marginTop: 6, fontSize: '0.68rem',
+                          <pre className="text-a11" style={{
+                            marginTop: 6,
                             color: UP.sub,
                             fontFamily: 'JetBrains Mono, monospace',
                             whiteSpace: 'pre-wrap', wordBreak: 'break-all',
@@ -423,7 +414,7 @@ export default function ServerLogsMenu() {
           {totalSysPages > 1 && (
             <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 12 }}>
               <button onClick={() => setSysPage(p => Math.max(1, p - 1))} disabled={sysPage === 1} style={outlineBtn}>‹</button>
-              <span style={{ fontSize: '0.8rem', color: UP.sub, alignSelf: 'center' }}>{sysPage} / {totalSysPages}</span>
+              <span className="text-a13" style={{ color: UP.sub, alignSelf: 'center' }}>{sysPage} / {totalSysPages}</span>
               <button onClick={() => setSysPage(p => Math.min(totalSysPages, p + 1))} disabled={sysPage === totalSysPages} style={outlineBtn}>›</button>
             </div>
           )}
@@ -444,7 +435,7 @@ export default function ServerLogsMenu() {
 
           <div style={{ background: '#fff', border: `1px solid ${UP.hair}`, borderRadius: RADIUS.content, padding: 14, overflow: 'hidden' }}>
             {auditLoading ? (
-              <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>로딩 중...</p>
+              <p className="text-a13" style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', }}>로딩 중...</p>
             ) : (
               <AuditLogTable logs={auditLogs} total={auditTotal} page={auditPage} onPageChange={setAuditPage} />
             )}

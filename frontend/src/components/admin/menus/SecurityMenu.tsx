@@ -170,17 +170,17 @@ export default function SecurityMenu() {
 
       {/* 일부 조회 실패 안내 */}
       {error && (
-        <div style={{
+        <div className="text-a13" style={{
           background: UP.amberBg, border: `1px solid ${UP.amberLine}`,
           borderRadius: 10, padding: '10px 14px', marginBottom: 16,
-          color: UP.amber, fontSize: '0.82rem', fontWeight: 600,
+          color: UP.amber, fontWeight: 600,
         }}>
           ⚠️ {error}
         </div>
       )}
 
       {loading ? (
-        <div style={{ padding: '60px 0', textAlign: 'center', color: UP.sub, fontSize: '0.88rem' }}>
+        <div className="text-a14" style={{ padding: '60px 0', textAlign: 'center', color: UP.sub, }}>
           보안 현황 로딩 중...
         </div>
       ) : (
@@ -200,12 +200,12 @@ export default function SecurityMenu() {
                 }} />
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 4 }}>
                   <div style={{ minWidth: 0, flex: 1 }}>
-                    <p style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: UP.sub, marginBottom: 8 }}>{k.label}</p>
+                    <p className="text-a10" style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: UP.sub, marginBottom: 8 }}>{k.label}</p>
                     <p style={{ fontSize: 'clamp(1.2rem,3vw,1.6rem)', fontWeight: 800, color: k.color, lineHeight: 1.1, ...numeric }}>{k.value}</p>
-                    <p style={{ fontSize: '0.66rem', color: UP.caption, marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.sub}</p>
+                    <p className="text-a10" style={{ color: UP.caption, marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.sub}</p>
                   </div>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: `${k.color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ fontSize: '1.05rem', lineHeight: 1 }}>{k.icon}</span>
+                    <span className="text-a16" style={{ lineHeight: 1 }}>{k.icon}</span>
                   </div>
                 </div>
               </div>
@@ -227,8 +227,8 @@ export default function SecurityMenu() {
                     return (
                       <div key={role}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: meta.color }}>{meta.label}</span>
-                          <span style={{ fontSize: '0.78rem', color: UP.sub, ...numeric }}>{count}명 · {pct}%</span>
+                          <span className="text-a13" style={{ fontWeight: 700, color: meta.color }}>{meta.label}</span>
+                          <span className="text-a12" style={{ color: UP.sub, ...numeric }}>{count}명 · {pct}%</span>
                         </div>
                         <div style={{ height: 8, borderRadius: 999, background: UP.sunken, overflow: 'hidden' }}>
                           <div style={{ height: '100%', width: `${pct}%`, background: meta.color, borderRadius: 999, transition: 'width 0.3s' }} />
@@ -246,18 +246,18 @@ export default function SecurityMenu() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
                 {checks.map(c => (
                   <div key={c.label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: UP.sunken }}>
-                    <span style={{
+                    <span className="text-a11" style={{
                       width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: c.ok ? UP.greenBg : UP.amberBg, color: c.ok ? UP.green : UP.amber,
                       border: `1px solid ${c.ok ? UP.greenLine : UP.amberLine}`,
                     }}>{c.ok ? '✓' : '!'}</span>
-                    <span style={{ flex: 1, fontSize: '0.82rem', fontWeight: 600, color: UP.body }}>{c.label}</span>
-                    <span style={{ fontSize: '0.72rem', color: UP.caption }}>{c.note}</span>
+                    <span className="text-a13" style={{ flex: 1, fontWeight: 600, color: UP.body }}>{c.label}</span>
+                    <span className="text-a11" style={{ color: UP.caption }}>{c.note}</span>
                   </div>
                 ))}
               </div>
-              <p style={{ fontSize: '0.68rem', color: UP.caption, marginTop: 10, lineHeight: 1.5 }}>
+              <p className="text-a11" style={{ color: UP.caption, marginTop: 10, lineHeight: 1.5 }}>
                 ※ 라이브 데이터 기반 요약입니다. 상세 점검·변경은 각 메뉴(설정·관리자 계정·회원 관리)에서 진행하세요.
               </p>
             </section>
@@ -272,9 +272,9 @@ export default function SecurityMenu() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 12 }}>
                 {unmaskLogs.map(log => (
                   <div key={log.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: UP.amberBg, border: `1px solid ${UP.amberLine}` }}>
-                    <span style={{ fontSize: '0.95rem' }}>👁️</span>
-                    <span style={{ flex: 1, fontSize: '0.8rem', color: UP.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.admin_email}</span>
-                    <span style={{ fontSize: '0.72rem', color: UP.sub }}>{fmtRelative(log.created_at)}</span>
+                    <span className="text-a15">👁️</span>
+                    <span className="text-a13" style={{ flex: 1, color: UP.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.admin_email}</span>
+                    <span className="text-a11" style={{ color: UP.sub }}>{fmtRelative(log.created_at)}</span>
                   </div>
                 ))}
               </div>
@@ -294,9 +294,9 @@ export default function SecurityMenu() {
                     borderTop: i === 0 ? 'none' : `1px solid ${UP.hairSoft}`,
                   }}>
                     <span style={{ ...badge('brand'), whiteSpace: 'nowrap' }}>{actionLabel(log.action)}</span>
-                    <span style={{ flex: 1, fontSize: '0.8rem', color: UP.body, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.admin_email}</span>
-                    {log.target_type && <span style={{ fontSize: '0.72rem', color: UP.caption }}>{log.target_type}</span>}
-                    <span style={{ fontSize: '0.72rem', color: UP.sub, whiteSpace: 'nowrap' }}>{fmtRelative(log.created_at)}</span>
+                    <span className="text-a13" style={{ flex: 1, color: UP.body, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.admin_email}</span>
+                    {log.target_type && <span className="text-a11" style={{ color: UP.caption }}>{log.target_type}</span>}
+                    <span className="text-a11" style={{ color: UP.sub, whiteSpace: 'nowrap' }}>{fmtRelative(log.created_at)}</span>
                   </div>
                 ))}
               </div>

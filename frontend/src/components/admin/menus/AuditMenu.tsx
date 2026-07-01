@@ -56,7 +56,7 @@ function DiffView({
       {/* BEFORE 패널 */}
       {before && (
         <div style={{ flex: 1, minWidth: 200 }}>
-          <div style={{ fontSize: '0.68rem', color: UP.danger, fontWeight: 700, marginBottom: 4 }}>BEFORE</div>
+          <div className="text-a11" style={{ color: UP.danger, fontWeight: 700, marginBottom: 4 }}>BEFORE</div>
           <div style={{
             background: 'rgba(239,68,68,0.05)',
             borderRadius: 8, padding: '8px 10px',
@@ -67,10 +67,10 @@ function DiffView({
               if (status === 'added') return null // before에 없는 키는 before 패널에서 표시 안 함
               return (
                 <div key={key} style={{ marginBottom: 3, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: '0.68rem', color: STATUS_COLOR[status], fontWeight: 600, minWidth: 40, flexShrink: 0 }}>
+                  <span className="text-a11" style={{ color: STATUS_COLOR[status], fontWeight: 600, minWidth: 40, flexShrink: 0 }}>
                     {STATUS_LABEL[status]}
                   </span>
-                  <span style={{ fontSize: '0.7rem', color: STATUS_COLOR[status], fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                  <span className="text-a11" style={{ color: STATUS_COLOR[status], fontFamily: 'monospace', wordBreak: 'break-all' }}>
                     <strong style={{ color: STATUS_COLOR[status] }}>{key}:</strong>{' '}
                     {JSON.stringify(val)}
                   </span>
@@ -84,7 +84,7 @@ function DiffView({
       {/* AFTER 패널 */}
       {after && (
         <div style={{ flex: 1, minWidth: 200 }}>
-          <div style={{ fontSize: '0.68rem', color: UP.green, fontWeight: 700, marginBottom: 4 }}>AFTER</div>
+          <div className="text-a11" style={{ color: UP.green, fontWeight: 700, marginBottom: 4 }}>AFTER</div>
           <div style={{
             background: 'rgba(34,197,94,0.05)',
             borderRadius: 8, padding: '8px 10px',
@@ -95,10 +95,10 @@ function DiffView({
               if (status === 'removed') return null // after에 없는 키는 after 패널에서 표시 안 함
               return (
                 <div key={key} style={{ marginBottom: 3, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: '0.68rem', color: STATUS_COLOR[status], fontWeight: 600, minWidth: 40, flexShrink: 0 }}>
+                  <span className="text-a11" style={{ color: STATUS_COLOR[status], fontWeight: 600, minWidth: 40, flexShrink: 0 }}>
                     {STATUS_LABEL[status]}
                   </span>
-                  <span style={{ fontSize: '0.7rem', color: STATUS_COLOR[status], fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                  <span className="text-a11" style={{ color: STATUS_COLOR[status], fontFamily: 'monospace', wordBreak: 'break-all' }}>
                     <strong style={{ color: STATUS_COLOR[status] }}>{key}:</strong>{' '}
                     {JSON.stringify(val)}
                   </span>
@@ -257,10 +257,10 @@ export default function AuditMenu() {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: UP.navy, margin: 0 }}>
+          <h2 className="text-a20" style={{ fontWeight: 800, color: UP.navy, margin: 0 }}>
             Audit Logs
           </h2>
-          <p style={{ fontSize: '0.78rem', color: UP.sub, marginTop: 2 }}>
+          <p className="text-a12" style={{ color: UP.sub, marginTop: 2 }}>
             관리자 행동 감사 기록 (총 {total.toLocaleString()}건)
           </p>
         </div>
@@ -272,10 +272,10 @@ export default function AuditMenu() {
 
       {/* 에러 표시 (조회 실패 — 빈 화면이 "로그 없음"으로 오인되지 않도록) */}
       {error && (
-        <div style={{
+        <div className="text-a13" style={{
           background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
           borderRadius: 10, padding: '12px 16px', marginBottom: 16,
-          color: UP.danger, fontSize: '0.82rem', fontWeight: 600,
+          color: UP.danger, fontWeight: 600,
         }}>
           ⚠️ {error}
         </div>
@@ -324,10 +324,9 @@ export default function AuditMenu() {
         ) : (
           <>
             {/* PC 테이블 헤더 */}
-            <div className="hidden md:grid" style={{
+            <div className="hidden md:grid text-a11" style={{
               gridTemplateColumns: '140px 1fr 130px 100px 100px 50px',
-              padding: '10px 16px', borderBottom: `1px solid ${UP.hairSoft}`,
-              fontSize: '0.7rem', fontWeight: 700, color: UP.caption,
+              padding: '10px 16px', borderBottom: `1px solid ${UP.hairSoft}`, fontWeight: 700, color: UP.caption,
               textTransform: 'uppercase', letterSpacing: '0.05em',
             }}>
               <span>시간</span><span>관리자</span><span>액션</span><span>대상</span><span>IP</span><span>상세</span>
@@ -339,39 +338,38 @@ export default function AuditMenu() {
               return (
                 <div key={log.id}>
                   {/* PC 행 */}
-                  <div className="hidden md:grid" style={{
+                  <div className="hidden md:grid text-a13" style={{
                     gridTemplateColumns: '140px 1fr 130px 100px 100px 50px',
                     padding: '10px 16px', borderBottom: `1px solid ${UP.hairSoft}`,
-                    alignItems: 'center', fontSize: '0.82rem',
+                    alignItems: 'center',
                   }}>
-                    <span style={{ color: UP.sub, fontFamily: 'monospace', fontSize: '0.73rem' }}
+                    <span className="text-a12" style={{ color: UP.sub, fontFamily: 'monospace', }}
                       title={fmtDateTime(log.created_at)}>
                       {fmtRelative(log.created_at)}
                     </span>
                     <span style={{ color: UP.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {log.admin_email}
                     </span>
-                    <span style={{
-                      fontSize: '0.7rem', fontWeight: 700, color,
+                    <span className="text-a11" style={{ fontWeight: 700, color,
                       background: `${color}18`, padding: '3px 8px', borderRadius: 999,
                       display: 'inline-block', width: 'fit-content',
                     }}>
                       {actionLabel(log.action)}
                     </span>
-                    <span style={{ color: UP.sub, fontSize: '0.73rem' }}>
+                    <span className="text-a12" style={{ color: UP.sub, }}>
                       {log.target_type ?? '-'}
                       {log.target_id ? ` #${log.target_id.length > 8 ? log.target_id.slice(0, 8) : log.target_id}` : ''}
                     </span>
-                    <span style={{ color: UP.caption, fontSize: '0.73rem', fontFamily: 'monospace' }}>
+                    <span className="text-a12" style={{ color: UP.caption, fontFamily: 'monospace' }}>
                       {log.ip_address ?? '-'}
                     </span>
                     {hasDetail ? (
                       <button onClick={() => setExpanded(prev => ({ ...prev, [log.id]: !prev[log.id] }))}
-                        style={{ ...btnGhost, padding: '2px 6px', fontSize: '0.68rem' }}>
+                        className="text-a11" style={{ ...btnGhost, padding: '2px 6px', }}>
                         {expanded[log.id] ? '▲' : '▼'}
                       </button>
                     ) : (
-                      <span style={{ color: UP.caption, fontSize: '0.72rem' }}>-</span>
+                      <span className="text-a11" style={{ color: UP.caption, }}>-</span>
                     )}
                   </div>
 
@@ -389,20 +387,20 @@ export default function AuditMenu() {
                   {/* 모바일 카드 */}
                   <div className="md:hidden" style={{ padding: '12px 16px', borderBottom: `1px solid ${UP.hairSoft}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color, background: `${color}18`, padding: '2px 7px', borderRadius: 999 }}>
+                      <span className="text-a11" style={{ fontWeight: 700, color, background: `${color}18`, padding: '2px 7px', borderRadius: 999 }}>
                         {actionLabel(log.action)}
                       </span>
-                      <span style={{ fontSize: '0.7rem', color: UP.sub }}>{fmtRelative(log.created_at)}</span>
+                      <span className="text-a11" style={{ color: UP.sub }}>{fmtRelative(log.created_at)}</span>
                     </div>
-                    <div style={{ fontSize: '0.82rem', color: UP.navy, marginBottom: 2, wordBreak: 'break-all' }}>{log.admin_email}</div>
+                    <div className="text-a13" style={{ color: UP.navy, marginBottom: 2, wordBreak: 'break-all' }}>{log.admin_email}</div>
                     {log.target_type && (
-                      <div style={{ fontSize: '0.72rem', color: UP.sub }}>
+                      <div className="text-a11" style={{ color: UP.sub }}>
                         대상: {log.target_type} {log.target_id ? `· #${log.target_id.slice(0, 8)}` : ''}
                       </div>
                     )}
                     {hasDetail && (
                       <button onClick={() => setExpanded(prev => ({ ...prev, [log.id]: !prev[log.id] }))}
-                        style={{ ...btnGhost, padding: '3px 8px', fontSize: '0.72rem', marginTop: 6 }}>
+                        className="text-a11" style={{ ...btnGhost, padding: '3px 8px', marginTop: 6 }}>
                         상세 {expanded[log.id] ? '접기' : '보기'}
                       </button>
                     )}
@@ -425,7 +423,7 @@ export default function AuditMenu() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
             style={{ ...btnGhost, opacity: page === 1 ? 0.4 : 1 }}>← 이전</button>
-          <span style={{ color: UP.sub, fontSize: '0.82rem', padding: '7px 12px' }}>
+          <span className="text-a13" style={{ color: UP.sub, padding: '7px 12px' }}>
             {page} / {totalPages}
           </span>
           <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
