@@ -136,8 +136,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
     }
     const color = colors[provider.toLowerCase()] ?? UP.brand
     return (
-      <span style={{
-        fontSize: '0.68rem', fontWeight: 700,
+      <span className="text-a11" style={{ fontWeight: 700,
         color: provider.toLowerCase() === 'kakao' ? '#3d1d1d' : '#fff',
         background: color, padding: '2px 7px', borderRadius: 999,
       }}>
@@ -154,8 +153,8 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: UP.navy, margin: 0 }}>회원 관리</h2>
-          <p style={{ fontSize: '0.75rem', color: UP.sub, marginTop: 2 }}>
+          <h2 className="text-a18" style={{ fontWeight: 800, color: UP.navy, margin: 0 }}>회원 관리</h2>
+          <p className="text-a12" style={{ color: UP.sub, marginTop: 2 }}>
             profiles 테이블 · 총 {total.toLocaleString()}명 로그인 회원
           </p>
         </div>
@@ -165,28 +164,27 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
             !unlockMode ? (
               <button
                 onClick={() => { setUnlockError(''); setShowUnlockDialog(true) }}
-                style={{
+                className="text-a13" style={{
                   padding: '7px 14px', borderRadius: 8,
                   border: '1px solid rgba(240,200,0,0.3)',
-                  background: 'rgba(240,200,0,0.08)', color: UP.amber,
-                  fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700,
+                  background: 'rgba(240,200,0,0.08)', color: UP.amber, cursor: 'pointer', fontWeight: 700,
                 }}
               >
                 🔒 마스킹 해제
               </button>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{
+                <span className="text-a12" style={{
                   padding: '4px 12px', borderRadius: 8,
                   background: 'rgba(34,197,94,0.12)',
                   border: '1px solid rgba(34,197,94,0.25)',
-                  color: UP.green, fontSize: '0.78rem', fontWeight: 700,
+                  color: UP.green, fontWeight: 700,
                 }}>
                   🔓 해제 모드 · 행별 보기 가능
                 </span>
                 <button
                   onClick={lockAgain}
-                  style={{ ...btnSecondary, fontSize: '0.75rem', padding: '5px 10px' }}
+                  className="text-a12" style={{ ...btnSecondary, padding: '5px 10px' }}
                 >
                   재잠금
                 </button>
@@ -199,10 +197,9 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
 
       {/* 마스킹 안내 */}
       {!unlockMode && (
-        <div style={{
+        <div className="text-a12" style={{
           marginBottom: 14, padding: '10px 14px', borderRadius: 10,
-          background: 'rgba(240,200,0,0.06)', border: '1px solid rgba(240,200,0,0.15)',
-          fontSize: '0.78rem', color: 'rgba(255,220,50,0.8)', lineHeight: 1.5,
+          background: 'rgba(240,200,0,0.06)', border: '1px solid rgba(240,200,0,0.15)', color: 'rgba(255,220,50,0.8)', lineHeight: 1.5,
         }}>
           🔒 개인정보는 서버에서 마스킹되어 전달됩니다(평문은 브라우저로 내려오지 않음).
           {isSuperAdmin
@@ -246,21 +243,20 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
         {loading ? (
           <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0' }}>로딩 중...</p>
         ) : loadError ? (
-          <p style={{ textAlign: 'center', color: UP.danger, padding: '32px 0', fontSize: '0.85rem' }}>
+          <p className="text-a13" style={{ textAlign: 'center', color: UP.danger, padding: '32px 0', }}>
             {loadError}
           </p>
         ) : members.length === 0 ? (
-          <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>
+          <p className="text-a13" style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', }}>
             조회된 회원이 없습니다.
           </p>
         ) : (
           <>
             {/* PC 테이블 헤더 */}
-            <div className="hidden md:grid" style={{
+            <div className="hidden md:grid text-a11" style={{
               gridTemplateColumns: '1.5fr 90px 90px 110px 80px 80px 70px 60px 70px',
               padding: '10px 16px',
-              borderBottom: `1px solid ${UP.hairSoft}`,
-              fontSize: '0.7rem', fontWeight: 700,
+              borderBottom: `1px solid ${UP.hairSoft}`, fontWeight: 700,
               color: UP.caption,
               textTransform: 'uppercase', letterSpacing: '0.05em',
             }}>
@@ -296,27 +292,26 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                     alignItems: 'center',
                   }}>
                     <div>
-                      <div style={{ fontSize: '0.85rem', color: UP.navy, fontWeight: 600 }}>
+                      <div className="text-a13" style={{ color: UP.navy, fontWeight: 600 }}>
                         {emailDisplay}
                       </div>
-                      <div style={{
-                        fontSize: '0.68rem', color: UP.caption,
+                      <div className="text-a11" style={{ color: UP.caption,
                         fontFamily: 'monospace', marginTop: 1,
                       }}>
                         {idDisplay}
                       </div>
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: UP.body, fontWeight: 600 }}>
+                    <div className="text-a12" style={{ color: UP.body, fontWeight: 600 }}>
                       {nameDisplay}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: UP.sub }}>
+                    <div className="text-a12" style={{ color: UP.sub }}>
                       {birthdateDisplay}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: UP.sub }}>
+                    <div className="text-a12" style={{ color: UP.sub }}>
                       {phoneDisplay}
                     </div>
                     <div>{providerBadge(member.provider)}</div>
-                    <div style={{ fontSize: '0.75rem', color: UP.sub }}>
+                    <div className="text-a12" style={{ color: UP.sub }}>
                       {formatDate(member.created_at)}
                     </div>
                     <div>
@@ -328,8 +323,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                       {(() => {
                         const hasMarketing = member.marketing_sms || member.marketing_email || member.marketing_phone
                         return (
-                          <span style={{
-                            fontSize: '0.7rem', fontWeight: 700,
+                          <span className="text-a11" style={{ fontWeight: 700,
                             color: hasMarketing ? UP.green : UP.caption,
                           }}>
                             {hasMarketing ? '● ' : '○ '}
@@ -345,7 +339,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                           {isRevealing ? '…' : '👁 보기'}
                         </button>
                       ) : rev ? (
-                        <span style={{ fontSize: '0.66rem', color: UP.green, fontWeight: 700 }}>🔓 해제됨</span>
+                        <span className="text-a10" style={{ color: UP.green, fontWeight: 700 }}>🔓 해제됨</span>
                       ) : null}
                     </div>
                   </div>
@@ -355,23 +349,22 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                     padding: '12px 14px', borderBottom: `1px solid ${UP.hairSoft}`,
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <div style={{
-                        fontSize: '0.83rem', color: UP.navy, fontWeight: 600,
+                      <div className="text-a13" style={{ color: UP.navy, fontWeight: 600,
                         flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>
                         {emailDisplay}
                       </div>
                       {member.provider && <div style={{ flexShrink: 0 }}>{providerBadge(member.provider)}</div>}
                     </div>
-                    <div style={{ fontSize: '0.68rem', color: UP.caption, fontFamily: 'monospace', marginBottom: 6 }}>
+                    <div className="text-a11" style={{ color: UP.caption, fontFamily: 'monospace', marginBottom: 6 }}>
                       {idDisplay}
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: '0.72rem', color: UP.sub }}>
+                    <div className="text-a11" style={{ display: 'flex', flexDirection: 'column', gap: 3, color: UP.sub }}>
                       <span>👤 {nameDisplay}</span>
                       <span>🎂 {birthdateDisplay}</span>
                       <span>📱 {phoneDisplay}</span>
                     </div>
-                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: '0.72rem', color: UP.sub, marginTop: 6 }}>
+                    <div className="text-a11" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', color: UP.sub, marginTop: 6 }}>
                       <span>가입: {formatDate(member.created_at)}</span>
                       <span style={{
                         color: member.onboarding_completed ? UP.green : UP.caption,
@@ -391,7 +384,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
                         {isRevealing ? '확인 중…' : '👁 평문 보기'}
                       </button>
                     )}
-                    {rev && <div style={{ fontSize: '0.66rem', color: UP.green, fontWeight: 700, marginTop: 6 }}>🔓 해제됨</div>}
+                    {rev && <div className="text-a10" style={{ color: UP.green, fontWeight: 700, marginTop: 6 }}>🔓 해제됨</div>}
                   </div>
                 </div>
               )
@@ -404,7 +397,7 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
       {totalPages > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ ...btnSecondary, opacity: page === 1 ? 0.4 : 1 }}>← 이전</button>
-          <span style={{ color: UP.sub, fontSize: '0.82rem', padding: '7px 12px' }}>{page} / {totalPages}</span>
+          <span className="text-a13" style={{ color: UP.sub, padding: '7px 12px' }}>{page} / {totalPages}</span>
           <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ ...btnSecondary, opacity: page === totalPages ? 0.4 : 1 }}>다음 →</button>
         </div>
       )}
@@ -413,8 +406,8 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
       {showUnlockDialog && (
         <div style={overlayStyle} onClick={() => setShowUnlockDialog(false)}>
           <div style={modalStyle} onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: '1rem', fontWeight: 800, color: UP.navy, marginBottom: 6 }}>🔐 개인정보 마스킹 해제</div>
-            <p style={{ fontSize: '0.8rem', color: UP.sub, marginBottom: 16, lineHeight: 1.5 }}>
+            <div className="text-a16" style={{ fontWeight: 800, color: UP.navy, marginBottom: 6 }}>🔐 개인정보 마스킹 해제</div>
+            <p className="text-a13" style={{ color: UP.sub, marginBottom: 16, lineHeight: 1.5 }}>
               보안키를 입력하면 해제 모드로 전환됩니다. 이후 각 회원 행의 "보기"를 누를 때마다
               해당 1명의 평문 정보가 서버에서 전송되며, 해제 기록은 감사로그에 남습니다.
             </p>
@@ -425,16 +418,15 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
               onChange={e => { setUnlockKeyInput(e.target.value); setUnlockError('') }}
               onKeyDown={e => e.key === 'Enter' && enterUnlockMode()}
               autoFocus
-              style={{
+              className="text-a14" style={{
                 width: '100%', padding: '10px 12px', borderRadius: 10,
                 border: unlockError ? `1px solid ${UP.danger}` : `1px solid ${UP.hair}`,
-                background: '#fff', color: UP.navy,
-                fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
+                background: '#fff', color: UP.navy, outline: 'none', boxSizing: 'border-box',
                 marginBottom: unlockError ? 6 : 16,
               }}
             />
             {unlockError && (
-              <p style={{ fontSize: '0.78rem', color: UP.danger, marginBottom: 12 }}>{unlockError}</p>
+              <p className="text-a12" style={{ color: UP.danger, marginBottom: 12 }}>{unlockError}</p>
             )}
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setShowUnlockDialog(false)} style={{ ...btnSecondary, flex: 1 }}>취소</button>
@@ -466,6 +458,6 @@ const overlayStyle: React.CSSProperties = {
 }
 const modalStyle: React.CSSProperties = {
   background: '#fff', border: `1px solid ${UP.hair}`,
-  borderRadius: 20, padding: '28px 24px',
+  borderRadius: 16, padding: '28px 24px',
   width: '100%', maxWidth: 400,
 }
