@@ -122,7 +122,7 @@ export default function VisitorTab() {
     <div style={{ padding: 20 }}>
       <div style={{ background: UP.dangerBg, border: `1px solid ${UP.dangerLine}`, borderRadius: 12, padding: 24, color: UP.danger }}>
         <div style={{ fontWeight: 700, marginBottom: 8 }}>방문자 데이터 로드 실패</div>
-        <div style={{ fontSize: '0.82rem', color: UP.sub, marginBottom: 16 }}>{error}</div>
+        <div className="text-a13" style={{ color: UP.sub, marginBottom: 16 }}>{error}</div>
         <button onClick={load} style={btnPrimary}>재시도</button>
       </div>
     </div>
@@ -155,9 +155,9 @@ export default function VisitorTab() {
           { label: '로그인 방문', value: loggedInCount.toLocaleString(), color: UP.strong, icon: '🔐', sub: '회원 방문 수' },
         ].map(k => (
           <div key={k.label} style={{ ...CARD, padding: 'clamp(14px, 2vw, 18px)' }}>
-            <div style={{ fontSize: '0.625rem', color: UP.sub, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k.icon} {k.label}</div>
+            <div className="text-a10" style={{ color: UP.sub, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k.icon} {k.label}</div>
             <div style={{ fontSize: 'clamp(1.15rem, 3vw, 1.6rem)', fontWeight: 800, color: k.color, ...numeric }}>{k.value}</div>
-            {k.sub && <div style={{ fontSize: '0.64rem', color: UP.caption, marginTop: 3 }}>{k.sub}</div>}
+            {k.sub && <div className="text-a10" style={{ color: UP.caption, marginTop: 3 }}>{k.sub}</div>}
           </div>
         ))}
       </div>
@@ -165,36 +165,36 @@ export default function VisitorTab() {
       {/* 인기 페이지 + 유입 경로 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
         <div style={CARD_PAD}>
-          <p style={{ fontSize: '0.84rem', fontWeight: 700, color: UP.navy, marginBottom: 14 }}>🔥 인기 페이지 TOP 10</p>
+          <p className="text-a13" style={{ fontWeight: 700, color: UP.navy, marginBottom: 14 }}>🔥 인기 페이지 TOP 10</p>
           {topPages.length === 0
-            ? <p style={{ color: UP.sub, fontSize: '0.8rem', textAlign: 'center', padding: '20px 0' }}>데이터 없음</p>
+            ? <p className="text-a13" style={{ color: UP.sub, textAlign: 'center', padding: '20px 0' }}>데이터 없음</p>
             : topPages.map((p, i) => (
               <div key={p.page} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
-                <span style={{ fontSize: '0.62rem', color: UP.caption, width: 16, textAlign: 'right', ...numeric }}>{i + 1}</span>
-                <span style={{ flex: 1, minWidth: 0, fontSize: '0.75rem', color: UP.body, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.page}</span>
+                <span className="text-a10" style={{ color: UP.caption, width: 16, textAlign: 'right', ...numeric }}>{i + 1}</span>
+                <span className="text-a12" style={{ flex: 1, minWidth: 0, color: UP.body, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.page}</span>
                 <div style={{ width: 60, height: 4, background: UP.hairSoft, borderRadius: 2, overflow: 'hidden', flexShrink: 0 }}>
                   <div style={{ width: `${p.count / maxPageCount * 100}%`, height: '100%', background: UP.brand, borderRadius: 2 }} />
                 </div>
-                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: UP.strong, width: 36, textAlign: 'right', ...numeric }}>{p.count}</span>
+                <span className="text-a11" style={{ fontWeight: 700, color: UP.strong, width: 36, textAlign: 'right', ...numeric }}>{p.count}</span>
               </div>
             ))
           }
         </div>
 
         <div style={CARD_PAD}>
-          <p style={{ fontSize: '0.84rem', fontWeight: 700, color: UP.navy, marginBottom: 14 }}>🔗 유입 경로</p>
+          <p className="text-a13" style={{ fontWeight: 700, color: UP.navy, marginBottom: 14 }}>🔗 유입 경로</p>
           {topReferrers.length === 0
-            ? <p style={{ color: UP.sub, fontSize: '0.8rem', textAlign: 'center', padding: '20px 0' }}>데이터 없음</p>
+            ? <p className="text-a13" style={{ color: UP.sub, textAlign: 'center', padding: '20px 0' }}>데이터 없음</p>
             : topReferrers.map((r, i) => {
               const c = CHART_SERIES[i % CHART_SERIES.length]
               return (
                 <div key={r.referrer} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   <span style={{ width: 7, height: 7, borderRadius: '50%', background: c, flexShrink: 0 }} />
-                  <span style={{ flex: 1, minWidth: 0, fontSize: '0.75rem', color: UP.body }}>{r.referrer}</span>
+                  <span className="text-a12" style={{ flex: 1, minWidth: 0, color: UP.body }}>{r.referrer}</span>
                   <div style={{ width: 60, height: 4, background: UP.hairSoft, borderRadius: 2, overflow: 'hidden', flexShrink: 0 }}>
                     <div style={{ width: `${r.count / maxRefCount * 100}%`, height: '100%', background: c, borderRadius: 2 }} />
                   </div>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: c, width: 36, textAlign: 'right', ...numeric }}>{r.count}</span>
+                  <span className="text-a11" style={{ fontWeight: 700, color: c, width: 36, textAlign: 'right', ...numeric }}>{r.count}</span>
                 </div>
               )
             })
@@ -204,13 +204,13 @@ export default function VisitorTab() {
 
       {/* 최근 방문 기록 테이블 */}
       <div style={CARD_PAD}>
-        <p style={{ fontSize: '0.84rem', fontWeight: 700, color: UP.navy, marginBottom: 14 }}>최근 방문 기록</p>
+        <p className="text-a13" style={{ fontWeight: 700, color: UP.navy, marginBottom: 14 }}>최근 방문 기록</p>
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+          <table className="text-a12" style={{ width: '100%', borderCollapse: 'collapse', }}>
             <thead>
               <tr style={{ background: UP.sunken, borderBottom: `1px solid ${UP.hair}` }}>
                 {['방문시각', '페이지', '방문자', '유입경로', '상태'].map(h => (
-                  <th key={h} style={{ padding: '8px 10px', textAlign: 'left', color: UP.sub, fontWeight: 700, fontSize: '0.625rem', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{h}</th>
+                  <th key={h} className="text-a10" style={{ padding: '8px 10px', textAlign: 'left', color: UP.sub, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -226,25 +226,24 @@ export default function VisitorTab() {
                   <td style={{ padding: '7px 10px' }}>
                     {l.profile ? (
                       <div>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: UP.strong }}>{l.profile.full_name ?? '이름없음'}</div>
-                        <div style={{ fontSize: '0.65rem', color: UP.caption, marginTop: 1 }}>{l.profile.email ?? '-'}</div>
+                        <div className="text-a12" style={{ fontWeight: 600, color: UP.strong }}>{l.profile.full_name ?? '이름없음'}</div>
+                        <div className="text-a10" style={{ color: UP.caption, marginTop: 1 }}>{l.profile.email ?? '-'}</div>
                       </div>
                     ) : l.user_id ? (
                       <div>
-                        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: UP.sub }}>회원 (프로필 없음)</div>
-                        <div style={{ fontSize: '0.62rem', color: UP.caption, fontFamily: 'monospace', marginTop: 1 }}>{l.user_id.slice(0, 8)}…</div>
+                        <div className="text-a11" style={{ fontWeight: 600, color: UP.sub }}>회원 (프로필 없음)</div>
+                        <div className="text-a10" style={{ color: UP.caption, fontFamily: 'monospace', marginTop: 1 }}>{l.user_id.slice(0, 8)}…</div>
                       </div>
                     ) : (
                       <div>
-                        <div style={{ fontSize: '0.7rem', color: UP.sub }}>비회원</div>
-                        <div style={{ fontSize: '0.62rem', color: UP.caption, fontFamily: 'monospace', marginTop: 1 }}>({l.session_id.slice(0, 8)}…)</div>
+                        <div className="text-a11" style={{ color: UP.sub }}>비회원</div>
+                        <div className="text-a10" style={{ color: UP.caption, fontFamily: 'monospace', marginTop: 1 }}>({l.session_id.slice(0, 8)}…)</div>
                       </div>
                     )}
                   </td>
                   <td style={{ padding: '7px 10px', color: UP.sub }}>{formatReferrer(l.referrer)}</td>
                   <td style={{ padding: '7px 10px' }}>
-                    <span style={{
-                      fontSize: '0.625rem', padding: '2px 7px', borderRadius: 6, fontWeight: 700,
+                    <span className="text-a10" style={{ padding: '2px 7px', borderRadius: 6, fontWeight: 700,
                       background: l.user_id ? UP.brandBg : UP.sunken,
                       color: l.user_id ? UP.strong : UP.caption,
                       border: `1px solid ${l.user_id ? UP.brandLine : UP.hair}`,
@@ -260,7 +259,7 @@ export default function VisitorTab() {
             </tbody>
           </table>
           {logs.length > 50 && (
-            <p style={{ textAlign: 'center', fontSize: '0.72rem', color: UP.caption, marginTop: 12 }}>
+            <p className="text-a11" style={{ textAlign: 'center', color: UP.caption, marginTop: 12 }}>
               최근 50건 표시 중 (전체 {logs.length.toLocaleString()}건은 엑셀로 다운로드)
             </p>
           )}

@@ -53,7 +53,7 @@ export default function AuditLogTable({ logs, total, page, onPageChange }: Props
   return (
     <div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        <span style={{ fontSize: '0.82rem', color: UP.sub, flex: 1 }}>
+        <span className="text-a13" style={{ color: UP.sub, flex: 1 }}>
           전체 {total}건
         </span>
         <button onClick={handleExportCsv} style={exportBtn}>CSV 다운로드</button>
@@ -61,7 +61,7 @@ export default function AuditLogTable({ logs, total, page, onPageChange }: Props
       </div>
 
       <div style={{ overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+        <table className="text-a13" style={{ width: '100%', borderCollapse: 'collapse', }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${UP.hairSoft}` }}>
               {['시간', '관리자', '행동', '대상', 'IP'].map(h => (
@@ -77,8 +77,7 @@ export default function AuditLogTable({ logs, total, page, onPageChange }: Props
                 <td style={{ padding: '8px 10px', color: UP.sub, whiteSpace: 'nowrap' }}>{fmt(log.created_at)}</td>
                 <td style={{ padding: '8px 10px', color: UP.body, whiteSpace: 'nowrap' }}>{log.admin_email.split('@')[0]}</td>
                 <td style={{ padding: '8px 10px' }}>
-                  <span style={{
-                    fontSize: '0.72rem',
+                  <span className="text-a11" style={{
                     fontWeight: 700,
                     color: ACTION_COLOR[log.action] ?? UP.sub,
                     background: `${ACTION_COLOR[log.action] ?? UP.sub}18`,
@@ -100,7 +99,7 @@ export default function AuditLogTable({ logs, total, page, onPageChange }: Props
           </tbody>
         </table>
         {logs.length === 0 && (
-          <p style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', fontSize: '0.85rem' }}>
+          <p className="text-a13" style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', }}>
             로그가 없습니다.
           </p>
         )}
@@ -112,13 +111,12 @@ export default function AuditLogTable({ logs, total, page, onPageChange }: Props
             <button
               key={p}
               onClick={() => onPageChange(p)}
-              style={{
+              className="text-a12" style={{
                 padding: '4px 10px',
                 borderRadius: 6,
                 border: 'none',
                 background: p === page ? UP.brand : UP.hairSoft,
                 color: p === page ? '#fff' : UP.sub,
-                fontSize: '0.78rem',
                 fontWeight: 600,
                 cursor: 'pointer',
               }}

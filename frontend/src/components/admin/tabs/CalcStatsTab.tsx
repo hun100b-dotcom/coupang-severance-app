@@ -130,7 +130,7 @@ export default function CalcStatsTab() {
     <div style={{ padding: 20 }}>
       <div style={{ background: UP.dangerBg, border: `1px solid ${UP.dangerLine}`, borderRadius: 12, padding: 24, color: UP.danger }}>
         <div style={{ fontWeight: 700, marginBottom: 8 }}>데이터 로드 실패</div>
-        <div style={{ fontSize: '0.82rem', color: UP.sub, marginBottom: 16 }}>{error}</div>
+        <div className="text-a13" style={{ color: UP.sub, marginBottom: 16 }}>{error}</div>
         <button onClick={load} style={btnPrimary}>재시도</button>
       </div>
     </div>
@@ -163,9 +163,9 @@ export default function CalcStatsTab() {
           { label: '연차수당', value: byService.annual.toLocaleString(), color: UP.strong, icon: '📆' },
         ].map(k => (
           <div key={k.label} style={{ ...CARD, padding: 'clamp(14px, 2vw, 18px)' }}>
-            <div style={{ fontSize: '0.625rem', color: UP.sub, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k.icon} {k.label}</div>
+            <div className="text-a10" style={{ color: UP.sub, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k.icon} {k.label}</div>
             <div style={{ fontSize: 'clamp(1.15rem, 3vw, 1.6rem)', fontWeight: 800, color: k.color, ...numeric }}>{k.value}</div>
-            <div style={{ fontSize: '0.64rem', color: UP.caption, marginTop: 3 }}>계산 건수</div>
+            <div className="text-a10" style={{ color: UP.caption, marginTop: 3 }}>계산 건수</div>
           </div>
         ))}
       </div>
@@ -173,21 +173,21 @@ export default function CalcStatsTab() {
       {/* 퇴직금 적격 KPI */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div style={{ background: UP.greenBg, border: `1px solid ${UP.greenLine}`, borderRadius: 12, padding: 'clamp(14px, 2vw, 18px)' }}>
-          <div style={{ fontSize: '0.625rem', color: UP.green, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>✅ 퇴직금 적격률</div>
+          <div className="text-a10" style={{ color: UP.green, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>✅ 퇴직금 적격률</div>
           <div style={{ fontSize: 'clamp(1.3rem, 4vw, 2rem)', fontWeight: 800, color: UP.green, ...numeric }}>{eligibleRate}%</div>
-          <div style={{ fontSize: '0.64rem', color: UP.sub, marginTop: 3, ...numeric }}>{eligible.toLocaleString()}건 / {severanceReports.length.toLocaleString()}건</div>
+          <div className="text-a10" style={{ color: UP.sub, marginTop: 3, ...numeric }}>{eligible.toLocaleString()}건 / {severanceReports.length.toLocaleString()}건</div>
         </div>
         <div style={{ background: UP.brandBg, border: `1px solid ${UP.brandLine}`, borderRadius: 12, padding: 'clamp(14px, 2vw, 18px)' }}>
-          <div style={{ fontSize: '0.625rem', color: UP.strong, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>💎 평균 퇴직금</div>
+          <div className="text-a10" style={{ color: UP.strong, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>💎 평균 퇴직금</div>
           <div style={{ fontSize: 'clamp(1.15rem, 3vw, 1.6rem)', fontWeight: 800, color: UP.strong, ...numeric }}>{fmtMoney(avgSeverance)}</div>
-          <div style={{ fontSize: '0.64rem', color: UP.sub, marginTop: 3 }}>적격자 기준</div>
+          <div className="text-a10" style={{ color: UP.sub, marginTop: 3 }}>적격자 기준</div>
         </div>
       </div>
 
       {/* 일별 트렌드 차트 */}
       {dailyData.length > 1 && (
         <div style={{ ...CARD_PAD, marginBottom: 12 }}>
-          <p style={{ fontSize: '0.84rem', fontWeight: 700, color: UP.navy, marginBottom: 14 }}>일별 계산 추이</p>
+          <p className="text-a13" style={{ fontWeight: 700, color: UP.navy, marginBottom: 14 }}>일별 계산 추이</p>
           <ResponsiveContainer width="100%" height={160}>
             <AreaChart data={dailyData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
               <defs>
@@ -211,9 +211,9 @@ export default function CalcStatsTab() {
 
       {/* 퇴직금 구간 분포 */}
       <div style={CARD_PAD}>
-        <p style={{ fontSize: '0.84rem', fontWeight: 700, color: UP.navy, marginBottom: 14 }}>퇴직금 구간 분포</p>
+        <p className="text-a13" style={{ fontWeight: 700, color: UP.navy, marginBottom: 14 }}>퇴직금 구간 분포</p>
         {severanceReports.length === 0 ? (
-          <p style={{ color: UP.sub, fontSize: '0.8rem', textAlign: 'center', padding: '20px 0' }}>퇴직금 계산 데이터가 없습니다.</p>
+          <p className="text-a13" style={{ color: UP.sub, textAlign: 'center', padding: '20px 0' }}>퇴직금 계산 데이터가 없습니다.</p>
         ) : (
           <ResponsiveContainer width="100%" height={160}>
             <BarChart data={rangeData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>

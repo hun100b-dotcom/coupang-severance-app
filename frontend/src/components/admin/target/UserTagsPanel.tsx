@@ -21,15 +21,15 @@ export default function UserTagsPanel({ tags, usersWithTags }: Props) {
       padding: 'clamp(12px,3vw,20px)',
     }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 16 }}>
-        <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>
+        <p className="text-a13" style={{ fontWeight: 700, color: '#475569' }}>
           자동 태그 분포
         </p>
-        <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+        <span className="text-a11" style={{ color: '#64748b' }}>
           태그 보유 유저 {usersWithTags}명
         </span>
       </div>
       {tags.length === 0 && (
-        <p style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', padding: '16px 0' }}>
+        <p className="text-a13" style={{ color: '#94a3b8', textAlign: 'center', padding: '16px 0' }}>
           태그 데이터 없음
         </p>
       )}
@@ -44,11 +44,10 @@ export default function UserTagsPanel({ tags, usersWithTags }: Props) {
             alignItems: 'center',
             gap: 8,
           }}>
-            <span style={{ fontSize: '0.82rem', color: TAG_COLORS[t.tag] ?? '#6c5ce7', fontWeight: 700 }}>
+            <span className="text-a13" style={{ color: TAG_COLORS[t.tag] ?? '#6c5ce7', fontWeight: 700 }}>
               {t.tag}
             </span>
-            <span style={{
-              fontSize: '0.75rem',
+            <span className="text-a12" style={{
               background: `${TAG_COLORS[t.tag] ?? '#6c5ce7'}30`,
               color: TAG_COLORS[t.tag] ?? '#6c5ce7',
               borderRadius: 999,

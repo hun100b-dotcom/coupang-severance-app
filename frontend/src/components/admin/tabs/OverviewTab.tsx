@@ -89,8 +89,8 @@ export default function OverviewTab() {
           padding: '24px',
           color: UP.danger,
         }}>
-          <div style={{ fontWeight: 700, marginBottom: 8, fontSize: '0.95rem' }}>대시보드 로드 실패</div>
-          <div style={{ fontSize: '0.82rem', color: UP.sub, marginBottom: 16 }}>
+          <div className="text-a15" style={{ fontWeight: 700, marginBottom: 8, }}>대시보드 로드 실패</div>
+          <div className="text-a13" style={{ color: UP.sub, marginBottom: 16 }}>
             {error || '데이터를 불러오지 못했습니다.'}
           </div>
           <button onClick={load} style={btnPrimary}>재시도</button>
@@ -161,7 +161,7 @@ export default function OverviewTab() {
       {/* 문의 상태 분포 바 */}
       {stats.inquiries.total > 0 && (
         <div style={{ ...CARD, padding: '16px 20px', marginBottom: 12 }}>
-          <p style={{ fontSize: '0.84rem', fontWeight: 700, color: UP.navy, marginBottom: 10 }}>
+          <p className="text-a13" style={{ fontWeight: 700, color: UP.navy, marginBottom: 10 }}>
             문의 상태 분포
           </p>
           <div style={{ display: 'flex', gap: 2, height: 8, borderRadius: 99, overflow: 'hidden', marginBottom: 10 }}>
@@ -187,8 +187,8 @@ export default function OverviewTab() {
             ].map(s => (
               <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color }} />
-                <span style={{ fontSize: '0.73rem', color: UP.sub }}>{s.label}</span>
-                <span style={{ fontSize: '0.73rem', fontWeight: 700, color: s.color, ...numeric }}>{s.count}</span>
+                <span className="text-a12" style={{ color: UP.sub }}>{s.label}</span>
+                <span className="text-a12" style={{ fontWeight: 700, color: s.color, ...numeric }}>{s.count}</span>
               </div>
             ))}
           </div>
@@ -201,7 +201,7 @@ export default function OverviewTab() {
       {/* 최근 공지사항 */}
       {recentNotices.length > 0 && (
         <div style={{ ...CARD, padding: '16px 20px', marginTop: 12 }}>
-          <p style={{ fontSize: '0.84rem', fontWeight: 700, color: UP.navy, marginBottom: 10 }}>
+          <p className="text-a13" style={{ fontWeight: 700, color: UP.navy, marginBottom: 10 }}>
             최근 공지사항
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -215,8 +215,7 @@ export default function OverviewTab() {
                 background: UP.sunken,
                 border: `1px solid ${UP.hairSoft}`,
               }}>
-                <span style={{
-                  fontSize: '0.64rem', fontWeight: 700,
+                <span className="text-a10" style={{ fontWeight: 700,
                   padding: '2px 7px', borderRadius: 6,
                   background: n.is_active ? UP.brandBg : UP.sunken,
                   color: n.is_active ? UP.strong : UP.caption,
@@ -224,13 +223,13 @@ export default function OverviewTab() {
                 }}>
                   {n.is_active ? '활성' : '비활성'}
                 </span>
-                <span style={{
-                  flex: 1, fontSize: '0.8rem', color: UP.body,
+                <span className="text-a13" style={{
+                  flex: 1, color: UP.body,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>
                   {n.title || '(제목 없음)'}
                 </span>
-                <span style={{ fontSize: '0.72rem', color: UP.caption, flexShrink: 0, ...numeric }}>
+                <span className="text-a11" style={{ color: UP.caption, flexShrink: 0, ...numeric }}>
                   {n.created_at?.slice(0, 10)}
                 </span>
               </div>

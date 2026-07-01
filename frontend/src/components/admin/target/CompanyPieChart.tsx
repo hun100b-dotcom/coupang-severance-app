@@ -23,7 +23,7 @@ export default function CompanyPieChart({ companies }: Props) {
         사업장별 계산 비중
       </p>
       {top.length === 0 ? (
-        <p style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', padding: '40px 0' }}>데이터 없음</p>
+        <p className="text-a13" style={{ color: '#94a3b8', textAlign: 'center', padding: '40px 0' }}>데이터 없음</p>
       ) : (
         <ResponsiveContainer width="100%" height={240}>
           <PieChart>

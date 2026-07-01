@@ -82,7 +82,7 @@ export default function RecruitTab() {
     <div style={{ padding: 20 }}>
       <div style={{ background: UP.dangerBg, border: `1px solid ${UP.dangerLine}`, borderRadius: 12, padding: 24, color: UP.danger }}>
         <div style={{ fontWeight: 700, marginBottom: 8 }}>데이터 로드 실패</div>
-        <div style={{ fontSize: '0.82rem', color: UP.sub, marginBottom: 16 }}>{error}</div>
+        <div className="text-a13" style={{ color: UP.sub, marginBottom: 16 }}>{error}</div>
         <button onClick={load} style={btnPrimary}>재시도</button>
       </div>
     </div>
@@ -110,7 +110,7 @@ export default function RecruitTab() {
           { label: '삭제된 공고', value: postings.filter(p => p.status === 'deleted').length, color: UP.sub, icon: '🗑️' },
         ].map(k => (
           <div key={k.label} style={{ ...CARD, padding: 'clamp(14px, 2vw, 18px)' }}>
-            <div style={{ fontSize: '0.625rem', color: UP.sub, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k.icon} {k.label}</div>
+            <div className="text-a10" style={{ color: UP.sub, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k.icon} {k.label}</div>
             <div style={{ fontSize: 'clamp(1.15rem, 3vw, 1.5rem)', fontWeight: 800, color: k.color, ...numeric }}>{k.value}</div>
           </div>
         ))}
@@ -125,7 +125,7 @@ export default function RecruitTab() {
           { label: '대기', value: appStats.pending, color: UP.amber, icon: '⏳' },
         ].map(k => (
           <div key={k.label} style={{ ...CARD, padding: 'clamp(14px, 2vw, 18px)' }}>
-            <div style={{ fontSize: '0.625rem', color: UP.sub, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k.icon} {k.label}</div>
+            <div className="text-a10" style={{ color: UP.sub, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k.icon} {k.label}</div>
             <div style={{ fontSize: 'clamp(1.15rem, 3vw, 1.5rem)', fontWeight: 800, color: k.color, ...numeric }}>{k.value}</div>
           </div>
         ))}
@@ -133,7 +133,7 @@ export default function RecruitTab() {
 
       {/* 섹션별 분포 */}
       <div style={{ ...CARD_PAD, marginBottom: 12 }}>
-        <p style={{ fontSize: '0.84rem', fontWeight: 700, color: UP.navy, marginBottom: 14 }}>섹션별 공고 분포</p>
+        <p className="text-a13" style={{ fontWeight: 700, color: UP.navy, marginBottom: 14 }}>섹션별 공고 분포</p>
         <div style={{ display: 'flex', gap: 3, height: 10, borderRadius: 99, overflow: 'hidden', marginBottom: 12 }}>
           {Object.entries(sectionCounts).map(([key, count], i) => (
             <div key={key} style={{ flex: count, background: SECTION_COLORS[i], minWidth: count > 0 ? 4 : 0, transition: 'flex 0.3s' }} />
@@ -143,8 +143,8 @@ export default function RecruitTab() {
           {Object.entries(sectionCounts).map(([key, count], i) => (
             <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: SECTION_COLORS[i] }} />
-              <span style={{ fontSize: '0.73rem', color: UP.sub }}>{key}</span>
-              <span style={{ fontSize: '0.73rem', fontWeight: 700, color: SECTION_COLORS[i], ...numeric }}>{count}건</span>
+              <span className="text-a12" style={{ color: UP.sub }}>{key}</span>
+              <span className="text-a12" style={{ fontWeight: 700, color: SECTION_COLORS[i], ...numeric }}>{count}건</span>
             </div>
           ))}
         </div>
@@ -152,13 +152,13 @@ export default function RecruitTab() {
 
       {/* 최근 공고 테이블 */}
       <div style={CARD_PAD}>
-        <p style={{ fontSize: '0.84rem', fontWeight: 700, color: UP.navy, marginBottom: 14 }}>최근 공고 목록</p>
+        <p className="text-a13" style={{ fontWeight: 700, color: UP.navy, marginBottom: 14 }}>최근 공고 목록</p>
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+          <table className="text-a12" style={{ width: '100%', borderCollapse: 'collapse', }}>
             <thead>
               <tr style={{ background: UP.sunken, borderBottom: `1px solid ${UP.hair}` }}>
                 {['등록일', '회사명', '센터명', '섹션', '상태', '조회수'].map(h => (
-                  <th key={h} style={{ padding: '8px 10px', textAlign: 'left', color: UP.sub, fontWeight: 700, fontSize: '0.625rem', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{h}</th>
+                  <th key={h} className="text-a10" style={{ padding: '8px 10px', textAlign: 'left', color: UP.sub, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -171,14 +171,13 @@ export default function RecruitTab() {
                 >
                   <td style={{ padding: '7px 10px', color: UP.caption, whiteSpace: 'nowrap', ...numeric }}>{p.created_at.slice(0, 10)}</td>
                   <td style={{ padding: '7px 10px', color: UP.body, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {p.is_urgent && <span style={{ fontSize: '0.6rem', background: UP.amberBg, color: UP.amber, padding: '1px 4px', borderRadius: 4, marginRight: 4, border: `1px solid ${UP.amberLine}` }}>긴급</span>}
+                    {p.is_urgent && <span className="text-a10" style={{ background: UP.amberBg, color: UP.amber, padding: '1px 4px', borderRadius: 4, marginRight: 4, border: `1px solid ${UP.amberLine}` }}>긴급</span>}
                     {p.company_name}
                   </td>
                   <td style={{ padding: '7px 10px', color: UP.sub, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.center_name}</td>
                   <td style={{ padding: '7px 10px', color: UP.body }}>{p.section === 'today-urgent' ? '오늘긴급' : p.section === 'tomorrow-urgent' ? '내일긴급' : '상시'}</td>
                   <td style={{ padding: '7px 10px' }}>
-                    <span style={{
-                      fontSize: '0.625rem', padding: '2px 7px', borderRadius: 6, fontWeight: 700,
+                    <span className="text-a10" style={{ padding: '2px 7px', borderRadius: 6, fontWeight: 700,
                       background: p.status === 'active' ? UP.greenBg : UP.sunken,
                       color: p.status === 'active' ? UP.green : UP.caption,
                       border: `1px solid ${p.status === 'active' ? UP.greenLine : UP.hair}`,

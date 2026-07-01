@@ -22,7 +22,7 @@ export default function WorkDurationSegment({ data }: Props) {
         근무기간별 분포
       </p>
       {data.length === 0 ? (
-        <p style={{ fontSize: '0.82rem', color: '#94a3b8', textAlign: 'center', padding: '24px 0' }}>데이터 없음</p>
+        <p className="text-a13" style={{ color: '#94a3b8', textAlign: 'center', padding: '24px 0' }}>데이터 없음</p>
       ) : (
         <ResponsiveContainer width="100%" height={170}>
           <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, left: 56, bottom: 0 }}>
