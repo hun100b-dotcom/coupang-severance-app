@@ -386,11 +386,11 @@ export default function ApplicantsMenu() {
   return (
     <div style={{ padding: 'clamp(16px,4vw,32px)', position: 'relative' }}>
       {toast && (
-        <div style={{
+        <div className="text-a14" style={{
           position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
           zIndex: 9999, minWidth: 280, maxWidth: 420, padding: '12px 20px', borderRadius: 12,
           background: toast.type === 'success' ? 'rgba(49,200,100,0.95)' : 'rgba(240,68,82,0.95)',
-          color: '#fff', fontWeight: 700, fontSize: '0.9rem',
+          color: '#fff', fontWeight: 700,
           boxShadow: '0 8px 32px rgba(16,24,40,0.18)', backdropFilter: 'blur(8px)',
           textAlign: 'center', pointerEvents: 'none',
         }}>
@@ -401,8 +401,8 @@ export default function ApplicantsMenu() {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px', color: UP.navy }}>👥 지원자 관리</h2>
-          <p style={{ fontSize: '0.8rem', color: UP.sub, margin: 0 }}>
+          <h2 className="text-a20" style={{ fontWeight: 800, margin: '0 0 4px', color: UP.navy }}>👥 지원자 관리</h2>
+          <p className="text-a13" style={{ color: UP.sub, margin: 0 }}>
             지원자 상태를 검토중 → 출근확정 순으로 처리하세요. 총 {displayApplicants.length}명
           </p>
         </div>
@@ -412,28 +412,27 @@ export default function ApplicantsMenu() {
             !unlockMode ? (
               <button
                 onClick={() => { setUnlockError(''); setShowUnlockDialog(true) }}
-                style={{
+                className="text-a13" style={{
                   padding: '7px 14px', borderRadius: 10,
                   border: '1px solid rgba(240,200,0,0.35)',
-                  background: 'rgba(240,200,0,0.10)', color: UP.amber,
-                  fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700,
+                  background: 'rgba(240,200,0,0.10)', color: UP.amber, cursor: 'pointer', fontWeight: 700,
                 }}
               >
                 🔒 마스킹 해제
               </button>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{
+                <span className="text-a12" style={{
                   padding: '5px 12px', borderRadius: 10,
                   background: 'rgba(49,200,100,0.12)', border: '1px solid rgba(49,200,100,0.25)',
-                  color: UP.green, fontSize: '0.78rem', fontWeight: 700,
+                  color: UP.green, fontWeight: 700,
                 }}>
                   🔓 해제 모드 · 행별 보기 가능
                 </span>
                 <button onClick={lockAgain}
-                  style={{
+                  className="text-a12" style={{
                     padding: '5px 10px', borderRadius: 8, border: `1px solid ${UP.hair}`,
-                    background: UP.sunken, color: UP.sub, fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600,
+                    background: UP.sunken, color: UP.sub, cursor: 'pointer', fontWeight: 600,
                   }}>
                   재잠금
                 </button>
@@ -448,10 +447,9 @@ export default function ApplicantsMenu() {
 
       {/* 마스킹 안내 */}
       {!unlockMode && (
-        <div style={{
+        <div className="text-a12" style={{
           marginBottom: 14, padding: '10px 14px', borderRadius: 10,
-          background: 'rgba(240,200,0,0.06)', border: '1px solid rgba(240,200,0,0.18)',
-          fontSize: '0.78rem', color: UP.amber, lineHeight: 1.5,
+          background: 'rgba(240,200,0,0.06)', border: '1px solid rgba(240,200,0,0.18)', color: UP.amber, lineHeight: 1.5,
         }}>
           🔒 개인정보(이름·생년월일·전화·회원명·이메일)는 서버에서 마스킹되어 전달됩니다(평문은 브라우저로 내려오지 않음).
           {isSuperAdmin
@@ -544,10 +542,9 @@ export default function ApplicantsMenu() {
         <div style={{ marginBottom: 8 }}>
           <button
             onClick={() => { setShiftFilter(''); setTaskFilter(''); setPhoneFilter(''); setNameFilter('') }}
-            style={{
+            className="text-a12" style={{
               padding: '5px 10px', borderRadius: 8, border: `1px solid ${UP.hair}`,
-              background: UP.sunken, color: UP.sub,
-              fontSize: '0.75rem', cursor: 'pointer',
+              background: UP.sunken, color: UP.sub, cursor: 'pointer',
             }}
           >
             ✕ 초기화
@@ -559,11 +556,10 @@ export default function ApplicantsMenu() {
       <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
         {(['all', 'applied', 'reviewing', 'confirmed', 'completed', 'cancelled', 'rejected'] as const).map(s => (
           <button key={s} onClick={() => setStatusFilter(s)}
-            style={{
+            className="text-a12" style={{
               padding: '4px 12px', borderRadius: 999, border: 'none',
               background: statusFilter === s ? UP.brand : UP.hairSoft,
-              color: statusFilter === s ? '#fff' : UP.sub,
-              fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+              color: statusFilter === s ? '#fff' : UP.sub, fontWeight: 600, cursor: 'pointer',
             }}>
             {s === 'all' ? '전체' : STATUS_LABEL[s]}
           </button>
@@ -578,43 +574,39 @@ export default function ApplicantsMenu() {
           background: 'rgba(49,130,246,0.12)', border: '1px solid rgba(49,130,246,0.25)',
           flexWrap: 'wrap',
         }}>
-          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: UP.brand }}>
+          <span className="text-a13" style={{ fontWeight: 700, color: UP.brand }}>
             {selectedIds.size}명 선택됨
           </span>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={() => handleBulkUpdate('reviewing')} disabled={bulkUpdating}
-              style={{
+              className="text-a13" style={{
                 padding: '6px 16px', borderRadius: 8, border: 'none',
-                background: 'rgba(255,180,0,0.15)', color: UP.amber,
-                fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+                background: 'rgba(255,180,0,0.15)', color: UP.amber, fontWeight: 700, cursor: 'pointer',
                 opacity: bulkUpdating ? 0.5 : 1,
               }}>
               🔍 일괄 검토중
             </button>
             <button onClick={() => handleBulkUpdate('confirmed')} disabled={bulkUpdating}
-              style={{
+              className="text-a13" style={{
                 padding: '6px 16px', borderRadius: 8, border: 'none',
-                background: 'rgba(49,200,100,0.15)', color: UP.green,
-                fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+                background: 'rgba(49,200,100,0.15)', color: UP.green, fontWeight: 700, cursor: 'pointer',
                 opacity: bulkUpdating ? 0.5 : 1,
               }}>
               ✅ 일괄 확정
             </button>
             <button onClick={() => handleBulkUpdate('rejected')} disabled={bulkUpdating}
-              style={{
+              className="text-a13" style={{
                 padding: '6px 16px', borderRadius: 8, border: 'none',
-                background: 'rgba(240,68,82,0.15)', color: UP.danger,
-                fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer',
+                background: 'rgba(240,68,82,0.15)', color: UP.danger, fontWeight: 700, cursor: 'pointer',
                 opacity: bulkUpdating ? 0.5 : 1,
               }}>
               ✕ 일괄 거절
             </button>
           </div>
           <button onClick={() => setSelectedIds(new Set())}
-            style={{
+            className="text-a12" style={{
               marginLeft: 'auto', padding: '4px 10px', borderRadius: 6, border: `1px solid ${UP.hair}`,
-              background: UP.sunken, color: UP.sub,
-              fontSize: '0.75rem', cursor: 'pointer',
+              background: UP.sunken, color: UP.sub, cursor: 'pointer',
             }}>
             선택 해제
           </button>
@@ -623,15 +615,15 @@ export default function ApplicantsMenu() {
 
       {/* 에러 */}
       {error && (
-        <div style={{
+        <div className="text-a13" style={{
           background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
           borderRadius: 10, padding: '12px 16px', marginBottom: 12,
-          color: UP.danger, fontSize: '0.82rem',
+          color: UP.danger,
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <span>⚠️ {error}</span>
           <button onClick={() => { setError(null); fetchApplicants() }}
-            style={{ background: 'none', border: 'none', color: UP.danger, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}>
+            className="text-a13" style={{ background: 'none', border: 'none', color: UP.danger, cursor: 'pointer', fontWeight: 700 }}>
             다시 시도 ↻
           </button>
         </div>
@@ -639,7 +631,7 @@ export default function ApplicantsMenu() {
 
       {/* 지원자 테이블 */}
       {loading ? (
-        <p style={{ color: UP.caption, fontSize: '0.85rem' }}>불러오는 중...</p>
+        <p className="text-a13" style={{ color: UP.caption, }}>불러오는 중...</p>
       ) : (
         <div style={{ background: '#fff', borderRadius: RADIUS.card, overflow: 'hidden', border: `1px solid ${UP.hair}` }}>
           <div style={{ overflowX: 'auto' }}>
@@ -705,10 +697,10 @@ export default function ApplicantsMenu() {
 
                       {/* 지원자 계정 정보 (회원명/이메일 — 마스킹) */}
                       <td style={cellStyle}>
-                        <div style={{ fontWeight: 600, fontSize: '0.82rem' }}>
+                        <div className="text-a13" style={{ fontWeight: 600, }}>
                           {profileName}
                         </div>
-                        <div style={{ fontSize: '0.7rem', color: UP.sub, marginTop: 1 }}>
+                        <div className="text-a11" style={{ color: UP.sub, marginTop: 1 }}>
                           {profileEmail}
                         </div>
                         {/* 평문 보기 (해제 모드 + 슈퍼관리자) */}
@@ -718,7 +710,7 @@ export default function ApplicantsMenu() {
                             {isRevealing ? '확인 중…' : '👁 보기'}
                           </button>
                         ) : rev ? (
-                          <div style={{ fontSize: '0.64rem', color: UP.green, fontWeight: 700, marginTop: 4 }}>🔓 해제됨</div>
+                          <div className="text-a10" style={{ color: UP.green, fontWeight: 700, marginTop: 4 }}>🔓 해제됨</div>
                         ) : null}
                       </td>
 
@@ -726,27 +718,27 @@ export default function ApplicantsMenu() {
                       <td style={cellStyle}>
                         {app.has_applicant_info ? (
                           <>
-                            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: UP.navy }}>
+                            <div className="text-a13" style={{ fontWeight: 700, color: UP.navy }}>
                               {aName}
-                              <span style={{ fontSize: '0.7rem', color: UP.sub, marginLeft: 4 }}>
+                              <span className="text-a11" style={{ color: UP.sub, marginLeft: 4 }}>
                                 {aGender === 'male' ? '남' : aGender === 'female' ? '여' : ''}
                               </span>
                             </div>
-                            <div style={{ fontSize: '0.7rem', color: UP.sub, marginTop: 1 }}>
+                            <div className="text-a11" style={{ color: UP.sub, marginTop: 1 }}>
                               {aBirth ? aBirth.slice(0, 10) : '-'}
                               {' · '}
                               {aPhone || '-'}
                             </div>
                           </>
                         ) : (
-                          <span style={{ fontSize: '0.75rem', color: UP.caption }}>미입력</span>
+                          <span className="text-a12" style={{ color: UP.caption }}>미입력</span>
                         )}
                       </td>
 
                       {/* 공고 정보 */}
                       <td style={cellStyle}>
                         <div style={{ fontWeight: 600 }}>{app.job_postings?.company_name ?? '-'}</div>
-                        <div style={{ fontSize: '0.72rem', color: UP.sub }}>
+                        <div className="text-a11" style={{ color: UP.sub }}>
                           {app.job_postings?.center_name ?? ''}
                         </div>
                       </td>
@@ -763,7 +755,7 @@ export default function ApplicantsMenu() {
                         </span>
                         {/* 출근 예정일 표시 (확정 이후) */}
                         {app.work_date && (app.status === 'confirmed' || app.status === 'completed') && (
-                          <div style={{ fontSize: '0.65rem', color: UP.sub, marginTop: 2 }}>
+                          <div className="text-a10" style={{ color: UP.sub, marginTop: 2 }}>
                             {app.work_date}
                           </div>
                         )}
@@ -777,7 +769,7 @@ export default function ApplicantsMenu() {
                           {app.status === 'applied' && (
                             <>
                               <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'reviewing')}
-                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(255,180,0,0.15)', color: UP.amber, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                className="text-a11" style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(255,180,0,0.15)', color: UP.amber, fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                                 🔍 검토
                               </button>
                               <button disabled={isUpdating}
@@ -786,11 +778,11 @@ export default function ApplicantsMenu() {
                                   const workDate = window.prompt('출근 예정일 (YYYY-MM-DD)', today)
                                   if (workDate !== null) handleUpdateStatus(app.id, 'confirmed', workDate)
                                 }}
-                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(49,200,100,0.15)', color: UP.green, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                className="text-a11" style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(49,200,100,0.15)', color: UP.green, fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                                 ✓ 확정
                               </button>
                               <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'rejected')}
-                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(240,68,82,0.15)', color: UP.danger, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                className="text-a11" style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(240,68,82,0.15)', color: UP.danger, fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                                 ✕ 거절
                               </button>
                             </>
@@ -805,11 +797,11 @@ export default function ApplicantsMenu() {
                                   const workDate = window.prompt('출근 예정일 (YYYY-MM-DD)', today)
                                   if (workDate !== null) handleUpdateStatus(app.id, 'confirmed', workDate)
                                 }}
-                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(49,200,100,0.15)', color: UP.green, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                className="text-a11" style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(49,200,100,0.15)', color: UP.green, fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                                 ✓ 확정
                               </button>
                               <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'rejected')}
-                                style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(240,68,82,0.15)', color: UP.danger, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                                className="text-a11" style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: 'rgba(240,68,82,0.15)', color: UP.danger, fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                                 ✕ 거절
                               </button>
                             </>
@@ -818,7 +810,7 @@ export default function ApplicantsMenu() {
                           {/* confirmed → completed */}
                           {app.status === 'confirmed' && (
                             <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'completed')}
-                              style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: UP.hairSoft, color: UP.body, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                              className="text-a11" style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: UP.hairSoft, color: UP.body, fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                               출근완료
                             </button>
                           )}
@@ -826,14 +818,14 @@ export default function ApplicantsMenu() {
                           {/* confirmed/reviewing → cancelled */}
                           {(app.status === 'confirmed' || app.status === 'reviewing') && (
                             <button disabled={isUpdating} onClick={() => handleUpdateStatus(app.id, 'cancelled')}
-                              style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: UP.hairSoft, color: UP.sub, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
+                              className="text-a11" style={{ padding: '3px 9px', borderRadius: 7, border: 'none', background: UP.hairSoft, color: UP.sub, fontWeight: 600, cursor: 'pointer', opacity: isUpdating ? 0.5 : 1 }}>
                               취소
                             </button>
                           )}
 
                           {/* 최종 처리된 상태 표시 */}
                           {(app.status === 'completed' || app.status === 'cancelled' || app.status === 'rejected') && (
-                            <span style={{ fontSize: '0.72rem', color: UP.caption }}>처리완료</span>
+                            <span className="text-a11" style={{ color: UP.caption }}>처리완료</span>
                           )}
                         </div>
                       </td>
@@ -859,12 +851,12 @@ export default function ApplicantsMenu() {
           <div
             style={{
               background: '#fff', border: `1px solid ${UP.hair}`,
-              borderRadius: 20, padding: '28px 24px', width: '100%', maxWidth: 400,
+              borderRadius: 16, padding: '28px 24px', width: '100%', maxWidth: 400,
             }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ fontSize: '1rem', fontWeight: 800, color: UP.navy, marginBottom: 6 }}>🔐 개인정보 마스킹 해제</div>
-            <p style={{ fontSize: '0.8rem', color: UP.sub, marginBottom: 16, lineHeight: 1.5 }}>
+            <div className="text-a16" style={{ fontWeight: 800, color: UP.navy, marginBottom: 6 }}>🔐 개인정보 마스킹 해제</div>
+            <p className="text-a13" style={{ color: UP.sub, marginBottom: 16, lineHeight: 1.5 }}>
               보안키를 입력하면 해제 모드로 전환됩니다. 이후 각 지원자 행의 "보기"를 누를 때마다
               해당 1건의 평문 정보가 서버에서 전송되며, 해제 기록은 감사로그에 남습니다.
             </p>
@@ -875,29 +867,28 @@ export default function ApplicantsMenu() {
               onChange={e => { setUnlockKeyInput(e.target.value); setUnlockError('') }}
               onKeyDown={e => e.key === 'Enter' && enterUnlockMode()}
               autoFocus
-              style={{
+              className="text-a14" style={{
                 width: '100%', padding: '10px 12px', borderRadius: 10,
                 border: unlockError ? `1px solid ${UP.danger}` : `1px solid ${UP.hair}`,
-                background: '#fff', color: UP.navy,
-                fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
+                background: '#fff', color: UP.navy, outline: 'none', boxSizing: 'border-box',
                 marginBottom: unlockError ? 6 : 16,
               }}
             />
             {unlockError && (
-              <p style={{ fontSize: '0.78rem', color: UP.danger, marginBottom: 12 }}>{unlockError}</p>
+              <p className="text-a12" style={{ color: UP.danger, marginBottom: 12 }}>{unlockError}</p>
             )}
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setShowUnlockDialog(false)}
-                style={{
+                className="text-a13" style={{
                   flex: 1, padding: '9px 16px', borderRadius: 10, border: `1px solid ${UP.hair}`,
-                  background: UP.sunken, color: UP.body, fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600,
+                  background: UP.sunken, color: UP.body, cursor: 'pointer', fontWeight: 600,
                 }}>
                 취소
               </button>
               <button onClick={enterUnlockMode}
-                style={{
+                className="text-a13" style={{
                   flex: 1, padding: '9px 16px', borderRadius: 10, border: 'none',
-                  background: UP.brand, color: '#fff', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 700,
+                  background: UP.brand, color: '#fff', cursor: 'pointer', fontWeight: 700,
                 }}>
                 해제 모드 진입
               </button>
