@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { UP, RADIUS, btnSecondary } from '../shared/adminTheme'
+import { DS } from '../ds/adminDS'
+import { PageHead, Panel, DSButton, Pill, StateLoading } from '../ds/DSKit'
 import {
   getAdminInquiries, getTemplates,
   patchInquiryStatus, patchInquiryAnswer, bulkInquiryStatus,
@@ -188,64 +189,52 @@ export default function InquiriesMenu() {
   const totalPages = Math.ceil(total / 20)
 
   return (
-    <div style={{ padding: 'clamp(12px, 3vw, 24px)', position: 'relative' }}>
+    <div style={{ padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1440, margin: '0 auto', position: 'relative' }}>
       {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20, gap: 12 }}>
-        <div>
-          <h2 className="text-a20" style={{ fontWeight: 800, color: UP.navy, margin: 0 }}>Inquiries CRM</h2>
-          <p className="text-a12" style={{ color: UP.sub, marginTop: 2 }}>전체 {total}건</p>
-        </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-          <button onClick={() => setShowTemplates(s => !s)} style={outlineBtn}>
-            {showTemplates ? '← 목록' : '📋 템플릿'}
-          </button>
-          <button onClick={handleExport} style={outlineBtn}>CSV</button>
-          <button onClick={loadInquiries} style={outlineBtn}>↻</button>
-        </div>
-      </div>
+      <PageHead
+        icon="💬"
+        title="문의 관리"
+        subtitle={`고객 문의 처리 · 전체 ${total}건`}
+        actions={
+          <>
+            <DSButton variant={showTemplates ? 'primary' : 'secondary'} onClick={() => setShowTemplates(s => !s)}>{showTemplates ? '← 목록' : '📋 템플릿'}</DSButton>
+            <DSButton variant="ghost" onClick={handleExport}>📥 CSV</DSButton>
+            <DSButton variant="ghost" onClick={loadInquiries}>↻</DSButton>
+          </>
+        }
+      />
 
       {showTemplates ? (
         <TemplateManager templates={templates} onRefresh={loadTemplates} />
       ) : (
         <>
-          {/* 필터 바 */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+          {/* 필터 툴바 */}
+          <div style={{ ...panelBox, padding: '12px 16px', marginBottom: 14, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
             <input
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
-              placeholder="내용 검색..."
+              placeholder="🔍 내용·제목·카테고리 검색"
               className="text-a13" style={{
-                flex: 1, minWidth: 140, background: UP.sunken,
-                border: `1px solid ${UP.hair}`, borderRadius: 8,
-                padding: '6px 12px', color: UP.navy,
-                outline: 'none', fontFamily: 'inherit',
+                flex: 1, minWidth: 200, background: DS.sunken,
+                border: `1px solid ${DS.line}`, borderRadius: 999,
+                padding: '8px 16px', color: DS.ink, outline: 'none', fontFamily: 'inherit',
               }}
             />
-            <select
-              value={status}
-              onChange={e => { setStatus(e.target.value); setPage(1) }}
-              style={selectStyle}
-            >
+            <select value={status} onChange={e => { setStatus(e.target.value); setPage(1) }} style={selectStyle}>
               {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
-            <select
-              value={category}
-              onChange={e => { setCategory(e.target.value); setPage(1) }}
-              style={selectStyle}
-            >
+            <select value={category} onChange={e => { setCategory(e.target.value); setPage(1) }} style={selectStyle}>
               {CATEGORIES.map(c => <option key={c} value={c}>{c || '전체 카테고리'}</option>)}
             </select>
           </div>
 
-          {/* 일괄 액션 바 — 낙관적 일괄 변경은 부모가 수행(onBulkStatus) */}
+          {/* 일괄 액션 바 */}
           <BulkActionBar selectedIds={[...selected]} onBulkStatus={handleBulkStatus} onDone={handleBulkDone} />
 
           {/* 에러 표시 */}
           {apiError && (
-            <div className="text-a13" style={{ background: UP.dangerBg, border: `1px solid ${UP.dangerLine}`, borderRadius: 10, padding: '14px 18px', marginBottom: 12, color: UP.danger, }}>
-              ⚠️ {apiError}
-              {' '}
-              {/* 에러 유형에 따라 다른 안내 메시지 표시 */}
+            <div className="text-a13" style={{ background: DS.badSoft, border: `1px solid ${DS.badLine}`, borderRadius: 10, padding: '14px 18px', marginBottom: 12, color: DS.bad }}>
+              ⚠️ {apiError}{' '}
               {(apiError.toLowerCase().includes('401') || apiError.toLowerCase().includes('403') || apiError.toLowerCase().includes('unauthorized') || apiError.toLowerCase().includes('token'))
                 ? '— 관리자 토큰(VITE_ADMIN_SECRET)을 확인하세요.'
                 : (apiError.toLowerCase().includes('network') || apiError.toLowerCase().includes('err_') || apiError.toLowerCase().includes('failed to fetch'))
@@ -255,15 +244,9 @@ export default function InquiriesMenu() {
           )}
 
           {/* 테이블 */}
-          <div style={{
-            background: '#fff',
-            border: `1px solid ${UP.hair}`,
-            borderRadius: RADIUS.card, overflow: 'hidden', marginBottom: 14,
-          }}>
+          <Panel style={{ marginBottom: 14 }}>
             {loading ? (
-              <p className="text-a13" style={{ textAlign: 'center', color: UP.sub, padding: '32px 0', }}>
-                로딩 중...
-              </p>
+              <StateLoading label="문의를 불러오는 중이에요…" />
             ) : (
               <InquiryTable
                 inquiries={inquiries}
@@ -274,17 +257,13 @@ export default function InquiriesMenu() {
                 activeId={activeInquiry?.id}
               />
             )}
-          </div>
+          </Panel>
 
           {/* 페이지네이션 */}
           {totalPages > 1 && (
             <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
               {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => i + 1).map(p => (
-                <button key={p} onClick={() => setPage(p)} className="text-a12" style={{
-                  padding: '4px 10px', borderRadius: 6, border: 'none',
-                  background: p === page ? UP.brand : UP.hairSoft,
-                  color: p === page ? '#fff' : UP.sub, fontWeight: 600, cursor: 'pointer',
-                }}>{p}</button>
+                <Pill key={p} on={p === page} onClick={() => setPage(p)}>{p}</Pill>
               ))}
             </div>
           )}
@@ -308,15 +287,12 @@ export default function InquiriesMenu() {
   )
 }
 
-// 헤더 툴바 버튼(템플릿/CSV/새로고침) — 보조 액션 톤(btnSecondary) 기반.
-//   툴바 정렬을 위해 패딩·폰트만 작게 오버라이드(스타일 정합만, 로직 불변).
-const outlineBtn: React.CSSProperties = {
-  ...btnSecondary,
-  padding: '6px 12px', fontSize: '0.78rem', fontWeight: 600,
+// 필터 툴바 패널 박스(DS)
+const panelBox: React.CSSProperties = {
+  background: DS.panel, border: `1px solid ${DS.line}`, borderRadius: 20, boxShadow: '0 2px 8px rgba(11,18,32,0.06)',
 }
-
 const selectStyle: React.CSSProperties = {
-  background: UP.sunken, border: `1px solid ${UP.hair}`,
-  borderRadius: 8, padding: '6px 10px', fontSize: '0.82rem',
-  color: UP.body, outline: 'none', cursor: 'pointer',
+  background: DS.sunken, border: `1px solid ${DS.line}`,
+  borderRadius: 999, padding: '8px 14px', fontSize: '0.82rem',
+  color: DS.body, outline: 'none', cursor: 'pointer',
 }

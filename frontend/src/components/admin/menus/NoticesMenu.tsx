@@ -6,7 +6,8 @@
 import { useEffect, useState } from 'react'
 import { getAdminNotices, createNotice, updateNotice, deleteNotice } from '../../../lib/api'
 import type { Notice } from '../../../types/supabase'
-import { UP, RADIUS, btnPrimary, btnSecondary, badge } from '../shared/adminTheme'
+import { DS } from '../ds/adminDS'
+import { PageHead, Panel, Table, Th, Td, DSButton, Badge, StateLoading } from '../ds/DSKit'
 
 // 공지 작성/수정 폼 필드 타입
 interface NoticeForm {
@@ -126,150 +127,72 @@ export default function NoticesMenu() {
   }
 
   // ── 공통 셀 스타일 (어두운 테마) ──────────────────────────────────────────
-  const cellStyle: React.CSSProperties = {
-    padding: '10px 12px',
-    borderBottom: `1px solid ${UP.hairSoft}`,
-    fontSize: '0.83rem',
-    color: UP.body,
-    verticalAlign: 'middle',
-  }
-
-  const thStyle: React.CSSProperties = {
-    ...cellStyle,
-    color: UP.sub,
-    fontWeight: 600,
-    fontSize: '0.75rem',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em',
-  }
-
-  // ── 공통 인풋 스타일 ───────────────────────────────────────────────────────
+  // ── 공통 인풋 스타일(DS) ──
   const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '10px 12px',
-    borderRadius: 10,
-    border: `1px solid ${UP.hair}`,
-    background: UP.sunken,
-    color: UP.navy,
-    fontSize: '0.88rem',
-    boxSizing: 'border-box',
-    outline: 'none',
+    width: '100%', padding: '10px 12px', borderRadius: 10,
+    border: `1px solid ${DS.line}`, background: DS.panel, color: DS.ink,
+    fontSize: '0.88rem', boxSizing: 'border-box', outline: 'none',
   }
 
   return (
-    <div style={{ padding: 'clamp(16px, 4vw, 32px)' }}>
-      {/* ── 헤더 영역 ────────────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
-        <div>
-          <h2 className="text-a20" style={{ fontWeight: 800, margin: 0 }}>📢 공지사항 관리</h2>
-          <p className="text-a13" style={{ color: UP.sub, margin: '4px 0 0' }}>
-            홈 화면 배너에 표시되는 공지를 관리합니다. 제목은 배너에, 본문은 상세 페이지에 표시됩니다.
-          </p>
-        </div>
-        <button
-          onClick={openCreate}
-          style={{ ...btnPrimary }}
-        >
-          + 새 공지 추가
-        </button>
-      </div>
+    <div style={{ padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1440, margin: '0 auto' }}>
+      {/* 헤더 */}
+      <PageHead
+        icon="📢"
+        title="공지사항 관리"
+        subtitle="홈 배너에 노출되는 공지 — 제목은 배너에, 본문은 상세에 표시됩니다."
+        actions={<DSButton variant="primary" onClick={openCreate}>+ 새 공지 추가</DSButton>}
+      />
 
-      {/* ── 에러 배너 (목록/저장/토글/삭제 실패) ──────────────────────────────── */}
+      {/* 에러 배너 */}
       {error && (
         <div className="text-a13" style={{
-          background: UP.dangerBg, border: `1px solid ${UP.dangerLine}`,
-          borderRadius: 10, padding: '12px 16px', marginBottom: 16,
-          color: UP.danger, fontWeight: 600,
-        }}>
-          ⚠️ {error}
-        </div>
+          background: DS.badSoft, border: `1px solid ${DS.badLine}`,
+          borderRadius: 10, padding: '12px 16px', marginBottom: 16, color: DS.bad, fontWeight: 700,
+        }}>⚠️ {error}</div>
       )}
 
-      {/* ── 공지 목록 테이블 ─────────────────────────────────────────────────── */}
+      {/* 공지 목록 */}
       {loading ? (
-        <p className="text-a13" style={{ color: UP.sub, }}>불러오는 중...</p>
+        <Panel><StateLoading label="공지를 불러오는 중이에요…" /></Panel>
       ) : (
-        <div style={{ background: '#fff', borderRadius: RADIUS.card, overflow: 'hidden', border: `1px solid ${UP.hair}` }}>
-          <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 500 }}>
+        <Panel>
+          <Table minWidth={520}>
             <thead>
-              <tr style={{ background: UP.sunken }}>
-                <th style={{ ...thStyle, width: 60 }}>우선순위</th>
-                {/* 제목 + 본문 미리보기 분리 표시 */}
-                <th style={thStyle}>제목</th>
-                <th style={thStyle}>본문 미리보기</th>
-                <th style={{ ...thStyle, width: 80 }}>활성</th>
-                <th style={{ ...thStyle, width: 120 }}>관리</th>
+              <tr>
+                <Th align="center" style={{ width: 64 }}>우선순위</Th>
+                <Th>제목</Th>
+                <Th>본문 미리보기</Th>
+                <Th align="center" style={{ width: 84 }}>활성</Th>
+                <Th align="center" style={{ width: 130 }}>관리</Th>
               </tr>
             </thead>
             <tbody>
               {notices.length === 0 && (
-                <tr>
-                  <td colSpan={5} style={{ ...cellStyle, textAlign: 'center', color: UP.sub }}>
-                    공지사항이 없습니다.
-                  </td>
-                </tr>
+                <tr><Td colSpan={5} align="center" style={{ color: DS.sub, padding: '36px 12px' }}>공지사항이 없습니다.</Td></tr>
               )}
               {notices.map(n => (
-                <tr key={n.id} style={{ transition: 'background 0.15s' }}>
-                  {/* 우선순위 */}
-                  <td style={{ ...cellStyle, textAlign: 'center', fontWeight: 700, color: UP.strong }}>
-                    {n.priority}
-                  </td>
-                  {/* 제목 — 비어있으면 "(제목 없음)" 표시 */}
-                  <td style={{ ...cellStyle, fontWeight: 600, color: UP.navy }}>
-                    {n.title
-                      ? (n.title.length > 24 ? n.title.slice(0, 24) + '…' : n.title)
-                      : <span style={{ color: UP.caption, fontStyle: 'italic' }}>(제목 없음)</span>
-                    }
-                  </td>
-                  {/* 본문 미리보기 */}
-                  <td style={cellStyle}>
-                    {n.content.length > 40 ? n.content.slice(0, 40) + '…' : n.content}
-                  </td>
-                  {/* 활성/비활성 토글 버튼 */}
-                  <td style={{ ...cellStyle, textAlign: 'center' }}>
-                    <button
-                      onClick={() => handleToggleActive(n)}
-                      style={{
-                        ...badge(n.is_active ? 'green' : 'neutral'),
-                        border: 'none',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {n.is_active ? '활성' : '비활성'}
+                <tr key={n.id}>
+                  <Td align="center" num style={{ fontWeight: 800, color: DS.accentStrong }}>{n.priority}</Td>
+                  <Td style={{ fontWeight: 700, color: DS.ink }}>
+                    {n.title ? (n.title.length > 24 ? n.title.slice(0, 24) + '…' : n.title)
+                      : <span style={{ color: DS.faint, fontStyle: 'italic' }}>(제목 없음)</span>}
+                  </Td>
+                  <Td style={{ color: DS.sub }}>{n.content.length > 40 ? n.content.slice(0, 40) + '…' : n.content}</Td>
+                  <Td align="center">
+                    <button onClick={() => handleToggleActive(n)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>
+                      <Badge tone={n.is_active ? 'ok' : 'neutral'}>{n.is_active ? '활성' : '비활성'}</Badge>
                     </button>
-                  </td>
-                  {/* 수정/삭제 버튼 */}
-                  <td style={{ ...cellStyle, textAlign: 'center' }}>
-                    <button
-                      onClick={() => openEdit(n)}
-                      style={{
-                        ...badge('brand'),
-                        marginRight: 6,
-                        border: 'none',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      수정
-                    </button>
-                    <button
-                      onClick={() => handleDelete(n)}
-                      style={{
-                        ...badge('danger'),
-                        border: 'none',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      삭제
-                    </button>
-                  </td>
+                  </Td>
+                  <Td align="center">
+                    <button onClick={() => openEdit(n)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, marginRight: 6 }}><Badge tone="brand">수정</Badge></button>
+                    <button onClick={() => handleDelete(n)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}><Badge tone="bad">삭제</Badge></button>
+                  </Td>
                 </tr>
               ))}
             </tbody>
-          </table>
-          </div>
-        </div>
+          </Table>
+        </Panel>
       )}
 
       {/* ── 공지 추가/수정 모달 ──────────────────────────────────────────────── */}
@@ -285,23 +208,19 @@ export default function NoticesMenu() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: '#fff',
-              border: `1px solid ${UP.hair}`,
-              borderRadius: 16,
-              padding: 28,
-              width: '100%',
-              maxWidth: 480,
+              background: DS.panel, border: `1px solid ${DS.line}`, borderRadius: 18,
+              padding: 28, width: '100%', maxWidth: 480, boxShadow: '0 24px 60px rgba(11,18,32,0.28)',
             }}
           >
-            <h3 className="text-a16" style={{ margin: '0 0 20px', fontWeight: 800 }}>
+            <h3 className="text-a18" style={{ margin: '0 0 20px', fontWeight: 900, color: DS.ink }}>
               {editTarget ? '공지 수정' : '새 공지 추가'}
             </h3>
 
             {/* ── 제목 입력 (배너에 표시되는 짧은 텍스트) ── */}
             <label style={{ display: 'block', marginBottom: 14 }}>
-              <span className="text-a12" style={{ color: UP.sub, display: 'block', marginBottom: 6 }}>
-                제목 <span style={{ color: UP.danger }}>*</span>
-                <span style={{ color: UP.caption, marginLeft: 6 }}>홈 화면 배너에 표시됩니다</span>
+              <span className="text-a12" style={{ color: DS.sub, display: 'block', marginBottom: 6 }}>
+                제목 <span style={{ color: DS.bad }}>*</span>
+                <span style={{ color: DS.faint, marginLeft: 6 }}>홈 화면 배너에 표시됩니다</span>
               </span>
               <input
                 type="text"
@@ -312,16 +231,16 @@ export default function NoticesMenu() {
                 style={inputStyle}
               />
               {/* 글자 수 카운터 */}
-              <span className="text-a11" style={{ color: UP.caption, marginTop: 4, display: 'block', textAlign: 'right' }}>
+              <span className="text-a11" style={{ color: DS.faint, marginTop: 4, display: 'block', textAlign: 'right' }}>
                 {form.title.length}/60
               </span>
             </label>
 
             {/* ── 본문 입력 (상세 페이지에서 표시) ── */}
             <label style={{ display: 'block', marginBottom: 14 }}>
-              <span className="text-a12" style={{ color: UP.sub, display: 'block', marginBottom: 6 }}>
-                본문 <span style={{ color: UP.danger }}>*</span>
-                <span style={{ color: UP.caption, marginLeft: 6 }}>공지사항 상세 페이지에 표시됩니다</span>
+              <span className="text-a12" style={{ color: DS.sub, display: 'block', marginBottom: 6 }}>
+                본문 <span style={{ color: DS.bad }}>*</span>
+                <span style={{ color: DS.faint, marginLeft: 6 }}>공지사항 상세 페이지에 표시됩니다</span>
               </span>
               <textarea
                 value={form.content}
@@ -335,7 +254,7 @@ export default function NoticesMenu() {
             {/* ── 우선순위 + 활성 토글 ── */}
             <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
               <label style={{ flex: 1 }}>
-                <span className="text-a12" style={{ color: UP.sub, display: 'block', marginBottom: 6 }}>
+                <span className="text-a12" style={{ color: DS.sub, display: 'block', marginBottom: 6 }}>
                   우선순위 (높을수록 먼저 표시)
                 </span>
                 <input
@@ -348,7 +267,7 @@ export default function NoticesMenu() {
 
               {/* 활성 토글 스위치 */}
               <label style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                <span className="text-a12" style={{ color: UP.sub, display: 'block', marginBottom: 6 }}>
+                <span className="text-a12" style={{ color: DS.sub, display: 'block', marginBottom: 6 }}>
                   활성
                 </span>
                 <div
@@ -357,7 +276,7 @@ export default function NoticesMenu() {
                     width: 44,
                     height: 26,
                     borderRadius: 999,
-                    background: form.is_active ? UP.brand : UP.hair,
+                    background: form.is_active ? DS.accent : DS.line,
                     cursor: 'pointer',
                     position: 'relative',
                     transition: 'background 0.2s',
@@ -379,33 +298,22 @@ export default function NoticesMenu() {
 
             {/* 저장 실패 에러 (모달 내부 — 오버레이가 상단 배너를 가리므로) */}
             {error && (
-              <p className="text-a12" style={{ color: UP.danger, marginBottom: 12, fontWeight: 600 }}>
+              <p className="text-a12" style={{ color: DS.bad, marginBottom: 12, fontWeight: 600 }}>
                 ⚠️ {error}
               </p>
             )}
 
             {/* ── 취소/저장 버튼 ── */}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button
-                onClick={closeModal}
-                style={{ ...btnSecondary }}
-              >
-                취소
-              </button>
-              <button
+              <DSButton variant="ghost" onClick={closeModal}>취소</DSButton>
+              <DSButton
+                variant="primary"
                 onClick={handleSave}
-                // 제목 또는 본문이 비어있으면 저장 불가
                 disabled={saving || !form.title.trim() || !form.content.trim()}
-                style={{
-                  ...btnPrimary,
-                  // 비활성 시 배경을 옅은 블루로 (기존 거짓성공 방지 UX 보존)
-                  background: (saving || !form.title.trim() || !form.content.trim())
-                    ? UP.brandLine
-                    : UP.brand,
-                }}
+                style={{ opacity: (saving || !form.title.trim() || !form.content.trim()) ? 0.55 : 1 }}
               >
                 {saving ? '저장 중...' : '저장'}
-              </button>
+              </DSButton>
             </div>
           </div>
         </div>
