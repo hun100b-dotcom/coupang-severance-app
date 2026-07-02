@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { UP, RADIUS, btnPrimary, btnSecondary, btnGhost, badge } from '../shared/adminTheme'
+import { PageHead, DSButton } from '../ds/DSKit'
 import { supabase } from '../../../lib/supabase'
 
 interface AdminAccount {
@@ -178,22 +179,19 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
   const roleOptions = Object.entries(permLevels).map(([key, v]) => ({ key, label: v.label }))
 
   return (
-    <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
+    <div style={{ padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1440, margin: '0 auto' }}>
       {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
-        <div>
-          <h2 className="text-a18" style={{ fontWeight: 800, color: UP.navy, margin: 0 }}>관리자 계정 관리</h2>
-          <p className="text-a12" style={{ color: UP.sub, marginTop: 2 }}>
-            admin_accounts 테이블 · 슈퍼 관리자만 추가/수정/삭제 가능
-          </p>
-        </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-          <button onClick={fetchAccounts} style={btnSecondary}>↻ 새로고침</button>
-          {isSuperAdmin && (
-            <button onClick={openCreate} style={btnPrimary}>+ 계정 추가</button>
-          )}
-        </div>
-      </div>
+      <PageHead
+        icon="🔑"
+        title="관리자 계정"
+        subtitle="admin_accounts · 슈퍼 관리자만 추가/수정/삭제 가능"
+        actions={
+          <>
+            <DSButton variant="secondary" onClick={fetchAccounts}>↻ 새로고침</DSButton>
+            {isSuperAdmin && <DSButton variant="primary" onClick={openCreate}>+ 계정 추가</DSButton>}
+          </>
+        }
+      />
 
       {/* 슈퍼어드민 전용 안내 */}
       {!isSuperAdmin && (

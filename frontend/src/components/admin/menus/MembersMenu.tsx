@@ -9,6 +9,8 @@
 //   보안키는 서버에서 해시 비교하고, 누가/언제/어느 회원을 해제했는지 감사로그에 남는다.
 import { useState, useEffect, useCallback } from 'react'
 import { UP, RADIUS, btnPrimary, btnSecondary, badge } from '../shared/adminTheme'
+import { DS } from '../ds/adminDS'
+import { PageHead, DSButton } from '../ds/DSKit'
 import { supabase } from '../../../lib/supabase'
 import {
   getAdminMembers, revealMember, type MaskedMember, type RevealedMember,
@@ -150,52 +152,30 @@ export default function MembersMenu({ isSuperAdmin }: Props) {
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
-    <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
+    <div style={{ padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1440, margin: '0 auto' }}>
 
       {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
-        <div>
-          <h2 className="text-a18" style={{ fontWeight: 800, color: UP.navy, margin: 0 }}>회원 관리</h2>
-          <p className="text-a12" style={{ color: UP.sub, marginTop: 2 }}>
-            profiles 테이블 · 총 {total.toLocaleString()}명 로그인 회원
-          </p>
-        </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {/* 해제 모드 토글 — 슈퍼관리자만 노출 (권한 없으면 마스킹만 가능) */}
-          {isSuperAdmin && (
-            !unlockMode ? (
-              <button
-                onClick={() => { setUnlockError(''); setShowUnlockDialog(true) }}
-                className="text-a13" style={{
-                  padding: '7px 14px', borderRadius: 8,
-                  border: '1px solid rgba(240,200,0,0.3)',
-                  background: 'rgba(240,200,0,0.08)', color: UP.amber, cursor: 'pointer', fontWeight: 700,
-                }}
-              >
-                🔒 마스킹 해제
-              </button>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span className="text-a12" style={{
-                  padding: '4px 12px', borderRadius: 8,
-                  background: 'rgba(34,197,94,0.12)',
-                  border: '1px solid rgba(34,197,94,0.25)',
-                  color: UP.green, fontWeight: 700,
-                }}>
-                  🔓 해제 모드 · 행별 보기 가능
-                </span>
-                <button
-                  onClick={lockAgain}
-                  className="text-a12" style={{ ...btnSecondary, padding: '5px 10px' }}
-                >
-                  재잠금
-                </button>
-              </div>
-            )
-          )}
-          <button onClick={fetchMembers} style={btnSecondary}>↻ 새로고침</button>
-        </div>
-      </div>
+      <PageHead
+        icon="👥"
+        title="회원 관리"
+        subtitle={`profiles · 총 ${total.toLocaleString()}명 로그인 회원`}
+        actions={
+          <>
+            {isSuperAdmin && (
+              !unlockMode ? (
+                <DSButton variant="ghost" onClick={() => { setUnlockError(''); setShowUnlockDialog(true) }}
+                  style={{ color: DS.warn, borderColor: DS.warnLine, background: DS.warnSoft }}>🔒 마스킹 해제</DSButton>
+              ) : (
+                <>
+                  <span className="text-a12" style={{ padding: '6px 12px', borderRadius: 999, background: DS.okSoft, border: `1px solid ${DS.okLine}`, color: DS.ok, fontWeight: 700 }}>🔓 해제 모드</span>
+                  <DSButton variant="ghost" onClick={lockAgain}>재잠금</DSButton>
+                </>
+              )
+            )}
+            <DSButton variant="secondary" onClick={fetchMembers}>↻ 새로고침</DSButton>
+          </>
+        }
+      />
 
       {/* 마스킹 안내 */}
       {!unlockMode && (
