@@ -4,8 +4,11 @@
 import { useEffect, useState, useCallback } from 'react'
 import { UP, badge } from '../shared/adminTheme'
 import { AdminButton, AdminLoading, AdminEmpty } from '../shared'
-import { AdminPageHero } from '../shared/adminChrome'
-import { proCard, ELEV, R } from '../shared/adminUI'
+import { PageHead } from '../ds/DSKit'
+import { panel as proCard, SHADOW, RAD } from '../ds/adminDS'
+// 하위호환: 기존 JobPostings 코드가 참조하던 ELEV/R 키를 DS 값으로 매핑(딥네이비 adminUI 제거)
+const ELEV = { lift: SHADOW.pop, card: SHADOW.md }
+const R = { card: RAD.md, chip: RAD.sm, pill: RAD.pill }
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../contexts/AuthContext'
 import { logAdminAction } from '../../../lib/adminAuditLog'
@@ -1072,7 +1075,7 @@ export default function JobPostingsMenu() {
       {toast && <Toast msg={toast.msg} type={toast.type} />}
 
       {/* 딥네이비 히어로 헤더 */}
-      <AdminPageHero
+      <PageHead
         icon="💼"
         title="채용공고 관리"
         subtitle={`채용정보 피드에 노출되는 공고 · 총 ${displayJobs.length}건`}

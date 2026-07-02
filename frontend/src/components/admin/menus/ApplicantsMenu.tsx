@@ -12,7 +12,7 @@
 //   ※ 상태변경/확정/거절 알림 로직은 그대로(아래 supabase 경로) — PII '표시 경로'만 바뀜.
 import { useEffect, useState, useCallback } from 'react'
 import { UP, RADIUS, badge, btnSecondary } from '../shared/adminTheme'
-import { AdminPageHero } from '../shared/adminChrome'
+import { PageHead } from '../ds/DSKit'
 import { supabase } from '../../../lib/supabase'
 import {
   getAdminApplications, revealApplicant,
@@ -400,7 +400,7 @@ export default function ApplicantsMenu() {
       )}
 
       {/* 딥네이비 히어로 헤더 */}
-      <AdminPageHero
+      <PageHead
         icon="👥"
         title="지원자 관리"
         subtitle={`검토중 → 출근확정 순으로 처리하세요 · 총 ${displayApplicants.length}명`}
