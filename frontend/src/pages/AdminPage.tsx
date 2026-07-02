@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase'
 import { logAdminAction } from '../lib/adminAuditLog'
 import AdminSidebar, { type AdminMenu } from '../components/admin/AdminSidebar'
 import { UP } from '../components/admin/shared/adminTheme'
+import { INK, R } from '../components/admin/shared/adminUI'
 import DashboardMenu from '../components/admin/menus/DashboardMenu'
 import TargetMenu from '../components/admin/menus/TargetMenu'
 import InquiriesMenu from '../components/admin/menus/InquiriesMenu'
@@ -206,118 +207,87 @@ export default function AdminPage() {
     }
   }
 
+  const meta = MENU_META[activeMenu]
+
   return (
     <div style={{
       display: 'flex',
       flexDirection: 'column',
       minHeight: '100vh',
-      background: UP.page,      // 옅은 청회색 페이지 배경
-      color: UP.body,           // 기본 본문 잉크
+      // 콘텐츠 배경: 옅은 청회색 위에 은은한 블루 글로우(깊이감)
+      background: `radial-gradient(900px 500px at 100% 0%, rgba(49,130,246,0.06) 0%, transparent 60%), ${UP.page}`,
+      color: UP.body,
       position: 'fixed',
       inset: 0,
       zIndex: 100,
       overflow: 'auto',
     }}>
-      {/* 모바일 상단 헤더 바 */}
+      {/* ── 모바일 상단 헤더 바 (딥 잉크) ── */}
       <div
         className="md:hidden"
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          padding: '10px 12px',
-          background: UP.surface,
-          borderBottom: `1px solid ${UP.hair}`,
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '11px 14px',
+          background: INK.base,
+          borderBottom: `1px solid ${INK.line}`,
           flexShrink: 0,
         }}
       >
-        {/* CATCH Admin 로고 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 0 }}>
-          <span style={{ fontSize: '1.1rem' }}>⚡</span>
-          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: UP.strong, whiteSpace: 'nowrap' }}>
-            CATCH
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 0 }}>
+          <span style={{
+            width: 28, height: 28, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'linear-gradient(135deg, #3182F6, #1B64DA)', fontSize: '0.95rem',
+          }}>⚡</span>
+          <span className="text-a14" style={{ fontWeight: 900, color: '#F4F7FC', whiteSpace: 'nowrap' }}>CATCH</span>
         </div>
-
-        {/* 메뉴 드롭다운 */}
         <select
           value={activeMenu}
           onChange={e => handleMenuChange(e.target.value as AdminMenu)}
+          className="text-a13"
           style={{
-            flex: 1,
-            padding: '7px 10px',
-            borderRadius: 8,
-            border: `1px solid ${UP.hair}`,
-            background: UP.sunken,
-            color: UP.navy,
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            outline: 'none',
-            cursor: 'pointer',
+            flex: 1, padding: '8px 10px', borderRadius: 9,
+            border: `1px solid ${INK.line}`, background: INK.soft, color: '#F4F7FC',
+            fontWeight: 600, outline: 'none', cursor: 'pointer',
           }}
         >
           {FLAT_MENUS.map(m => (
-            <option key={m.key} value={m.key}>{m.label}</option>
+            <option key={m.key} value={m.key} style={{ background: INK.base, color: '#F4F7FC' }}>{m.label}</option>
           ))}
         </select>
-
-        {/* 역할 뱃지 */}
-        <span style={{
-          fontSize: '0.6rem',
-          fontWeight: 800,
-          color: currentRoleColor,
-          background: `${currentRoleColor}14`,
-          border: `1px solid ${currentRoleColor}33`,
-          padding: '3px 8px',
-          borderRadius: 999,
-          whiteSpace: 'nowrap',
-          flexShrink: 0,
+        <span className="text-a10" style={{
+          fontWeight: 800, color: currentRoleColor,
+          background: `${currentRoleColor}22`, border: `1px solid ${currentRoleColor}44`,
+          padding: '3px 8px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0,
         }}>
           {currentRoleLabel}
         </span>
-
-        {/* 로그아웃 버튼 */}
-        <button
-          onClick={handleLogout}
+        <button onClick={handleLogout} className="text-a13"
           style={{
-            padding: '6px 10px',
-            borderRadius: 8,
-            border: `1px solid ${UP.dangerLine}`,
-            background: UP.dangerBg,
-            color: UP.danger,
-            fontSize: '0.78rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            flexShrink: 0,
+            padding: '6px 10px', borderRadius: 9, border: `1px solid ${INK.line}`,
+            background: 'transparent', color: '#F4F7FC', cursor: 'pointer', flexShrink: 0,
           }}
-        >
-          🚪
-        </button>
+        >🚪</button>
       </div>
 
-      {/* 데스크탑: 사이드바 + (상단바 + 메인 콘텐츠) */}
+      {/* ── 데스크탑: 사이드바 + (상단바 + 메인) ── */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <div className="hidden md:block" style={{ flexShrink: 0 }}>
-          <AdminSidebar
-            active={activeMenu}
-            onChange={handleMenuChange}
-            collapsed={collapsed}
-          />
+          <AdminSidebar active={activeMenu} onChange={handleMenuChange} collapsed={collapsed} />
         </div>
 
-        {/* 우측 컬럼: 상단바 + 콘텐츠 */}
+        {/* 우측 컬럼 */}
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-          {/* ── 데스크탑 상단바 ── */}
+          {/* ── 데스크탑 상단바 (글래스풍 화이트) ── */}
           <header
             className="hidden md:flex"
             style={{
-              alignItems: 'center',
-              gap: 12,
-              height: 56,
-              padding: '0 22px',
-              background: UP.surface,
+              alignItems: 'center', gap: 14,
+              height: 66, padding: '0 26px',
+              background: 'rgba(255,255,255,0.82)',
+              backdropFilter: 'blur(14px)',
               borderBottom: `1px solid ${UP.hair}`,
               flexShrink: 0,
+              position: 'sticky', top: 0, zIndex: 20,
             }}
           >
             {/* 사이드바 접기 토글 */}
@@ -325,10 +295,11 @@ export default function AdminPage() {
               onClick={() => setCollapsed(c => !c)}
               title={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
               style={{
-                width: 34, height: 34, flexShrink: 0,
+                width: 38, height: 38, flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                borderRadius: 8, border: `1px solid ${UP.hair}`,
-                background: UP.surface, color: UP.sub, cursor: 'pointer', fontSize: '1rem',
+                borderRadius: R.chip, border: `1px solid ${UP.hair}`,
+                background: UP.surface, color: UP.sub, cursor: 'pointer', fontSize: '1.05rem',
+                transition: 'background 0.12s',
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = UP.sunken }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = UP.surface }}
@@ -336,42 +307,47 @@ export default function AdminPage() {
               ☰
             </button>
 
-            {/* 현재 섹션 (브레드크럼) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
-              <span style={{ fontSize: '1.05rem', flexShrink: 0 }}>{MENU_META[activeMenu].icon}</span>
-              <span style={{ fontSize: '0.62rem', color: UP.caption, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>
-                Admin
-              </span>
-              <span style={{ color: UP.hair, flexShrink: 0 }}>/</span>
+            {/* 현재 섹션 타이틀 (큰 위계) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
               <span style={{
-                fontSize: '0.95rem', fontWeight: 800, color: UP.navy,
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>
-                {MENU_META[activeMenu].title}
-              </span>
+                width: 40, height: 40, flexShrink: 0, borderRadius: 12,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: UP.brandBg, border: `1px solid ${UP.brandLine}`, fontSize: '1.15rem',
+              }}>{meta.icon}</span>
+              <div style={{ minWidth: 0 }}>
+                <div className="text-a10" style={{ color: UP.caption, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', lineHeight: 1 }}>
+                  Admin OS
+                </div>
+                <div className="text-a20" style={{
+                  fontWeight: 900, color: UP.navy, letterSpacing: '-0.02em', lineHeight: 1.15, marginTop: 3,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {meta.title}
+                </div>
+              </div>
             </div>
 
-            {/* 우측: 관리자 신원 + 역할 배지 + 로그아웃 */}
+            {/* 우측: 신원 + 역할 배지 + 로그아웃 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-              <span className="hidden lg:inline" style={{
-                fontSize: '0.78rem', color: UP.sub, maxWidth: 200,
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              <span className="hidden lg:inline text-a13" style={{
+                color: UP.sub, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {user?.email}
               </span>
-              <span style={{
-                fontSize: '0.66rem', fontWeight: 800, color: currentRoleColor,
+              <span className="text-a11" style={{
+                fontWeight: 800, color: currentRoleColor,
                 background: `${currentRoleColor}14`, border: `1px solid ${currentRoleColor}33`,
-                padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap',
+                padding: '5px 12px', borderRadius: 999, whiteSpace: 'nowrap',
               }}>
                 ✦ {currentRoleLabel}
               </span>
               <button
                 onClick={handleLogout}
+                className="text-a13"
                 style={{
-                  padding: '6px 14px', borderRadius: 8,
+                  padding: '8px 16px', borderRadius: R.chip,
                   border: `1px solid ${UP.dangerLine}`, background: UP.dangerBg, color: UP.danger,
-                  fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+                  fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
                 }}
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FBDDDF' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = UP.dangerBg }}
@@ -382,13 +358,8 @@ export default function AdminPage() {
           </header>
 
           {/* 메인 콘텐츠 영역 */}
-          <main style={{
-            flex: 1,
-            overflow: 'auto',
-            minHeight: 0,
-            background: UP.page,
-          }}>
-            {/* 메뉴 전환 시 사용자앱과 동일한 진입 모션(slideUpFade). key 로 전환마다 재생 */}
+          <main style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+            {/* 메뉴 전환 시 진입 모션(slideUpFade). key 로 전환마다 재생 */}
             <div key={activeMenu} className="animate-staggered-fade">
               {renderMenu()}
             </div>
