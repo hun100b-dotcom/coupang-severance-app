@@ -2,6 +2,7 @@
 // system_logs: DB 트리거 기반 자동 기록 + Supabase Realtime 구독
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { UP, RADIUS, badge, btnSecondary } from '../shared/adminTheme'
+import { PageHead } from '../ds/DSKit'
 import { AdminLoading } from '../shared/AdminState' // 공통 로딩 상태(인라인 스피너+@keyframes 대체)
 import { supabase } from '../../../lib/supabase'
 import { getAuditLogs } from '../../../lib/api'
@@ -155,16 +156,14 @@ export default function ServerLogsMenu() {
   }, {} as Record<string, number>)
 
   return (
-    <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
+    <div style={{ padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1440, margin: '0 auto' }}>
       {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 18, gap: 10, flexWrap: 'wrap' }}>
-        <div>
-          <h2 className="text-a18" style={{ fontWeight: 800, color: UP.navy, margin: 0 }}>Server Logs</h2>
-          <p className="text-a12" style={{ color: UP.sub, marginTop: 2 }}>
-            배포 이력 · 시스템 이벤트 · 관리자 작업 로그
-          </p>
-        </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
+      <PageHead
+        icon="🖥️"
+        title="서버 로그"
+        subtitle="배포 이력 · 시스템 이벤트 · 관리자 작업 로그"
+        actions={
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
           {/* 실시간 토글 */}
           <button
             onClick={() => setIsLive(prev => !prev)}
@@ -192,7 +191,8 @@ export default function ServerLogsMenu() {
             ↻ 새로고침
           </button>
         </div>
-      </div>
+        }
+      />
 
       {/* 탭 */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: UP.sunken, borderRadius: 10, padding: 4, width: 'fit-content' }}>

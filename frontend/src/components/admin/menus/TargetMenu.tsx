@@ -8,6 +8,7 @@ import { getTargetInsights } from '../../../lib/api'
 import type { TargetInsights } from '../../../types/admin'
 import { logAdminAction } from '../../../lib/adminAuditLog'
 import { UP, btnSecondary, cardBox } from '../shared/adminTheme'
+import { PageHead } from '../ds/DSKit'
 import { AdminLoading } from '../shared/AdminState' // 공통 로딩 상태(인라인 스피너+@keyframes 대체)
 
 /* ── Color Palette ──────────────────────────────────────────
@@ -121,21 +122,15 @@ export default function TargetMenu() {
   }
 
   return (
-    <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
+    <div style={{ padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1440, margin: '0 auto' }}>
 
       {/* ═══ HEADER ═══════════════════════════════════════ */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 8 }}>
-        <div>
-          <h2 style={{
-            fontSize: 'clamp(1.1rem, 3.5vw, 1.4rem)', fontWeight: 900, margin: 0,
-            color: UP.navy,
-          }}>Target Intelligence</h2>
-          <p className="text-a11" style={{ color: UP.caption, marginTop: 2 }}>
-            사용자 인사이트 &middot; 수익 분석 &middot; 세그먼트 분류
-          </p>
-        </div>
-        <button onClick={load} style={{ ...btnSecondary, marginLeft: 'auto' }}>새로고침</button>
-      </div>
+      <PageHead
+        icon="🎯"
+        title="Target Intelligence"
+        subtitle="사용자 인사이트 · 수익 분석 · 세그먼트 분류"
+        actions={<button onClick={load} style={{ ...btnSecondary }}>↻ 새로고침</button>}
+      />
 
       {/* ═══ HERO METRICS ═════════════════════════════════ */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-4">

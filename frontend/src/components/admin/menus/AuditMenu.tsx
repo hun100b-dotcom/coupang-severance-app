@@ -1,6 +1,7 @@
 // AuditMenu.tsx — 관리자 감사 로그 (audit_logs 테이블)
 import { useState, useEffect, useCallback } from 'react'
 import { UP, RADIUS, btnPrimary, btnSecondary, btnGhost } from '../shared/adminTheme'
+import { PageHead } from '../ds/DSKit'
 import { getAuditLogs } from '../../../lib/api'
 import { exportCsv } from '../../../utils/exportCsv'
 
@@ -253,22 +254,19 @@ export default function AuditMenu() {
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
-    <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
+    <div style={{ padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1440, margin: '0 auto' }}>
       {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <h2 className="text-a20" style={{ fontWeight: 800, color: UP.navy, margin: 0 }}>
-            Audit Logs
-          </h2>
-          <p className="text-a12" style={{ color: UP.sub, marginTop: 2 }}>
-            관리자 행동 감사 기록 (총 {total.toLocaleString()}건)
-          </p>
-        </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-          <button onClick={handleExport} style={btnSecondary}>📥 CSV (현재 페이지)</button>
-          <button onClick={fetchLogs} style={btnSecondary}>↻ 새로고침</button>
-        </div>
-      </div>
+      <PageHead
+        icon="🔍"
+        title="감사 로그"
+        subtitle={`관리자 행동 감사 기록 · 총 ${total.toLocaleString()}건`}
+        actions={
+          <>
+            <button onClick={handleExport} style={btnSecondary}>📥 CSV</button>
+            <button onClick={fetchLogs} style={btnSecondary}>↻ 새로고침</button>
+          </>
+        }
+      />
 
       {/* 에러 표시 (조회 실패 — 빈 화면이 "로그 없음"으로 오인되지 않도록) */}
       {error && (

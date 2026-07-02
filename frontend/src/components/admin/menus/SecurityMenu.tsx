@@ -15,7 +15,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { getAuditLogs, getBlockedIps, getUnmaskKeyStatus } from '../../../lib/api'
 import { UP, numeric, adminCard, btnSecondary, badge } from '../shared/adminTheme'
-import PageHeader from '../shared/PageHeader'
+import { PageHead } from '../ds/DSKit'
 
 // 감사로그 한 행(필요한 필드만)
 interface AuditRow {
@@ -159,7 +159,7 @@ export default function SecurityMenu() {
 
   return (
     <div style={{ padding: 'clamp(16px, 3vw, 28px)' }}>
-      <PageHeader
+      <PageHead
         icon="🛡️"
         title="보안 현황"
         subtitle="관리자·접근통제·마스킹·감사 활동 요약 (읽기 전용)"
