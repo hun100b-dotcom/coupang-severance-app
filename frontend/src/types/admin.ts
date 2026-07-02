@@ -5,7 +5,7 @@ export type AdminMenu =
   | 'dashboard' | 'target'
   | 'job_postings' | 'applicants' | 'confirmed' | 'recruit_summary'
   | 'inquiries' | 'notices' | 'members' | 'accounts'
-  | 'settings' | 'audit_logs' | 'server_logs'
+  | 'settings' | 'audit_logs' | 'server_logs' | 'security'
 
 // ── 대시보드 ────────────────────────────────────────────
 export interface AdminStats {
