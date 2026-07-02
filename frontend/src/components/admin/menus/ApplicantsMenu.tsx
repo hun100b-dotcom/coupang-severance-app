@@ -12,6 +12,7 @@
 //   ※ 상태변경/확정/거절 알림 로직은 그대로(아래 supabase 경로) — PII '표시 경로'만 바뀜.
 import { useEffect, useState, useCallback } from 'react'
 import { UP, RADIUS, badge, btnSecondary } from '../shared/adminTheme'
+import { AdminPageHero } from '../shared/adminChrome'
 import { supabase } from '../../../lib/supabase'
 import {
   getAdminApplications, revealApplicant,
@@ -384,7 +385,7 @@ export default function ApplicantsMenu() {
   }
 
   return (
-    <div style={{ padding: 'clamp(16px,4vw,32px)', position: 'relative' }}>
+    <div style={{ padding: 'clamp(16px,3vw,32px)', maxWidth: 1440, margin: '0 auto', position: 'relative' }}>
       {toast && (
         <div className="text-a14" style={{
           position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
@@ -398,14 +399,12 @@ export default function ApplicantsMenu() {
         </div>
       )}
 
-      {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
-        <div>
-          <h2 className="text-a20" style={{ fontWeight: 800, margin: '0 0 4px', color: UP.navy }}>👥 지원자 관리</h2>
-          <p className="text-a13" style={{ color: UP.sub, margin: 0 }}>
-            지원자 상태를 검토중 → 출근확정 순으로 처리하세요. 총 {displayApplicants.length}명
-          </p>
-        </div>
+      {/* 딥네이비 히어로 헤더 */}
+      <AdminPageHero
+        icon="👥"
+        title="지원자 관리"
+        subtitle={`검토중 → 출근확정 순으로 처리하세요 · 총 ${displayApplicants.length}명`}
+        actions={
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {/* 마스킹 해제 토글 — 슈퍼관리자만 노출 */}
           {isSuperAdmin && (
@@ -443,7 +442,8 @@ export default function ApplicantsMenu() {
             📥 CSV 다운로드
           </button>
         </div>
-      </div>
+        }
+      />
 
       {/* 마스킹 안내 */}
       {!unlockMode && (

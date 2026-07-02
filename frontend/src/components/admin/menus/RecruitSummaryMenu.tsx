@@ -2,6 +2,7 @@
 // 사업장별 공고현황, 전환율, 충원율, 일별 트렌드 차트, 채용소요일
 import { useEffect, useState, useCallback } from 'react'
 import { UP, RADIUS, btnSecondary } from '../shared/adminTheme'
+import { AdminPageHero } from '../shared/adminChrome'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Legend,
@@ -214,34 +215,28 @@ export default function RecruitSummaryMenu() {
   }
 
   return (
-    <div style={{ padding: 'clamp(16px,4vw,32px)', position: 'relative' }}>
-      {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
-        <div>
-          <h2 className="text-a20" style={{ fontWeight: 800, margin: '0 0 4px' }}>📈 채용 Summary</h2>
-          <p className="text-a13" style={{ color: UP.sub, margin: 0 }}>
-            채용 전반 현황 및 전환율 분석
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {/* 사업장 필터 */}
-          <select value={companyFilter} onChange={e => setCompanyFilter(e.target.value)}
-            className="text-a13" style={{
-              padding: '6px 12px', borderRadius: 8,
-              border: `1px solid ${UP.hair}`,
-              background: '#fff', color: UP.navy, /* 불투명 배경: option 텍스트 가시성 확보 */ cursor: 'pointer', outline: 'none',
-            }}>
-            <option value="all" style={{ background: '#fff', color: UP.navy }}>전체 사업장</option>
-            {companies.map(c => <option key={c} value={c} style={{ background: '#fff', color: UP.navy }}>{c}</option>)}
-          </select>
-          <button onClick={fetchData} style={{ ...btnSecondary }}>
-            ↻ 새로고침
-          </button>
-          <button onClick={handleExportCsv} style={{ ...btnSecondary }}>
-            📥 CSV
-          </button>
-        </div>
-      </div>
+    <div style={{ padding: 'clamp(16px,3vw,32px)', maxWidth: 1440, margin: '0 auto', position: 'relative' }}>
+      {/* 딥네이비 히어로 헤더 */}
+      <AdminPageHero
+        icon="📈"
+        title="채용 Summary"
+        subtitle="채용 전반 현황 및 전환율 분석"
+        actions={
+          <>
+            <select value={companyFilter} onChange={e => setCompanyFilter(e.target.value)}
+              className="text-a13" style={{
+                padding: '8px 12px', borderRadius: 10,
+                border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.1)', color: '#fff',
+                cursor: 'pointer', outline: 'none',
+              }}>
+              <option value="all" style={{ background: '#16233F', color: '#fff' }}>전체 사업장</option>
+              {companies.map(c => <option key={c} value={c} style={{ background: '#16233F', color: '#fff' }}>{c}</option>)}
+            </select>
+            <button onClick={fetchData} style={{ ...btnSecondary }}>↻ 새로고침</button>
+            <button onClick={handleExportCsv} style={{ ...btnSecondary }}>📥 CSV</button>
+          </>
+        }
+      />
 
       {/* 에러 */}
       {error && (

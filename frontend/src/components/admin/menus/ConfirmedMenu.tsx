@@ -2,6 +2,7 @@
 // 기능: 2단계 필터(사업장→센터), KPI 대시보드, 일별 지원/확정 차트(Recharts), 교대/업무별 분포
 import { useEffect, useState, useCallback } from 'react'
 import { UP, RADIUS, btnSecondary } from '../shared/adminTheme'
+import { AdminPageHero } from '../shared/adminChrome'
 import {
   ComposedChart, Bar, Line,
   XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer,
@@ -202,25 +203,15 @@ export default function ConfirmedMenu() {
   }
 
   return (
-    <div style={{ padding: 'clamp(16px,4vw,32px)', position: 'relative' }}>
+    <div style={{ padding: 'clamp(16px,3vw,32px)', maxWidth: 1440, margin: '0 auto', position: 'relative' }}>
 
-      {/* ── 헤더 ── */}
-      <div style={{
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-        marginBottom: 20, gap: 12, flexWrap: 'wrap',
-      }}>
-        <div>
-          <h2 className="text-a20" style={{ fontWeight: 800, margin: '0 0 4px', color: UP.navy }}>
-            📈 채용현황
-          </h2>
-          <p className="text-a13" style={{ color: UP.sub, margin: 0 }}>
-            지원 현황을 사업장·센터별로 분석합니다. 총 {total}명
-          </p>
-        </div>
-        <button onClick={fetchData} style={{ ...btnSecondary }}>
-          🔄 새로고침
-        </button>
-      </div>
+      {/* 딥네이비 히어로 헤더 */}
+      <AdminPageHero
+        icon="📈"
+        title="채용현황"
+        subtitle={`지원 현황을 사업장·센터별로 분석합니다 · 총 ${total}명`}
+        actions={<button onClick={fetchData} style={{ ...btnSecondary }}>🔄 새로고침</button>}
+      />
 
       {/* ── 2단계 필터: 사업장 → 센터 ── */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>

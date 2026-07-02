@@ -4,6 +4,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { UP, badge } from '../shared/adminTheme'
 import { AdminButton, AdminLoading, AdminEmpty } from '../shared'
+import { AdminPageHero } from '../shared/adminChrome'
+import { proCard, ELEV, R } from '../shared/adminUI'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../contexts/AuthContext'
 import { logAdminAction } from '../../../lib/adminAuditLog'
@@ -1066,30 +1068,28 @@ export default function JobPostingsMenu() {
   })
 
   return (
-    <div style={{ padding: 'clamp(16px,4vw,32px)', position: 'relative' }}>
+    <div style={{ padding: 'clamp(16px,3vw,32px)', maxWidth: 1440, margin: '0 auto', position: 'relative' }}>
       {toast && <Toast msg={toast.msg} type={toast.type} />}
 
-      {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
-        <div>
-          <h2 className="text-a20" style={{ fontWeight: 800, margin: 0, color: UP.navy }}>💼 채용공고 관리</h2>
-          <p className="text-a13" style={{ color: UP.sub, margin: '4px 0 0' }}>
-            채용정보 피드에 노출되는 공고를 관리합니다. ({displayJobs.length}건)
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <AdminButton variant="secondary" onClick={handleExportCsv}>📥 CSV 내보내기</AdminButton>
-          <AdminButton variant="primary" onClick={openCreate}>+ 새 공고 등록</AdminButton>
-        </div>
-      </div>
+      {/* 딥네이비 히어로 헤더 */}
+      <AdminPageHero
+        icon="💼"
+        title="채용공고 관리"
+        subtitle={`채용정보 피드에 노출되는 공고 · 총 ${displayJobs.length}건`}
+        actions={
+          <>
+            <AdminButton variant="secondary" onClick={handleExportCsv}>📥 CSV 내보내기</AdminButton>
+            <AdminButton variant="primary" onClick={openCreate}>+ 새 공고 등록</AdminButton>
+          </>
+        }
+      />
 
       {/* 에러 */}
       {jobError && (
         <div className="text-a13" style={{
-          background: 'rgba(240,68,82,0.12)', border: '1px solid rgba(240,68,82,0.3)',
-          borderRadius: 10, padding: '12px 16px', marginBottom: 12,
-          color: UP.danger,
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          background: UP.dangerBg, border: `1px solid ${UP.dangerLine}`,
+          borderRadius: R.chip, padding: '12px 16px', marginBottom: 14,
+          color: UP.danger, display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <span>⚠️ {jobError}</span>
           <button onClick={() => setJobError(null)}
@@ -1097,16 +1097,14 @@ export default function JobPostingsMenu() {
         </div>
       )}
 
-      {/* 필터 바 */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-        {/* 사업장 필터 */}
+      {/* 필터 툴바 — 프로 카드 */}
+      <div style={{ ...proCard, padding: '12px 16px', marginBottom: 18, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <select
           value={companyFilter}
           onChange={e => setCompanyFilter(e.target.value)}
           className="text-a12" style={{
-            padding: '6px 12px', borderRadius: 8,
-            border: `1px solid ${UP.hair}`,
-            background: '#fff', color: UP.navy, /* 불투명 배경: option 텍스트 가시성 확보 */ cursor: 'pointer', outline: 'none',
+            padding: '8px 12px', borderRadius: R.chip,
+            border: `1px solid ${UP.hair}`, background: UP.surface, color: UP.navy, cursor: 'pointer', outline: 'none',
           }}
         >
           <option value="all" style={{ background: '#fff', color: UP.navy }}>전체 사업장</option>
@@ -1115,27 +1113,25 @@ export default function JobPostingsMenu() {
           ))}
         </select>
 
-        {/* 상태 필터 */}
         {(['all', 'active', 'draft', 'expired', 'deleted'] as const).map(s => (
           <button key={s} onClick={() => setStatusFilter(s)}
             className="text-a12" style={{
-              padding: '6px 16px', borderRadius: 999, border: 'none',
-              background: statusFilter === s ? UP.brand : UP.hairSoft,
-              color: statusFilter === s ? '#fff' : UP.sub, fontWeight: 600, cursor: 'pointer',
+              padding: '7px 16px', borderRadius: R.pill, border: `1px solid ${statusFilter === s ? UP.brand : UP.hair}`,
+              background: statusFilter === s ? UP.brand : UP.surface,
+              color: statusFilter === s ? '#fff' : UP.sub, fontWeight: 700, cursor: 'pointer',
+              boxShadow: statusFilter === s ? '0 2px 8px rgba(49,130,246,0.28)' : 'none', transition: 'all 0.12s',
             }}>
             {s === 'all' ? '전체' : s === 'active' ? '활성' : s === 'draft' ? '임시저장' : s === 'expired' ? '만료' : '삭제됨'}
           </button>
         ))}
 
-        {/* 검색 */}
         <input
           value={jobSearch}
           onChange={e => setJobSearch(e.target.value)}
           placeholder="🔍 회사명·센터명·지역 검색"
           className="text-a12" style={{
-            padding: '6px 16px', borderRadius: 999,
-            border: `1px solid ${UP.hair}`,
-            background: '#fff', color: UP.navy, outline: 'none', minWidth: 220,
+            marginLeft: 'auto', padding: '8px 16px', borderRadius: R.pill,
+            border: `1px solid ${UP.hair}`, background: UP.sunken, color: UP.navy, outline: 'none', minWidth: 240,
           }}
         />
       </div>
@@ -1146,16 +1142,21 @@ export default function JobPostingsMenu() {
       ) : displayJobs.length === 0 ? (
         <AdminEmpty title="공고가 없습니다" desc="새 공고를 등록하면 여기에 표시됩니다." />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 18 }}>
           {displayJobs.map(job => {
             const benefits = Array.isArray(job.benefits) ? job.benefits as string[] : []
             const appCount = applicantCounts[job.id] ?? 0
+            // 카드 상단 액센트색 — 긴급/임시/일반
+            const accent = job.is_urgent ? UP.dangerChart : job.status === 'draft' ? UP.amberChart : UP.brand
             return (
-              <div key={job.id} style={{
-                background: UP.sunken,
-                border: `1.5px solid ${job.is_urgent ? 'rgba(240,68,82,0.4)' : job.status === 'draft' ? 'rgba(255,180,0,0.3)' : UP.hairSoft}`,
-                borderRadius: 16, padding: '22px 24px',
+              <div key={job.id}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLDivElement; el.style.boxShadow = ELEV.lift; el.style.transform = 'translateY(-2px)' }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLDivElement; el.style.boxShadow = ELEV.card; el.style.transform = 'translateY(0)' }}
+                style={{
+                ...proCard, borderRadius: R.card,
+                padding: '20px 22px', borderTop: `3px solid ${accent}`,
                 display: 'flex', flexDirection: 'column', gap: 12, minHeight: 220,
+                transition: 'box-shadow 0.15s, transform 0.15s',
               }}>
                 {/* 배지 영역 */}
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
