@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { UP, RADIUS, btnPrimary, btnSecondary } from '../shared/adminTheme'
+import { PageHead } from '../ds/DSKit'
 import { getSettings, getBlockedIps, patchSetting, setUnmaskKey, getUnmaskKeyStatus } from '../../../lib/api'
 import { supabase } from '../../../lib/supabase'
 import type { SystemSettings, BlockedIp } from '../../../types/admin'
@@ -314,13 +315,14 @@ export default function SettingsMenu({ isSuperAdmin }: Props) {
   }
 
   return (
-    <div style={{ padding: 'clamp(12px, 3vw, 24px)' }}>
-      <div style={{ marginBottom: 20 }}>
-        <h2 className="text-a18" style={{ fontWeight: 800, color: UP.navy, margin: 0 }}>Settings</h2>
-        <p className="text-a12" style={{ color: UP.sub, marginTop: 2 }}>운영 제어 · Discord · CMS · 법정 변수 · IP 보안</p>
-      </div>
+    <div style={{ padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1440, margin: '0 auto' }}>
+      <PageHead
+        icon="⚙️"
+        title="설정"
+        subtitle="운영 제어 · Discord · CMS · 법정 변수 · IP 보안"
+      />
 
-      <div style={{ maxWidth: 700 }}>
+      <div style={{ maxWidth: 760 }}>
         {/* 공통 설정 */}
         <DiscordSettings settings={settings} onRefresh={loadSettings} />
         <CmsSettings settings={settings} onRefresh={loadSettings} />
