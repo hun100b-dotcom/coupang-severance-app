@@ -11,8 +11,16 @@ import DailyTrendChart from '../dashboard/DailyTrendChart'
 import ServiceBarChart from '../dashboard/ServiceBarChart'
 import RecentActivity from '../dashboard/RecentActivity'
 import { UP, numeric } from '../shared/adminTheme'
-import { HERO_BG, proCard, ELEV, R, fadeUp, containerStagger } from '../shared/adminUI'
+import { HERO_BG, proCard, ELEV, R } from '../shared/adminUI'
 import { AdminLoading } from '../shared/AdminState'
+
+// 진입 모션 — 앱 검증 패턴(per-element initial/animate). 함수 variants+staggerChildren 조합의
+//   "자식이 opacity:0에 묶이는" 버그를 피하려 각 섹션이 독립적으로 show 상태로 구동된다.
+const enter = (i = 0) => ({
+  initial: { opacity: 0, y: 14 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.4, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+})
 
 function fmtMoney(n: number) {
   if (n >= 100000000) return `${(n / 100000000).toFixed(1)}억`
@@ -112,12 +120,9 @@ export default function OverviewTab() {
   ]
 
   return (
-    <motion.div
-      variants={containerStagger} initial="hidden" animate="show"
-      style={{ padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1440, margin: '0 auto' }}
-    >
+    <div style={{ padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1440, margin: '0 auto' }}>
       {/* ══ 히어로 요약 바 ══ */}
-      <motion.section variants={fadeUp} custom={0} style={{
+      <motion.section {...enter(0)} style={{
         borderRadius: R.hero, background: HERO_BG, boxShadow: ELEV.hero,
         padding: 'clamp(22px, 3vw, 34px)', color: '#EAF1FF', marginBottom: 22,
         position: 'relative', overflow: 'hidden',
@@ -178,7 +183,7 @@ export default function OverviewTab() {
 
       {/* ══ 보조 KPI 6종 ══ */}
       <SectionTitle>핵심 지표</SectionTitle>
-      <motion.div variants={fadeUp} custom={1}
+      <motion.div {...enter(1)}
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 26 }}>
         {kpis.map(k => (
           <div key={k.label} style={{ ...proCard, padding: 18, position: 'relative', overflow: 'hidden' }}>
@@ -205,7 +210,7 @@ export default function OverviewTab() {
 
       {/* ══ 추이 차트 ══ */}
       <SectionTitle>유입 추이 & 서비스 클릭</SectionTitle>
-      <motion.div variants={fadeUp} custom={2}
+      <motion.div {...enter(2)}
         className="grid grid-cols-1 lg:grid-cols-[2fr_1fr]"
         style={{ gap: 14, marginBottom: 26 }}>
         <DailyTrendChart data={analytics?.daily ?? []} />
@@ -216,7 +221,7 @@ export default function OverviewTab() {
       {stats.inquiries.total > 0 && (
         <>
           <SectionTitle>문의 상태 분포</SectionTitle>
-          <motion.div variants={fadeUp} custom={3} style={{ ...proCard, padding: '20px 24px', marginBottom: 26 }}>
+          <motion.div {...enter(3)} style={{ ...proCard, padding: '20px 24px', marginBottom: 26 }}>
             <div style={{ display: 'flex', gap: 2, height: 12, borderRadius: 99, overflow: 'hidden', marginBottom: 14 }}>
               {[
                 { key: 'waiting',   count: stats.inquiries.waiting,   color: UP.amberChart },
@@ -247,12 +252,12 @@ export default function OverviewTab() {
 
       {/* ══ 최근 활동 & 공지 ══ */}
       <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: 14 }}>
-        <motion.div variants={fadeUp} custom={4}>
+        <motion.div {...enter(4)}>
           <SectionTitle>최근 문의</SectionTitle>
           <RecentActivity inquiries={recentInquiries} />
         </motion.div>
 
-        <motion.div variants={fadeUp} custom={5}>
+        <motion.div {...enter(5)}>
           <SectionTitle>최근 공지사항</SectionTitle>
           <div style={{ ...proCard, padding: '14px 18px' }}>
             {recentNotices.length === 0 ? (
@@ -281,7 +286,7 @@ export default function OverviewTab() {
           </div>
         </motion.div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
