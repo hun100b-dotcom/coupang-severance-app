@@ -2,7 +2,7 @@
 // 사업장별 공고현황, 전환율, 충원율, 일별 트렌드 차트, 채용소요일
 import { useEffect, useState, useCallback } from 'react'
 import { UP, RADIUS, btnSecondary } from '../shared/adminTheme'
-import { AdminPageHero } from '../shared/adminChrome'
+import { PageHead } from '../ds/DSKit'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Legend,
@@ -217,7 +217,7 @@ export default function RecruitSummaryMenu() {
   return (
     <div style={{ padding: 'clamp(16px,3vw,32px)', maxWidth: 1440, margin: '0 auto', position: 'relative' }}>
       {/* 딥네이비 히어로 헤더 */}
-      <AdminPageHero
+      <PageHead
         icon="📈"
         title="채용 Summary"
         subtitle="채용 전반 현황 및 전환율 분석"
@@ -225,12 +225,12 @@ export default function RecruitSummaryMenu() {
           <>
             <select value={companyFilter} onChange={e => setCompanyFilter(e.target.value)}
               className="text-a13" style={{
-                padding: '8px 12px', borderRadius: 10,
-                border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.1)', color: '#fff',
+                padding: '8px 12px', borderRadius: 999,
+                border: `1px solid ${UP.hair}`, background: '#fff', color: UP.navy,
                 cursor: 'pointer', outline: 'none',
               }}>
-              <option value="all" style={{ background: '#16233F', color: '#fff' }}>전체 사업장</option>
-              {companies.map(c => <option key={c} value={c} style={{ background: '#16233F', color: '#fff' }}>{c}</option>)}
+              <option value="all">전체 사업장</option>
+              {companies.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             <button onClick={fetchData} style={{ ...btnSecondary }}>↻ 새로고침</button>
             <button onClick={handleExportCsv} style={{ ...btnSecondary }}>📥 CSV</button>

@@ -2,7 +2,7 @@
 // 기능: 2단계 필터(사업장→센터), KPI 대시보드, 일별 지원/확정 차트(Recharts), 교대/업무별 분포
 import { useEffect, useState, useCallback } from 'react'
 import { UP, RADIUS, btnSecondary } from '../shared/adminTheme'
-import { AdminPageHero } from '../shared/adminChrome'
+import { PageHead } from '../ds/DSKit'
 import {
   ComposedChart, Bar, Line,
   XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer,
@@ -206,7 +206,7 @@ export default function ConfirmedMenu() {
     <div style={{ padding: 'clamp(16px,3vw,32px)', maxWidth: 1440, margin: '0 auto', position: 'relative' }}>
 
       {/* 딥네이비 히어로 헤더 */}
-      <AdminPageHero
+      <PageHead
         icon="📈"
         title="채용현황"
         subtitle={`지원 현황을 사업장·센터별로 분석합니다 · 총 ${total}명`}
