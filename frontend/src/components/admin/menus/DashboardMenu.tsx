@@ -1,7 +1,7 @@
 ﻿// ============================================================
-// DashboardMenu: 어드민 대시보드 진입점
-// 5개 서브탭(개요/방문자/계산기/채용/타겟) 중 하나를 선택해 콘텐츠를 렌더링합니다.
-// 이전 단일 스크롤 구조에서 서브탭 구조로 전면 재구성되었습니다.
+// DashboardMenu: 어드민 대시보드 진입점 (S1 축소)
+// ★서브탭 3개(개요/방문자/계산기)로 축소 — '채용'은 상단 코어 '채용', '타겟'은 '시스템'으로
+//   이전(중복 제거). 대시보드는 서비스 운영 지표에 집중.
 // ============================================================
 
 import { useState, lazy, Suspense } from 'react'
@@ -12,8 +12,6 @@ import { AdminLoading } from '../shared/AdminState' // 공통 로딩 상태(인�
 const OverviewTab   = lazy(() => import('../tabs/OverviewTab'))
 const VisitorTab    = lazy(() => import('../tabs/VisitorTab'))
 const CalcStatsTab  = lazy(() => import('../tabs/CalcStatsTab'))
-const RecruitTab    = lazy(() => import('../tabs/RecruitTab'))
-const TargetTab     = lazy(() => import('../tabs/TargetTab'))
 
 // 탭 로딩 중 보여줄 스피너 — 공통 AdminLoading 재사용
 function TabLoading() {
@@ -35,8 +33,6 @@ export default function DashboardMenu() {
           {activeTab === 'overview'    && <OverviewTab />}
           {activeTab === 'visitors'   && <VisitorTab />}
           {activeTab === 'calc_stats' && <CalcStatsTab />}
-          {activeTab === 'recruit'    && <RecruitTab />}
-          {activeTab === 'target'     && <TargetTab />}
         </Suspense>
       </div>
     </div>

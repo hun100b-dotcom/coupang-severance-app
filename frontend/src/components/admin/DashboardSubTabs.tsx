@@ -1,14 +1,14 @@
-// 대시보드 서브탭 네비게이션 — 업비트 톤 (헤어라인 + 활성 언더라인)
-import { UP } from './shared/adminTheme'
+// 대시보드 서브탭 — 새 DS(Aurora Light) 세그먼트 컨트롤 (S1)
+//   ★축소: 기존 5탭(개요/방문자/계산기/채용/타겟) → 3탭. '채용'은 상단 코어 '채용',
+//     '타겟'은 '시스템'으로 이전(중복 제거). 대시보드는 서비스 운영 지표에 집중.
+import { DS, RAD } from './ds/adminDS'
 
-export type DashboardSubTab = 'overview' | 'visitors' | 'calc_stats' | 'recruit' | 'target'
+export type DashboardSubTab = 'overview' | 'visitors' | 'calc_stats'
 
-const TABS: { key: DashboardSubTab; icon: string; label: string; desc: string }[] = [
-  { key: 'overview',    icon: '🏠', label: '개요',   desc: 'KPI + 차트' },
-  { key: 'visitors',   icon: '👁️', label: '방문자', desc: '유입 분석' },
-  { key: 'calc_stats', icon: '📊', label: '계산기', desc: '서비스 통계' },
-  { key: 'recruit',    icon: '💼', label: '채용',   desc: '공고 현황' },
-  { key: 'target',     icon: '🎯', label: '타겟',   desc: '인사이트' },
+const TABS: { key: DashboardSubTab; icon: string; label: string }[] = [
+  { key: 'overview',   icon: '🏠', label: '개요' },
+  { key: 'visitors',   icon: '👁️', label: '방문자' },
+  { key: 'calc_stats', icon: '📊', label: '계산기' },
 ]
 
 interface Props {
@@ -19,62 +19,24 @@ interface Props {
 export default function DashboardSubTabs({ activeTab, onTabChange }: Props) {
   return (
     <div style={{
-      display: 'flex',
-      gap: 0,
-      padding: '0 24px',
-      borderBottom: `1px solid ${UP.hair}`,
-      overflowX: 'auto',
-      scrollbarWidth: 'none',
-      background: UP.surface,
-      flexShrink: 0,
+      display: 'flex', gap: 6, padding: 'clamp(14px,3vw,28px)', paddingBottom: 0,
+      flexWrap: 'wrap', maxWidth: 1440, margin: '0 auto', width: '100%', boxSizing: 'border-box',
     }}>
       {TABS.map(tab => {
-        const isActive = tab.key === activeTab
+        const on = tab.key === activeTab
         return (
-          <button
-            key={tab.key}
-            onClick={() => onTabChange(tab.key)}
+          <button key={tab.key} onClick={() => onTabChange(tab.key)} className="text-a13"
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 2,
-              padding: '12px 16px 10px',
-              border: 'none',
-              background: 'transparent',
-              cursor: 'pointer',
-              flexShrink: 0,
-              position: 'relative',
-              color: isActive ? UP.strong : UP.sub,
-              transition: 'color 0.12s',
+              display: 'inline-flex', alignItems: 'center', gap: 7,
+              padding: '9px 16px', borderRadius: RAD.pill, cursor: 'pointer',
+              border: `1px solid ${on ? DS.accentLine : DS.line}`,
+              background: on ? DS.accentSoft : DS.panel,
+              color: on ? DS.accentStrong : DS.sub, fontWeight: on ? 800 : 600,
+              boxShadow: on ? '0 1px 4px rgba(49,130,246,0.15)' : 'none', transition: 'all 0.12s',
             }}
           >
-            <span className="text-a15">{tab.icon}</span>
-            <span className="text-a12" style={{
-              fontWeight: isActive ? 700 : 500,
-              lineHeight: 1,
-            }}>
-              {tab.label}
-            </span>
-            <span className="text-a10" style={{
-              color: isActive ? UP.brand : UP.caption,
-              lineHeight: 1,
-            }}>
-              {tab.desc}
-            </span>
-
-            {/* 활성 탭 하단 파란 바 */}
-            {isActive && (
-              <div style={{
-                position: 'absolute',
-                bottom: 0,
-                left: '10%',
-                right: '10%',
-                height: 2,
-                borderRadius: '2px 2px 0 0',
-                background: UP.brand,
-              }} />
-            )}
+            <span style={{ fontSize: '0.95rem' }}>{tab.icon}</span>
+            {tab.label}
           </button>
         )
       })}
