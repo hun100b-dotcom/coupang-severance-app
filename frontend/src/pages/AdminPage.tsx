@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { logAdminAction } from '../lib/adminAuditLog'
-import AdminSidebar, { type AdminMenu } from '../components/admin/AdminSidebar'
+import { type AdminMenu } from '../components/admin/AdminSidebar'
 import { UP } from '../components/admin/shared/adminTheme'
-import { INK, R } from '../components/admin/shared/adminUI'
+import { DS, RAD, CANVAS_BG, FROST_BAR } from '../components/admin/ds/adminDS'
 import DashboardMenu from '../components/admin/menus/DashboardMenu'
 import TargetMenu from '../components/admin/menus/TargetMenu'
 import InquiriesMenu from '../components/admin/menus/InquiriesMenu'
@@ -76,12 +76,33 @@ const MENU_META: Record<AdminMenu, { title: string; icon: string }> = {
 const FLAT_MENUS: { key: AdminMenu; label: string }[] = (Object.keys(MENU_META) as AdminMenu[])
   .map(key => ({ key, label: `${MENU_META[key].icon} ${MENU_META[key].title}` }))
 
+// ── 새 IA: 상단 프라이머리 탭 = 5 코어 그룹, 각 그룹의 서브 항목 ──
+//   (플랜 §5-1. 채용분석·감사·타겟 통합은 이후 스텝에서 화면 단위로 진행; S0은 IA 골격만)
+interface CoreGroup { key: string; label: string; icon: string; items: { menu: AdminMenu; label: string }[] }
+const CORES: CoreGroup[] = [
+  { key: 'ops',     label: '운영',   icon: '📊', items: [{ menu: 'dashboard', label: '대시보드' }] },
+  { key: 'recruit', label: '채용',   icon: '💼', items: [
+    { menu: 'job_postings', label: '공고' }, { menu: 'applicants', label: '지원자' },
+    { menu: 'confirmed', label: '현황' }, { menu: 'recruit_summary', label: '분석' },
+  ] },
+  { key: 'support', label: '소통',   icon: '💬', items: [
+    { menu: 'inquiries', label: '문의' }, { menu: 'notices', label: '공지' },
+  ] },
+  { key: 'people',  label: '인원',   icon: '👥', items: [
+    { menu: 'members', label: '회원' }, { menu: 'accounts', label: '관리자' },
+  ] },
+  { key: 'system',  label: '시스템', icon: '⚙️', items: [
+    { menu: 'settings', label: '설정' }, { menu: 'security', label: '보안' },
+    { menu: 'server_logs', label: '서버로그' }, { menu: 'audit_logs', label: '감사' },
+    { menu: 'target', label: '타겟' },
+  ] },
+]
+
 export default function AdminPage() {
   const { user, isLoggedIn, loading, logout } = useAuth()
   const navigate = useNavigate()
 
   const [activeMenu, setActiveMenu] = useState<AdminMenu>('dashboard')
-  const [collapsed, setCollapsed] = useState(false)   // 데스크탑 사이드바 접기 상태
   const [permLevels, setPermLevels] = useState<Record<string, PermLevel>>(DEFAULT_PERMS)
   const [adminRole, setAdminRole] = useState<string | null>(null)
   const [adminChecked, setAdminChecked] = useState(false)
@@ -207,165 +228,124 @@ export default function AdminPage() {
     }
   }
 
-  const meta = MENU_META[activeMenu]
+  // ── 새 IA 계산: 권한 필터된 코어 그룹 + 활성 코어/서브 ──
+  const visibleCores = CORES
+    .map(c => ({ ...c, items: c.items.filter(it => currentPerms[it.menu] !== false) }))
+    .filter(c => c.items.length > 0)
+  const activeCore = visibleCores.find(c => c.items.some(it => it.menu === activeMenu)) ?? visibleCores[0]
 
   return (
     <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: '100vh',
-      // 콘텐츠 배경: 옅은 청회색 위에 은은한 블루 글로우(깊이감)
-      background: `radial-gradient(900px 500px at 100% 0%, rgba(49,130,246,0.06) 0%, transparent 60%), ${UP.page}`,
-      color: UP.body,
-      position: 'fixed',
-      inset: 0,
-      zIndex: 100,
-      overflow: 'auto',
+      display: 'flex', flexDirection: 'column', minHeight: '100vh',
+      background: CANVAS_BG, color: DS.body,
+      position: 'fixed', inset: 0, zIndex: 100, overflow: 'auto',
     }}>
-      {/* ── 모바일 상단 헤더 바 (딥 잉크) ── */}
-      <div
-        className="md:hidden"
-        style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '11px 14px',
-          background: INK.base,
-          borderBottom: `1px solid ${INK.line}`,
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 0 }}>
-          <span style={{
-            width: 28, height: 28, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'linear-gradient(135deg, #3182F6, #1B64DA)', fontSize: '0.95rem',
-          }}>⚡</span>
-          <span className="text-a14" style={{ fontWeight: 900, color: '#F4F7FC', whiteSpace: 'nowrap' }}>CATCH</span>
-        </div>
-        <select
-          value={activeMenu}
-          onChange={e => handleMenuChange(e.target.value as AdminMenu)}
-          className="text-a13"
-          style={{
-            flex: 1, padding: '8px 10px', borderRadius: 9,
-            border: `1px solid ${INK.line}`, background: INK.soft, color: '#F4F7FC',
-            fontWeight: 600, outline: 'none', cursor: 'pointer',
-          }}
-        >
-          {FLAT_MENUS.map(m => (
-            <option key={m.key} value={m.key} style={{ background: INK.base, color: '#F4F7FC' }}>{m.label}</option>
-          ))}
-        </select>
-        <span className="text-a10" style={{
-          fontWeight: 800, color: currentRoleColor,
-          background: `${currentRoleColor}22`, border: `1px solid ${currentRoleColor}44`,
-          padding: '3px 8px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0,
-        }}>
-          {currentRoleLabel}
-        </span>
-        <button onClick={handleLogout} className="text-a13"
-          style={{
-            padding: '6px 10px', borderRadius: 9, border: `1px solid ${INK.line}`,
-            background: 'transparent', color: '#F4F7FC', cursor: 'pointer', flexShrink: 0,
-          }}
-        >🚪</button>
-      </div>
+      {/* ═══ 상단 프라이머리 바 (프로스트 화이트) ═══ */}
+      <header style={{ ...FROST_BAR, position: 'sticky', top: 0, zIndex: 20, flexShrink: 0 }}>
+        {/* 1행: 브랜드 + 코어 탭 + 신원 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18, height: 60, padding: '0 clamp(14px,2.5vw,28px)' }}>
+          {/* 브랜드 마크 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+            <span style={{
+              width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'linear-gradient(135deg, #3182F6, #1B64DA)', color: '#fff', fontSize: '1.05rem',
+              boxShadow: '0 4px 14px rgba(49,130,246,0.35)',
+            }}>⚡</span>
+            <div style={{ lineHeight: 1 }} className="hidden sm:block">
+              <div className="text-a16" style={{ fontWeight: 900, color: DS.ink, letterSpacing: '-0.02em' }}>CATCH</div>
+              <div className="text-a10" style={{ color: DS.faint, fontWeight: 700, letterSpacing: '0.14em', marginTop: 2 }}>ADMIN</div>
+            </div>
+          </div>
 
-      {/* ── 데스크탑: 사이드바 + (상단바 + 메인) ── */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <div className="hidden md:block" style={{ flexShrink: 0 }}>
-          <AdminSidebar active={activeMenu} onChange={handleMenuChange} collapsed={collapsed} />
-        </div>
+          {/* 코어 탭 (데스크탑) */}
+          <nav className="hidden md:flex" style={{ alignItems: 'center', gap: 2, flex: 1, minWidth: 0, overflowX: 'auto' }}>
+            {visibleCores.map(core => {
+              const on = activeCore?.key === core.key
+              return (
+                <button key={core.key}
+                  onClick={() => handleMenuChange(core.items[0].menu)}
+                  className="text-a14"
+                  style={{
+                    position: 'relative', display: 'flex', alignItems: 'center', gap: 7,
+                    padding: '18px 14px', border: 'none', background: 'transparent', cursor: 'pointer',
+                    color: on ? DS.ink : DS.sub, fontWeight: on ? 800 : 600, whiteSpace: 'nowrap',
+                    transition: 'color 0.12s',
+                  }}
+                  onMouseEnter={e => { if (!on) (e.currentTarget as HTMLButtonElement).style.color = DS.ink }}
+                  onMouseLeave={e => { if (!on) (e.currentTarget as HTMLButtonElement).style.color = DS.sub }}
+                >
+                  <span style={{ fontSize: '1rem', opacity: on ? 1 : 0.8 }}>{core.icon}</span>
+                  {core.label}
+                  {on && <span style={{
+                    position: 'absolute', left: 12, right: 12, bottom: 0, height: 3, borderRadius: '3px 3px 0 0',
+                    background: DS.accent, boxShadow: `0 0 10px ${DS.accent}`,
+                  }} />}
+                </button>
+              )
+            })}
+          </nav>
 
-        {/* 우측 컬럼 */}
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-          {/* ── 데스크탑 상단바 (글래스풍 화이트) ── */}
-          <header
-            className="hidden md:flex"
+          {/* 모바일 메뉴 셀렉트 */}
+          <select
+            className="md:hidden text-a13"
+            value={activeMenu}
+            onChange={e => handleMenuChange(e.target.value as AdminMenu)}
             style={{
-              alignItems: 'center', gap: 14,
-              height: 66, padding: '0 26px',
-              background: 'rgba(255,255,255,0.82)',
-              backdropFilter: 'blur(14px)',
-              borderBottom: `1px solid ${UP.hair}`,
-              flexShrink: 0,
-              position: 'sticky', top: 0, zIndex: 20,
+              flex: 1, minWidth: 0, padding: '8px 10px', borderRadius: RAD.sm,
+              border: `1px solid ${DS.line}`, background: DS.panel, color: DS.ink, fontWeight: 700, outline: 'none',
             }}
           >
-            {/* 사이드바 접기 토글 */}
-            <button
-              onClick={() => setCollapsed(c => !c)}
-              title={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
+            {FLAT_MENUS.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
+          </select>
+
+          {/* 우측: 신원 + 역할 + 로그아웃 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <span className="hidden lg:inline text-a12" style={{ color: DS.sub, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {user?.email}
+            </span>
+            <span className="text-a11 hidden sm:inline" style={{
+              fontWeight: 800, color: currentRoleColor,
+              background: `${currentRoleColor}14`, border: `1px solid ${currentRoleColor}33`,
+              padding: '4px 11px', borderRadius: RAD.pill, whiteSpace: 'nowrap',
+            }}>✦ {currentRoleLabel}</span>
+            <button onClick={handleLogout} className="text-a13"
               style={{
-                width: 38, height: 38, flexShrink: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                borderRadius: R.chip, border: `1px solid ${UP.hair}`,
-                background: UP.surface, color: UP.sub, cursor: 'pointer', fontSize: '1.05rem',
-                transition: 'background 0.12s',
+                padding: '7px 14px', borderRadius: RAD.sm,
+                border: `1px solid ${DS.badLine}`, background: DS.badSoft, color: DS.bad,
+                fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = UP.sunken }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = UP.surface }}
-            >
-              ☰
-            </button>
-
-            {/* 현재 섹션 타이틀 (큰 위계) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
-              <span style={{
-                width: 40, height: 40, flexShrink: 0, borderRadius: 12,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: UP.brandBg, border: `1px solid ${UP.brandLine}`, fontSize: '1.15rem',
-              }}>{meta.icon}</span>
-              <div style={{ minWidth: 0 }}>
-                <div className="text-a10" style={{ color: UP.caption, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', lineHeight: 1 }}>
-                  Admin OS
-                </div>
-                <div className="text-a20" style={{
-                  fontWeight: 900, color: UP.navy, letterSpacing: '-0.02em', lineHeight: 1.15, marginTop: 3,
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                }}>
-                  {meta.title}
-                </div>
-              </div>
-            </div>
-
-            {/* 우측: 신원 + 역할 배지 + 로그아웃 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-              <span className="hidden lg:inline text-a13" style={{
-                color: UP.sub, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>
-                {user?.email}
-              </span>
-              <span className="text-a11" style={{
-                fontWeight: 800, color: currentRoleColor,
-                background: `${currentRoleColor}14`, border: `1px solid ${currentRoleColor}33`,
-                padding: '5px 12px', borderRadius: 999, whiteSpace: 'nowrap',
-              }}>
-                ✦ {currentRoleLabel}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="text-a13"
-                style={{
-                  padding: '8px 16px', borderRadius: R.chip,
-                  border: `1px solid ${UP.dangerLine}`, background: UP.dangerBg, color: UP.danger,
-                  fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FBDDDF' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = UP.dangerBg }}
-              >
-                로그아웃
-              </button>
-            </div>
-          </header>
-
-          {/* 메인 콘텐츠 영역 */}
-          <main style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
-            {/* 메뉴 전환 시 진입 모션(slideUpFade). key 로 전환마다 재생 */}
-            <div key={activeMenu} className="animate-staggered-fade">
-              {renderMenu()}
-            </div>
-          </main>
+            >로그아웃</button>
+          </div>
         </div>
-      </div>
+
+        {/* 2행: 활성 코어의 서브 세그먼트 (항목 2개 이상일 때만) */}
+        {activeCore && activeCore.items.length > 1 && (
+          <div className="hidden md:flex" style={{ alignItems: 'center', gap: 6, padding: '0 clamp(14px,2.5vw,28px) 12px', flexWrap: 'wrap' }}>
+            {activeCore.items.map(it => {
+              const on = it.menu === activeMenu
+              return (
+                <button key={it.menu} onClick={() => handleMenuChange(it.menu)} className="text-a13"
+                  style={{
+                    padding: '7px 15px', borderRadius: RAD.pill, cursor: 'pointer',
+                    border: `1px solid ${on ? DS.accentLine : DS.line}`,
+                    background: on ? DS.accentSoft : DS.panel,
+                    color: on ? DS.accentStrong : DS.sub, fontWeight: on ? 800 : 600,
+                    boxShadow: on ? '0 1px 4px rgba(49,130,246,0.15)' : 'none', transition: 'all 0.12s',
+                  }}
+                >{it.label}</button>
+              )
+            })}
+          </div>
+        )}
+      </header>
+
+      {/* ═══ 메인 캔버스 ═══ */}
+      <main style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+        {/* 전환 시 진입 모션(CSS forwards). ★framer variants 미사용 */}
+        <div key={activeMenu} className="animate-staggered-fade">
+          {renderMenu()}
+        </div>
+      </main>
     </div>
   )
 }
