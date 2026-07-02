@@ -1,8 +1,8 @@
 // OverviewTab — 어드민 대시보드 [개요] · 월드클래스 리디자인 (2026-07-02)
 //   ⚠️ 데이터/로직 불변: getAdminStats/getAdminAnalytics/getAdminInquiries + notices 조회 그대로.
-//      프레젠테이션만 새 비주얼(히어로 요약 바 + 프로 카드 + Framer Motion 진입)로 교체.
+//   ★진입 애니메이션은 framer-motion 제거 — 일반 div + CSS(.animate-staggered-fade, forwards)로만.
+//     (framer JS 애니메이션이 콘텐츠를 opacity:0에 묶는 어떤 케이스도 원천 차단 → 데이터 있으면 무조건 렌더)
 import { useEffect, useState, useRef } from 'react'
-import { motion } from 'framer-motion'
 import { getAdminStats, getAdminAnalytics, getAdminInquiries } from '../../../lib/api'
 import type { AdminStats, AnalyticsResponse, AdminInquiry } from '../../../types/admin'
 import { logAdminAction } from '../../../lib/adminAuditLog'
@@ -13,14 +13,6 @@ import RecentActivity from '../dashboard/RecentActivity'
 import { UP, numeric } from '../shared/adminTheme'
 import { HERO_BG, proCard, ELEV, R } from '../shared/adminUI'
 import { AdminLoading } from '../shared/AdminState'
-
-// 진입 모션 — 앱 검증 패턴(per-element initial/animate). 함수 variants+staggerChildren 조합의
-//   "자식이 opacity:0에 묶이는" 버그를 피하려 각 섹션이 독립적으로 show 상태로 구동된다.
-const enter = (i = 0) => ({
-  initial: { opacity: 0, y: 14 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
-})
 
 function fmtMoney(n: number) {
   if (n >= 100000000) return `${(n / 100000000).toFixed(1)}억`
@@ -120,9 +112,9 @@ export default function OverviewTab() {
   ]
 
   return (
-    <div style={{ padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1440, margin: '0 auto' }}>
+    <div className="animate-staggered-fade" style={{ padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1440, margin: '0 auto' }}>
       {/* ══ 히어로 요약 바 ══ */}
-      <motion.section {...enter(0)} style={{
+      <section style={{
         borderRadius: R.hero, background: HERO_BG, boxShadow: ELEV.hero,
         padding: 'clamp(22px, 3vw, 34px)', color: '#EAF1FF', marginBottom: 22,
         position: 'relative', overflow: 'hidden',
@@ -179,11 +171,11 @@ export default function OverviewTab() {
             </div>
           ))}
         </div>
-      </motion.section>
+      </section>
 
       {/* ══ 보조 KPI 6종 ══ */}
       <SectionTitle>핵심 지표</SectionTitle>
-      <motion.div {...enter(1)}
+      <div
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 26 }}>
         {kpis.map(k => (
           <div key={k.label} style={{ ...proCard, padding: 18, position: 'relative', overflow: 'hidden' }}>
@@ -206,22 +198,22 @@ export default function OverviewTab() {
             {k.sub && <div className="text-a11" style={{ color: UP.caption, marginTop: 6 }}>{k.sub}</div>}
           </div>
         ))}
-      </motion.div>
+      </div>
 
       {/* ══ 추이 차트 ══ */}
       <SectionTitle>유입 추이 & 서비스 클릭</SectionTitle>
-      <motion.div {...enter(2)}
+      <div
         className="grid grid-cols-1 lg:grid-cols-[2fr_1fr]"
         style={{ gap: 14, marginBottom: 26 }}>
         <DailyTrendChart data={analytics?.daily ?? []} />
         <ServiceBarChart severance={stats.clicks.severance} unemployment={stats.clicks.unemployment} />
-      </motion.div>
+      </div>
 
       {/* ══ 문의 상태 분포 ══ */}
       {stats.inquiries.total > 0 && (
         <>
           <SectionTitle>문의 상태 분포</SectionTitle>
-          <motion.div {...enter(3)} style={{ ...proCard, padding: '20px 24px', marginBottom: 26 }}>
+          <div style={{ ...proCard, padding: '20px 24px', marginBottom: 26 }}>
             <div style={{ display: 'flex', gap: 2, height: 12, borderRadius: 99, overflow: 'hidden', marginBottom: 14 }}>
               {[
                 { key: 'waiting',   count: stats.inquiries.waiting,   color: UP.amberChart },
@@ -246,18 +238,18 @@ export default function OverviewTab() {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </>
       )}
 
       {/* ══ 최근 활동 & 공지 ══ */}
       <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: 14 }}>
-        <motion.div {...enter(4)}>
+        <div>
           <SectionTitle>최근 문의</SectionTitle>
           <RecentActivity inquiries={recentInquiries} />
-        </motion.div>
+        </div>
 
-        <motion.div {...enter(5)}>
+        <div>
           <SectionTitle>최근 공지사항</SectionTitle>
           <div style={{ ...proCard, padding: '14px 18px' }}>
             {recentNotices.length === 0 ? (
@@ -284,7 +276,7 @@ export default function OverviewTab() {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   )
