@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Calculator, ChevronRight, CheckCircle, AlertTriangle, Clock, FileText, HelpCircle, Scale } from 'lucide-react'
 import PageMeta from '../../components/PageMeta'
+import RelatedLinks from '../../components/seo/RelatedLinks'
 
 // ── FAQ JSON-LD ──────────────────────────────────────────────
 const FAQ_SCHEMA = {
@@ -320,6 +321,9 @@ export default function CoupangCfsSeverance() {
             </button>
             <p className="text-center text-xs text-up-sub mt-2">28일 블록 자동 적용 · PDF 업로드 · 3분 · 완전 무료</p>
           </motion.div>
+
+          {/* SEO 내부 링크 메시(P5) — 크롤 가능한 관련 계산기·가이드 */}
+          <RelatedLinks current="/coupang-cfs-severance-calculation" />
 
         </div>
       </div>

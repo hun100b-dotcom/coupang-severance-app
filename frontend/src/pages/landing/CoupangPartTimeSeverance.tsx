@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Calculator, ChevronRight, CheckCircle, AlertTriangle, Clock, FileText, HelpCircle } from 'lucide-react'
 import PageMeta from '../../components/PageMeta'
+import RelatedLinks from '../../components/seo/RelatedLinks'
 
 // ── FAQ JSON-LD (구글 FAQ 리치 스니펫: 검색결과에 Q&A 박스로 노출되는 구조화 데이터) ──
 const FAQ_SCHEMA = {
@@ -304,6 +305,9 @@ export default function CoupangPartTimeSeverance() {
             </button>
             <p className="text-center text-xs text-up-sub mt-2">3분 소요 · 완전 무료 · PDF 업로드 지원</p>
           </motion.div>
+
+          {/* SEO 내부 링크 메시(P5) — 크롤 가능한 관련 계산기·가이드 */}
+          <RelatedLinks current="/coupang-part-time-severance-method" />
 
         </div>
       </div>

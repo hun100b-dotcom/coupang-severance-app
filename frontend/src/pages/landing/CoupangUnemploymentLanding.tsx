@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Calculator, ChevronRight, CheckCircle, XCircle, AlertTriangle, Briefcase } from 'lucide-react'
 import PageMeta from '../../components/PageMeta'
+import RelatedLinks from '../../components/seo/RelatedLinks'
 
 // ── FAQ JSON-LD ──────────────────────────────────────────────
 const FAQ_SCHEMA = {
@@ -306,6 +307,9 @@ export default function CoupangUnemploymentLanding() {
               완전 무료 · 회원가입 없이도 계산 가능
             </p>
           </motion.div>
+
+          {/* SEO 내부 링크 메시(P5) — 크롤 가능한 관련 계산기·가이드 */}
+          <RelatedLinks current="/coupang-unemployment-calculator" />
 
         </div>
       </div>
