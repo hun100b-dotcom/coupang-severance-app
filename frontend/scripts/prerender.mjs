@@ -16,10 +16,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const DIST = path.resolve(__dirname, '..', 'dist')
 const PORT = 4321
 
+// 라우트 HTML 을 dist/<route>/index.html 로 즉시 기록. cleanUrls 로 /route → /route/index.html 서빙.
+let WRITTEN = 0
+function writeRoute(route, html) {
+  const outDir = route === '/' ? DIST : path.join(DIST, route)
+  fs.mkdirSync(outDir, { recursive: true })
+  fs.writeFileSync(path.join(outDir, 'index.html'), html)
+  WRITTEN++
+}
+
 // ★워치독: 어떤 이유로든(크로미움 launch 행·네비게이션 무한대기 등) 스크립트가
 //   끝나지 않아 Vercel 빌드가 멈추는 것을 방지. 제한 시간 초과 시 강제 종료(exit 0).
 //   .unref() 로 정상 완료 시엔 이 타이머가 프로세스를 붙잡지 않는다.
-const WATCHDOG_MS = 150000
+const WATCHDOG_MS = 300000
 setTimeout(() => {
   console.warn(`[prerender] ⏱️ 워치독 ${WATCHDOG_MS}ms 초과 — 강제 종료(빌드 계속). SPA 폴백.`)
   process.exit(0)
@@ -86,7 +95,6 @@ async function main() {
 
   const server = await startServer()
   let browser
-  const results = [] // { route, html }
   try {
     // 플랫폼 분기 launch:
     //   - Vercel/CI(Linux): puppeteer-core + @sparticuz/chromium(서버리스 호환 크로미움).
@@ -116,11 +124,14 @@ async function main() {
       try {
         const page = await browser.newPage()
         await page.setViewport({ width: 1280, height: 900 })
-        await page.goto(`http://localhost:${PORT}${route}`, { waitUntil: 'networkidle0', timeout: 30000 })
-        // 콘텐츠 정착: h1 또는 #root 자식 등장 대기(best-effort) + helmet/모션 settle
-        await page.waitForSelector('#root > *', { timeout: 15000 }).catch(() => {})
-        await page.waitForSelector('h1', { timeout: 8000 }).catch(() => {})
-        await new Promise(r => setTimeout(r, 1200))
+        // ★대기 전략: networkidle0(네트워크 완전정지 500ms)는 Supabase/폰트/카카오 등
+        //   상시 연결 때문에 서버리스에서 라우트당 15~24s로 과도하게 느림 → 워치독 초과.
+        //   'load'(문서 로드 완료) + 콘텐츠 셀렉터 대기 + 짧은 settle 로 라우트당 2~4s 로 단축.
+        await page.goto(`http://localhost:${PORT}${route}`, { waitUntil: 'load', timeout: 20000 })
+        // 콘텐츠 정착: #root 자식 + h1 등장 대기(best-effort) + helmet/모션 settle(짧게)
+        await page.waitForSelector('#root > *', { timeout: 8000 }).catch(() => {})
+        await page.waitForSelector('h1', { timeout: 5000 }).catch(() => {})
+        await new Promise(r => setTimeout(r, 600))
         // 중복 head 태그 제거 — 정적 index.html 기본값 + Helmet per-page 가 병존하므로
         //   per-page(마지막) 하나만 남긴다(canonical/description/og/twitter). title 은 Helmet이 이미 단일화.
         await page.evaluate(() => {
@@ -135,9 +146,11 @@ async function main() {
           ].forEach(keepLast)
         }).catch(() => {})
         const html = await page.content()
-        results.push({ route, html })
         const rootChildren = await page.evaluate(() => document.getElementById('root')?.childElementCount || 0)
         const title = await page.title()
+        // ★즉시 기록: 워치독이 중간에 강제종료해도 이미 렌더된 라우트는 파일로 남는다
+        //   (기존: 전체 렌더 후 일괄 기록 → 워치독이 루프 도중 죽이면 0개 기록되던 버그).
+        writeRoute(route, html)
         console.log(`[prerender] ✓ ${route.padEnd(40)} rootChildren=${rootChildren} title="${title.slice(0, 40)}"`)
         await page.close()
       } catch (e) {
@@ -151,15 +164,8 @@ async function main() {
     server.close()
   }
 
-  // 스냅샷을 파일로 기록(모든 렌더 완료 후 일괄 → 중간 간섭 방지)
-  let written = 0
-  for (const { route, html } of results) {
-    const outDir = route === '/' ? DIST : path.join(DIST, route)
-    fs.mkdirSync(outDir, { recursive: true })
-    fs.writeFileSync(path.join(outDir, 'index.html'), html)
-    written++
-  }
-  console.log(`[prerender] 완료 — ${written}/${ROUTES.length} 라우트 정적화`)
+  // 파일 기록은 루프 안에서 라우트별 즉시 수행됨(writeRoute). 여기선 집계만.
+  console.log(`[prerender] 완료 — ${WRITTEN}/${ROUTES.length} 라우트 정적화`)
 }
 
 main().catch(e => { console.warn('[prerender] ⚠️ 예외 — SPA로 진행:', e?.message || e) })
