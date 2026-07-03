@@ -6,6 +6,20 @@
 
 ---
 
+## 🛠️ 어드민 먹통 전수조사 & 복구 (2026-07-04, main `41ba7da` 푸시)
+
+> 증상: 로딩 매우 느림 + "백엔드 연결 불가" 에러 + "하드코딩 같은" 숫자. 상세: `docs/audit/admin_fullcheck_2026-07-04.md`. 더블리뷰 A(5축)·B(적대) 쌍방 PASS.
+
+**근본원인 3건 (전부 실측 확정):**
+1. **keep-alive 호스트 오타** — `coupang-severance-api`(존재하지 않음, 404 no-server)를 핑 → 콜드스타트 방지 0% 무효 → 매번 30~60초 콜드스타트+연결 에러. → `-app` 교정 + 크론 */10 + api.ts 재시도 5회/48초(GET 한정).
+2. **RLS 과소집계 = "가짜 같은" 숫자** — 하드코딩은 0건. 대시보드가 브라우저 세션으로 Supabase 직접 조회 → profiles owner-only라 유저 56→1명 표시, click_counter 컬럼명 불일치(total_cnt≠total)로 클릭 항상 0. → getAdminStats/Analytics/TargetInsights를 백엔드 service-role로 전환(+stats에 jobs 추가), CalcStats→`/admin/reports`, 채용현황·Summary→`/admin/recruit-stats`(신설), 지원자 상태변경 단건/일괄→백엔드 PATCH/bulk(알림 서버발송+감사기록). 업스트림 장애 시 명시적 502(가짜 0 금지, 리뷰어 B).
+3. **배포 후 옛 청크 404 먹통** — App.tsx 전 lazy(32개)에 lazyRetry(세션당 1회 자동 새로고침).
+
+**불변**: 계산 로직·운영 DB 데이터·index.css 폰트 0건 변경. **라이브 RLS 실측**: job_applications admin RLS(20260629)는 이미 적용돼 있었음, profiles만 owner-only(확정 원인).
+**남은 것**: GitHub 크론 지연 시 드문 콜드스타트 가능 → UptimeRobot(5분, 무료) 병행 권장(종훈님 클릭 필요). 기존 /admin/stats 부분실패 무음화는 후속 과제.
+
+---
+
 ## 🔍 SEO 개선 P1~P5 완료 (2026-07-03, main 푸시·배포 완료)
 
 > 플랜: `docs/seo-improvement-plan.md`. 원칙 = **앱 코드 최소변경(프리렌더 스냅샷)** · 계산로직·운영DB·index.css 폰트 override 불변. 매 스텝 **더블리뷰 A(5축)+B(adversarial)** + 회귀측정 + `docs/dual_review/P*.md` 아카이브.

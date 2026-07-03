@@ -106,9 +106,30 @@
 
 ---
 
-## 5. 6Step 라이브 검증
+## 5. 6Step 라이브 검증 (커밋 `41ba7da`, 2026-07-04)
 
-(배포 후 기입)
+| Step | 항목 | 결과 |
+|---|---|---|
+| 1 | git push origin main | `907b95e..41ba7da` 완료 |
+| 2 | Render 자동배포 | 신규 엔드포인트 라이브 200 (감시 폴링으로 확인) |
+| 3 | Vercel 자동배포 | 새 번들 `index-DuSCl_gl.js` 서빙, /admin 동일 번들 참조 |
+| 4 | 라이브 엔드포인트 curl | **14/14 전부 HTTP 200 + 실JSON** (기존 10 + 신규 reports·recruit-stats + analytics·insights). stats 응답: `jobs {total:8, active:4}`, `users.total 56`, `clicks.total 249` — 진실값 확인 |
+| 5 | 라이브 번들 베이크 검증 | api 청크(`api-ChFpRM_t.js`)에 `recruit-stats`·`admin/reports`·`bulk-status`·한국어 에러문구·재시도 딜레이(`2e3,4e3,8e3,14e3,2e4`) 전부 존재. index 번들에 `chunk_reload_once`(lazyRetry) 존재 |
+| 6 | 회귀 | 스타일 파일 diff 0건 → 폰트 computed 변동 원인 원천 부재. 계산 로직 0건. 계산기 POST는 재시도 대상 아님(GET 한정) 리뷰어 쌍방 확인 |
+
+**콜드스타트 이중 방어 (추가 발견·조치)**:
+- GitHub Actions 크론이 `active`여도 **실제 실행 간격이 ~2시간**으로 지연됨을 실측(11:08→13:07→15:23) — 호스트 오타를 고쳐도 GitHub만으론 불충분.
+- → **Supabase pg_cron + pg_net**으로 DB가 10분마다 `/health`를 직접 호출하도록 라이브 적용(`cron.job` jobid=1, active=true 확인). 마이그레이션: `supabase/migrations/20260704_keepalive_render_pg_cron.sql`(멱등·가역, 롤백 1줄).
+
+**쓰기 기능 검증(운영 데이터 무변경 방식)**: 존재하지 않는 UUID→404, 허용 밖 상태값→422, 무토큰→401, bulk 빈 매칭→200+`failed_ids` 반환 — 게이트 전부 기대값 일치. 실데이터 상태변경은 종훈님 라이브 확인 항목(§7)으로 이관(운영 지원 데이터를 임의 변경하지 않기 위함).
+
+## 7. 종훈님 최종 확인 체크리스트 (브라우저 1회, 약 3분)
+
+1. `https://catch-daily-worker.vercel.app/admin` 접속(관리자 계정) → 대시보드 **전체 유저 56명·클릭 249**가 표시되는지 (이전: 1명·0)
+2. 운영>대시보드>계산통계 탭 — 리포트 건수가 0이 아닌지
+3. 채용>현황·분석 — 지원 11건 데이터가 보이는지
+4. 채용>지원자 — 아무 지원자나 상태를 바꿨다가 되돌리기(토스트+새로고침 후 유지 확인)
+5. 로딩이 이전보다 빠른지(콜드스타트 소멸 체감)
 
 ---
 
