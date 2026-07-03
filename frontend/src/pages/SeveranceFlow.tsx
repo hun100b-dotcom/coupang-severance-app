@@ -582,9 +582,11 @@ export default function SeveranceFlow() {
         >
           {/* ── 계산기 소개 ── */}
           <div className="bg-brand-bg rounded-2xl p-5 mb-4">
-            <h1 className="text-base font-black text-brand-strong mb-2">
+            {/* ★SEO: 이 페이지의 h1은 CalcLayout 앱바(형제 계산기와 동일)라, 여기 소개 제목은
+                h2로 둔다(페이지당 h1 1개 규칙). 표시/스타일은 그대로, 태그만 h2. */}
+            <h2 className="text-base font-black text-brand-strong mb-2">
               쿠팡·CFS 일용직 퇴직금 계산기
-            </h1>
+            </h2>
             <p className="text-sm text-brand-strong leading-relaxed">
               쿠팡·쿠팡풀필먼트서비스(CFS)·마켓컬리·CJ대한통운 등 일용직 근로자도
               <strong> 1년 이상·주 15시간 이상</strong> 근무했다면 퇴직금을 받을 권리가 있습니다.
