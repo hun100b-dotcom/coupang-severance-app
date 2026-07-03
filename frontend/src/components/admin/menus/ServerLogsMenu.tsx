@@ -77,6 +77,16 @@ export default function ServerLogsMenu() {
 
   const channelRef = useRef<ReturnType<NonNullable<typeof supabase>['channel']> | null>(null)
 
+  // 실시간 콜백이 "구독을 재생성하지 않고도" 최신 페이지·필터를 읽도록 ref 로 보관.
+  //   배경(2026-07-04 2차 전수조사): 기존엔 구독 useEffect 의존성이
+  //   [isLive, sysPage, sysTypeFilter] 라 필터/페이지를 바꿀 때마다 WebSocket 채널을
+  //   파기·재구독(churn)했다 → 재연결 지연·구독 누수 위험. ref 로 최신값을 읽으면
+  //   구독은 isLive 토글 시에만 1회 생성/해제하면 된다.
+  const sysPageRef = useRef(sysPage)
+  const sysTypeFilterRef = useRef(sysTypeFilter)
+  useEffect(() => { sysPageRef.current = sysPage }, [sysPage])
+  useEffect(() => { sysTypeFilterRef.current = sysTypeFilter }, [sysTypeFilter])
+
   // ── Supabase Realtime 구독 (system_logs INSERT)
   useEffect(() => {
     if (!supabase || !isLive) return
@@ -87,8 +97,8 @@ export default function ServerLogsMenu() {
         { event: 'INSERT', schema: 'public', table: 'system_logs' },
         (payload) => {
           const newLog = payload.new as SystemLog
-          // 첫 페이지이고 필터에 맞으면 실시간 삽입
-          if (sysPage === 1 && (!sysTypeFilter || newLog.type === sysTypeFilter)) {
+          // 첫 페이지이고 필터에 맞으면 실시간 삽입 (최신 상태는 ref 에서 읽음)
+          if (sysPageRef.current === 1 && (!sysTypeFilterRef.current || newLog.type === sysTypeFilterRef.current)) {
             setSysLogs(prev => [newLog, ...prev].slice(0, PAGE_SIZE))
             setSysTotal(prev => prev + 1)
             // 새 로그 하이라이트 (3초 후 제거)
@@ -113,7 +123,7 @@ export default function ServerLogsMenu() {
         channelRef.current = null
       }
     }
-  }, [isLive, sysPage, sysTypeFilter])
+  }, [isLive])  // 페이지·필터 변경 시 재구독하지 않음(위 ref 로 최신값 참조) — churn 제거
 
   // ── System Logs 로드
   const loadSysLogs = useCallback(async () => {
