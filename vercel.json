@@ -3,7 +3,6 @@
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
   "framework": null,
-  "//": "cleanUrls: 프리렌더된 정적 파일(dist/<route>/index.html)을 슬래시 무관하게 /<route> 로 서빙. SPA rewrite는 프리렌더 안 된 라우트의 폴백(파일시스템 우선).",
   "cleanUrls": true,
   "redirects": [
     { "source": "/home", "destination": "/", "permanent": false },
