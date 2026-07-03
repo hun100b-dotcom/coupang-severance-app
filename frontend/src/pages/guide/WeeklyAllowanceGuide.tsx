@@ -187,7 +187,8 @@ export default function WeeklyAllowanceGuide() {
           className="rounded-2xl bg-gradient-to-br from-accent-700 to-accent p-6 text-white overflow-hidden relative"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-up-surface/10 rounded-full blur-2xl -z-10" />
-          <h2 className="text-2xl font-black mb-2 text-white">매주 빠짐없이 받아야 해요</h2>
+          {/* ★SEO: 페이지 유일 H1(키워드 선두) — 기존 h2는 h1 부재(h1=0) 원인이라 승격 */}
+          <h1 className="text-2xl font-black mb-2 text-white">주휴수당, 매주 빠짐없이 받아야 해요</h1>
           <p className="text-white/85 text-sm mb-4">주 15시간 이상 근무 시 발생</p>
           <div className="text-3xl font-black">근로기준법 55조 보장</div>
         </motion.div>
