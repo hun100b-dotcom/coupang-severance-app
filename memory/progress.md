@@ -6,6 +6,19 @@
 
 ---
 
+## ⚡ 어드민 성능 전수조사 2차 (2026-07-04, main `d64f44d`·`15a5140` 푸시)
+
+> 증상 재발(1차 배포됐는데도 로딩 느림·탭별 느림·"연결 불가"). 라이브 실측으로 남은 근본원인 재발굴. 보고서: `docs/audit/admin_perf_audit_2026-07-04b.md`. 더블리뷰 A+B 스텝별 아카이브(`docs/dual_review/adminperf_step{1,2}_*.md`).
+
+**결정적 발견**: `/admin/stats`가 웜 상태인데도 3초. 이미 9쿼리 병렬(ThreadPoolExecutor)인데도 3초 = **연결 재사용 부재**. `admin.py`의 모든 Supabase 호출이 모듈레벨 원샷 `httpx.get()`이라 호출마다 새 연결(DNS+TCP+TLS 핸드셰이크)을 만들고 버림.
+
+- **스텝1 (`d64f44d`) — 백엔드 공유 httpx.Client 커넥션 풀**: 8개 호출부(`_sb_get/post/patch/delete`+인라인4)를 모듈레벨 공유 `_client`(keep-alive 풀)로 전환. sync 유지(async DNS 회피), 스레드세이프. **라이브 실측: stats 3.0s→0.5s, 전 엔드포인트 3~5.5x 단축**(로컬 9병렬 1.511s→0.070s=21x). 계산로직·응답스키마·타임아웃·헤더 불변. 더블리뷰 A(5축)+B(적대7) PASS.
+- **스텝2 (`15a5140`) — ServerLogs Realtime churn**: system_logs 구독이 필터/페이지마다 재구독하던 것을 ref로 최신값 참조, deps `[isLive]`로 축소. 더블리뷰 A+B PASS, tsc 통과.
+
+**남은 것(후속 권장, 비차단)**: ①브라우저 세션 RLS 직접쿼리 잔존(JobPostings 지원자카운트·Accounts/Security admin_accounts·SettingsPermission·Visitor/Recruit 위젯) — 동작은 하나 백엔드화 시 더 견고·빠름. ②콜드스타트 keep-alive 실동작(pg_cron·GitHub Actions)은 이 세션 MCP/gh 미인증으로 직접 검증 불가 → 종훈님 확인 절차는 보고서 §4. UptimeRobot(5분 무료) 병행 권장.
+
+---
+
 ## 🛠️ 어드민 먹통 전수조사 & 복구 (2026-07-04, main `41ba7da` 푸시)
 
 > 증상: 로딩 매우 느림 + "백엔드 연결 불가" 에러 + "하드코딩 같은" 숫자. 상세: `docs/audit/admin_fullcheck_2026-07-04.md`. 더블리뷰 A(5축)·B(적대) 쌍방 PASS.

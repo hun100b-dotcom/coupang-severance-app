@@ -103,6 +103,25 @@
 
 ---
 
+## 3.5 배포 후 라이브 실측 (스텝1·2 완료)
+
+**스텝1 (백엔드 공유 httpx.Client) — 커밋 `d64f44d`, Render 배포 확인:**
+
+| 엔드포인트 | 구코드 | 신코드 | 개선 |
+|---|---|---|---|
+| /admin/stats | 3.0~3.3s | **0.45~0.63s** | ~5.5x |
+| /admin/analytics | 1.27s | 0.25~0.40s | ~4x |
+| /admin/recruit-stats | 1.10s | 0.26~0.31s | ~4x |
+| /admin/target/insights | 1.76s | 0.25~0.40s | ~5x |
+| /admin/inquiries | 1.30s | 0.24~0.25s | ~5x |
+| /admin/applications | 1.35s | 0.35~0.59s | ~3x |
+| /admin/members·settings·logs | 0.5~0.75s | 0.22~0.25s | ~2.5x |
+
+대시보드 Overview(4병렬) 벽시계: 구 ~3.3s+ → 신 ~1.3s(curl 프로세스 오버헤드 포함, 실브라우저는 더 빠름).
+로컬 검증: 9병렬 1.511s→0.070s(21x). 더블리뷰 A·B 쌍방 PASS.
+
+**스텝2 (ServerLogs Realtime churn) — 커밋 `15a5140`:** 구독 재생성 제거(ref 참조). 더블리뷰 A·B PASS, tsc 통과.
+
 ## 4. 남은 한계(솔직 고지)
 
 - pg_cron 실행 이력은 이 세션에서 직접 조회 불가(Supabase MCP 미연결) → §6은 종훈님 확인 또는 다음 세션 MCP 연결 시 검증.
