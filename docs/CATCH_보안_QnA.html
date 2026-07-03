@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CATCH 보안 Q&A</title>
+<style>
+  :root{--blue:#1B64DA;--blue-bg:#EAF2FE;--navy:#1A2434;--body:#333D4B;--sub:#565D6A;--line:#E1E4EA;--page:#EEF1F5;--card:#fff;--red:#D32F3A;--red-bg:#FDECEE;--amber:#B45309;--amber-bg:#FEF3DC;--green:#047857;--green-bg:#E4F8F0;}
+  *{box-sizing:border-box;} body{margin:0;background:var(--page);color:var(--body);font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;line-height:1.65;}
+  .wrap{max-width:900px;margin:0 auto;padding:30px 20px 80px;}
+  header.top{background:linear-gradient(135deg,#1B64DA,#3182F6);color:#fff;border-radius:20px;padding:32px 28px;margin-bottom:22px;box-shadow:0 14px 44px rgba(49,130,246,.22);}
+  header.top h1{margin:0 0 6px;font-size:26px;font-weight:800;letter-spacing:-.03em;}
+  header.top p{margin:0;opacity:.92;font-size:14.5px;}
+  .qa{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin-bottom:14px;box-shadow:0 1px 2px rgba(17,24,39,.04);}
+  .q{font-size:16px;font-weight:800;color:var(--navy);margin:0 0 8px;}
+  .q .num{color:var(--blue);margin-right:6px;}
+  .a{font-size:14.5px;} .a p{margin:6px 0;}
+  .tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700;margin-left:6px;}
+  .t-ok{background:var(--green-bg);color:var(--green);} .t-warn{background:var(--amber-bg);color:var(--amber);} .t-info{background:var(--blue-bg);color:var(--blue);}
+  code{background:#F2F4F6;color:#1B3A6B;padding:1px 6px;border-radius:6px;font-family:'JetBrains Mono',Consolas,monospace;font-size:12.5px;}
+  ul{margin:6px 0;padding-left:20px;} li{margin:4px 0;}
+  .sec{font-size:13px;font-weight:800;color:var(--sub);letter-spacing:.04em;margin:24px 0 8px;text-transform:uppercase;}
+  .callout{border-radius:10px;padding:12px 14px;margin:8px 0;font-size:13.5px;}
+  .callout.warn{background:var(--amber-bg);border:1px solid #F3D08A;color:#7a3e08;}
+  .callout.ok{background:var(--green-bg);border:1px solid #A6E6CE;color:#075c45;}
+  footer{color:var(--sub);font-size:12px;text-align:center;margin-top:24px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>CATCH 보안 Q&A</h1>
+    <p>종훈님이 "완벽 파악"하고 어디서든 답할 수 있게 정리한 보안 문답 · 라이브 실측 기준 (2026-07-01)</p>
+  </header>
+
+  <div class="sec">A. 개인정보 보호</div>
+
+  <div class="qa">
+    <p class="q"><span class="num">Q1.</span>회원 개인정보(이름·이메일·전화)는 안전한가요?<span class="tag t-ok">해결</span></p>
+    <div class="a">
+      <p>네. <b>서버측 마스킹</b> 방식입니다. 예전엔 개인정보 원본이 브라우저까지 통째로 내려온 뒤 화면에서만 가렸는데(개발자도구로 보이는 "가짜 마스킹"), 지금은 <b>서버가 처음부터 가린 값만</b> 보냅니다(김**, 010-****-1234). 원본은 브라우저로 아예 안 나갑니다.</p>
+      <p>회원 관리 + 지원자 관리 둘 다 동일 적용.</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="num">Q2.</span>그럼 실제 개인정보는 어떻게 봐요?<span class="tag t-info">운영</span></p>
+    <div class="a">
+      <p><b>슈퍼관리자</b>가 <b>보안키를 입력</b>해 <b>한 건씩만</b> "보기"로 해제합니다. 서버가 키를 검증(해시 대조)하고, <b>누가·언제·누구 정보를 봤는지 감사로그에 기록</b>한 뒤에만 원본을 돌려줍니다. 대량 원본 조회는 불가.</p>
+      <p>보안키 자체는 <b>해시로만</b> 저장되고(원문 복구 불가), 클라이언트는 절대 못 읽는 전용 테이블(<code>admin_secrets</code>)에 들어 있습니다.</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="num">Q3.</span>비밀번호는 안전한가요? 유출 비밀번호는 걸러지나요?<span class="tag t-info">해당 낮음</span></p>
+    <div class="a">
+      <p>CATCH는 <b>카카오·구글 소셜 로그인만</b> 씁니다. 실측 결과 <b>전체 56명 전원 OAuth, 비밀번호 저장 0건</b> — 즉 우리가 보관하는 비밀번호가 없습니다. 비밀번호 유출 위험 자체가 사실상 없어요(로그인은 카카오·구글이 책임).</p>
+      <p><b>"유출 비밀번호 차단(Leaked Password Protection)"</b>이란: 사용자가 비번을 만들 때 그 비번이 전 세계 유출 DB(HaveIBeenPwned)에 있는지 대조해 <b>이미 털린 비번은 못 쓰게</b> 막는 Supabase 기능입니다. <b>이메일+비번 가입에만</b> 의미가 있어, 지금(OAuth 전용)은 실효가 없습니다. 다만 나중에 이메일 가입을 열 때를 대비해 켜두면 좋습니다(설정 한 번, 부작용 없음).</p>
+    </div>
+  </div>
+
+  <div class="sec">B. 접근 권한 통제</div>
+
+  <div class="qa">
+    <p class="q"><span class="num">Q4.</span>관리자만 데이터에 접근하나요? 일반 회원은요?<span class="tag t-ok">해결</span></p>
+    <div class="a">
+      <p>모든 민감 데이터는 DB의 <b>행 수준 보안(RLS)</b>으로 막혀 있습니다. 일반 회원은 <b>본인 데이터만</b>, 관리자 데이터(회원목록·문의·지원자·설정·로그)는 <b>등록된 관리자만</b> 봅니다. 비로그인자는 공개 정보(활성 공고·공지 등)만.</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="num">Q5.</span>관리자 권한 단계가 나뉘나요?<span class="tag t-ok">해결</span></p>
+    <div class="a">
+      <p>3단계로, 이제 <b>서버(DB)에서 진짜로 강제</b>됩니다(예전엔 화면에서만 구분):</p>
+      <ul>
+        <li><b>viewer</b> — 전 메뉴 <b>보기만</b>, 수정·삭제 전면 차단</li>
+        <li><b>admin</b> — 운영 CRUD 가능(관리자 계정 관리는 제외)</li>
+        <li><b>super_admin</b> — 전체 + 관리자 계정 관리 + 개인정보 해제</li>
+      </ul>
+      <p>판정 함수: 읽기 <code>is_admin()</code> / 쓰기 <code>is_admin_writer()</code> / 최고 <code>is_super_admin()</code>.</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="num">Q6.</span>관리자는 어떻게 추가하나요? 아무 이메일이나 되나요?<span class="tag t-ok">해결</span></p>
+    <div class="a">
+      <p><b>슈퍼관리자만</b> 추가 가능(DB에서 강제). 추가할 사람은 <b>먼저 앱에 카카오/구글로 가입</b>한 뒤, 그 이메일을 관리자 계정에 등록해야 매칭됩니다. 일반 관리자가 스스로 최고권한으로 승격하는 건 불가능합니다.</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="num">Q7.</span>등록 안 된 사람이 어드민 페이지에 들어올 수 있나요?<span class="tag t-ok">차단(적용중)</span></p>
+    <div class="a">
+      <p>과거엔 미등록 이메일이 어드민 "화면"까지는 떴습니다(데이터는 RLS로 다 막혀 유출은 없었지만, 화면이 뜨는 것 자체가 부적절). <b>이번에 입장 게이트를 서버 검증 기반으로 바꿔, 등록된 관리자만 화면에 진입</b>하도록 막았습니다. 미등록/비관리자는 즉시 홈/로그인으로 리다이렉트.</p>
+    </div>
+  </div>
+
+  <div class="sec">C. 추적·감사</div>
+
+  <div class="qa">
+    <p class="q"><span class="num">Q8.</span>관리자가 무슨 행동을 했는지 추적되나요?<span class="tag t-ok">해결</span></p>
+    <div class="a">
+      <p>네. <b>감사로그(audit_logs)</b>에 관리자 행위가 기록되고, 특히 <b>개인정보 해제(보기)는 성공·실패 모두</b> "누가·언제·누구를" 남깁니다. 이 기록은 서버 권한으로만 쓰여 <b>위조가 불가능</b>합니다. 어드민 → 감사로그 / 보안 현황에서 확인.</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="num">Q9.</span>보안 상태를 한눈에 볼 수 있나요?<span class="tag t-ok">신설</span></p>
+    <div class="a">
+      <p>어드민 시스템 그룹에 <b>"보안 현황" 대시보드</b>를 새로 만들었습니다(super 전용). 관리자 수·역할 분포·차단 IP·마스킹키 설정 여부·최근 개인정보 해제 이력·최근 감사 활동·보안 점검 체크리스트를 한 화면에.</p>
+    </div>
+  </div>
+
+  <div class="sec">D. 이번에 막은 취약점 (감사 대비)</div>
+
+  <div class="qa">
+    <p class="q"><span class="num">Q10.</span>구체적으로 어떤 구멍을 막았나요?<span class="tag t-ok">전부 해결</span></p>
+    <div class="a">
+      <ul>
+        <li>비로그인자도 <b>전체 회원 이메일·관리자 명단</b>을 읽을 수 있던 노출 → 차단</li>
+        <li>개인정보 <b>가짜 마스킹</b> + 해제키 평문·공개 저장 → 서버측 마스킹 + 해시키</li>
+        <li><b>공지·법정변수(최저임금 등)를 로그인한 아무나 수정</b> 가능하던 것 → 운영 관리자만</li>
+        <li>감사로그 위조·타인에게 알림 임의발송·비로그인 위험함수 호출 → 제한</li>
+        <li>DB 함수 search_path 하이재킹 방지, 문의 권한판정 버그 수정</li>
+      </ul>
+      <div class="callout ok">Supabase <b>보안 어드바이저 재실측 = ERROR 0건.</b> 남은 경고는 아래 Q11의 "정상/의도" 항목뿐.</div>
+    </div>
+  </div>
+
+  <div class="sec">E. 남은 항목 · 한계 (솔직하게)</div>
+
+  <div class="qa">
+    <p class="q"><span class="num">Q11.</span>보안 스캐너에 아직 뜨는 경고는 뭔가요? 위험한가요?<span class="tag t-info">정상/의도</span></p>
+    <div class="a">
+      <p>뜨지만 <b>구멍이 아닙니다:</b></p>
+      <ul>
+        <li><code>is_admin</code>류 함수가 노출로 표시 → <b>RLS 권한판정에 필수</b>. true/false만 반환, 데이터 안 나감.</li>
+        <li>방문자·페이지뷰 로그 기록 허용 → <b>익명 방문 통계 수집용(의도)</b>.</li>
+        <li>블로그 이미지 목록·정책없음 테이블 → 공개 이미지 / 의도된 완전차단(정상).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="num">Q12.</span>그래도 남은 진짜 개선 여지는?<span class="tag t-warn">참고</span></p>
+    <div class="a">
+      <ul>
+        <li><b>백엔드 관리자 토큰</b>이 사용자별이 아니라 공유 시크릿(X-Admin-Token) — 유출 시 위험. 중기적으로 로그인 세션(JWT) 기반으로 통일 권장(구조 개선). 현재도 개인정보 해제는 별도 보안키 해시로 이중 보호.</li>
+        <li>유출 비밀번호 차단 = 지금 OAuth 전용이라 실효 없음(나중 이메일 가입 대비 켜두면 좋음).</li>
+        <li>레포의 일부 마이그레이션 <b>파일</b>과 라이브 DB가 완전 일치하진 않음(라이브는 정확히 적용·검증됨. 새 DB를 처음부터 빌드할 때만 주의). 운영 보안엔 영향 없음.</li>
+      </ul>
+      <div class="callout warn">"100% 영원히 완벽"한 시스템은 없습니다. 다만 <b>감사에서 지적되는 데이터 유출·무단 수정 리스크는 현재 전부 닫힌 상태</b>이며, 위 항목은 낮은 우선순위의 추가 하드닝입니다.</div>
+    </div>
+  </div>
+
+  <div class="sec">F. 한 줄 요약 (누가 물어보면 이렇게 답하세요)</div>
+  <div class="qa">
+    <div class="a">
+      <p>"CATCH는 <b>소셜 로그인(카카오·구글)</b>만 쓰고 비밀번호를 보관하지 않으며, 회원 개인정보는 <b>서버측에서 마스킹</b>돼 관리자도 원본을 함부로 못 봅니다. 모든 데이터 접근은 <b>DB 행수준보안(RLS)</b>으로 통제되고, 관리자는 <b>viewer/admin/super 3단계</b>로 서버에서 권한이 강제되며, <b>개인정보 열람은 슈퍼관리자·보안키·감사로그</b>를 거칩니다. 외부 보안 스캐너 기준 <b>치명·높음 리스크 0건</b>입니다."</p>
+    </div>
+  </div>
+
+  <footer>근거: Supabase Security Advisor + 직접 SQL 실측 · 코드/RLS 감사 · CATCH(coupang-severance-app) · 2026-07-01</footer>
+</div>
+</body>
+</html>

@@ -7,7 +7,7 @@ import {
   ComposedChart, Bar, Line,
   XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer,
 } from 'recharts'
-import { supabase } from '../../../lib/supabase'
+import { getRecruitStats } from '../../../lib/api'
 
 // ── 지원 데이터 로우 타입 ──
 interface AppRow {
@@ -67,20 +67,27 @@ export default function ConfirmedMenu() {
   const [companyFilter, setCompanyFilter] = useState('all') // 1단계: 사업장
   const [centerFilter,  setCenterFilter]  = useState('all') // 2단계: 센터
 
-  // ── 공고 목록 + 활성 공고 수 로드 ──
-  useEffect(() => {
-    if (!supabase) return
-    ;(async () => {
-      const { data } = await supabase
-        .from('job_postings')
-        .select('company_name, center_name, status')
-        .neq('status', 'deleted')
-      if (!data) return
-      const list = data as { company_name: string; center_name: string; status: string }[]
+  // ── 공고 목록 + 지원 데이터 로드 — 백엔드(service-role) 한 번의 호출로 통일 ──
+  // 과거: supabase 직접 조회 2회 → job_applications 관리자 SELECT RLS 상태에 따라
+  //   0행(영구 빈 화면) 또는 부분 집계 위험. 백엔드는 RLS 무관하게 전체를 반환한다.
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const { postings: jp, applications } = await getRecruitStats()
+      const list = jp.map(p => ({ company_name: p.company_name, center_name: p.center_name, status: p.status }))
       setPostings(list)
       // status가 'active'인 공고만 활성 공고로 집계
       setActivePostings(list.filter(p => p.status === 'active').length)
-    })()
+      // 지원 데이터 — 이 화면은 오래된 순(오름차순) 집계였으므로 정렬을 맞춘다
+      const rows = applications
+        .slice().sort((a, b) => (a.applied_at ?? '').localeCompare(b.applied_at ?? '')) as unknown as AppRow[]
+      setAllData(rows)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '데이터를 불러오지 못했습니다.')
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   // DISTINCT 사업장 목록 (필터 드롭다운)
@@ -92,25 +99,6 @@ export default function ConfirmedMenu() {
     : [...new Set(
         postings.filter(p => p.company_name === companyFilter).map(p => p.center_name).filter(Boolean)
       )]
-
-  // ── 전체 지원 데이터 로드 ──
-  const fetchData = useCallback(async () => {
-    if (!supabase) return
-    setLoading(true)
-    setError(null)
-    try {
-      const { data, error } = await supabase
-        .from('job_applications')
-        .select('id, status, applied_at, work_date, preferred_shift, applied_task, job_postings(company_name, center_name)')
-        .order('applied_at', { ascending: true })
-      if (error) throw error
-      setAllData((data as unknown as AppRow[]) ?? [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '데이터를 불러오지 못했습니다.')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
 

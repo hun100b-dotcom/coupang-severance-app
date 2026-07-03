@@ -3,7 +3,7 @@
 #
 # Render 무료 티어는 15분 이상 요청이 없으면 서버를 절전(sleep) 상태로 전환합니다.
 # 절전 후 첫 요청은 40~60초가 걸려 사용자 경험이 크게 나빠집니다.
-# 이 워크플로우는 14분마다 /health 엔드포인트에 GET 요청을 보내
+# 이 워크플로우는 10분마다 /health 엔드포인트에 GET 요청을 보내
 # 서버가 항상 깨어 있도록 유지합니다.
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -11,9 +11,10 @@ name: 🏥 Keep Render Alive
 
 on:
   schedule:
-    # 14분마다 실행 (Render의 15분 절전 기준보다 1분 빠르게)
+    # 10분마다 실행 — GitHub 스케줄러는 수 분 지연이 흔해서(피크 시 10분+)
+    # 14분 주기로는 지연 시 Render 15분 절전 기준을 넘겨 콜드스타트가 발생했다.
     # 크론 표현식: 분 시 일 월 요일
-    - cron: '*/14 * * * *'
+    - cron: '*/10 * * * *'
 
   # 수동으로도 실행 가능하도록 워크플로우 디스패치 허용
   workflow_dispatch:
@@ -44,7 +45,10 @@ jobs:
             --retry-delay 5 \
             --write-out "%{http_code}" \
             --output /dev/null \
-            "https://coupang-severance-api.onrender.com/health")
+            "https://coupang-severance-app.onrender.com/health")
+          # ⚠️ 호스트명 주의: 실제 백엔드는 coupang-severance-"app".onrender.com
+          #   과거 "-api" 오타로 존재하지 않는 서버(404 no-server)를 핑해
+          #   콜드스타트 방지가 전혀 동작하지 않았다(2026-07-04 전수조사에서 적발).
 
           echo "📊 HTTP 응답 코드: $HTTP_STATUS"
 

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CATCH 야간 작업 최종 보고</title>
+<style>
+  :root{--blue:#1B64DA;--blue-bg:#EAF2FE;--navy:#1A2434;--body:#333D4B;--sub:#565D6A;--line:#E1E4EA;--page:#EEF1F5;--card:#fff;--red:#D32F3A;--red-bg:#FDECEE;--amber:#B45309;--amber-bg:#FEF3DC;--green:#047857;--green-bg:#E4F8F0;}
+  *{box-sizing:border-box;} body{margin:0;background:var(--page);color:var(--body);font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;line-height:1.65;}
+  .wrap{max-width:940px;margin:0 auto;padding:32px 20px 80px;}
+  header.top{background:linear-gradient(135deg,#1B64DA,#3182F6);color:#fff;border-radius:20px;padding:34px 30px;margin-bottom:24px;box-shadow:0 14px 44px rgba(49,130,246,.22);}
+  header.top h1{margin:0 0 8px;font-size:27px;font-weight:800;letter-spacing:-.03em;}
+  header.top p{margin:0;opacity:.92;font-size:15px;}
+  .meta{display:inline-block;margin-top:14px;background:rgba(255,255,255,.18);padding:5px 12px;border-radius:999px;font-size:13px;}
+  section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px 26px;margin-bottom:18px;box-shadow:0 1px 2px rgba(17,24,39,.04),0 4px 16px rgba(17,24,39,.04);}
+  h2{font-size:20px;font-weight:800;color:var(--navy);margin:0 0 4px;padding-bottom:11px;border-bottom:2px solid var(--page);}
+  h2 .em{color:var(--blue);} h3{font-size:15.5px;font-weight:700;color:var(--navy);margin:20px 0 8px;}
+  p{margin:8px 0;} .lead{color:var(--sub);font-size:14.5px;}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px;}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{background:var(--page);color:var(--navy);font-weight:700;font-size:12.5px;}
+  tr:last-child td{border-bottom:none;} td.c,th.c{text-align:center;white-space:nowrap;}
+  code{background:#F2F4F6;color:#1B3A6B;padding:1px 6px;border-radius:6px;font-family:'JetBrains Mono',Consolas,monospace;font-size:12.5px;}
+  .badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+  .b-green{background:var(--green-bg);color:var(--green);} .b-red{background:var(--red-bg);color:var(--red);} .b-amber{background:var(--amber-bg);color:var(--amber);} .b-blue{background:var(--blue-bg);color:var(--blue);}
+  .callout{border-radius:12px;padding:14px 16px;margin:12px 0;font-size:14px;}
+  .callout.warn{background:var(--amber-bg);border:1px solid #F3D08A;color:#7a3e08;} .callout.ok{background:var(--green-bg);border:1px solid #A6E6CE;color:#075c45;} .callout.info{background:var(--blue-bg);border:1px solid #BBD5FB;color:#16407e;}
+  .callout b{font-weight:800;} ul{margin:8px 0;padding-left:20px;} li{margin:6px 0;}
+  .kbd{background:#fff;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:6px;padding:1px 7px;font-size:12.5px;font-family:monospace;}
+  footer{color:var(--sub);font-size:12.5px;text-align:center;margin-top:26px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>CATCH 야간 작업 최종 보고</h1>
+    <p>어드민 전면 재개편(기능+디자인) · 보안 하드닝 · 백엔드 상태 — 자고 일어나 보는 요약</p>
+    <span class="meta">2026-07-01 새벽 작업 · 라이브 main HEAD <code style="color:#fff;background:rgba(255,255,255,.2)">fe7ccc2</code></span>
+  </header>
+
+  <section>
+    <h2>0. 한눈에 <span class="em">— 지금 상태</span></h2>
+    <div class="callout ok"><b>✅ 백엔드(Render) 복구 확인!</b> 월 한도 리셋으로 되살아났고 <code>/health → {"status":"ok"}</code> 정상 응답. 이제 어드민 데이터 메뉴·PDF 정밀계산 + 오늘 고친 것 전부 프로덕션에서 작동해.</div>
+    <div class="callout ok"><b>✅ 내가 할 수 있는 코드·DB·디자인·보안 작업은 전부 완료·배포됐어.</b> 백엔드만 살아나면 오늘 고친 것들(네트워크 회복력·기능 수정·디자인 통일)이 프로덕션에서 함께 작동해.</div>
+    <h3>네가 일어나서 할 3가지</h3>
+    <ul>
+      <li>① <b>백엔드 확인</b>: 오전 9시 이후 사이트 접속 → 안 되면 Render → <code>coupang-severance-app</code> → <b>Resume</b> 또는 <b>Manual Deploy</b></li>
+      <li>② <b>마스킹 보안키 설정</b>: 어드민 → 설정 → 마스킹 해제 보안키 1회 설정(회원·지원자 "보기"용, 목록 마스킹은 이미 안전)</li>
+      <li>③ <b>새 어드민 디자인 확인</b>: 어드민에서 <span class="kbd">Ctrl+Shift+R</span> → 사용자앱과 같은 톤(카드·버튼·배지·모션)으로 바뀜</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>1. 어드민 "네트워크 에러" — 진짜 원인</h2>
+    <p class="lead">여러 메뉴에서 뜨던 Network error의 <b>지배적 원인은 Render 백엔드가 정지</b>된 것이었어(무료시간 소진). 어드민의 설정·로그·감사·회원·지원자 메뉴가 백엔드를 통해 데이터를 가져오는데 서버가 죽어 있으니 동시에 에러가 난 거야. 코드 결함이 아니라 서버 가동 문제.</p>
+    <p class="lead">그와 별개로 <b>코드 레벨의 결함들은 이번에 다 잡았어</b>(아래 2번). 백엔드가 살아나면 이 수정들이 콜드스타트 반복 에러까지 막아줘.</p>
+  </section>
+
+  <section>
+    <h2>2. Track A <span class="em">— 기능 정상화</span> (전부 배포)</h2>
+    <table>
+      <thead><tr><th>항목</th><th>문제</th><th>조치</th><th class="c">커밋</th></tr></thead>
+      <tbody>
+        <tr><td>네트워크 회복력</td><td>백엔드 콜드스타트/일시장애가 즉시 "Network error"</td><td>호출계층에 지수백오프 재시도(멱등 GET) + 영문에러→한국어 안내 + warmup 경로 수정</td><td class="c"><code>1e052de</code></td></tr>
+        <tr><td>RC2 대시보드 과소집계</td><td>reports에 관리자 조회정책 없어 슈퍼관리자도 본인 것만 집계</td><td>reports 관리자 SELECT 정책 추가(DB 직접적용)</td><td class="c">DB</td></tr>
+        <tr><td>RC3 무음 쓰기</td><td>직접 쓰기가 조용히 실패→"성공처럼 보이다 새로고침 원복"</td><td><code>.select()</code>+변경행 검증+실패표시+재동기화(공고·계정)</td><td class="c"><code>913985e</code></td></tr>
+        <tr><td>RC4 406 콘솔에러</td><td><code>.single()</code>이 0행일 때 406 오염</td><td><code>.maybeSingle()</code> 5곳</td><td class="c"><code>913985e</code></td></tr>
+        <tr><td>RC6 설정 저장경로</td><td>경로 이원화 의심</td><td>이미 백엔드로 통일돼 있음(확인만)</td><td class="c">—</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>3. Track B <span class="em">— 어드민을 사용자앱과 같은 톤으로 통일</span> (전부 배포)</h2>
+    <p class="lead">"색만 바꿔 변화 없던" 이전과 달리 이번엔 카드·헤더·버튼·배지·모션·형태 토큰을 <b>사용자(메인) 앱 컴포넌트 체계</b>로 맞췄어. 어드민이 메인앱과 한 몸처럼 보여.</p>
+    <table>
+      <thead><tr><th>요소</th><th>전 → 후</th></tr></thead>
+      <tbody>
+        <tr><td>카드</td><td>radius 12 → <b>radius 20 + 사용자앱 shadow</b>(문자열까지 동일)</td></tr>
+        <tr><td>헤더</td><td>제목만 → <b>좌측 accent bar</b>(사용자앱 SectionHeader와 동일)</td></tr>
+        <tr><td>버튼</td><td>메뉴별 제각각 → <b>단일출처 btnPrimary/Secondary/Ghost</b> 전 메뉴 적용</td></tr>
+        <tr><td>상태배지</td><td>임의 색 → <b>의미색 통일</b>(확정=green·거절=danger·대기/긴급=amber·기본=brand)</td></tr>
+        <tr><td>모션</td><td>거의 없음 → 메뉴 전환 <b>진입 애니메이션</b>(사용자앱 네이티브)</td></tr>
+        <tr><td>레이아웃</td><td>접이식 사이드바 + 상단바(위치·관리자·역할·로그아웃) + 콘텐츠 재배치</td></tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><b>사용자 화면은 한 줄도 안 건드렸어</b> → 사용자앱 글자·레이아웃 회귀가 구조적으로 불가능. 기능/권한/RLS/CRUD/감사·계산(28일 블록) 로직도 전부 불변(스타일만).</div>
+    <p class="lead">커밋: 레이아웃 <code>663a8db</code> · 보안현황 대시보드 신설 포함 · 톤통일 <code>c420e22</code>(B1/B2) · 메뉴별 잔여 <code>fe7ccc2</code>(B3). 각 단계 더블리뷰 A·B BLOCKER 0.</p>
+  </section>
+
+  <section>
+    <h2>4. 보안 하드닝 <span class="em">(감사 대비)</span> — 이번 세션 반영</h2>
+    <table>
+      <thead><tr><th class="c">등급</th><th>항목</th><th class="c">상태</th></tr></thead>
+      <tbody>
+        <tr><td class="c"><span class="badge b-red">치명</span></td><td>회원 이메일·관리자 명단이 비로그인자에게 노출(user_profiles·admin_accounts)</td><td class="c"><span class="badge b-green">차단</span></td></tr>
+        <tr><td class="c"><span class="badge b-red">치명</span></td><td>회원·지원자 PII 가짜 마스킹(평문이 브라우저로)</td><td class="c"><span class="badge b-green">서버측 마스킹+감사</span></td></tr>
+        <tr><td class="c"><span class="badge b-amber">높음</span></td><td>공지·법정변수를 로그인한 아무나 수정 가능</td><td class="c"><span class="badge b-green">운영자만</span></td></tr>
+        <tr><td class="c"><span class="badge b-amber">높음</span></td><td>관리자 역할 차등(viewer/admin/super)이 서버에서 미강제</td><td class="c"><span class="badge b-green">is_admin_writer 강제</span></td></tr>
+        <tr><td class="c"><span class="badge b-amber">높음</span></td><td>감사로그 위조·알림 임의삽입·anon 위험함수</td><td class="c"><span class="badge b-green">제한</span></td></tr>
+        <tr><td class="c"><span class="badge b-blue">점검</span></td><td>Supabase 보안 어드바이저</td><td class="c"><span class="badge b-green">ERROR 0</span></td></tr>
+      </tbody>
+    </table>
+    <p class="lead">권한 부여 기능은 정상(추가/역할/삭제는 super만·서버 강제). 이제 viewer=읽기전용 / admin=운영 / super=전체가 DB에서 진짜 구분돼.</p>
+  </section>
+
+  <section>
+    <h2>5. 배포 커밋 요약</h2>
+    <table>
+      <thead><tr><th class="c">커밋</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td class="c"><code>fe7ccc2</code></td><td>Track B3 메뉴별 디자인 통일 (현재 main HEAD)</td></tr>
+        <tr><td class="c"><code>c420e22</code></td><td>Track B1/B2 사용자앱 톤 통일(카드·헤더·모션)</td></tr>
+        <tr><td class="c"><code>913985e</code></td><td>Track A2 무음쓰기·406 수정</td></tr>
+        <tr><td class="c"><code>1e052de</code></td><td>Track A1 네트워크 재시도·우아한 안내</td></tr>
+        <tr><td class="c"><code>643d643</code></td><td>지원자 PII 서버 마스킹</td></tr>
+        <tr><td class="c"><code>663a8db</code></td><td>어드민 레이아웃 전면 재설계 + 보안현황 대시보드</td></tr>
+        <tr><td class="c"><code>46d7f1f</code></td><td>P1 역할차등 서버강제</td></tr>
+      </tbody>
+    </table>
+    <p class="lead">+ DB 마이그레이션(Supabase MCP 직접 적용): 회원 PII 보안·문의 RLS·V1~V6 하드닝·P1 역할·admin_accounts·legal_variables·reports 집계.</p>
+  </section>
+
+  <footer>
+    상세 문서: docs/audit/admin_error_inventory_2026-06-30.md · tasks/plans/admin_overhaul_plan.md · docs/dual_review/* · docs/CATCH_어드민_보안_가이드.html<br>
+    CATCH (coupang-severance-app) · 백엔드 복구(오전 9시경 리셋)만 확인하면 오늘 작업 전부 프로덕션에서 작동
+  </footer>
+
+</div>
+</body>
+</html>

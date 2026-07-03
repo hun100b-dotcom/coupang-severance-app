@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CATCH 디자인 시스템 레퍼런스</title>
+<style>
+:root{--blue:#1B64DA;--navy:#1A2434;--body:#333D4B;--sub:#565D6A;--line:#E1E4EA;--page:#EEF1F5;--card:#fff;}
+*{box-sizing:border-box;}body{margin:0;background:var(--page);color:var(--body);font-family:'Pretendard','Malgun Gothic',system-ui,sans-serif;line-height:1.6;}
+.wrap{max-width:920px;margin:0 auto;padding:28px 18px 70px;}
+header{background:linear-gradient(135deg,#1B64DA,#3182F6);color:#fff;border-radius:18px;padding:28px 26px;margin-bottom:20px;}
+header h1{margin:0 0 6px;font-size:24px;font-weight:800;}header p{margin:0;opacity:.92;font-size:14px;}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:14px;}
+h2{font-size:18px;font-weight:800;color:var(--navy);margin:0 0 10px;padding-bottom:9px;border-bottom:2px solid var(--page);}
+h3{font-size:14.5px;font-weight:700;color:var(--navy);margin:16px 0 6px;}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px;}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+th{background:var(--page);font-weight:700;font-size:12px;color:var(--navy);}
+code{background:#F2F4F6;color:#1B3A6B;padding:1px 6px;border-radius:5px;font-family:'JetBrains Mono',Consolas,monospace;font-size:12px;}
+.sw{display:inline-block;width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.1);vertical-align:middle;margin-right:5px;}
+ul{margin:6px 0;padding-left:20px;}li{margin:4px 0;}
+.warn{background:#FEF3DC;border:1px solid #F3D08A;color:#7a3e08;border-radius:10px;padding:12px 14px;margin:10px 0;font-size:13.5px;}
+.info{background:#EAF2FE;border:1px solid #BBD5FB;color:#16407e;border-radius:10px;padding:12px 14px;margin:10px 0;font-size:13.5px;}
+</style></head><body><div class="wrap">
+<header><h1>CATCH 디자인 시스템 레퍼런스</h1><p>퇴직금 계산기(coupang-severance-app) 실제 디자인 코드 정리 · 재개편 프롬프트용 · 2026-07-01</p></header>
+
+<section>
+<h2>0. 기술 스택</h2>
+<ul>
+<li>프론트: <b>React 18 + TypeScript + Vite + Tailwind CSS + Framer Motion</b> → Vercel</li>
+<li>백엔드: FastAPI(Python) → Render / DB: Supabase(Postgres, RLS) / 로그인: 카카오·구글 OAuth</li>
+<li>스타일 방식: <b>Tailwind 유틸 클래스 + 디자인 토큰</b>(tailwind.config.js) + 전역 CSS(src/styles/index.css). 일부(특히 어드민)는 <b>인라인 style</b> 사용.</li>
+</ul>
+</section>
+
+<section>
+<h2>1. 색 토큰 <span style="font-weight:400;font-size:13px;color:var(--sub)">(tailwind.config.js · 클래스로 사용: text-*/bg-*/border-*)</span></h2>
+<h3>브랜드 블루 (메인) — <code>brand</code></h3>
+<table><tr><th>토큰</th><th>값</th><th>용도</th></tr>
+<tr><td>brand.DEFAULT</td><td><span class="sw" style="background:#3182F6"></span>#3182F6</td><td>기본 블루(토스블루)</td></tr>
+<tr><td>brand.strong</td><td><span class="sw" style="background:#1B64DA"></span>#1B64DA</td><td>hover/active·금액·CTA 텍스트</td></tr>
+<tr><td>brand.bg</td><td><span class="sw" style="background:#EAF2FE"></span>#EAF2FE</td><td>연한 블루 배경(칩·배지)</td></tr>
+</table>
+<h3>채용 전용 그린 — <code>accent</code></h3>
+<table><tr><th>토큰</th><th>값</th></tr>
+<tr><td>accent.DEFAULT</td><td><span class="sw" style="background:#06BE7B"></span>#06BE7B</td></tr>
+<tr><td>accent.700</td><td><span class="sw" style="background:#047857"></span>#047857 (흰배경 텍스트 AA용 진한 그린)</td></tr>
+</table>
+<h3>중립 회색 — <code>ink</code> / line / page</h3>
+<table><tr><th>토큰</th><th>값</th><th>용도</th></tr>
+<tr><td>ink.900</td><td><span class="sw" style="background:#191F28"></span>#191F28</td><td>헤딩(가장 진함)</td></tr>
+<tr><td>ink.700</td><td><span class="sw" style="background:#4E5968"></span>#4E5968</td><td>본문 보조</td></tr>
+<tr><td>ink.500</td><td><span class="sw" style="background:#8B95A1"></span>#8B95A1</td><td>캡션/placeholder</td></tr>
+<tr><td>line</td><td><span class="sw" style="background:#E5E8EB"></span>#E5E8EB</td><td>보더</td></tr>
+<tr><td>page</td><td><span class="sw" style="background:#F7F9FC"></span>#F7F9FC</td><td>페이지 배경</td></tr>
+</table>
+<h3>★ 업비트풍 토큰 — <code>up.*</code> (현재 리디자인 주력, 클래스: text-up-sub 등)</h3>
+<table><tr><th>토큰</th><th>값</th><th>용도</th></tr>
+<tr><td>up.page</td><td><span class="sw" style="background:#EEF1F5"></span>#EEF1F5</td><td>페이지 배경(옅은 청회색)</td></tr>
+<tr><td>up.surface</td><td><span class="sw" style="background:#FFFFFF"></span>#FFFFFF</td><td>카드/면</td></tr>
+<tr><td>up.sunken</td><td><span class="sw" style="background:#F2F5FA"></span>#F2F5FA</td><td>표 헤더·구획 배경</td></tr>
+<tr><td>up.navy</td><td><span class="sw" style="background:#1A2434"></span>#1A2434</td><td>헤딩</td></tr>
+<tr><td>up.body</td><td><span class="sw" style="background:#333D4B"></span>#333D4B</td><td>본문</td></tr>
+<tr><td>up.sub</td><td><span class="sw" style="background:#565D6A"></span>#565D6A</td><td>보조(AA 6.7:1)</td></tr>
+<tr><td>up.caption</td><td><span class="sw" style="background:#8E929B"></span>#8E929B</td><td>캡션·날짜(비필수만)</td></tr>
+<tr><td>up.hair</td><td><span class="sw" style="background:#E1E4EA"></span>#E1E4EA</td><td>헤어라인 보더</td></tr>
+<tr><td>up.strong</td><td><span class="sw" style="background:#1B64DA"></span>#1B64DA</td><td>주 CTA·금액</td></tr>
+<tr><td>up.green</td><td><span class="sw" style="background:#047857"></span>#047857</td><td>채용</td></tr>
+<tr><td>up.danger</td><td><span class="sw" style="background:#F04452"></span>#F04452</td><td>긴급 전용</td></tr>
+</table>
+<h3>의미색 & 레거시</h3>
+<p>success <code>#06BE7B</code> · warning <code>#F59E0B</code> · danger <code>#F04452</code>. 레거시 <code>toss.*</code>(blue #3182f6 등)는 하위호환용(삭제 금지).</p>
+<div class="info"><b>규칙:</b> 메인=블루 1색, 보조=그린(채용 전용), 회색은 위계용. <b>퍼플/인디고/앰버 등 "무지개색" 토큰 금지.</b></div>
+</section>
+
+<section>
+<h2>2. 타이포그래피</h2>
+<ul>
+<li>폰트: <b>Pretendard</b>(전역 <code>!important</code>), 숫자·코드는 JetBrains Mono</li>
+<li>자간: 큰 제목 타이트(-0.02~0.04em)</li>
+<li>숫자 정렬: <code>.tnum</code>(font-variant-numeric: tabular-nums) — 금액·통계에 사용</li>
+</ul>
+<div class="warn"><b>★ 매우 중요 (재개편 시 반드시 인지):</b> <code>src/styles/index.css</code>가 <b>임의 px 폰트 클래스를 전역 +1.5px로 <code>!important</code> 강제</b>함 (예: <code>.text-[12px]{font-size:13.5px!important}</code>, <code>.text-xs</code>·<code>.text-sm</code>도). → 그래서 <b>어드민은 이 override를 피하려고 인라인 style(fontSize)을 씀.</b> 어드민을 Tailwind 타이포로 옮기려면 이 override부터 정리해야 하고, 잘못 건드리면 <b>사용자 화면 글자 크기가 전부 흔들림(회귀 위험 1순위).</b></div>
+</section>
+
+<section>
+<h2>3. 형태 — Radius / Shadow / 글래스</h2>
+<ul>
+<li>카드 기본 radius: <b>20px</b>(<code>rounded-xl</code>) · 버튼 <code>rounded-md~lg</code> · 배지 pill</li>
+<li>그림자: <code>shadow-card</code>(은은) / <code>shadow-float</code>(플로팅 강조)</li>
+<li>글래스(사용자앱 히어로 등): <code>--glass-bg rgba(255,255,255,.72)</code>, backdrop-blur ~25px, <code>--glass-shadow</code></li>
+<li>배경: 사용자앱은 <b>AnimatedBackground</b>(blob 메시 그라데이션, index.css @keyframes blob1~5), 어드민은 플랫 <code>up.page</code></li>
+</ul>
+</section>
+
+<section>
+<h2>4. 공통 컴포넌트 (<code>src/components/ui/</code>)</h2>
+<table><tr><th>컴포넌트</th><th>API·스펙</th></tr>
+<tr><td><b>Card</b></td><td>variant: <code>solid</code>(흰카드+line+shadow-card) / <code>float</code>(shadow-float) / <code>ghost</code>(보더만). padding: none/sm(p-4)/md(p-5)/lg(p-6). radius 20.</td></tr>
+<tr><td><b>Button</b></td><td>variant: <code>primary</code>(bg-brand→hover strong) / <code>accent</code>(그린) / <code>secondary</code>(흰+블루보더) / <code>ghost</code>. size: sm(40px)/md(48px)/lg(56px·17px). fullWidth.</td></tr>
+<tr><td><b>Badge</b></td><td>상태·라벨 pill 배지</td></tr>
+<tr><td><b>Chip</b></td><td>필터/태그 칩</td></tr>
+<tr><td><b>Container</b></td><td>반응형 컨테이너(max-width <b>1280</b>, px-5 md:px-8) — 페이지 폭 통일</td></tr>
+<tr><td><b>SectionHeader</b></td><td>제목 좌측 <b>accent bar</b>(w-1 h-4 pill bg-brand) + 타이틀</td></tr>
+</table>
+<p style="font-size:13px;color:var(--sub)">※ 계산기 플로우는 별도 <code>components/Button.tsx</code>(PrimaryButton 등)도 사용 중(유지).</p>
+</section>
+
+<section>
+<h2>5. 애니메이션 (Framer Motion + index.css)</h2>
+<ul>
+<li><code>.page-enter</code> / <code>@keyframes pageEnter</code> — 페이지·메뉴 진입 slide+fade</li>
+<li><code>.animate-staggered-fade</code> — 순차 등장</li>
+<li>blob1~5 — 배경 메시 모션 / spinRing(스피너) / pulseDot / copySlideIn·Out</li>
+<li>Framer Motion — 카드 호버 <code>-translate-y</code>, 모달 트랜지션 등</li>
+</ul>
+</section>
+
+<section>
+<h2>6. 어드민 전용 (<code>src/shared/adminTheme.ts</code>)</h2>
+<ul>
+<li><code>UP</code> 객체 — up.* 색을 인라인 style에서 쓰기 위한 JS 상수(hex 동일)</li>
+<li><code>RADIUS</code>{sm8·btn12·content16·card20·pill} / <code>SHADOW</code>{card·float} 단일출처</li>
+<li><code>CHART_SERIES</code>(차트 색), <code>numeric</code>(숫자 tabular)</li>
+<li>어드민 셸: <code>AdminPage.tsx</code>(사이드바 그룹·상단바·접기) + <code>components/admin/menus/*</code>(메뉴별)</li>
+</ul>
+</section>
+
+<section>
+<h2>7. 핵심 파일 맵</h2>
+<table><tr><th>파일</th><th>역할</th></tr>
+<tr><td><code>frontend/tailwind.config.js</code></td><td>색·screens·fontFamily 등 토큰 정의(진실의 출처)</td></tr>
+<tr><td><code>frontend/src/styles/index.css</code></td><td>전역 리셋·CSS변수(--up-*, --glass-*)·<b>폰트 +1.5px override</b>·애니메이션·배경</td></tr>
+<tr><td><code>frontend/src/components/ui/*</code></td><td>공용 컴포넌트(Card/Button/Badge/Chip/Container/SectionHeader)</td></tr>
+<tr><td><code>frontend/src/shared/adminTheme.ts</code></td><td>어드민 토큰(UP/RADIUS/SHADOW/CHART)</td></tr>
+<tr><td><code>frontend/src/pages/Home.tsx</code></td><td>사용자앱 톤 기준(업비트풍 히어로·섹션)</td></tr>
+<tr><td><code>frontend/src/pages/AdminPage.tsx</code> + <code>components/admin/*</code></td><td>어드민 셸 + 전 메뉴</td></tr>
+</table>
+</section>
+
+<section>
+<h2>8. 재개편 시 지켜야 할 제약</h2>
+<ul>
+<li>🚫 <b>계산 로직(28일 블록·평균임금·임금하한 등) 절대 변경 금지</b></li>
+<li>🚫 무지개색 금지(블루+그린+회색 위계)</li>
+<li>⚠️ <b>index.css 폰트 +1.5px !important override</b> — 손대면 사용자 화면 전역 타이포 회귀. 정리하려면 회귀 검증 필수</li>
+<li>⚠️ <code>toss.*</code> 레거시 토큰 삭제 금지(하위호환)</li>
+<li>✅ 배포: <code>git push origin main</code> → Vercel(프론트)·Render(백엔드) 자동배포</li>
+<li>✅ 어드민 기능/권한/RLS/CRUD/감사는 스타일과 분리(디자인 개편 시 로직 불변)</li>
+</ul>
+</section>
+
+<footer style="color:var(--sub);font-size:12px;text-align:center;margin-top:20px">근거: tailwind.config.js·index.css·ui/*·adminTheme.ts 실제 코드 · CATCH(coupang-severance-app)</footer>
+</div></body></html>

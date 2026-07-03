@@ -27,43 +27,69 @@ import OnboardingPage from './pages/Onboarding'      // 온보딩 (/onboarding)
 // 이를 통해 초기 번들 크기(1,662KB → 300~500KB)를 크게 줄여
 // 첫 화면이 빨리 뜨게 됩니다 (FCP 개선).
 // Vite는 자동으로 각 lazy 페이지를 별도 청크(chunk) 파일로 분리합니다.
-const Home                   = lazy(() => import('./pages/Home'))
-const SeveranceFlow          = lazy(() => import('./pages/SeveranceFlow'))
-const UnemploymentFlow       = lazy(() => import('./pages/UnemploymentFlow'))
-const MyPage                 = lazy(() => import('./pages/MyPage'))
-const ReportDetail           = lazy(() => import('./pages/ReportDetail'))
-const PaymentGuide           = lazy(() => import('./pages/PaymentGuide'))
-const AdminPage              = lazy(() => import('./pages/AdminPage'))          // 관리자 페이지 (매우 무거움)
-const WeeklyAllowancePage    = lazy(() => import('./pages/WeeklyAllowancePage'))
-const AnnualLeaveAllowancePage = lazy(() => import('./pages/AnnualLeaveAllowancePage'))
-const MyBenefitsPage         = lazy(() => import('./pages/MyBenefitsPage'))
-const NoticesPage            = lazy(() => import('./pages/NoticesPage'))
-const JobsPage               = lazy(() => import('./pages/JobsPage'))
-const CalculatorPage         = lazy(() => import('./pages/CalculatorPage'))
-const PrivacyPolicyPage      = lazy(() => import('./pages/PrivacyPolicy'))
-const TermsOfServicePage     = lazy(() => import('./pages/TermsOfService'))
-const SettingsPage           = lazy(() => import('./pages/SettingsPage'))   // 설정 페이지
-const InquiryPage            = lazy(() => import('./pages/InquiryPage'))    // 문의하기 페이지
-const LandingV1              = lazy(() => import('./pages/LandingV1'))       // 비교 버전 1: 밝은 배경
-const LandingV2              = lazy(() => import('./pages/LandingV2'))       // 비교 버전 2: 검정+줄무늬
-const LandingV3              = lazy(() => import('./pages/LandingV3'))       // 비교 버전 3: 검정+스포트라이트
-const LandingV4              = lazy(() => import('./pages/LandingV4'))       // 비교 버전 4: 볼드/임팩트 (오렌지)
-const LandingV5              = lazy(() => import('./pages/LandingV5'))       // 비교 버전 5: 매거진/뉴스레터 (크림+레드)
+//
+// lazyRetry: 새 버전 배포 직후 "옛 청크 404" 자동 복구 장치 (2026-07-04)
+//   배경: 배포하면 청크 파일명(해시)이 바뀌고 옛 파일은 사라진다. 배포 전에 열어둔
+//   탭에서 페이지를 이동하면 사라진 옛 청크를 내려받으려다 실패해 흰 화면/먹통이 됐다
+//   (재배포가 잦은 날 어드민 "먹통" 증상의 원인 중 하나).
+//   처치: 청크 로드 실패 시 세션당 1회만 자동 새로고침해 최신 index.html 을 다시 받는다.
+//   무한 새로고침 방지: sessionStorage 플래그로 1회 제한, 성공 시 플래그 해제.
+function lazyRetry<T extends React.ComponentType<unknown>>(
+  factory: () => Promise<{ default: T }>,
+) {
+  const FLAG = 'chunk_reload_once' // 새로고침 1회 제한용 세션 플래그
+  return lazy(async () => {
+    try {
+      const mod = await factory()
+      sessionStorage.removeItem(FLAG) // 정상 로드 → 다음 배포 때 다시 1회 복구 가능
+      return mod
+    } catch (err) {
+      if (!sessionStorage.getItem(FLAG)) {
+        sessionStorage.setItem(FLAG, '1')
+        window.location.reload()
+        return new Promise<never>(() => {}) // 새로고침 진행 중 렌더 억제
+      }
+      throw err // 이미 1회 시도했으면 원래 에러 표출(ErrorBoundary 처리)
+    }
+  })
+}
+const Home                   = lazyRetry(() => import('./pages/Home'))
+const SeveranceFlow          = lazyRetry(() => import('./pages/SeveranceFlow'))
+const UnemploymentFlow       = lazyRetry(() => import('./pages/UnemploymentFlow'))
+const MyPage                 = lazyRetry(() => import('./pages/MyPage'))
+const ReportDetail           = lazyRetry(() => import('./pages/ReportDetail'))
+const PaymentGuide           = lazyRetry(() => import('./pages/PaymentGuide'))
+const AdminPage              = lazyRetry(() => import('./pages/AdminPage'))          // 관리자 페이지 (매우 무거움)
+const WeeklyAllowancePage    = lazyRetry(() => import('./pages/WeeklyAllowancePage'))
+const AnnualLeaveAllowancePage = lazyRetry(() => import('./pages/AnnualLeaveAllowancePage'))
+const MyBenefitsPage         = lazyRetry(() => import('./pages/MyBenefitsPage'))
+const NoticesPage            = lazyRetry(() => import('./pages/NoticesPage'))
+const JobsPage               = lazyRetry(() => import('./pages/JobsPage'))
+const CalculatorPage         = lazyRetry(() => import('./pages/CalculatorPage'))
+const PrivacyPolicyPage      = lazyRetry(() => import('./pages/PrivacyPolicy'))
+const TermsOfServicePage     = lazyRetry(() => import('./pages/TermsOfService'))
+const SettingsPage           = lazyRetry(() => import('./pages/SettingsPage'))   // 설정 페이지
+const InquiryPage            = lazyRetry(() => import('./pages/InquiryPage'))    // 문의하기 페이지
+const LandingV1              = lazyRetry(() => import('./pages/LandingV1'))       // 비교 버전 1: 밝은 배경
+const LandingV2              = lazyRetry(() => import('./pages/LandingV2'))       // 비교 버전 2: 검정+줄무늬
+const LandingV3              = lazyRetry(() => import('./pages/LandingV3'))       // 비교 버전 3: 검정+스포트라이트
+const LandingV4              = lazyRetry(() => import('./pages/LandingV4'))       // 비교 버전 4: 볼드/임팩트 (오렌지)
+const LandingV5              = lazyRetry(() => import('./pages/LandingV5'))       // 비교 버전 5: 매거진/뉴스레터 (크림+레드)
 
 // ── SEO 키워드 전용 랜딩 페이지 (검색 유입 최적화) ─────────────────────────
-const CoupangSeveranceLanding    = lazy(() => import('./pages/landing/CoupangSeveranceLanding'))    // 쿠팡 퇴직금 계산기
-const CoupangUnemploymentLanding = lazy(() => import('./pages/landing/CoupangUnemploymentLanding')) // 쿠팡 일용직 실업급여
-const DayWorkerSeveranceGuide    = lazy(() => import('./pages/landing/DayWorkerSeveranceGuide'))    // 일용직 퇴직금 가이드
-const CoupangPartTimeSeverance   = lazy(() => import('./pages/landing/CoupangPartTimeSeverance'))   // 쿠팡 알바 퇴직금 받는 법
-const DailyWorker28Days          = lazy(() => import('./pages/landing/DailyWorker28Days'))          // 일용직 퇴직금 28일 계산
-const CoupangCfsSeverance        = lazy(() => import('./pages/landing/CoupangCfsSeverance'))        // 쿠팡 CFS 퇴직금 계산
+const CoupangSeveranceLanding    = lazyRetry(() => import('./pages/landing/CoupangSeveranceLanding'))    // 쿠팡 퇴직금 계산기
+const CoupangUnemploymentLanding = lazyRetry(() => import('./pages/landing/CoupangUnemploymentLanding')) // 쿠팡 일용직 실업급여
+const DayWorkerSeveranceGuide    = lazyRetry(() => import('./pages/landing/DayWorkerSeveranceGuide'))    // 일용직 퇴직금 가이드
+const CoupangPartTimeSeverance   = lazyRetry(() => import('./pages/landing/CoupangPartTimeSeverance'))   // 쿠팡 알바 퇴직금 받는 법
+const DailyWorker28Days          = lazyRetry(() => import('./pages/landing/DailyWorker28Days'))          // 일용직 퇴직금 28일 계산
+const CoupangCfsSeverance        = lazyRetry(() => import('./pages/landing/CoupangCfsSeverance'))        // 쿠팡 CFS 퇴직금 계산
 
 // ── SEO 콘텐츠 가이드 페이지 (검색엔진 유입용) ──────────────────────────────
-const GuideHub               = lazy(() => import('./pages/guide/GuideHub'))               // 가이드 허브 (/guide)
-const SeveranceGuide         = lazy(() => import('./pages/guide/SeveranceGuide'))         // 퇴직금 가이드
-const UnemploymentGuide      = lazy(() => import('./pages/guide/UnemploymentGuide'))      // 실업급여 가이드
-const WeeklyAllowanceGuide   = lazy(() => import('./pages/guide/WeeklyAllowanceGuide'))   // 주휴수당 가이드
-const AnnualLeaveGuide       = lazy(() => import('./pages/guide/AnnualLeaveGuide'))       // 연차수당 가이드
+const GuideHub               = lazyRetry(() => import('./pages/guide/GuideHub'))               // 가이드 허브 (/guide)
+const SeveranceGuide         = lazyRetry(() => import('./pages/guide/SeveranceGuide'))         // 퇴직금 가이드
+const UnemploymentGuide      = lazyRetry(() => import('./pages/guide/UnemploymentGuide'))      // 실업급여 가이드
+const WeeklyAllowanceGuide   = lazyRetry(() => import('./pages/guide/WeeklyAllowanceGuide'))   // 주휴수당 가이드
+const AnnualLeaveGuide       = lazyRetry(() => import('./pages/guide/AnnualLeaveGuide'))       // 연차수당 가이드
 
 
 
@@ -114,7 +140,7 @@ export default function App() {
   useEffect(() => {
     // VITE_API_URL 환경변수에서 백엔드 주소를 가져옵니다.
     // 개발 환경: 빈 문자열(Vite 프록시가 /api/* → localhost:8000 으로 중계)
-    // 프로덕션: https://coupang-severance-api.onrender.com
+    // 프로덕션: https://coupang-severance-app.onrender.com (⚠️ "-app" — "-api" 는 존재하지 않는 옛 오타)
     const apiUrl =
       typeof import.meta.env.VITE_API_URL === 'string' && import.meta.env.VITE_API_URL
         ? import.meta.env.VITE_API_URL.replace(/\/$/, '') // 끝 슬래시 제거

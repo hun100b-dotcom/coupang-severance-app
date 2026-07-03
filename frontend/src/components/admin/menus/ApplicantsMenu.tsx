@@ -9,13 +9,14 @@
 //        ② 평문은 슈퍼관리자가 회원관리와 '동일한 보안키'를 입력해 '해제 모드'에 들어간 뒤
 //           각 행의 "보기"를 누를 때만 단건 reveal 엔드포인트로 받아온다(revealApplicant).
 //   보안키는 서버에서 해시 비교하고, 누가/언제/어느 지원을 해제했는지 감사로그에 남는다.
-//   ※ 상태변경/확정/거절 알림 로직은 그대로(아래 supabase 경로) — PII '표시 경로'만 바뀜.
+//   ※ 상태변경(단건/일괄)·확정/거절 알림도 백엔드 service-role 경로로 통일(2026-07-04).
 import { useEffect, useState, useCallback } from 'react'
 import { UP, RADIUS, badge, btnSecondary } from '../shared/adminTheme'
 import { PageHead } from '../ds/DSKit'
 import { supabase } from '../../../lib/supabase'
 import {
   getAdminApplications, revealApplicant,
+  patchApplicationStatus, bulkApplicationStatus,
   type MaskedApplication, type RevealedApplicant,
 } from '../../../lib/api'
 
@@ -211,46 +212,20 @@ export default function ApplicantsMenu() {
     }
   }
 
-  // 단건 상태 변경 (기능 로직 불변 — supabase 직접 경로 유지)
+  // 단건 상태 변경 — 백엔드 service-role 경로(RLS 무관 반영 + 알림 서버 발송)
   const handleUpdateStatus = async (
     appId: string,
     newStatus: 'reviewing' | 'confirmed' | 'completed' | 'cancelled' | 'rejected',
     workDate?: string
   ) => {
-    if (!supabase || updatingId) return
+    if (updatingId) return
     setUpdatingId(appId)
     try {
-      const payload: Record<string, unknown> = { status: newStatus }
-      if (newStatus === 'confirmed' && workDate) payload.work_date = workDate
-
-      // ★ .select() 필수: 이게 없으면 RLS가 0행을 막아도 error=null 로 조용히
-      //   통과해 "성공 토스트는 떠도 DB는 안 바뀌는" 거짓 성공이 발생한다.
-      const { data: updated, error } = await supabase
-        .from('job_applications')
-        .update(payload)
-        .eq('id', appId)
-        .select('id')
-      if (error) throw error
-      if (!updated || updated.length === 0) {
-        throw new Error('변경된 행이 없습니다 — 관리자 권한(RLS)을 확인하세요.')
-      }
-
-      // 출근확정 / 거절 시 사용자에게 알림 발송 (실패해도 상태변경 자체는 롤백 안 함)
-      if (newStatus === 'confirmed' || newStatus === 'rejected') {
-        const app = applicants.find(a => a.id === appId)
-        if (app?.user_id && supabase) {
-          const { error: notifErr } = await supabase.from('notifications').insert({
-            user_id: app.user_id,
-            type:    newStatus === 'confirmed' ? 'application_confirmed' : 'application_rejected',
-            title:   newStatus === 'confirmed' ? '출근이 확정됐어요! 🎉' : '지원이 거절됐습니다',
-            body:    newStatus === 'confirmed'
-              ? `출근 예정일: ${workDate ?? '미정'} — 준비물을 챙기고 건강하게 출근하세요!`
-              : '아쉽지만 이번 공고는 어렵게 됐습니다. 다른 공고를 확인해보세요.',
-            metadata: { application_id: appId, job_posting_id: app.job_posting_id },
-          })
-          if (notifErr) console.warn('[알림 발송 실패] 상태변경은 완료됨:', notifErr.message)
-        }
-      }
+      // 백엔드(service-role) 경로 — 과거 supabase 직접 update 는 관리자 UPDATE RLS 가
+      // 깨져 있으면 0행 변경으로 기능 자체가 불능이었다. 백엔드는 RLS 무관하게 항상
+      // 반영되고, 확정/거절 알림(notifications)도 서버에서 함께 발송한다.
+      // 0행이면 서버가 404 를 던져 catch 로 떨어진다(거짓 성공 차단 유지).
+      await patchApplicationStatus(appId, newStatus, workDate, adminEmail)
 
       await fetchApplicants()
       const msgs: Record<string, string> = {
@@ -271,45 +246,20 @@ export default function ApplicantsMenu() {
 
   // 대량 상태 변경 (체크박스 선택 기반 — 기능 로직 불변)
   const handleBulkUpdate = async (newStatus: 'reviewing' | 'confirmed' | 'rejected') => {
-    if (!supabase || selectedIds.size === 0 || bulkUpdating) return
+    if (selectedIds.size === 0 || bulkUpdating) return
     if (!window.confirm(`선택된 ${selectedIds.size}명을 "${STATUS_LABEL[newStatus]}"로 변경할까요?`)) return
 
     setBulkUpdating(true)
     try {
       const ids = [...selectedIds]
-      const { data: updated, error } = await supabase
-        .from('job_applications')
-        .update({ status: newStatus })
-        .in('id', ids)
-        .select('id')
-      if (error) throw error
-      const changed = updated?.length ?? 0
+      // 백엔드(service-role) 일괄 경로 — RLS 무관 반영 + 확정/거절 알림 서버 발송.
+      // 0건 변경이면 서버 응답의 failed_ids 로 부분 실패를 그대로 표시한다.
+      const res = await bulkApplicationStatus(ids, newStatus, adminEmail)
+      const changed = res.updated
       if (changed === 0) {
-        throw new Error('변경된 행이 없습니다 — 관리자 권한(RLS)을 확인하세요.')
+        throw new Error('변경된 행이 없습니다 — 지원 내역을 확인하세요.')
       }
-
-      // 확정/거절 시 알림 일괄 발송
-      if (newStatus === 'confirmed' || newStatus === 'rejected') {
-        const targets = applicants.filter(a => selectedIds.has(a.id))
-        const notifications = targets
-          .filter(a => a.user_id)
-          .map(a => ({
-            user_id:  a.user_id,
-            type:     newStatus === 'confirmed' ? 'application_confirmed' : 'application_rejected',
-            title:    newStatus === 'confirmed' ? '출근이 확정됐어요! 🎉' : '지원이 거절됐습니다',
-            body:     newStatus === 'confirmed'
-              ? '출근 일정을 확인하고 준비하세요!'
-              : '아쉽지만 이번 공고는 어렵게 됐습니다.',
-            metadata: { job_posting_id: a.job_posting_id },
-          }))
-        if (notifications.length > 0 && supabase) {
-          const { error: notifErr } = await supabase.from('notifications').insert(notifications)
-          if (notifErr) console.warn('[일괄 알림 발송 실패] 상태변경은 완료됨:', notifErr.message)
-        }
-      }
-
-      const updatedIds = new Set((updated ?? []).map(u => u.id))
-      const failedIds = ids.filter(id => !updatedIds.has(id))
+      const failedIds = res.failed_ids ?? []
 
       await fetchApplicants()  // 내부에서 selectedIds 를 비운다
       if (failedIds.length > 0) {

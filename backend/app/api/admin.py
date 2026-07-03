@@ -190,7 +190,7 @@ def admin_stats(x_admin_token: Optional[str] = Header(default=None)):
         except Exception:
             return None
 
-    with ThreadPoolExecutor(max_workers=7) as pool:
+    with ThreadPoolExecutor(max_workers=9) as pool:
         futures = {
             "users":         pool.submit(fetch, "profiles",     {"select": "id", "limit": "0"}, True),
             "users_today":   pool.submit(fetch, "profiles",     {"select": "id", "limit": "0", "created_at": f"gte.{today}"}, True),
@@ -200,6 +200,10 @@ def admin_stats(x_admin_token: Optional[str] = Header(default=None)):
             "reports":       pool.submit(fetch, "reports",      {"select": "*", "order": "created_at.desc", "limit": "1000"}),
             "inquiries":     pool.submit(fetch, "inquiries",    {"select": "*", "order": "created_at.desc", "limit": "500"}),
             "clicks":        pool.submit(fetch, "click_counter",{"select": "*"}),
+            # 채용공고 집계 — 프론트 OverviewTab 의 stats.jobs KPI 용
+            #   (과거 프론트가 Supabase 직접 count 했으나 RLS 세션 의존이라 백엔드로 통일)
+            "jobs":          pool.submit(fetch, "job_postings", {"select": "id", "limit": "0"}, True),
+            "jobs_active":   pool.submit(fetch, "job_postings", {"select": "id", "limit": "0", "status": "eq.active"}, True),
         }
         results = {k: v.result() for k, v in futures.items()}
 
@@ -259,6 +263,88 @@ def admin_stats(x_admin_token: Optional[str] = Header(default=None)):
             "severance":    severance_clicks,
             "unemployment": unemployment_clicks,
         },
+        "jobs": {
+            "total":  _count_header(results["jobs"])        if results["jobs"]        else 0,
+            "active": _count_header(results["jobs_active"]) if results["jobs_active"] else 0,
+        },
+    }
+
+
+# ── 계산 리포트 원본 목록 (대시보드 계산통계 탭용) ─────────────────────────
+# 배경: 프론트 CalcStatsTab 이 supabase.from('reports') 를 관리자 "브라우저 세션"으로
+#   직접 조회했는데, reports RLS 는 owner-only(reports_select_own)라 관리자 본인이
+#   계산한 리포트만 보였다(전체 통계처럼 보이는 과소집계 = 사실상 가짜 숫자).
+#   service-role 로 전 행을 반환해 진실값을 보장한다. PII 없는 컬럼만 선별.
+@router.get("/admin/reports")
+def list_reports(
+    days: int = 30,
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    _check_admin(x_admin_token)
+    days = max(1, min(days, 365))  # 1~365일로 제한(과도 조회 방지)
+    from_date = (datetime.utcnow() - timedelta(days=days)).isoformat()
+    try:
+        res = _sb_get("reports", {
+            "select": "id,title,created_at,payload",
+            "created_at": f"gte.{from_date}",
+            "order": "created_at.desc",
+            "limit": "2000",
+        })
+    except Exception as e:
+        # ★ 가짜 0 금지(리뷰어 B): 업스트림 장애를 빈 배열(정상처럼 보이는 0건)로
+        #   무음화하지 않고 명시적 502 로 알린다 → 프론트가 에러 배너를 표시한다.
+        raise HTTPException(status_code=502, detail=f"리포트 조회 실패(업스트림): {type(e).__name__}")
+    if res.status_code not in (200, 206):
+        raise HTTPException(status_code=502, detail=f"리포트 조회 실패(업스트림 HTTP {res.status_code})")
+    return {"reports": res.json()}
+
+
+# ── 채용 운영 통계 (채용현황·채용Summary 메뉴 공용) ─────────────────────────
+# 배경: ConfirmedMenu/RecruitSummaryMenu 가 job_postings + job_applications 를
+#   브라우저 세션으로 직접 조회 → job_applications 관리자 SELECT RLS 상태에 따라
+#   0행(빈 화면) 또는 부분 집계가 발생할 수 있었다. service-role 로 통일.
+@router.get("/admin/recruit-stats")
+def recruit_stats(x_admin_token: Optional[str] = Header(default=None)):
+    _check_admin(x_admin_token)
+
+    def fetch(path, params):
+        try:
+            return _sb_get(path, params)
+        except Exception:
+            return None
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        jp_fut = pool.submit(fetch, "job_postings", {
+            "select": "id,company_name,center_name,status,headcount,section,"
+                      "created_at,expires_at,view_count",
+            "status": "neq.deleted",
+            "order": "created_at.desc",
+            "limit": "2000",
+        })
+        ap_fut = pool.submit(fetch, "job_applications", {
+            "select": "id,job_posting_id,status,applied_at,work_date,work_confirmed_at,"
+                      "preferred_shift,applied_task,"
+                      "job_postings(company_name,center_name,headcount)",
+            "order": "applied_at.desc",
+            "limit": "5000",
+        })
+        jp_res, ap_res = jp_fut.result(), ap_fut.result()
+
+    # ★ 가짜 0 금지(리뷰어 B): 업스트림 장애를 빈 배열로 무음화하면 채용현황이
+    #   "지원 0건" 정상 화면처럼 보인다 → 명시적 502 로 프론트 에러 배너를 띄운다.
+    def _json_or_502(res, what: str):
+        if res is None:
+            raise HTTPException(status_code=502, detail=f"{what} 조회 실패(업스트림 연결 오류)")
+        if res.status_code not in (200, 206):
+            raise HTTPException(status_code=502, detail=f"{what} 조회 실패(업스트림 HTTP {res.status_code})")
+        try:
+            return res.json()
+        except Exception:
+            raise HTTPException(status_code=502, detail=f"{what} 응답 파싱 실패")
+
+    return {
+        "postings": _json_or_502(jp_res, "채용공고"),
+        "applications": _json_or_502(ap_res, "지원 데이터"),
     }
 
 
@@ -1376,6 +1462,122 @@ def reveal_applicant(
         "profile_name": prof.get("full_name"),
         "profile_email": prof.get("email"),
     }
+
+
+# ── 지원자 상태 변경 (단건/일괄) ────────────────────────────
+# 배경: ApplicantsMenu 가 job_applications 를 브라우저 세션으로 직접 update 했는데,
+#   관리자 UPDATE RLS 정책이 깨져 있으면(20260629 fix 미적용 등) 0행 변경으로
+#   기능 자체가 동작하지 않았다. service-role 로 통일해 RLS 상태와 무관하게
+#   항상 반영되고, 확정/거절 알림(notifications)도 서버에서 함께 발송한다.
+
+_APP_STATUSES = {"applied", "reviewing", "confirmed", "completed", "cancelled", "rejected"}
+
+
+class ApplicationStatusPayload(BaseModel):
+    status: str
+    work_date: Optional[str] = None      # 출근 확정 시 예정일(YYYY-MM-DD)
+    admin_email: Optional[str] = None    # 감사 기록용
+
+
+class ApplicationBulkStatusPayload(BaseModel):
+    ids: list[str]
+    status: str
+    admin_email: Optional[str] = None
+
+
+def _is_uuid_like(v: str) -> bool:
+    """쿼리 주입 방지 — UUID 문자셋만 통과"""
+    return isinstance(v, str) and 0 < len(v) <= 40 and all(
+        c in "0123456789abcdefABCDEF-" for c in v
+    )
+
+
+def _notify_applicants(rows: list[dict], status: str, work_date: Optional[str]) -> None:
+    """확정/거절 시 지원자 알림 일괄 발송 — 실패해도 상태변경은 롤백하지 않는다."""
+    if status not in ("confirmed", "rejected"):
+        return
+    notifications = []
+    for r in rows:
+        if not r.get("user_id"):
+            continue
+        notifications.append({
+            "user_id": r["user_id"],
+            "type": "application_confirmed" if status == "confirmed" else "application_rejected",
+            "title": "출근이 확정됐어요! 🎉" if status == "confirmed" else "지원이 거절됐습니다",
+            "body": (
+                f"출근 예정일: {work_date or r.get('work_date') or '미정'} — 준비물을 챙기고 건강하게 출근하세요!"
+                if status == "confirmed"
+                else "아쉽지만 이번 공고는 어렵게 됐습니다. 다른 공고를 확인해보세요."
+            ),
+            "metadata": {"application_id": r.get("id"), "job_posting_id": r.get("job_posting_id")},
+        })
+    if not notifications:
+        return
+    try:
+        res = _sb_post("notifications", notifications)  # PostgREST 는 배열로 일괄 insert 지원
+        if res.status_code not in (200, 201, 204):
+            _audit_logger.warning("지원자 알림 발송 실패 status=%s body=%s", res.status_code, res.text[:200])
+    except Exception as e:
+        _audit_logger.warning("지원자 알림 발송 예외 err=%s", e)
+
+
+@router.patch("/admin/applications/{application_id}/status")
+def update_application_status(
+    application_id: str,
+    payload: ApplicationStatusPayload,
+    request: Request,
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    _check_admin(x_admin_token)
+    if payload.status not in _APP_STATUSES:
+        raise HTTPException(status_code=422, detail=f"허용되지 않는 상태값: {payload.status}")
+    if not _is_uuid_like(application_id):
+        raise HTTPException(status_code=422, detail="잘못된 지원 id 형식입니다.")
+
+    body: dict = {"status": payload.status}
+    if payload.status == "confirmed" and payload.work_date:
+        body["work_date"] = payload.work_date
+
+    res = _sb_patch("job_applications", {"id": f"eq.{application_id}"}, body)
+    rows = res.json() if res.status_code in (200, 201, 206) else []
+    if not rows:
+        # 0행 = 해당 id 없음(또는 이미 삭제) — 프론트가 명확한 에러를 표시하도록 404
+        raise HTTPException(status_code=404, detail="변경된 행이 없습니다 — 지원 내역을 확인하세요.")
+
+    _notify_applicants(rows, payload.status, payload.work_date)
+    _write_audit(payload.admin_email or "unknown", "application.status",
+                 "job_applications", application_id,
+                 after_val={"status": payload.status, "work_date": payload.work_date},
+                 ip=request.client.host if request.client else None)
+    return {"ok": True, "updated": len(rows)}
+
+
+@router.post("/admin/applications/bulk-status")
+def bulk_application_status(
+    payload: ApplicationBulkStatusPayload,
+    request: Request,
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    _check_admin(x_admin_token)
+    if payload.status not in _APP_STATUSES:
+        raise HTTPException(status_code=422, detail=f"허용되지 않는 상태값: {payload.status}")
+    ids = [i for i in payload.ids if _is_uuid_like(i)][:500]  # 과도 요청 방지
+    if not ids:
+        raise HTTPException(status_code=422, detail="유효한 지원 id가 없습니다.")
+
+    res = _sb_patch("job_applications", {"id": f"in.({','.join(ids)})"}, {"status": payload.status})
+    rows = res.json() if res.status_code in (200, 201, 206) else []
+    updated_ids = [r.get("id") for r in rows if r.get("id")]
+    failed_ids = [i for i in ids if i not in set(updated_ids)]
+
+    _notify_applicants(rows, payload.status, None)
+    _write_audit(payload.admin_email or "unknown", "application.bulk_status",
+                 "job_applications", None,
+                 after_val={"status": payload.status, "requested": len(ids),
+                            "updated": len(updated_ids), "failed": len(failed_ids)},
+                 ip=request.client.host if request.client else None)
+    return {"ok": True, "updated": len(updated_ids),
+            "updated_ids": updated_ids, "failed_ids": failed_ids}
 
 
 # ── IP 차단 ───────────────────────────────────────────────

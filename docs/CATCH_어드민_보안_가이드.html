@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CATCH 어드민 · 보안 가이드</title>
+<style>
+  :root{
+    --blue:#1B64DA; --blue-bg:#EAF2FE; --navy:#1A2434; --body:#333D4B; --sub:#565D6A;
+    --line:#E1E4EA; --page:#EEF1F5; --card:#FFFFFF;
+    --red:#D32F3A; --red-bg:#FDECEE; --amber:#B45309; --amber-bg:#FEF3DC; --green:#047857; --green-bg:#E4F8F0;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--page);color:var(--body);
+    font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+    line-height:1.65;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 20px 80px;}
+  header.top{background:linear-gradient(135deg,#1B64DA,#3182F6);color:#fff;border-radius:20px;
+    padding:36px 32px;margin-bottom:28px;box-shadow:0 14px 44px rgba(49,130,246,.22);}
+  header.top h1{margin:0 0 8px;font-size:28px;font-weight:800;letter-spacing:-.03em;}
+  header.top p{margin:0;opacity:.92;font-size:15px;}
+  .meta{display:inline-block;margin-top:14px;background:rgba(255,255,255,.18);
+    padding:5px 12px;border-radius:999px;font-size:13px;}
+  section{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:26px 28px;margin-bottom:20px;box-shadow:0 1px 2px rgba(17,24,39,.04),0 4px 16px rgba(17,24,39,.04);}
+  h2{font-size:21px;font-weight:800;color:var(--navy);letter-spacing:-.02em;margin:0 0 4px;
+    padding-bottom:12px;border-bottom:2px solid var(--page);}
+  h2 .em{color:var(--blue);}
+  h3{font-size:16px;font-weight:700;color:var(--navy);margin:24px 0 10px;}
+  p{margin:8px 0;}
+  .lead{color:var(--sub);font-size:14.5px;margin-top:10px;}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{background:var(--page);color:var(--navy);font-weight:700;font-size:13px;}
+  tr:last-child td{border-bottom:none;}
+  td.c,th.c{text-align:center;white-space:nowrap;}
+  .badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap;}
+  .b-red{background:var(--red-bg);color:var(--red);}
+  .b-amber{background:var(--amber-bg);color:var(--amber);}
+  .b-green{background:var(--green-bg);color:var(--green);}
+  .b-blue{background:var(--blue-bg);color:var(--blue);}
+  .b-gray{background:#F2F4F6;color:var(--sub);}
+  ol{margin:8px 0 8px 4px;padding-left:22px;} ol li{margin:7px 0;}
+  ul{margin:8px 0;padding-left:20px;} ul li{margin:6px 0;}
+  code{background:#F2F4F6;color:#1B3A6B;padding:2px 6px;border-radius:6px;
+    font-family:'JetBrains Mono',Consolas,monospace;font-size:13px;}
+  .callout{border-radius:12px;padding:14px 16px;margin:14px 0;font-size:14px;}
+  .callout.warn{background:var(--amber-bg);border:1px solid #F3D08A;color:#7a3e08;}
+  .callout.info{background:var(--blue-bg);border:1px solid #BBD5FB;color:#16407e;}
+  .callout.ok{background:var(--green-bg);border:1px solid #A6E6CE;color:#075c45;}
+  .callout b{font-weight:800;}
+  .kbd{background:#fff;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:6px;
+    padding:1px 7px;font-size:12.5px;font-family:monospace;color:var(--navy);}
+  .toc{background:var(--page);border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin-bottom:24px;}
+  .toc a{color:var(--blue);text-decoration:none;font-weight:600;font-size:14px;}
+  .toc a:hover{text-decoration:underline;}
+  .toc ol{counter-reset:none;}
+  footer{color:var(--sub);font-size:12.5px;text-align:center;margin-top:30px;line-height:1.7;}
+  @media(max-width:560px){.wrap{padding:18px 12px 60px;}section{padding:20px 16px;}header.top{padding:26px 20px;}header.top h1{font-size:23px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>CATCH 어드민 · 보안 가이드</h1>
+    <p>"어디서 무엇을 확인하는지" 중심 안내서 · 라이브 DB 실측 기반</p>
+    <span class="meta">작성일 2026-06-30 · 종훈님용</span>
+  </header>
+
+  <nav class="toc">
+    <strong style="color:var(--navy);display:block;margin-bottom:8px;">목차</strong>
+    <ol>
+      <li><a href="#a1">A. 어드민 페이지 — 접속·권한</a></li>
+      <li><a href="#a2">A. 메뉴 맵 (어디서 무엇을)</a></li>
+      <li><a href="#a3">A. 관리자 추가 / 권한 부여 단계</a></li>
+      <li><a href="#a4">A. "디자인이 안 바뀐 것 같다" 설명</a></li>
+      <li><a href="#b1">B. 보안을 어디서 확인하나</a></li>
+      <li><a href="#b2">B. 이번에 조치한 보안 항목</a></li>
+      <li><a href="#b3">B. 권한 부여 — 동작/취약점 직답</a></li>
+      <li><a href="#b4">B. 종훈님이 직접 할 일</a></li>
+    </ol>
+  </nav>
+
+  <!-- ===================== PART A ===================== -->
+  <section id="a1">
+    <h2>A-1. 어드민 접속 · 권한</h2>
+    <ul>
+      <li>주소: <code>/admin</code> — 관리자 로그인 후 접속</li>
+      <li>현재 관리자 <b>3명 전부 super_admin</b>(최고권한): catchmaster · 종훈님 카카오 · 종훈님 구글</li>
+      <li>권한 단계: <span class="badge b-blue">super_admin</span> 전체+관리자 관리 &nbsp;&gt;&nbsp; <span class="badge b-gray">admin</span> 운영 &nbsp;&gt;&nbsp; <span class="badge b-gray">viewer</span> 열람</li>
+    </ul>
+    <div class="callout info">단계별 차등은 현재 서버에서 완전히 강제되지 않습니다(아래 <b>B-3 P1</b> 참고). 신뢰할 사람만 관리자로 추가하세요.</div>
+  </section>
+
+  <section id="a2">
+    <h2>A-2. 메뉴 맵 <span class="em">— 어디서 무엇을</span></h2>
+    <table>
+      <thead><tr><th>그룹</th><th>메뉴</th><th>하는 일</th><th class="c">보안</th></tr></thead>
+      <tbody>
+        <tr><td>📊 대시보드</td><td>대시보드</td><td>방문·계산·채용 KPI 통계</td><td class="c">—</td></tr>
+        <tr><td rowspan="3">👥 채용·인원</td><td>채용공고</td><td>공고 등록·수정·삭제·긴급토글</td><td class="c">—</td></tr>
+        <tr><td>지원자 관리</td><td>지원자 상태(확정/거절/검토) 처리</td><td class="c">—</td></tr>
+        <tr><td>채용현황·Summary</td><td>확정 인원·집계</td><td class="c">—</td></tr>
+        <tr><td rowspan="2">📋 콘텐츠</td><td>공지사항</td><td>공지 등록·수정·삭제</td><td class="c">—</td></tr>
+        <tr><td>문의</td><td>문의 답변·상태변경(대기 실시간 배지)</td><td class="c">—</td></tr>
+        <tr><td rowspan="5">⚙️ 시스템</td><td><b>회원 관리</b></td><td>회원 목록 · PII 마스킹/해제</td><td class="c">🔐 개인정보</td></tr>
+        <tr><td><b>관리자 계정</b></td><td>관리자 추가·역할·활성·삭제</td><td class="c">🔐 권한부여</td></tr>
+        <tr><td><b>Audit Logs</b></td><td>관리자 행위 감사 기록(super 전용)</td><td class="c">🔐 감사</td></tr>
+        <tr><td>서버 로그</td><td>시스템 로그 실시간</td><td class="c">🔐 감사</td></tr>
+        <tr><td><b>설정</b></td><td>권한레벨·마스킹키·법정변수·IP차단·Discord·CMS</td><td class="c">🔐 보안키·IP</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="a3">
+    <h2>A-3. 관리자 추가 / 권한 부여 <span class="em">(단계)</span></h2>
+    <ol>
+      <li>어드민 → <b>시스템 → 관리자 계정</b> 메뉴로 이동</li>
+      <li>"관리자 추가" → <b>이메일 + 역할</b>(super_admin / admin / viewer) 선택 → 저장</li>
+      <li>⚠️ 그 이메일은 <b>먼저 앱에 일반 회원으로 가입</b>(카카오/구글)돼 있어야 로그인 시 매칭됩니다</li>
+      <li>역할 변경·비활성화·삭제도 같은 화면에서 처리</li>
+      <li>이 작업은 <b>super_admin만 가능</b> — DB 규칙(RLS)으로 서버에서 강제 ✅</li>
+      <li>확인: 추가 후 목록에 표시되고 <b>새로고침해도 유지</b>되면 정상 반영</li>
+    </ol>
+    <div class="callout ok">관리자 계정 화면은 어드민 중 가장 견고하게 만들어졌습니다(에러처리·이중 가드·재조회 완비).</div>
+  </section>
+
+  <section id="a4">
+    <h2>A-4. "디자인이 안 바뀐 것 같다" 설명</h2>
+    <p>결론: <b>버그 아님, 정상.</b> 개편은 main에 배포됐고 빌드에도 반영됐습니다(미반영·캐시 문제 아님).</p>
+    <p class="lead">다만 사용자 화면과 달리 <b>레이아웃은 그대로 두고 색·대비·숫자정렬만 통일</b>한 "절제된" 방식이라 시각 변화가 작게 느껴집니다(정보가 빽빽한 관리화면 특성).</p>
+    <ul>
+      <li>배경 <code>#f8fafc</code> → <code>#EEF1F5</code> (약간 푸른 회색)</li>
+      <li>무지개색 제거 → 절제된 파랑/그린/앰버</li>
+      <li>금액·숫자 자릿수 정렬(tabular)</li>
+    </ul>
+    <div class="callout warn"><b>확인법:</b> 어드민에서 <span class="kbd">Ctrl + Shift + R</span>(강력 새로고침) 후 배경이 살짝 푸른 회색 + 숫자가 가지런하면 반영된 것입니다.</div>
+    <p>사용자 화면처럼 <b>확 달라 보이게</b> 하려면 토큰 통일이 아니라 별도 <b>레이아웃 개편</b>이 필요합니다(원하면 진행).</p>
+  </section>
+
+  <!-- ===================== PART B ===================== -->
+  <section id="b1">
+    <h2>B-1. 보안을 <span class="em">어디서</span> 확인하나</h2>
+    <p class="lead">현재 보안 기능이 메뉴별로 흩어져 있습니다(한눈에 보는 통합 화면은 아직 없음).</p>
+    <table>
+      <thead><tr><th>무엇</th><th>위치</th></tr></thead>
+      <tbody>
+        <tr><td>누가 관리자인가 / 권한 부여</td><td>시스템 → <b>관리자 계정</b></td></tr>
+        <tr><td>회원 개인정보 보호 / 마스킹 해제</td><td>시스템 → <b>회원 관리</b></td></tr>
+        <tr><td>관리자가 무슨 행동을 했나(감사)</td><td>시스템 → <b>Audit Logs</b> / <b>서버 로그</b></td></tr>
+        <tr><td>악성 IP 차단</td><td>설정 → <b>IP 차단</b></td></tr>
+        <tr><td>마스킹 해제 보안키 설정</td><td>설정 → 보안키 (★ B-4 필수)</td></tr>
+      </tbody>
+    </table>
+    <div class="callout info">💡 원하면 이것들을 한 화면에 모은 <b>"보안 현황" 대시보드</b>(관리자 수·최근 감사·차단 IP·노출 점검)를 만들어 드릴 수 있습니다.</div>
+  </section>
+
+  <section id="b2">
+    <h2>B-2. 이번에 점검·조치한 보안 항목</h2>
+    <table>
+      <thead><tr><th class="c">등급</th><th>항목</th><th class="c">상태</th></tr></thead>
+      <tbody>
+        <tr><td class="c"><span class="badge b-red">치명</span></td><td>회원 이메일 비로그인 노출(user_profiles 뷰)</td><td class="c"><span class="badge b-green">✅ 차단</span></td></tr>
+        <tr><td class="c"><span class="badge b-red">치명</span></td><td>회원 PII 가짜 마스킹 + 해제키 평문·공개</td><td class="c"><span class="badge b-green">✅ 재설계</span></td></tr>
+        <tr><td class="c"><span class="badge b-red">치명</span></td><td><b>관리자 명단(이메일·역할) 비로그인 노출</b></td><td class="c"><span class="badge b-green">✅ 방금 차단</span></td></tr>
+        <tr><td class="c"><span class="badge b-amber">높음</span></td><td>감사로그 위조 / 알림 임의삽입 / anon 호출 위험함수</td><td class="c"><span class="badge b-green">✅ 제한</span></td></tr>
+        <tr><td class="c"><span class="badge b-amber">높음</span></td><td>문의 RLS 단일 UUID 하드코딩</td><td class="c"><span class="badge b-green">✅ 교체</span></td></tr>
+        <tr><td class="c"><span class="badge b-amber">중간</span></td><td>함수 search_path 미설정 16건</td><td class="c"><span class="badge b-green">✅ 고정</span></td></tr>
+        <tr><td class="c"><span class="badge b-amber">중간</span></td><td>방문자탭 평문 PII</td><td class="c"><span class="badge b-green">✅ 마스킹</span></td></tr>
+      </tbody>
+    </table>
+    <div class="callout ok">Supabase 보안 어드바이저 재실측 결과 <b>ERROR 0건</b>, 핵심 항목 전부 해소 확인.</div>
+  </section>
+
+  <section id="b3">
+    <h2>B-3. 권한 부여 — 동작 / 취약점 직답</h2>
+    <ul>
+      <li><b>권한 부여 기능 동작?</b> <span class="badge b-green">정상</span> 추가/역할변경/활성/삭제 전부 작동(에러처리·재조회 완비)</li>
+      <li><b>일반 관리자가 스스로 최고권한 승격?</b> <span class="badge b-green">불가</span> 관리자 테이블 쓰기는 super_admin만(서버 강제)</li>
+      <li><b>관리자 명단 노출(P2)?</b> <span class="badge b-green">방금 해결</span> 비로그인 읽기 차단(is_admin 전용)</li>
+    </ul>
+    <h3>🟠 남은 취약점 — P1 (역할 차등 서버 미강제)</h3>
+    <p>현재 DB는 <b>"활성 관리자냐(is_admin) / super냐(is_super_admin)" 2단계만</b> 봅니다. 그래서 <b>viewer로 등록해도 실제론 공지·문의·공고 등 운영 CRUD가 다 됩니다</b>(역할 구분이 화면에만 존재).</p>
+    <div class="callout warn">신뢰할 관리자만 추가하는 한 당장 큰 위험은 아니지만, viewer/admin을 <b>진짜로 차등</b>하려면 서버(RLS) 추가 작업이 필요합니다. <b>권장: 다음 단계 수정.</b></div>
+    <p class="lead">참고: 과거 마이그레이션 파일의 super 하드코딩(P3)은 <b>라이브 함수엔 없음</b>(정리됨). 영향 없습니다.</p>
+  </section>
+
+  <section id="b4">
+    <h2>B-4. ★ 종훈님이 직접 할 일</h2>
+    <ol>
+      <li><b>마스킹 해제 보안키 재설정</b> — 어드민 → 설정 → 보안키. (이전 평문키 삭제됨 → 재설정해야 회원정보 "보기" 작동. 안 해도 마스킹 자체는 안전)</li>
+      <li>(선택) 설정 → <b>유출 비밀번호 보호</b> 켜기 (OAuth 위주라 영향은 낮음)</li>
+    </ol>
+    <h3>다음 권고 (선택)</h3>
+    <ul>
+      <li><span class="badge b-amber">P1</span> viewer/admin 역할을 서버(RLS)에서 진짜 차등 적용</li>
+      <li><span class="badge b-gray">중</span> 지원자 관리 탭도 회원탭처럼 PII 서버 마스킹</li>
+      <li><span class="badge b-gray">하</span> IP차단 SELECT 정책·blog 버킷 목록 등 낮은 항목 정리</li>
+      <li><span class="badge b-blue">신규</span> 보안 현황 통합 대시보드 신설</li>
+    </ul>
+  </section>
+
+  <footer>
+    근거: Supabase Security Advisor + 직접 SQL 실측, 코드 감사(docs/audit/admin_review_2026-06-30.md)<br>
+    적용된 보안 마이그레이션은 supabase/migrations/ 에 기록 · CATCH (coupang-severance-app)
+  </footer>
+
+</div>
+</body>
+</html>

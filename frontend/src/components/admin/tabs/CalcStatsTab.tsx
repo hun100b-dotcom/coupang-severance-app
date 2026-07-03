@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   AreaChart, Area, ResponsiveContainer, Cell,
 } from 'recharts'
-import { supabase } from '../../../lib/supabase'
+import { getAdminReports } from '../../../lib/api'
 import { exportXlsx } from '../../../lib/exportXlsx'
 import PageHeader from '../shared/PageHeader'
 import { UP, numeric, cardBox } from '../shared/adminTheme'
@@ -14,7 +14,7 @@ import { AdminLoading } from '../shared/AdminState' // 공통 로딩 상태(인�
 
 interface Report {
   id: string
-  title: string
+  title: string | null
   created_at: string
   payload: Record<string, unknown> | null
 }
@@ -45,12 +45,6 @@ function fmtMoney(n: number) {
   return `${n.toLocaleString()}원`
 }
 
-function getFromDate(days: number): string {
-  const d = new Date()
-  d.setDate(d.getDate() - days)
-  return d.toISOString()
-}
-
 // 퇴직금 구간 분포 색 — 토큰 기반 (회색→블루→그린→앰버)
 const SEVERANCE_RANGES = [
   { label: '0원 (비적격)', min: 0,       max: 1,        color: UP.caption },
@@ -71,14 +65,9 @@ export default function CalcStatsTab() {
     setLoading(true)
     setError(null)
     try {
-      if (!supabase) throw new Error('Supabase 클라이언트 없음')
-      const { data, error: err } = await supabase
-        .from('reports')
-        .select('id, title, created_at, payload')
-        .gte('created_at', getFromDate(range))
-        .order('created_at', { ascending: false })
-        .limit(2000)
-      if (err) throw err
+      // 백엔드(service-role) 경로 — 과거 supabase 직접 조회는 reports RLS(owner-only)에
+      // 걸려 "관리자 본인 리포트"만 집계됐다(전체 통계처럼 보이는 과소집계).
+      const data = await getAdminReports(range)
       setReports((data ?? []) as Report[])
       setLastUpdated(new Date())
     } catch (e: unknown) {

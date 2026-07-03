@@ -7,7 +7,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Legend,
 } from 'recharts'
-import { supabase } from '../../../lib/supabase'
+import { getRecruitStats } from '../../../lib/api'
 
 // ── 공고 요약 타입 ──
 interface JobSummary {
@@ -44,28 +44,17 @@ export default function RecruitSummaryMenu() {
 
   // 로드
   const fetchData = useCallback(async () => {
-    if (!supabase) return
     setLoading(true)
     setError(null)
     try {
-      // 공고 목록 (삭제 제외)
-      const { data: jobData, error: jobErr } = await supabase
-        .from('job_postings')
-        .select('id, company_name, center_name, status, headcount, section, created_at, expires_at, view_count')
-        .neq('status', 'deleted')
-        .order('created_at', { ascending: false })
-      if (jobErr) throw jobErr
+      // 공고+지원 데이터 — 백엔드(service-role) 한 번의 호출로 통일
+      // 과거 supabase 직접 조회는 job_applications 관리자 SELECT RLS 상태에 따라
+      // 0행(빈 화면)이 될 수 있었다. 백엔드는 RLS 무관하게 전체를 반환한다.
+      const { postings, applications } = await getRecruitStats()
 
-      // 지원 데이터
-      const { data: appData, error: appErr } = await supabase
-        .from('job_applications')
-        .select('id, job_posting_id, status, applied_at, work_confirmed_at, job_postings(company_name, center_name, headcount)')
-        .order('applied_at', { ascending: false })
-      if (appErr) throw appErr
-
-      const jobList = (jobData ?? []) as JobSummary[]
+      const jobList = (postings ?? []) as unknown as JobSummary[]
       setJobs(jobList)
-      setApps((appData ?? []) as unknown as AppRow[])
+      setApps((applications ?? []) as unknown as AppRow[])
 
       // 사업장 목록
       const uniqueCompanies = [...new Set(jobList.map(j => j.company_name).filter(Boolean))]

@@ -3,10 +3,9 @@
 //   ★새 디자인 언어: 딥네이비 히어로 폐기 → 라이트 "스탯 리본"(흰 패널+브랜드 워시+큰 잉크 숫자).
 //   ★framer-motion 미사용 — 진입은 CSS .animate-staggered-fade(forwards)만(빈섹션 재발 방지).
 import { useEffect, useState, useRef } from 'react'
-import { getAdminStats, getAdminAnalytics, getAdminInquiries } from '../../../lib/api'
+import { getAdminStats, getAdminAnalytics, getAdminInquiries, getAdminNotices } from '../../../lib/api'
 import type { AdminStats, AnalyticsResponse, AdminInquiry } from '../../../types/admin'
 import { logAdminAction } from '../../../lib/adminAuditLog'
-import { supabase } from '../../../lib/supabase'
 import DailyTrendChart from '../dashboard/DailyTrendChart'
 import ServiceBarChart from '../dashboard/ServiceBarChart'
 import RecentActivity from '../dashboard/RecentActivity'
@@ -42,14 +41,19 @@ export default function OverviewTab() {
     setLoading(true); setError(null)
     try {
       const { start, end } = getDateRange(range)
-      const [s, a, inq, noticesRes] = await Promise.all([
+      // 공지도 백엔드(service-role) 경로로 통일 — supabase 직접 조회는 RLS 세션에 따라
+      // 비활성 공지가 누락될 수 있었다. getAdminNotices 는 관리용 전체 목록을 반환한다.
+      const [s, a, inq, noticesAll] = await Promise.all([
         getAdminStats(),
         getAdminAnalytics(start, end),
         getAdminInquiries({ limit: 8, page: 1 }),
-        supabase!.from('notices').select('id, title, created_at, is_active').order('created_at', { ascending: false }).limit(3),
+        getAdminNotices(),
       ])
       setStats(s); setAnalytics(a); setRecentInquiries(inq.inquiries ?? [])
-      setRecentNotices((noticesRes.data ?? []) as { id: string; title: string; created_at: string; is_active: boolean }[])
+      // 백엔드는 priority 순으로 주므로 "최근 공지" 표시용으로 최신순 재정렬 후 3건만
+      const noticeList = ((noticesAll ?? []) as { id: string; title: string; created_at: string; is_active: boolean }[])
+        .slice().sort((x, y) => (y.created_at ?? '').localeCompare(x.created_at ?? '')).slice(0, 3)
+      setRecentNotices(noticeList)
       setLastUpdated(new Date())
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e) || '알 수 없는 오류')
