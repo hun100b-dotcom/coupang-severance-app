@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "build": "tsc -b && vite build && node scripts/prerender.mjs",
+    "preview": "vite preview",
+    "prerender": "node scripts/prerender.mjs"
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
@@ -28,6 +29,7 @@
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.45",
+    "puppeteer": "^25.3.0",
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3",
     "vite": "^5.4.2"
