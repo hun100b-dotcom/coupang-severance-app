@@ -1,19 +1,22 @@
-# robots.txt — 검색 크롤러의 접근 허용/차단 규칙
-# User-agent: * → 모든 크롤러(Googlebot, Bingbot 등)에 적용
-# Allow: / → 기본적으로 전체 허용
-# Disallow: 인증·관리자 경로는 인덱싱 제외 (개인정보·보안)
+# robots.txt — 검색 크롤러 접근 규칙 (P2 갱신: 2026-07-03)
+# 공개 SEO 페이지(랜딩·가이드·계산기)는 전부 허용, 인증/동적/무가치 경로만 차단
 
 User-agent: *
 Allow: /
 
-# 관리자 페이지: 외부 노출 불필요, 보안상 크롤링 차단
+# 관리자·인증 콜백 (보안·동적 토큰)
 Disallow: /admin
-
-# OAuth 콜백 경로: 동적 토큰 포함, 인덱싱 의미 없음
 Disallow: /auth
 
-# 마이페이지: 로그인 필요 페이지, 크롤러에 유용한 정보 없음
+# 로그인 필요·개인화 페이지 (크롤러에 무가치, 색인 제외)
 Disallow: /mypage
+Disallow: /my-benefits
+Disallow: /notices
+Disallow: /settings
+Disallow: /onboarding
+Disallow: /payment
+Disallow: /login
+Disallow: /report
 
-# sitemap 위치 명시 → 크롤러가 자동으로 발견
+# sitemap 위치
 Sitemap: https://catch-daily-worker.vercel.app/sitemap.xml
