@@ -78,14 +78,15 @@ export default function PageMeta({ title, description, canonical, ogImage, jsonL
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={ogImageUrl} />
 
-      {/* ── JSON-LD 구조화 데이터 (FAQPage, BreadcrumbList 등) ── */}
+      {/* ── JSON-LD 구조화 데이터 (FAQPage, BreadcrumbList 등) ──
+          ★react-helmet-async는 <script>의 dangerouslySetInnerHTML을 클라이언트 head
+            주입 시 누락시킨다(title/meta는 주입되나 ld+json script만 빠지는 이슈).
+            → children 문자열 형식으로 전달해야 head에 실제로 주입되고, 프리렌더에도 캡처된다.
+            '<'는 <로 이스케이프해 </script> 조기종료·XSS를 원천 차단(JSON-LD는 자체 정적 데이터). */}
       {jsonLdArray.map((schema, idx) => (
-        <script
-          key={idx}
-          type="application/ld+json"
-          // dangerouslySetInnerHTML 사용: JSON.stringify는 XSS 안전 처리됨
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
+        <script key={idx} type="application/ld+json">
+          {JSON.stringify(schema).replace(/</g, '\\u003c')}
+        </script>
       ))}
     </Helmet>
   )

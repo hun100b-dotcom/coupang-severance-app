@@ -134,7 +134,7 @@ async function main() {
         await new Promise(r => setTimeout(r, 600))
         // 중복 head 태그 제거 — 정적 index.html 기본값 + Helmet per-page 가 병존하므로
         //   per-page(마지막) 하나만 남긴다(canonical/description/og/twitter). title 은 Helmet이 이미 단일화.
-        await page.evaluate(() => {
+        await page.evaluate((routeArg) => {
           const keepLast = (sel) => {
             const els = [...document.head.querySelectorAll(sel)]
             els.slice(0, -1).forEach(e => e.remove())
@@ -144,7 +144,19 @@ async function main() {
             'meta[property="og:title"]', 'meta[property="og:description"]', 'meta[property="og:url"]', 'meta[property="og:image"]',
             'meta[name="twitter:title"]', 'meta[name="twitter:description"]', 'meta[name="twitter:image"]',
           ].forEach(keepLast)
-        }).catch(() => {})
+          // ★비홈 라우트: 정적 index.html의 콘텐츠 스키마(FAQPage/HowTo=홈 랜딩 전용)를 제거.
+          //   각 하위페이지는 자체 per-page 스키마(Helmet 주입, 컴팩트 JSON)를 가지므로
+          //   홈 FAQ가 중복·불일치로 실리는 것을 막는다. 단 사이트공통(WebApplication/
+          //   Organization/WebSite)은 어느 페이지에나 유효하므로 유지.
+          //   구분법: 정적 블록은 index.html에서 pretty-print(줄바꿈 포함) / Helmet 주입분은 컴팩트(줄바꿈 없음).
+          if (routeArg !== '/') {
+            document.querySelectorAll('script[type="application/ld+json"]').forEach((s) => {
+              const txt = s.textContent || ''
+              const isStatic = /\n/.test(txt) // 정적(pretty-print)만 대상, Helmet 컴팩트는 보존
+              if (isStatic && /"@type":\s*"(FAQPage|HowTo)"/.test(txt)) s.remove()
+            })
+          }
+        }, route).catch(() => {})
         const html = await page.content()
         const rootChildren = await page.evaluate(() => document.getElementById('root')?.childElementCount || 0)
         const title = await page.title()
