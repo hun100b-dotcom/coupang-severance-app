@@ -2,8 +2,9 @@
 """
 Admin OS — 전문 관리자 대시보드 API
 
-NOTE: 모든 엔드포인트는 sync def + httpx.Client() 사용.
-      counter.py와 동일 패턴 — Render에서 async httpx DNS 오류 우회.
+NOTE: 모든 엔드포인트는 sync def + httpx 사용 (Render에서 async httpx DNS 오류 우회).
+      2026-07-04 2차 전수조사에서 원샷 httpx.get()→모듈레벨 공유 httpx.Client(커넥션
+      풀·keep-alive)로 전환해 전 엔드포인트를 가속했다(_client 정의부 주석 참조).
 """
 
 from __future__ import annotations
@@ -74,9 +75,31 @@ def _supabase_headers(count: bool = False, upsert: bool = False) -> dict:
     }
 
 
+# ── 공유 httpx.Client (커넥션 풀 · keep-alive) ────────────────────────────────
+# 배경(2026-07-04 2차 전수조사): 기존엔 매 호출이 모듈레벨 httpx.get()=원샷이라
+#   호출마다 새 연결(DNS→TCP→TLS 핸드셰이크)을 만들고 버렸다. Render(싱가포르)→
+#   Supabase 왕복마다 풀 핸드셰이크 비용을 지불 → /admin/stats(9쿼리 병렬)조차 3초였다.
+# 처치: 프로세스당 1개의 공유 Client 로 커넥션을 재사용(keep-alive)한다. TLS 핸드셰이크가
+#   재사용돼 전 어드민 엔드포인트가 빨라진다(예상 stats 3s→~0.6s).
+#   ⚠️ 이 Client 는 "sync" 라 기존 async httpx DNS 이슈와 무관하고(주석 §NOTE 존중),
+#      httpx.Client 는 스레드 세이프라 stats 의 ThreadPoolExecutor 병렬 호출에도 안전하다.
+#   http2 는 h2 의존성이 없어 끄고(HTTP/1.1 keep-alive 만으로 핵심 이득), 풀 한도만 넉넉히 둔다.
+_HTTP_LIMITS = httpx.Limits(
+    max_keepalive_connections=20,  # 재사용 대기 커넥션 수(어드민 동시성 여유)
+    max_connections=40,            # 동시 커넥션 상한
+    keepalive_expiry=30.0,         # 유휴 커넥션 30초 유지 후 정리
+)
+_client = httpx.Client(timeout=15, limits=_HTTP_LIMITS)
+
+# 프로세스 종료 시 공유 커넥션 정리(견고성). 단일 프로세스 웹서버라 필수는 아니지만,
+#   main.py 를 건드리지 않고 자기완결적으로 소켓을 깔끔히 닫는다(리뷰어 B MINOR 반영).
+import atexit as _atexit
+_atexit.register(_client.close)
+
+
 def _sb_get(path: str, params: dict | None = None, count: bool = False) -> httpx.Response:
-    """Supabase GET — sync httpx (Render DNS 호환)"""
-    return httpx.get(
+    """Supabase GET — 공유 Client(keep-alive) 재사용. sync (Render DNS 호환)"""
+    return _client.get(
         f"{SUPABASE_URL}/rest/v1/{path}",
         headers=_supabase_headers(count=count),
         params=params or {},
@@ -85,7 +108,7 @@ def _sb_get(path: str, params: dict | None = None, count: bool = False) -> httpx
 
 
 def _sb_post(path: str, json: dict, upsert: bool = False) -> httpx.Response:
-    return httpx.post(
+    return _client.post(
         f"{SUPABASE_URL}/rest/v1/{path}",
         headers=_supabase_headers(upsert=upsert),
         json=json,
@@ -94,7 +117,7 @@ def _sb_post(path: str, json: dict, upsert: bool = False) -> httpx.Response:
 
 
 def _sb_patch(path: str, params: dict, json: dict) -> httpx.Response:
-    return httpx.patch(
+    return _client.patch(
         f"{SUPABASE_URL}/rest/v1/{path}",
         headers=_supabase_headers(),
         params=params,
@@ -104,7 +127,7 @@ def _sb_patch(path: str, params: dict, json: dict) -> httpx.Response:
 
 
 def _sb_delete(path: str, params: dict) -> httpx.Response:
-    return httpx.delete(
+    return _client.delete(
         f"{SUPABASE_URL}/rest/v1/{path}",
         headers=_supabase_headers(),
         params=params,
@@ -131,7 +154,7 @@ def _write_audit(
     """감사 로그 기록 — 관리자 작업을 막지 않도록 예외는 삼키되,
     실패(예외 또는 비정상 status)는 서버 로그로 남겨 '무음 누락'을 탐지 가능하게 한다."""
     try:
-        res = httpx.post(
+        res = _client.post(
             f"{SUPABASE_URL}/rest/v1/audit_logs",
             headers=_supabase_headers(),
             json={
@@ -372,7 +395,7 @@ def admin_analytics(
                 f"&created_at=gte.{start}T00:00:00Z"
                 f"&created_at=lte.{end}T23:59:59Z"
             )
-            return httpx.get(url, headers=_supabase_headers(), timeout=15)
+            return _client.get(url, headers=_supabase_headers(), timeout=15)
         except Exception:
             return None
 
@@ -960,7 +983,7 @@ def patch_setting(
     _check_admin(x_admin_token)
     old_res = _sb_get("system_settings", {"select": "value", "key": f"eq.{payload.key}"})
     old_val = (old_res.json() or [{}])[0].get("value")
-    res = httpx.post(
+    res = _client.post(
         f"{SUPABASE_URL}/rest/v1/system_settings",
         headers={**_supabase_headers(), "Prefer": "resolution=merge-duplicates"},
         json={"key": payload.key, "value": payload.value, "updated_at": datetime.utcnow().isoformat()},
@@ -1069,7 +1092,7 @@ def _get_secret(key: str) -> Optional[str]:
 
 def _set_secret(key: str, value_hash: str, who: str) -> bool:
     try:
-        res = httpx.post(
+        res = _client.post(
             f"{SUPABASE_URL}/rest/v1/admin_secrets",
             headers={**_supabase_headers(), "Prefer": "resolution=merge-duplicates"},
             json={
