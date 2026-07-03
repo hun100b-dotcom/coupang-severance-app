@@ -75,18 +75,34 @@ async function main() {
     console.warn('[prerender] dist/index.html 없음 — 건너뜀'); return
   }
 
-  let puppeteer
-  try { puppeteer = (await import('puppeteer')).default }
-  catch (e) { console.warn('[prerender] ⚠️ puppeteer 로드 실패 — SPA로 진행:', e.message); return }
-
   const server = await startServer()
   let browser
   const results = [] // { route, html }
   try {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-    })
+    // 플랫폼 분기 launch:
+    //   - Vercel/CI(Linux): puppeteer-core + @sparticuz/chromium(서버리스 호환 크로미움).
+    //     번들 puppeteer 크로미움은 Vercel 빌드환경 공유라이브러리 부재로 실행 실패 →
+    //     @sparticuz 는 필요한 라이브러리를 포함한 크로미움을 제공.
+    //   - 로컬(Windows/Mac): puppeteer(풀) 번들 크로미움.
+    if (process.platform === 'linux') {
+      const puppeteerCore = (await import('puppeteer-core')).default
+      const chromium = (await import('@sparticuz/chromium')).default
+      const executablePath = await chromium.executablePath()
+      browser = await puppeteerCore.launch({
+        executablePath,
+        args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+        headless: chromium.headless,
+        defaultViewport: { width: 1280, height: 900 },
+      })
+      console.log('[prerender] chromium: @sparticuz (linux)')
+    } else {
+      const puppeteer = (await import('puppeteer')).default
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+      })
+      console.log('[prerender] chromium: puppeteer bundled (' + process.platform + ')')
+    }
     for (const route of ROUTES) {
       try {
         const page = await browser.newPage()
