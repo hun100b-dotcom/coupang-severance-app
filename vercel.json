@@ -3,7 +3,6 @@
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
   "framework": null,
-  "cleanUrls": true,
   "redirects": [
     { "source": "/home", "destination": "/", "permanent": false },
     { "source": "/landing", "destination": "/", "permanent": false }
