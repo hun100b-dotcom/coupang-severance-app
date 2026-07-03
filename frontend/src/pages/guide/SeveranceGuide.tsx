@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Calculator, ChevronRight } from 'lucide-react'
 import PageMeta from '../../components/PageMeta'
+import RelatedLinks from '../../components/seo/RelatedLinks'
 
 // ── Article JSON-LD (구글 기사 리치 스니펫) ──
 const ARTICLE_SCHEMA = {
@@ -611,6 +612,9 @@ export default function SeveranceGuide() {
             ← 전체 가이드 목록 보기
           </button>
         </motion.div>
+
+        {/* SEO 내부 링크 메시(P5) — 크롤 가능한 관련 계산기·랜딩 */}
+        <RelatedLinks current="/guide/severance" />
 
       </div>
     </div>
