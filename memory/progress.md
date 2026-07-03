@@ -6,6 +6,22 @@
 
 ---
 
+## 🔍 SEO 개선 P1~P5 완료 (2026-07-03, main 푸시·배포 완료)
+
+> 플랜: `docs/seo-improvement-plan.md`. 원칙 = **앱 코드 최소변경(프리렌더 스냅샷)** · 계산로직·운영DB·index.css 폰트 override 불변. 매 스텝 **더블리뷰 A(5축)+B(adversarial)** + 회귀측정 + `docs/dual_review/P*.md` 아카이브.
+
+- **P1 프리렌더**(`eac8bd3`→`e19ae79`): 순수 SPA라 크롤러가 빈 `<div id=root>`만 받던 문제 해결. `frontend/scripts/prerender.mjs` — 빌드 후 dist를 로컬서버로 띄우고 헤드리스 크롬(@sparticuz/chromium on Vercel)으로 공개 SEO 17라우트 렌더→`dist/<route>/index.html` 저장. **핵심 버그 2개 해결**: ①워치독이 파일기록 전 강제종료→라우트별 즉시기록(writeRoute) ②networkidle0 느림→'load'+settle 축소. 라이브 17/17 per-page title, 15/17 h1.
+- **P2 sitemap/robots**(`067bc99`): redirect·인증URL 제거, CFS 우선순위 0.95, 비공개경로 Disallow 보강.
+- **P3 구조화데이터**(`3b12c5e`): `PageMeta.tsx`의 JSON-LD가 `dangerouslySetInnerHTML`이라 helmet-async가 클라이언트 head 주입 시 누락 → **children 문자열 형식**으로 교체(캡처 복구). prerender: 비홈 라우트의 정적 홈FAQ/HowTo 제거(중복정리). 라이브 /cfs Article·FAQ, /guide/severance HowTo 노출.
+- **P4 H1**(`5d05a36`): weekly/annual 가이드 히어로 `h2→h1` 승격(h1=0 해소, 키워드 선두). **회귀 히스토그램 전/후 4라우트 0px 측정**. /severance 이중h1은 Google "다중h1 무해" 지침상 유지.
+- **P5 내부링크**(`5ac23ca`+`a9f29dc`): `components/seo/RelatedLinks.tsx` 신설(라우트별 링크맵→크롤가능 `<Link>`=`<a href>`). 랜딩6·가이드4 삽입 → 랜딩↔계산기↔가이드 메시 완성(랜딩 기존 크롤링크 0→3~4, weekly/annual 가이드 0→4).
+- **P6 GSC**: 종훈님 직접 수행 단계 → 가이드 `docs/seo-P6-gsc-guide.md`(사이트맵 제출·색인요청·리치결과 테스트·모니터링). 소유권 인증 메타는 이미 존재.
+
+**회귀 총괄(규칙3)**: 앱 소스 변경은 P3(PageMeta=head전용)·P4(가이드 h2→h1, 0px측정)·P5(추가전용)뿐, **index.css/tailwind/text-[Npx] override 무변경**. 계산로직·운영DB 불변.
+**남은 것**: P6는 종훈님 GSC 클릭 대기. 1~2주 후 실적 보고 시 P4 키워드 심화 2차 튜닝.
+
+---
+
 ## 🔒 보안 하드닝 V1~V6 (2026-06-30, main 푸시 완료 `6e785f1`)
 
 > 근거: `docs/CATCH_전체보고_및_보안진단_2026-06-30.md`. 라이브 Supabase Advisor 실측 기반 V1~V6 조치. 원칙 = "잠그기 전 코드 경로 영향 확인"(grep으로 미사용 실증 후 차단). 더블리뷰 A·B(자체+독립 에이전트) 모두 PASS·BLOCKER 0 → `docs/dual_review/security_hardening_{A,B}.md`.
