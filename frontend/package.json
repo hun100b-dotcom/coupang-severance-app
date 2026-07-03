@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/prerender.mjs",
+    "build": "tsc -b && vite build && (node scripts/prerender.mjs || echo \"[build] prerender skipped\")",
     "preview": "vite preview",
     "prerender": "node scripts/prerender.mjs"
   },

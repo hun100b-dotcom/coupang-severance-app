@@ -16,6 +16,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const DIST = path.resolve(__dirname, '..', 'dist')
 const PORT = 4321
 
+// ★워치독: 어떤 이유로든(크로미움 launch 행·네비게이션 무한대기 등) 스크립트가
+//   끝나지 않아 Vercel 빌드가 멈추는 것을 방지. 제한 시간 초과 시 강제 종료(exit 0).
+//   .unref() 로 정상 완료 시엔 이 타이머가 프로세스를 붙잡지 않는다.
+const WATCHDOG_MS = 150000
+setTimeout(() => {
+  console.warn(`[prerender] ⏱️ 워치독 ${WATCHDOG_MS}ms 초과 — 강제 종료(빌드 계속). SPA 폴백.`)
+  process.exit(0)
+}, WATCHDOG_MS).unref()
+
 // 프리렌더 대상 — 공개·정적 SEO 콘텐츠 라우트만(인증/관리자/동적 제외)
 const ROUTES = [
   '/',
