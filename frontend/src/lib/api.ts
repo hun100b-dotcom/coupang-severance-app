@@ -538,11 +538,50 @@ export const createTemplate = (body: { title: string; content: string; category?
 export const deleteTemplate = (id: string) =>
   api.delete(`/admin/templates/${id}`, { headers: H() }).then(r => r.data)
 
+// 템플릿 사용수 +1 — 백엔드 라우트는 이전부터 있었지만 프론트가 호출하지 않아
+// use_count가 항상 0이던 미연동(2026-07-04 전수조사). 답변에 템플릿 적용 시 호출.
+export const markTemplateUsed = (id: string) =>
+  api.post(`/admin/templates/${id}/use`, {}, { headers: H() }).then(r => r.data)
+
+// ── CMS 배너 (공개 — 인증 불필요, 사용자 홈 소비) ──
+// 어드민 "공지/배너 CMS" 저장값을 홈 긴급공지 띠 + 진입 팝업이 읽는다.
+export interface CmsBannersData {
+  announcement_text: string
+  announcement_enabled: boolean
+  popup_banner_text: string
+  popup_banner_enabled: boolean
+}
+export const getCmsBanners = (): Promise<CmsBannersData> =>
+  api.get('/cms/banners').then(r => r.data)
+
 // Settings
 export const getSettings = () =>
   api.get('/admin/settings', { headers: H() }).then(r => r.data)
 export const patchSetting = (key: string, value: string) =>
   api.patch('/admin/settings', { key, value }, { headers: H() }).then(r => r.data)
+
+// 법정 변수 (legal_variables 테이블 — 계산기가 실제로 읽는 값)
+// ⚠️ 과거 어드민 위젯은 system_settings의 minimum_wage_* 키에 저장해 계산기에 반영되지
+//    않는 미연동 상태였다(2026-07-04 전수조사). 이제 실소비 테이블을 직접 편집한다.
+export interface LegalVariable {
+  id: string
+  key: string
+  value: number
+  effective_year: number
+  label: string | null
+  unit: string | null
+  notes: string | null
+  updated_at: string | null
+}
+export const getLegalVariables = (): Promise<{ variables: LegalVariable[] }> =>
+  api.get('/admin/legal-variables', { headers: H() }).then(r => r.data)
+export const patchLegalVariable = (
+  key: string, effectiveYear: number, value: number, adminEmail?: string,
+) =>
+  api.patch('/admin/legal-variables',
+    { key, effective_year: effectiveYear, value, admin_email: adminEmail || undefined },
+    { headers: H() }).then(r => r.data)
+
 export const getBlockedIps = () =>
   api.get('/admin/blocked-ips', { headers: H() }).then(r => r.data)
 export const blockIp = (body: object) =>

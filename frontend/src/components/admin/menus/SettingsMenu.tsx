@@ -326,7 +326,8 @@ export default function SettingsMenu({ isSuperAdmin }: Props) {
         {/* 공통 설정 */}
         <DiscordSettings settings={settings} onRefresh={loadSettings} />
         <CmsSettings settings={settings} onRefresh={loadSettings} />
-        <LegalVariables settings={settings} onRefresh={loadSettings} />
+        {/* 법정변수는 legal_variables 테이블 직접 편집(자체 로드) — system_settings와 무관 */}
+        <LegalVariables />
         <IpBlockManager ips={ips} onRefresh={loadIps} />
 
         {/* 슈퍼어드민 전용 섹션 */}

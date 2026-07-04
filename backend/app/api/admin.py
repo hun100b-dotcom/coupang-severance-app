@@ -841,7 +841,7 @@ def patch_inquiry_status(
                     {"status": payload.status, "updated_at": datetime.utcnow().isoformat()})
     if res.status_code not in (200, 204):
         raise HTTPException(status_code=res.status_code, detail="상태 변경 실패")
-    _write_audit(x_admin_token or "admin", "inquiry.status", "inquiry", inquiry_id,
+    _write_audit("admin", "inquiry.status", "inquiry", inquiry_id,
                  before_val={"status": old_status}, after_val={"status": payload.status},
                  ip=request.client.host if request.client else None)
     return {"ok": True}
@@ -862,7 +862,7 @@ def patch_inquiry_answer(
                      "answered_at": now_iso, "updated_at": now_iso})
     if res.status_code not in (200, 204):
         raise HTTPException(status_code=res.status_code, detail="답변 등록 실패")
-    _write_audit(x_admin_token or "admin", "inquiry.answer", "inquiry", inquiry_id,
+    _write_audit("admin", "inquiry.answer", "inquiry", inquiry_id,
                  after_val={"answer_length": len(payload.answer)},
                  ip=request.client.host if request.client else None)
     return {"ok": True}
@@ -892,7 +892,7 @@ def bulk_inquiry_status(
     with ThreadPoolExecutor(max_workers=min(len(payload.ids), 5)) as pool:
         list(pool.map(patch_one, payload.ids))
 
-    _write_audit(x_admin_token or "admin", "inquiry.status", "inquiry",
+    _write_audit("admin", "inquiry.status", "inquiry",
                  ",".join(payload.ids[:5]),
                  after_val={"status": payload.status, "count": len(payload.ids),
                             "failed": len(failed)},
@@ -929,7 +929,7 @@ def create_template(
                    {"title": payload.title, "content": payload.content, "category": payload.category})
     if res.status_code not in (200, 201):
         raise HTTPException(status_code=res.status_code, detail="템플릿 생성 실패")
-    _write_audit(x_admin_token or "admin", "template.create", "template", None,
+    _write_audit("admin", "template.create", "template", None,
                  after_val={"title": payload.title},
                  ip=request.client.host if request.client else None)
     return {"ok": True}
@@ -945,7 +945,7 @@ def delete_template(
     res = _sb_delete("inquiry_templates", {"id": f"eq.{template_id}"})
     if res.status_code not in (200, 204):
         raise HTTPException(status_code=res.status_code, detail="템플릿 삭제 실패")
-    _write_audit(x_admin_token or "admin", "template.delete", "template", template_id,
+    _write_audit("admin", "template.delete", "template", template_id,
                  ip=request.client.host if request.client else None)
     return {"ok": True}
 
@@ -991,10 +991,83 @@ def patch_setting(
     )
     if res.status_code not in (200, 201):
         raise HTTPException(status_code=res.status_code, detail="설정 저장 실패")
-    _write_audit(x_admin_token or "admin", "settings.update", "settings", payload.key,
+    # ⚠️ 과거엔 여기(및 감사기록 전반)에 x_admin_token(관리자 시크릿 원문)을 admin_email로
+    #    기록해 감사로그 UI에 시크릿이 노출됐다(2026-07-04 전수조사 발견). 토큰은 공유값이라
+    #    식별 정보도 아니므로 고정 문자열 "admin"으로 기록한다.
+    _write_audit("admin", "settings.update", "settings", payload.key,
                  before_val={"value": old_val}, after_val={"value": payload.value},
                  ip=request.client.host if request.client else None)
     return {"ok": True}
+
+
+# ── Legal Variables (법정 변수 — 계산기가 실제로 읽는 legal_variables 테이블 직접 관리) ──
+# 배경(2026-07-04 어드민 연동 전수조사): 기존 어드민 "법정 변수 관리" 위젯은
+# system_settings의 minimum_wage_* 키에 저장했지만, 4개 계산기(퇴직금/실업급여/주휴/연차)는
+# legal_variables 테이블(key + effective_year)을 읽는다 → 어드민 편집이 사용자 계산에
+# 전혀 반영되지 않는 "죽은 위젯"이었다. 이 엔드포인트로 실소비 테이블을 직접 관리한다.
+
+@router.get("/admin/legal-variables")
+def get_legal_variables(x_admin_token: Optional[str] = Header(default=None)):
+    """법정 변수 전체 목록 (연도별) — 계산기 실소비 테이블"""
+    _check_admin(x_admin_token)
+    res = _sb_get("legal_variables", {
+        "select": "id,key,value,effective_year,label,unit,notes,updated_at",
+        "order": "key.asc,effective_year.desc",
+    })
+    if res.status_code != 200:
+        # 가짜 빈 목록 금지 — 업스트림 장애는 명시적 502 (리뷰어 B 원칙과 동일)
+        raise HTTPException(status_code=502, detail="법정 변수 조회 실패 (Supabase 응답 오류)")
+    return {"variables": res.json()}
+
+
+class LegalVarPayload(BaseModel):
+    key: str                 # 예: min_hourly_wage
+    effective_year: int      # 예: 2026
+    value: float             # 새 값 (원 단위)
+    admin_email: Optional[str] = None  # 감사기록 who (프론트 로그인 세션 이메일)
+
+
+@router.patch("/admin/legal-variables")
+def patch_legal_variable(
+    payload: LegalVarPayload,
+    request: Request,
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    """법정 변수 값 수정 (key + effective_year 단위) — service-role이라 RLS 무관 실동작"""
+    _check_admin(x_admin_token)
+    params = {
+        "key": f"eq.{payload.key}",
+        "effective_year": f"eq.{payload.effective_year}",
+    }
+    # 변경 전 값 조회 (감사기록용 + 존재 검증)
+    old_res = _sb_get("legal_variables", {"select": "value", **params})
+    old_rows = old_res.json() if old_res.status_code == 200 else []
+    if not old_rows:
+        raise HTTPException(status_code=404, detail=f"{payload.effective_year}년 {payload.key} 항목이 없습니다")
+    old_val = old_rows[0].get("value")
+
+    # return=representation으로 실제 변경된 행을 돌려받아 0행 무음 성공을 차단
+    res = _client.patch(
+        f"{SUPABASE_URL}/rest/v1/legal_variables",
+        headers={**_supabase_headers(), "Prefer": "return=representation"},
+        params=params,
+        json={
+            # updated_by 컬럼은 uuid 타입(auth.users 참조)이라 이메일을 넣으면 400 —
+            # "누가 바꿨는지"는 audit_logs(admin_email)가 담당하므로 여기선 값만 갱신한다.
+            "value": payload.value,
+            "updated_at": datetime.utcnow().isoformat(),
+        },
+        timeout=10,
+    )
+    rows = res.json() if res.status_code in (200, 201) else []
+    if not rows:
+        raise HTTPException(status_code=502, detail="법정 변수 저장 실패 (변경된 행 없음)")
+
+    _write_audit(payload.admin_email or "admin", "legal_variable.update", "legal_variables",
+                 f"{payload.key}:{payload.effective_year}",
+                 before_val={"value": old_val}, after_val={"value": payload.value},
+                 ip=request.client.host if request.client else None)
+    return {"ok": True, "variable": rows[0]}
 
 
 # ── 회원 관리 (서버측 마스킹 + 단건 평문 해제) ────────────
@@ -1632,7 +1705,7 @@ def block_ip(
     })
     if res.status_code not in (200, 201):
         raise HTTPException(status_code=res.status_code, detail="IP 차단 실패")
-    _write_audit(x_admin_token or "admin", "ip.block", "ip", payload.ip_address,
+    _write_audit("admin", "ip.block", "ip", payload.ip_address,
                  after_val={"reason": payload.reason},
                  ip=request.client.host if request.client else None)
     return {"ok": True}
@@ -1650,7 +1723,7 @@ def unblock_ip(
     res = _sb_delete("blocked_ips", {"id": f"eq.{blocked_id}"})
     if res.status_code not in (200, 204):
         raise HTTPException(status_code=res.status_code, detail="차단 해제 실패")
-    _write_audit(x_admin_token or "admin", "ip.unblock", "ip", ip_addr,
+    _write_audit("admin", "ip.unblock", "ip", ip_addr,
                  ip=request.client.host if request.client else None)
     return {"ok": True}
 
@@ -1751,7 +1824,7 @@ def create_notice(
     if res.status_code not in (200, 201):
         raise HTTPException(status_code=res.status_code, detail="공지 추가 실패")
     created = (res.json() or [{}])[0]
-    _write_audit(x_admin_token or "admin", "notice.create", "notice", created.get("id"),
+    _write_audit("admin", "notice.create", "notice", created.get("id"),
                  after_val={"title": payload.title, "priority": payload.priority,
                             "is_active": payload.is_active},
                  ip=request.client.host if request.client else None)
@@ -1780,7 +1853,7 @@ def update_notice(
     updated = res.json() if res.status_code == 200 else []
     if not updated:
         raise HTTPException(status_code=404, detail="대상 공지를 찾을 수 없습니다.")
-    _write_audit(x_admin_token or "admin", "notice.update", "notice", notice_id,
+    _write_audit("admin", "notice.update", "notice", notice_id,
                  after_val={k: v for k, v in patch.items() if k != "updated_at"},
                  ip=request.client.host if request.client else None)
     return {"ok": True, "notice": updated[0]}
@@ -1799,7 +1872,7 @@ def delete_notice(
     deleted = res.json() if res.status_code == 200 else []
     if not deleted:
         raise HTTPException(status_code=404, detail="대상 공지를 찾을 수 없습니다.")
-    _write_audit(x_admin_token or "admin", "notice.delete", "notice", notice_id,
+    _write_audit("admin", "notice.delete", "notice", notice_id,
                  before_val={"title": (deleted[0] or {}).get("title")},
                  ip=request.client.host if request.client else None)
     return {"ok": True}
