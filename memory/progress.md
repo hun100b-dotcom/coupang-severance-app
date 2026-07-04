@@ -6,6 +6,25 @@
 
 ---
 
+## 🔗 어드민 기능·연동 전수조사 3차 (2026-07-04, main 4커밋 푸시)
+
+> 지시: 어드민 전 요소의 실사용 반영·실작동·사용자홈 양방향 연동 전수 체크 후 FIX. 보고서: `docs/audit/admin_link_audit_2026-07-04.md`. 듀얼리뷰 스텝별 아카이브 `docs/dual_review/adminlink_step{1,2,3_4}_*.md` (전부 PASS).
+
+**정상 실증**: 백엔드 어드민 API 15/15 라이브 200+실JSON(웜 0.2~1.1s) · 공지/채용/문의/지원상태/클릭카운터 연동 체인 컬럼 단위 일치 · anon RLS(사용자측 읽기 5테이블 가능, PII 차단).
+
+**발견·수정 6건**:
+1. (P0, `53e88f7`) **알림 배지 영영 0** — MyPage가 notifications `read` 참조(실컬럼 `is_read`) → 400 무음. 어드민 확정/거절 알림이 사용자 배지에 안 뜨던 연동 단절.
+2. (P0, `257327f`) **법정변수 죽은 위젯** — 어드민은 system_settings(minimum_wage_*)에 저장, 계산기는 legal_variables 소비(소비처 0 실증) → 신설 GET/PATCH `/admin/legal-variables`(502/404 게이트, 0행 무음 차단) + 위젯 재작성. ⚠️ legal_variables.updated_by는 uuid라 이메일 기록 불가(감사는 audit_logs 담당).
+3. (P0 보안, `257327f`) **감사로그 시크릿 유출** — `_write_audit(x_admin_token …)` 11곳이 토큰 원문을 admin_email로 기록(라이브 유출 7행 실측) → "admin" 고정. **유출 행 스크럽은 종훈님 결정 대기**(감사 이력 수정 트레이드오프): `UPDATE audit_logs SET admin_email='admin' WHERE admin_email='<관리자토큰>';`
+4. (P0, `13ffe29`) **CMS 배너/팝업 거짓 약속 위젯** — "저장 즉시 홈 반영" 문구에도 소비처 0 → 공개 `GET /api/cms/banners`(4키 화이트리스트·60s 캐시·sync def 스레드풀) + 홈 긴급공지 띠 + 진입 팝업(24h 보지않기). 로컬 E2E 실측(띠·팝업·억제지속·콘솔0). 프리렌더는 /cms/banners 차단(SEO 오염 예방). **라이브 테스트 문구("Test"/"TEST") 노출 방지 위해 enabled 플래그 false로 꺼둠 — 어드민 설정>CMS에서 켜면 1분 내 홈 반영.**
+5. (P1, `53e88f7`) 즐겨찾기 탭만 만료 공고 필터 누락 → JobsPage와 동일 필터.
+6. (P2, `14b84dc`) 템플릿 use_count 항상 0(백엔드 라우트 미호출) → 적용 시 +1 연동.
+
+**버그 아님 판정**: 감사로그 "unknown" 1건=이전 세션 curl 흔적 · Target 메뉴=조회 전용 설계 · referral_codes 테이블 부재=코드 참조 0.
+**남은 것(비차단)**: ①audit_logs 유출 7행 스크럽(종훈님 결정) ②system_settings anon 전체읽기 축소(DDL, 후속 마이그레이션) ③20260603_legal_variables.sql 라이브 드리프트 IaC 정합 ④notifications UPDATE 정책 라이브 스모크(마이페이지 배지 읽음 처리 유지 확인) ⑤system_settings 고아 키 minimum_wage_* 삭제(선택).
+
+---
+
 ## ⚡ 어드민 성능 전수조사 2차 (2026-07-04, main `d64f44d`·`15a5140` 푸시)
 
 > 증상 재발(1차 배포됐는데도 로딩 느림·탭별 느림·"연결 불가"). 라이브 실측으로 남은 근본원인 재발굴. 보고서: `docs/audit/admin_perf_audit_2026-07-04b.md`. 더블리뷰 A+B 스텝별 아카이브(`docs/dual_review/adminperf_step{1,2}_*.md`).
