@@ -53,7 +53,7 @@ export default function MyPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('home')
 
   // ── C-4: 미읽음 알림 카운트 (지원현황 탭 빨간 점 배지용) ──
-  // notifications 테이블에서 read=false 건 수를 실시간으로 구독
+  // notifications 테이블에서 is_read=false 건 수를 실시간으로 구독
   const [unreadNotifCount, setUnreadNotifCount] = useState(0)
 
   // ── 모달 상태
@@ -129,7 +129,9 @@ export default function MyPage() {
   }, [user])
 
   // ── C-4: 미읽음 알림 초기 카운트 로드 + Realtime 구독 ──
-  // notifications 테이블에서 read=false 건수를 실시간 감지
+  // notifications 테이블에서 is_read=false 건수를 실시간 감지
+  // ⚠️ 실제 DB 컬럼명은 is_read (과거 'read'로 잘못 조회해 400 에러가 무음 처리되며
+  //    배지가 영영 안 뜨던 버그 — 2026-07-04 어드민 연동 전수조사에서 수정)
   useEffect(() => {
     if (!supabase || !isLoggedIn || !user) return
     const sb = supabase
@@ -141,7 +143,7 @@ export default function MyPage() {
         .from('notifications')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', userId)
-        .eq('read', false)
+        .eq('is_read', false)
       setUnreadNotifCount(count ?? 0)
     }
     loadUnread()
@@ -164,14 +166,14 @@ export default function MyPage() {
     return () => { sb.removeChannel(channel) }
   }, [isLoggedIn, user])
 
-  // ── C-4: 지원현황 탭 클릭 시 모든 알림 read=true 처리 ──
+  // ── C-4: 지원현황 탭 클릭 시 모든 알림 is_read=true 처리 ──
   const markNotificationsRead = async () => {
     if (!supabase || !isLoggedIn || !user) return
     await supabase
       .from('notifications')
-      .update({ read: true })
+      .update({ is_read: true })
       .eq('user_id', user.raw.id)
-      .eq('read', false)
+      .eq('is_read', false)
     setUnreadNotifCount(0)
   }
 

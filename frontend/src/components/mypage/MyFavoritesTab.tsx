@@ -55,11 +55,14 @@ export default function MyFavoritesTab({ userId }: Props) {
 
       if (companyNames.length === 0) { setJobs([]); return }
 
+      // 만료된 공고 제외 (채용탭 JobsPage·홈 프리뷰와 동일 기준 — 한국시간 오늘 이후 or 무기한)
+      const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })
       const { data, error } = await supabase
         .from('job_postings')
         .select('*')
         .in('company_name', companyNames)
         .eq('status', 'active')
+        .or(`expires_at.gte.${todayStr},expires_at.is.null`)
         .order('is_urgent', { ascending: false })
         .order('created_at', { ascending: false })
 
