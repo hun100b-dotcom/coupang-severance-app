@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { AdminInquiry, InquiryTemplate } from '../../../types/admin'
 import { UP, RADIUS, badge, btnPrimary } from '../shared/adminTheme'
+import { markTemplateUsed } from '../../../lib/api'
 
 interface Props {
   inquiry: AdminInquiry
@@ -147,7 +148,11 @@ export default function InquiryDetailPanel({ inquiry, templates, onClose, onStat
               {templates.map(t => (
                 <button
                   key={t.id}
-                  onClick={() => setAnswer(t.content)}
+                  onClick={() => {
+                    setAnswer(t.content)
+                    // 사용수 +1 (미연동이던 백엔드 라우트 연결 — 실패해도 답변 작성엔 영향 없음)
+                    markTemplateUsed(t.id).catch(() => {})
+                  }}
                   className="text-a11" style={{
                     padding: '4px 10px',
                     borderRadius: 999,
