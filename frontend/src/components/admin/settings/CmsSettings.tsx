@@ -38,7 +38,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
     // 성공한 키도 있으니 항상 재조회로 화면-DB 동기화
     onRefresh()
     if (failedKeys.length === 0) {
-      setMsg({ text: '✅ 저장 완료. 홈 화면에 즉시 반영됩니다.', ok: true })
+      setMsg({ text: '✅ 저장 완료. 홈 화면에 약 1분 내 반영됩니다.', ok: true })
     } else {
       setMsg({
         text: `❌ 일부 저장 실패: ${failedKeys.join(', ')} (${entries.length - failedKeys.length}/${entries.length} 저장됨). 다시 저장해주세요.`,
@@ -65,7 +65,7 @@ export default function CmsSettings({ settings, onRefresh }: Props) {
     <div style={cardStyle}>
       <p style={titleStyle}>공지/배너 CMS</p>
       <p className="text-a11" style={{ color: UP.sub, marginBottom: 16, marginTop: -8 }}>
-        저장 즉시 홈 화면에 반영 (백엔드 경유 저장)
+        저장 후 약 1분 내 홈 화면에 반영 (백엔드 경유 저장, 공개 API 60초 캐시)
       </p>
 
       {/* 긴급 공지 배너 */}

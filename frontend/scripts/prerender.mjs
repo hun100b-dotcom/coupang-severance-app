@@ -124,6 +124,14 @@ async function main() {
       try {
         const page = await browser.newPage()
         await page.setViewport({ width: 1280, height: 900 })
+        // ★CMS 배너 차단: 어드민 배너/팝업(공개 API /cms/banners)이 켜진 상태로 빌드하면
+        //   긴급공지 띠·팝업 오버레이가 SEO 스냅샷에 박제될 수 있다(2026-07-04 리뷰어 B).
+        //   프리렌더에서는 해당 요청만 차단해 배너 없는 청정 스냅샷을 보장한다.
+        await page.setRequestInterception(true)
+        page.on('request', req => {
+          if (req.url().includes('/cms/banners')) req.abort().catch(() => {})
+          else req.continue().catch(() => {})
+        })
         // ★대기 전략: networkidle0(네트워크 완전정지 500ms)는 Supabase/폰트/카카오 등
         //   상시 연결 때문에 서버리스에서 라우트당 15~24s로 과도하게 느림 → 워치독 초과.
         //   'load'(문서 로드 완료) + 콘텐츠 셀렉터 대기 + 짧은 settle 로 라우트당 2~4s 로 단축.

@@ -16,6 +16,8 @@ import { INTRO_COPIES } from '../lib/constants'
 import { supabase } from '../lib/supabase'
 import { useNotices } from '../hooks/useNotices'
 import { consumePendingSaveDone } from '../lib/pendingSave'
+// 어드민 CMS(긴급공지 띠 + 진입 팝업) 실소비 — 2026-07-04 연동 전수조사 신설
+import { AnnouncementBar, PopupBanner, useCmsBanners } from '../components/CmsBanners'
 
 // ─────────────────────────────────────────────────────────────
 // 🎨 업비트풍 시안 전용 로컬 색 토큰 (홈 시안 범위에서만 인라인)
@@ -96,6 +98,8 @@ export default function Home() {
   const navigate = useNavigate()
   const reduceMotion = useReducedMotion()
   const { notices } = useNotices()
+  // 어드민 CMS 배너 (긴급공지 띠 + 진입 팝업) — 실패 시 null이라 홈 렌더 영향 없음
+  const cmsBanners = useCmsBanners()
   const [count, setCount] = useState(0)
   const [countLoaded, setCountLoaded] = useState(false)
   const [copyIdx, setCopyIdx] = useState(0)
@@ -251,6 +255,10 @@ export default function Home() {
       <TopNav />
 
       <main className="relative z-[1] min-h-screen pt-14 pb-[96px] md:pb-0" style={{ background: UP.page }}>
+
+        {/* ── 어드민 CMS: 긴급 공지 띠 (활성+문구 있을 때만) + 진입 팝업 ── */}
+        <AnnouncementBar data={cmsBanners} />
+        <PopupBanner data={cmsBanners} />
 
         {/* ── SEO 메타 (원본 보존) ── */}
         <PageMeta
