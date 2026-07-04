@@ -36,10 +36,22 @@ async def register_click(service: str):
 # 인증 없음(공개) · 60초 인메모리 캐시(방문마다 DB 호출 방지) · 실패 시 배너 OFF
 # 기본값으로 안전 저하(홈 렌더를 막지 않는다).
 
-_CMS_SUPABASE_URL = os.getenv("SUPABASE_URL", "https://hmjxrqhcwjyfkvlcejfc.supabase.co")
+# Render 환경변수 오타 방어 — admin.py·counter.py와 동일 패턴.
+# 라이브 최초 배포에서 이 방어가 없던 탓에 Supabase 조회가 실패해
+# 배너가 항상 OFF 기본값으로 떨어지는 문제가 실측됨(2026-07-04).
+_CMS_PROJECT_ID  = "hmjxrqhcwjyfkvlcejfc"
+_CMS_CORRECT_URL = f"https://{_CMS_PROJECT_ID}.supabase.co"
+_cms_env_url = os.getenv("SUPABASE_URL", "").rstrip("/")
+_CMS_SUPABASE_URL = _cms_env_url if _CMS_PROJECT_ID in _cms_env_url else _CMS_CORRECT_URL
+_CMS_DEFAULT_ANON_KEY = (
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtanhycWhjd2p5Zmt2bGNlamZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTEwNTMsImV4cCI6MjA4ODYyNzA1M30"
+    ".gr9poC-5808qHRoYc-5WH3dTqXupEEJpDdztv2fddog"
+)
 _CMS_SUPABASE_KEY = (
     os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-    or os.getenv("SUPABASE_ANON_KEY", "")
+    or os.getenv("SUPABASE_ANON_KEY")
+    or _CMS_DEFAULT_ANON_KEY   # anon도 system_settings 읽기 가능(RLS 실측) — 최후 폴백
 )
 _CMS_KEYS = ("announcement_text", "announcement_enabled",
              "popup_banner_text", "popup_banner_enabled")
