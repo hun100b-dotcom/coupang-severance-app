@@ -540,30 +540,49 @@ def visitor_stats(
         except Exception:
             return None
 
-    # 상세 집계용 행(경로·유입·최근·세션/회원 distinct). 상한 5만(초기 볼륨엔 사실상 전수).
-    FETCH_CAP = 50000
-    def fetch_rows():
-        try:
-            return _sb_get("visitor_logs", {
-                "select": "session_id,user_id,page_path,referrer,created_at",
-                "created_at": f"gte.{range_gte}",
-                "order": "created_at.desc",
-                "limit": str(FETCH_CAP),
-            })
-        except Exception:
-            return None
-
-    with ThreadPoolExecutor(max_workers=3) as pool:
+    # 총량/오늘 count 는 먼저 병렬로(정확 총량 확보)
+    with ThreadPoolExecutor(max_workers=2) as pool:
         total_fut = pool.submit(count_exact, range_gte)
         today_fut = pool.submit(count_exact, today_gte)
-        rows_fut = pool.submit(fetch_rows)
-        total_pv, today_pv, rows_res = total_fut.result(), today_fut.result(), rows_fut.result()
+        total_pv, today_pv = total_fut.result(), today_fut.result()
 
-    # ★ 가짜 0 금지: 업스트림 장애 시 빈 0 이 아니라 명시적 502 로 알려 프론트가 에러를 띄운다.
-    if rows_res is None or rows_res.status_code not in (200, 206):
-        raise HTTPException(status_code=502, detail="방문자 로그 조회 실패(업스트림)")
-    rows = rows_res.json()
-    truncated = len(rows) >= FETCH_CAP
+    # 상세 집계용 행을 '페이지네이션'으로 전수 수집한다.
+    #   ⚠️ 핵심: PostgREST(Supabase)는 요청당 최대 1000행만 반환한다(max-rows 기본값). 따라서
+    #      limit=50000 을 줘도 실제로는 1000행만 와서 순방문자·인기페이지가 다시 1000 기준으로
+    #      집계되는 '허수'가 재발한다. → offset 페이지네이션(1000씩)으로 실제 전 행을 받는다.
+    PAGE = 1000
+    MAX_PAGES = 60          # 안전 상한 6만 행(그 이상은 truncated 로 정직 표기)
+    def fetch_page(offset: int):
+        return _sb_get("visitor_logs", {
+            "select": "session_id,user_id,page_path,referrer,created_at",
+            "created_at": f"gte.{range_gte}",
+            "order": "created_at.desc,id.desc",   # 안정 정렬(동시각 페이지경계 흔들림 완화)
+            "offset": str(offset),
+            "limit": str(PAGE),
+        })
+
+    rows: list[dict] = []
+    truncated = False
+    for page_idx in range(MAX_PAGES):
+        try:
+            res = fetch_page(page_idx * PAGE)
+        except Exception:
+            # 첫 페이지부터 실패면 가짜 0 금지 위해 502, 중간 실패면 지금까지로 집계(부분 정직)
+            if page_idx == 0:
+                raise HTTPException(status_code=502, detail="방문자 로그 조회 실패(업스트림)")
+            break
+        if res.status_code not in (200, 206):
+            if page_idx == 0:
+                raise HTTPException(status_code=502, detail=f"방문자 로그 조회 실패(업스트림 HTTP {res.status_code})")
+            break
+        batch = res.json()
+        rows.extend(batch)
+        if len(batch) < PAGE:
+            break                                  # 마지막 페이지 도달 = 전수 수집 완료
+        if total_pv is not None and len(rows) >= total_pv:
+            break                                  # 정확 총량만큼 모았으면 종료
+    else:
+        truncated = True                           # MAX_PAGES 소진 = 상한 도달(6만행 초과)
 
     sessions: set[str] = set()
     members: set[str] = set()
