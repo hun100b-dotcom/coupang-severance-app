@@ -450,7 +450,9 @@ def admin_analytics(
 # ── 방문자 유입경로 분류 (referrer → 채널) ─────────────────────────────────
 # document.referrer(직전 페이지 URL)를 사람이 읽을 채널명으로 분류한다.
 #   프론트/백엔드가 같은 규칙을 써야 표기가 일관되므로 백엔드를 단일 기준으로 삼는다.
-_APP_HOSTS = ("catch-daily-worker", "localhost", "127.0.0.1")
+# 앱 자체 도메인(현행·구 도메인 모두) — referrer 가 아래면 '앱 내 이동'으로 본다.
+#   catch-daily-worker: 현 프로덕션 / coupang-severance-app: 구 프론트·API 도메인(라이브 유입 확인)
+_APP_HOSTS = ("catch-daily-worker", "coupang-severance-app", "localhost", "127.0.0.1")
 def _classify_referrer(ref: Optional[str]) -> str:
     if not ref:
         return "직접 방문"          # referrer 없음 = 주소창 직접 입력/북마크/앱 등
