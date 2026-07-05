@@ -23,8 +23,20 @@ type SaveState = 'idle' | 'saving' | 'saved' | 'login_required' | 'error'
 export default function ResultUnemployment({ result, company, onReset }: Props) {
   const navigate = useNavigate()
   const [saveState, setSaveState] = useState<SaveState>('idle')
-  const { eligible_180, insured_days_in_18m, avg_daily_wage, daily_benefit, days, total_estimate, days_last_month } = result
+  const { eligible_180, insured_days_in_18m, avg_daily_wage, daily_benefit, days, total_estimate, days_last_month, bound_applied } = result
   const eligible = eligible_180
+
+  // ── 구직급여일액 상·하한 적용 안내 (2026 상한 68,100 / 하한 66,048원) ──
+  // 원칙은 평균일급의 60%지만, 그 값이 하한액보다 낮으면 하한액까지 올려주고
+  // 상한액을 넘으면 상한액에서 멈춘다. 라벨과 안내 문구를 상황에 맞게 표시한다.
+  const benefitLabel =
+    bound_applied === 'lower' ? '실업급여 일당 (하한액 적용, 세전)'
+    : bound_applied === 'upper' ? '실업급여 일당 (상한액 적용, 세전)'
+    : '실업급여 일당 약 60% (세전)'
+  const boundNote =
+    bound_applied === 'lower' ? '평균일급의 60%가 법정 하한액보다 낮아, 하루 하한액이 적용됐어요.'
+    : bound_applied === 'upper' ? '평균일급의 60%가 법정 상한액을 넘어, 하루 상한액(68,100원)이 적용됐어요.'
+    : ''
 
   // 카카오톡 공유 훅 초기화
   const { shareUnemployment } = useKakaoShare()
@@ -125,7 +137,7 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
           <h3 className="heading-md" style={{ marginBottom: 16 }}>상세 내역</h3>
           {[
             { label: '평균 일당 (세전)', value: fmt(Math.round(avg_daily_wage)) },
-            { label: '실업급여 일당 약 60% (세전)', value: fmt(Math.round(daily_benefit)) },
+            { label: benefitLabel, value: fmt(Math.round(daily_benefit)) },
             { label: '수급 가능 일수', value: `${days}일` },
             { label: '18개월 내 가입일수', value: `${insured_days_in_18m}일` },
             ...(days_last_month !== undefined ? [{ label: '최근 1개월 근로일수', value: `${days_last_month}일` }] : []),
@@ -135,6 +147,12 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
               <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--toss-text)' }}>{row.value}</span>
             </div>
           ))}
+          {/* 상·하한 적용 안내 (해당 시에만) */}
+          {eligible && boundNote && (
+            <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(49,130,246,0.06)', borderRadius: 10, fontSize: '0.8rem', color: '#1e3a5f', fontWeight: 600, lineHeight: 1.5 }}>
+              ⚖️ {boundNote}
+            </div>
+          )}
         </GlassCard>
 
         {/* 수급 기간 시각화 */}

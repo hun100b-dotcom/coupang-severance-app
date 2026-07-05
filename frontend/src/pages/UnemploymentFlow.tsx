@@ -118,6 +118,8 @@ export default function UnemploymentFlow() {
 
   const [insuredDays, setInsuredDays] = useState('')
   const [avgWage, setAvgWage] = useState('')
+  // 1일 소정근로시간 — 실업급여 하한액(최저구직급여일액) 산정용. 기본 8시간(일용직 표준 근무일).
+  const [dailyHours, setDailyHours] = useState('8')
 
   const go = (step: Step) => setS(p => ({ ...p, step, failed: false, failReason: '' }))
   const reset = () => {
@@ -126,6 +128,7 @@ export default function UnemploymentFlow() {
     setEndDate('')
     setInsuredDays('')
     setAvgWage('')
+    setDailyHours('8')
     setError('')
     setPdfCompanies([])
     setSelectedPdfCompany(null)
@@ -217,6 +220,8 @@ export default function UnemploymentFlow() {
     fd.append('company_other', selectedPdfCompany ?? '')
     if (endDate) fd.append('end_date', endDate)
     fd.append('age_50', String(s.age50))
+    // 1일 소정근로시간 — 하한액 산정용(빈값·비정상 입력은 8시간으로 방어)
+    fd.append('daily_hours', String(parseFloat(dailyHours) > 0 ? parseFloat(dailyHours) : 8))
     const [res] = await Promise.allSettled([
       calcUBPrecise(fd),
       new Promise(r => setTimeout(r, 3000)),
@@ -242,8 +247,9 @@ export default function UnemploymentFlow() {
     const wage = parseFloat(avgWage.replace(/,/g, ''))
     if (!days || !wage) { setError('가입일수와 평균 일당을 모두 입력해 주세요.'); return }
     setError(''); setLoading(true)
+    const hours = parseFloat(dailyHours) > 0 ? parseFloat(dailyHours) : 8
     const [res] = await Promise.allSettled([
-      calcUBSimple(days, wage, s.age50),
+      calcUBSimple(days, wage, s.age50, hours),
       new Promise(r => setTimeout(r, 2000)),
     ])
     setLoading(false)
@@ -260,6 +266,28 @@ export default function UnemploymentFlow() {
     if (s.step === 4) { go(3); return }
     go((s.step - 1) as Step)
   }
+
+  // ── 1일 소정근로시간 입력 (하한액 산정용) — 정밀·간편 공통 ──
+  // 실업급여 하한액 = 1일 소정근로시간(최대 8h) × 최저임금 × 80%. 단시간 근무자는
+  // 실근로시간을 반영해야 하한액이 정확해진다. 일용직 표준 근무일 8시간이 기본값.
+  const dailyHoursInput = (
+    <CalcInputCard>
+      <label className="block text-[14px] font-semibold text-ink-900 mb-2">
+        하루 평균 근로시간{' '}
+        <span className="text-[12px] text-ink-500 font-normal">(하한액 계산용 · 보통 8시간)</span>
+      </label>
+      <input
+        type="number" inputMode="decimal" min="1" max="8" step="0.5"
+        value={dailyHours}
+        onChange={e => setDailyHours(e.target.value)}
+        placeholder="예: 8"
+        className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
+      />
+      <p className="text-[12px] text-ink-500 mt-2 leading-relaxed">
+        실업급여엔 하루 최소 지급액(하한액)이 법으로 보장돼요. 풀타임(8시간)이면 그대로 두세요.
+      </p>
+    </CalcInputCard>
+  )
 
   // ── 렌더링 ─────────────────────────────────────
   return (
@@ -477,6 +505,9 @@ export default function UnemploymentFlow() {
                 />
               </CalcInputCard>
 
+              {/* 하루 평균 근로시간 (하한액 산정용) */}
+              {dailyHoursInput}
+
               {/* 50세 이상 체크 */}
               <CalcInputCard>
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -539,6 +570,9 @@ export default function UnemploymentFlow() {
                   </div>
                 </div>
               </CalcInputCard>
+
+              {/* 하루 평균 근로시간 (하한액 산정용) */}
+              {dailyHoursInput}
 
               {/* 50세 이상 체크 */}
               <CalcInputCard>

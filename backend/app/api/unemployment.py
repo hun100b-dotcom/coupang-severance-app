@@ -39,6 +39,7 @@ async def ub_precise(
     company_other: str = Form(""),
     end_date: Optional[str] = Form(None),
     age_50: bool = Form(False),
+    daily_hours: float = Form(8.0),  # 1일 소정근로시간(하한액 산정용, 기본 8시간)
 ):
     try:
         raw = await file.read()
@@ -76,7 +77,7 @@ async def ub_precise(
     avg_res = compute_average_wage(filtered, end_dt)
     avg_daily = float(avg_res.get("average_wage", 0))
 
-    result = compute_unemployment_estimate(avg_daily, insured_days, age_50)
+    result = compute_unemployment_estimate(avg_daily, insured_days, age_50, daily_hours)
 
     return UBPreciseResponse(
         eligible_180        = result["eligible_180"],
@@ -87,12 +88,14 @@ async def ub_precise(
         total_estimate      = round(result["total_estimate"], 0),
         days_last_month     = daily_check["days_last_month"],
         company_found       = True,
+        daily_benefit_raw   = round(result["daily_benefit_raw"], 0),
+        bound_applied       = result["bound_applied"],
     )
 
 
 @router.post("/simple", response_model=UBSimpleResponse)
 async def ub_simple(req: UBSimpleRequest):
-    result = compute_unemployment_estimate(req.avg_daily_wage, req.insured_days, req.age_50)
+    result = compute_unemployment_estimate(req.avg_daily_wage, req.insured_days, req.age_50, req.daily_hours)
     return UBSimpleResponse(
         eligible_180        = result["eligible_180"],
         insured_days_in_18m = result["insured_days_in_18m"],
@@ -100,4 +103,6 @@ async def ub_simple(req: UBSimpleRequest):
         daily_benefit       = round(result["daily_benefit"], 0),
         days                = result["days"],
         total_estimate      = round(result["total_estimate"], 0),
+        daily_benefit_raw   = round(result["daily_benefit_raw"], 0),
+        bound_applied       = result["bound_applied"],
     )
