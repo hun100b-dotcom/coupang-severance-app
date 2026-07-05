@@ -241,7 +241,8 @@ export default function VisitorTab() {
         <div className="grid grid-cols-3 gap-2">
           {(() => {
             const f = data.funnel
-            const pct = (a: number, b: number) => (b > 0 ? Math.round(a / b * 100) : 0)
+            // 전환율: 단위가 달라(세션/회원/리포트) 이론상 100% 초과 가능 → 100%로 캡(혼란 방지, 리뷰어 B)
+            const pct = (a: number, b: number) => (b > 0 ? Math.min(Math.round(a / b * 100), 100) : 0)
             const steps = [
               { label: '방문자', value: f.visitors, known: true, color: UP.brand, sub: '순 방문자(세션)' },
               { label: '가입', value: f.signups, known: f.signups_known, color: UP.green, sub: f.signups_known ? `방문 대비 ${pct(f.signups, f.visitors)}%` : '집계 불가' },

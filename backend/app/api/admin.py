@@ -558,7 +558,7 @@ def visitor_stats(
     MAX_PAGES = 60          # 안전 상한 6만 행(그 이상은 truncated 로 정직 표기)
     def fetch_page(offset: int):
         return _sb_get("visitor_logs", {
-            "select": "session_id,user_id,page_path,referrer,created_at,utm_source,utm_medium,utm_campaign",
+            "select": "session_id,user_id,page_path,referrer,created_at,utm_source,utm_campaign",
             "created_at": f"gte.{range_gte}",
             "order": "created_at.desc,id.desc",   # 안정 정렬(동시각 페이지경계 흔들림 완화)
             "offset": str(offset),
@@ -614,8 +614,9 @@ def visitor_stats(
         page_counts[p] = page_counts.get(p, 0) + 1
         ch = _classify_referrer(r.get("referrer"))
         ref_counts[ch] = ref_counts.get(ch, 0) + 1
-        # UTM(캠페인) 집계 — utm_source 가 있는 방문만
-        src = (r.get("utm_source") or "").strip()
+        # UTM(캠페인) 집계 — utm_source 가 있는 방문만.
+        #   소문자 정규화(리뷰어 B): 'Kakao'/'kakao' 가 다른 유입원으로 쪼개지지 않게 통일.
+        src = (r.get("utm_source") or "").strip().lower()
         if src:
             utm_total += 1
             utm_source_counts[src] = utm_source_counts.get(src, 0) + 1

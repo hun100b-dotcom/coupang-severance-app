@@ -129,11 +129,12 @@ env·기본 anon 둘 다에서 파생해 넣어 env 드리프트에도 견고.
   (`useVisitorTracking.ts:71`). UTM 파라미터는 **미수집**(컬럼 없음).
 - **개편**: 백엔드 `_classify_referrer()`로 referrer→채널 분류(직접 방문/앱 내 이동/Google·Naver·Daum
   검색/인스타·페북·유튜브·X/기타 외부). 어드민 "유입 경로" 섹션에 채널별 집계 표시.
-- **UTM 확장(미적용·마이그레이션 필요)**: `20260706_visitor_utm.sql`(utm_source/medium/campaign
-  컬럼 + 인덱스) 파일 작성. **이 세션은 Supabase MCP 미연결로 DB 적용 불가** → 종훈님이
-  Supabase SQL Editor에서 1회 실행 후, 프론트 insert에 utm 필드 추가하는 후속 패치 필요
-  (컬럼 없는 상태로 insert에 utm을 넣으면 PostgREST가 전체 insert를 거부해 방문 기록이
-  끊기므로, **마이그레이션 적용 전에는 절대 프론트 insert를 바꾸지 않음** — 안전 순서 준수).
+- **UTM 확장 — ✅ 2026-07-06 실행 완료**: `20260706_visitor_utm.sql`(utm_source/medium/campaign/
+  landing_path 컬럼 + 인덱스)을 **Supabase MCP로 프로덕션에 직접 적용**(컬럼 생성 확인). 프론트
+  `useVisitorTracking`이 첫 진입 시 URL의 utm_* 캡처→sessionStorage 귀속→전 방문 기록에 저장,
+  백엔드 `visitor-stats`가 utm_source/campaign 집계, 어드민에 "캠페인(UTM) 유입" 섹션 표시.
+  **엔드투엔드 실측**: 테스트 UTM행 삽입→endpoint utm_total 집계 확인→삭제 / 브라우저 `/guide?utm_source=..`
+  진입→DB에 utm 저장 확인→삭제(실데이터 무오염).
 
 ### 경로 한글 표기
 - `frontend/src/lib/routeLabels.ts` 신설: 앱 라우트 전체 → 한글명칭 매핑 +
