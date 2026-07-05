@@ -6,6 +6,22 @@
 
 ---
 
+## 🧭 어드민 무한로딩 박멸 + 방문자 애널리틱스 정확도 개편 (2026-07-06, main `3c35ad8`~`e121b6d` 5커밋 푸시·배포·라이브검증)
+
+> 지시: ①어드민 접속 무한로딩→백엔드에러 즉시수정 ②어드민 전수조사 ③방문자 4지표 실제값화+유입경로+경로한글표기+툴팁 ④고도화 로드맵. 보고서 `docs/audit/admin_audit_2026-07.md`, 로드맵 `docs/admin_enhancement_roadmap_2026-07.md`, 듀얼리뷰 `docs/dual_review/admin_visitor_analytics_2026-07-06.md`.
+
+**A. 블로킹 버그(라이브 실측 확정·수정완료 `3c35ad8`)**: 어드민 401 무한로딩 = **토큰 불일치**. 프론트(api.ts)는 `VITE_ADMIN_SECRET` 미설정 시 **anon 키 뒤 32자**를 X-Admin-Token으로 전송(Vercel에 그 변수 없음)하는데, 백엔드 `_VALID_ADMIN_TOKENS`엔 그 파생값이 빠져 **모든 어드민 백엔드 호출 401** → OverviewTab `Promise.all` 4개 통째 실패(콜드스타트와 겹쳐 무한로딩 체감). 실측: anon토큰 stats 401→(수정후)200. 처치: 백엔드도 anon[-32:] 파생을 허용셋에 추가. ⚠️보안메모: X-Admin-Token은 `VITE_`/공개 anon 파생이라 본질적으로 비밀 아님 → 실질 보안은 OAuth+admin_accounts 게이트+RLS. JWT 전환은 로드맵 P1.
+
+**C. 방문자 4지표 허수 박멸(`9589253`+리뷰수정 `3ddb270`+`e121b6d`)**: 원인 = VisitorTab이 브라우저 세션 `visitor_logs` 직접조회 `.limit(1000)` + '오늘'을 UTC로 판정. 처치: 백엔드 `GET /admin/visitor-stats`(service-role) 신설 — count=exact 총량 + KST 자정경계 + referrer→채널분류(_classify_referrer, host 라벨/suffix 정확매칭) + `routeLabels.ts`(`홈(/home)` 형식) + KPI ⓘ툴팁. **결정적 함정: PostgREST max-rows=1000** 탓에 백엔드 이관 후에도 순방문자가 1000기준으로 과소집계 → **offset 페이지네이션(1000씩·상한6만)**으로 전수. 라이브 실측 **순방문자 871→1,654(2배 과소집계 해소)**, 총페이지뷰 캡1000→3,973 정확.
+
+**유입경로(referral)**: `visitor_logs.referrer` 이미 수집중(document.referrer). UTM은 미수집 → `supabase/migrations/20260706_visitor_utm.sql` 파일만 작성(이 세션 Supabase MCP 미연결로 **DB 적용 불가** → 종훈님 SQL Editor 1회 실행 후 프론트 insert 확장 필요. **마이그레이션 적용 전 insert에 utm 넣으면 방문기록 끊김** — 순서 준수).
+
+**더블리뷰**: A(총괄) PASS 14/14. B(적대) 1차 FAIL(BLOCKER 2: session_id null크래시·엑셀50건회귀 + MINOR 3) → 전부 수정 + 페이지네이션 자체적출 → 재검증. **회귀**: 계산로직·index.css폰트 0 변경, tsc/py_compile/npm build 통과. ※ `3fccb6c`(실업급여 상·하한액)은 병렬 세션 커밋, 이 세션 무관.
+
+**다음(비차단)**: ①`20260706_visitor_utm.sql` DB 적용(종훈님 1클릭) 후 UTM 수집 파이프라인 ②로드맵 P1(어드민 JWT 인증·전환퍼널) 승인 시 별도세션 ③방문자탭 페이지네이션이 대용량 시 느려질 수 있어 추후 RPC/뷰 최적화 여지.
+
+---
+
 ## 🩹 정밀계산 "서버에 연결할 수 없어요" 박멸 (2026-07-05, main `e0fa918` 푸시·배포 완료)
 
 > 증상: 퇴직금 정밀계산기에서 저장 PDF(TalkFile_일용근로내역서_고용.pdf 93.1KB) 넣고 계산 시 빨간 배너 "서버에 연결할 수 없어요…쉬운 계산 이용". 4개 계산기 공통 잠복. 더블리뷰 `docs/dual_review/step_precise_fix.md`(A·B PASS).

@@ -567,13 +567,15 @@ def visitor_stats(
         try:
             res = fetch_page(page_idx * PAGE)
         except Exception:
-            # 첫 페이지부터 실패면 가짜 0 금지 위해 502, 중간 실패면 지금까지로 집계(부분 정직)
+            # 첫 페이지부터 실패면 가짜 0 금지 위해 502, 중간 실패면 지금까지로 집계(부분)
             if page_idx == 0:
                 raise HTTPException(status_code=502, detail="방문자 로그 조회 실패(업스트림)")
+            truncated = True   # 부분 집계임을 정직히 표기(리뷰어 B MINOR-B)
             break
         if res.status_code not in (200, 206):
             if page_idx == 0:
                 raise HTTPException(status_code=502, detail=f"방문자 로그 조회 실패(업스트림 HTTP {res.status_code})")
+            truncated = True   # 부분 집계임을 정직히 표기(리뷰어 B MINOR-B)
             break
         batch = res.json()
         rows.extend(batch)
