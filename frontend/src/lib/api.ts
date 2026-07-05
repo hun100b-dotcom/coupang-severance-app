@@ -442,6 +442,16 @@ export interface VisitorStatsResponse {
   logged_in_unique: number      // 회원 순 인원(중복 제거)
   top_pages: { path: string; count: number }[]
   referrers: { channel: string; count: number }[]
+  utm_sources: { source: string; count: number }[]      // 캠페인 유입원 TOP
+  campaigns: { campaign: string; count: number }[]       // 캠페인(유입원/캠페인명) TOP
+  utm_total: number                                      // 캠페인 유입 총 페이지뷰
+  funnel: {
+    visitors: number
+    signups: number
+    calculations: number
+    signups_known: boolean
+    calculations_known: boolean
+  }
   recent: { created_at: string; page_path: string; channel: string; session_id: string; user_id: string | null }[]
   fetched: number
   truncated: boolean            // true면 순방문자/회원수는 표시상한 기준(총량은 정확)

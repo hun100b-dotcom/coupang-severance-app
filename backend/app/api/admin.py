@@ -530,9 +530,9 @@ def visitor_stats(
     # count=exact 로 '전 행 정확' 총량을 얻는다(행 본문은 limit=0 로 안 받음).
     #   ⚠️ content-range 총량이 '*'(PostgREST count 실패)면 0 이 아니라 None 을 돌려
     #      '0 이라는 새 거짓말'을 막는다(리뷰어 B 지적). 호출부가 행 기반으로 폴백.
-    def count_exact(gte: str):
+    def count_table(table: str, gte: str):
         try:
-            res = _sb_get("visitor_logs", {"select": "id", "limit": "0", "created_at": f"gte.{gte}"}, count=True)
+            res = _sb_get(table, {"select": "id", "limit": "0", "created_at": f"gte.{gte}"}, count=True)
             if res.status_code not in (200, 206):
                 return None
             total = res.headers.get("content-range", "").rsplit("/", 1)[-1]
@@ -540,11 +540,15 @@ def visitor_stats(
         except Exception:
             return None
 
-    # 총량/오늘 count 는 먼저 병렬로(정확 총량 확보)
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        total_fut = pool.submit(count_exact, range_gte)
-        today_fut = pool.submit(count_exact, today_gte)
+    # 총량/오늘 + 전환 퍼널용 가입·계산 count 를 병렬로(정확 총량 확보).
+    #   퍼널(방문→가입→계산): 같은 기간의 신규 가입(profiles)·계산 리포트(reports) 수.
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        total_fut = pool.submit(count_table, "visitor_logs", range_gte)
+        today_fut = pool.submit(count_table, "visitor_logs", today_gte)
+        signup_fut = pool.submit(count_table, "profiles", range_gte)
+        report_fut = pool.submit(count_table, "reports", range_gte)
         total_pv, today_pv = total_fut.result(), today_fut.result()
+        signups_in_range, reports_in_range = signup_fut.result(), report_fut.result()
 
     # 상세 집계용 행을 '페이지네이션'으로 전수 수집한다.
     #   ⚠️ 핵심: PostgREST(Supabase)는 요청당 최대 1000행만 반환한다(max-rows 기본값). 따라서
@@ -554,7 +558,7 @@ def visitor_stats(
     MAX_PAGES = 60          # 안전 상한 6만 행(그 이상은 truncated 로 정직 표기)
     def fetch_page(offset: int):
         return _sb_get("visitor_logs", {
-            "select": "session_id,user_id,page_path,referrer,created_at",
+            "select": "session_id,user_id,page_path,referrer,created_at,utm_source,utm_medium,utm_campaign",
             "created_at": f"gte.{range_gte}",
             "order": "created_at.desc,id.desc",   # 안정 정렬(동시각 페이지경계 흔들림 완화)
             "offset": str(offset),
@@ -592,6 +596,9 @@ def visitor_stats(
     today_from_rows = 0
     page_counts: dict[str, int] = {}
     ref_counts: dict[str, int] = {}
+    utm_source_counts: dict[str, int] = {}   # 캠페인 유입원(kakao/naver 등)별 방문
+    campaign_counts: dict[str, int] = {}     # '유입원 / 캠페인명' 별 방문
+    utm_total = 0                            # UTM 이 붙은 방문(캠페인 유입) 총 페이지뷰
     for r in rows:
         sid = r.get("session_id")
         if sid:
@@ -607,6 +614,14 @@ def visitor_stats(
         page_counts[p] = page_counts.get(p, 0) + 1
         ch = _classify_referrer(r.get("referrer"))
         ref_counts[ch] = ref_counts.get(ch, 0) + 1
+        # UTM(캠페인) 집계 — utm_source 가 있는 방문만
+        src = (r.get("utm_source") or "").strip()
+        if src:
+            utm_total += 1
+            utm_source_counts[src] = utm_source_counts.get(src, 0) + 1
+            camp = (r.get("utm_campaign") or "(캠페인명 없음)").strip() or "(캠페인명 없음)"
+            key = f"{src} / {camp}"
+            campaign_counts[key] = campaign_counts.get(key, 0) + 1
 
     top_pages = sorted(
         [{"path": k, "count": v} for k, v in page_counts.items()], key=lambda x: -x["count"]
@@ -614,6 +629,22 @@ def visitor_stats(
     referrers = sorted(
         [{"channel": k, "count": v} for k, v in ref_counts.items()], key=lambda x: -x["count"]
     )
+    utm_sources = sorted(
+        [{"source": k, "count": v} for k, v in utm_source_counts.items()], key=lambda x: -x["count"]
+    )[:10]
+    campaigns = sorted(
+        [{"campaign": k, "count": v} for k, v in campaign_counts.items()], key=lambda x: -x["count"]
+    )[:10]
+
+    # 전환 퍼널(방문→가입→계산): 같은 기간 순방문자 → 신규 가입 → 계산 리포트.
+    #   단위가 다르므로(세션/회원/리포트) 참고용 전환 흐름으로 표기(툴팁으로 안내).
+    funnel = {
+        "visitors": len(sessions),
+        "signups": signups_in_range if signups_in_range is not None else 0,
+        "calculations": reports_in_range if reports_in_range is not None else 0,
+        "signups_known": signups_in_range is not None,       # count 실패 시 false(가짜 0 방지 표기)
+        "calculations_known": reports_in_range is not None,
+    }
     recent = [{
         "created_at": r.get("created_at"),
         "page_path": r.get("page_path") or "(경로없음)",
@@ -631,6 +662,10 @@ def visitor_stats(
         "logged_in_unique": len(members),        # 회원 순 인원(중복 제거)
         "top_pages": top_pages,
         "referrers": referrers,
+        "utm_sources": utm_sources,              # 캠페인 유입원 TOP
+        "campaigns": campaigns,                  # 캠페인(유입원/캠페인명) TOP
+        "utm_total": utm_total,                  # 캠페인 유입 총 페이지뷰
+        "funnel": funnel,                        # 방문→가입→계산 전환 퍼널
         "recent": recent,
         "fetched": len(rows),
         "truncated": truncated,                  # true면 순방문자/회원수는 표시상한 기준(총량은 정확)

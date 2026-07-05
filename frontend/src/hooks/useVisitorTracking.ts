@@ -12,6 +12,31 @@ import { useAuth } from '../contexts/AuthContext'
 
 // ── sessionStorage 키 상수 ─────────────────────────────────
 const SESSION_KEY = 'catch_session_id'
+const UTM_KEY = 'catch_utm'   // 캠페인 유입 정보(첫 진입 시 1회 캡처해 세션 내내 귀속)
+
+// ── UTM(광고 캠페인) 캡처 ──────────────────────────────────
+// 광고/제휴 링크로 들어오면 URL 에 ?utm_source=kakao&utm_medium=cpc&utm_campaign=... 가 붙는다.
+// 이 값은 첫 페이지에서만 URL 에 있으므로, 최초 1회 캡처해 sessionStorage 에 저장하고
+// 이후 세션 내 모든 방문 기록에 함께 남긴다(= 이 방문자가 어느 캠페인으로 왔는지 세션 전체에 귀속).
+interface CapturedUtm { source: string | null; medium: string | null; campaign: string | null; landing: string }
+function getOrCaptureUtm(landingPath: string): CapturedUtm {
+  try {
+    const existing = sessionStorage.getItem(UTM_KEY)
+    if (existing) return JSON.parse(existing) as CapturedUtm
+    const params = new URLSearchParams(window.location.search)
+    const utm: CapturedUtm = {
+      source: params.get('utm_source'),
+      medium: params.get('utm_medium'),
+      campaign: params.get('utm_campaign'),
+      landing: landingPath,   // 캠페인 도착(첫) 페이지
+    }
+    sessionStorage.setItem(UTM_KEY, JSON.stringify(utm))
+    return utm
+  } catch {
+    // sessionStorage 접근 불가(프라이빗 모드 등) — UTM 없이 진행
+    return { source: null, medium: null, campaign: null, landing: landingPath }
+  }
+}
 
 // ── UUID v4 생성 (crypto.randomUUID 미지원 환경 대비 폴백) ──
 function generateSessionId(): string {
@@ -58,6 +83,9 @@ export function useVisitorTracking() {
     // /admin 경로는 내부 운영 데이터이므로 별도로 관리합니다.
     if (pagePath.startsWith('/admin')) return
 
+    // 캠페인(UTM) 유입 정보 — 첫 진입 시 캡처, 세션 내내 동일 값 사용
+    const utm = getOrCaptureUtm(pagePath)
+
     // fire-and-forget: await 없이 실행해 UI를 블록하지 않습니다.
     // Supabase insert는 PromiseLike를 반환하므로 Promise.resolve()로 감싸
     // .catch()를 사용할 수 있도록 합니다.
@@ -70,6 +98,10 @@ export function useVisitorTracking() {
           page_path: pagePath,
           referrer: document.referrer || null,  // 이전 페이지 URL
           user_agent: navigator.userAgent || null,
+          utm_source: utm.source,          // 캠페인 유입원(kakao/naver/google 등)
+          utm_medium: utm.medium,          // 매체(cpc/banner/post 등)
+          utm_campaign: utm.campaign,      // 캠페인명
+          landing_path: utm.landing,       // 캠페인 도착(첫) 페이지
         })
     ).catch(() => {/* 에러 무시: 방문 기록 실패가 앱 동작에 영향 없도록 */})
 

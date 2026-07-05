@@ -231,6 +231,79 @@ export default function VisitorTab() {
         </div>
       </div>
 
+      {/* 전환 퍼널 (방문 → 가입 → 계산) */}
+      <div style={{ ...CARD_PAD, marginBottom: 16 }}>
+        <p className="text-a13" style={{ fontWeight: 700, color: UP.navy, marginBottom: 4, display: 'flex', alignItems: 'center' }}>
+          <span>🔻 전환 퍼널 (방문 → 가입 → 계산)</span>
+          <InfoTip text="선택 기간에 방문자 중 몇 명이 회원가입까지, 그중 몇 건이 계산까지 이어졌는지 보여줘요. 방문자는 순 방문자(세션), 가입은 신규 회원 수, 계산은 계산 리포트 수입니다. 단위가 달라 정확한 개인추적이 아니라 '흐름' 참고용이에요." />
+        </p>
+        <p className="text-a10" style={{ color: UP.caption, marginBottom: 14 }}>최근 {data.range_days}일 · 참고용 전환 흐름</p>
+        <div className="grid grid-cols-3 gap-2">
+          {(() => {
+            const f = data.funnel
+            const pct = (a: number, b: number) => (b > 0 ? Math.round(a / b * 100) : 0)
+            const steps = [
+              { label: '방문자', value: f.visitors, known: true, color: UP.brand, sub: '순 방문자(세션)' },
+              { label: '가입', value: f.signups, known: f.signups_known, color: UP.green, sub: f.signups_known ? `방문 대비 ${pct(f.signups, f.visitors)}%` : '집계 불가' },
+              { label: '계산', value: f.calculations, known: f.calculations_known, color: UP.strong, sub: f.calculations_known ? `가입 대비 ${pct(f.calculations, f.signups)}%` : '집계 불가' },
+            ]
+            return steps.map(s => (
+              <div key={s.label} style={{ textAlign: 'center', padding: '10px 6px', background: UP.sunken, borderRadius: 10, border: `1px solid ${UP.hairSoft}` }}>
+                <div className="text-a10" style={{ color: UP.sub, fontWeight: 700, marginBottom: 4 }}>{s.label}</div>
+                <div style={{ fontSize: 'clamp(1.1rem, 3vw, 1.5rem)', fontWeight: 800, color: s.color, ...numeric }}>{s.known ? s.value.toLocaleString() : '—'}</div>
+                <div className="text-a10" style={{ color: UP.caption, marginTop: 3 }}>{s.sub}</div>
+              </div>
+            ))
+          })()}
+        </div>
+      </div>
+
+      {/* 캠페인(UTM) 유입 */}
+      <div style={{ ...CARD_PAD, marginBottom: 16 }}>
+        <p className="text-a13" style={{ fontWeight: 700, color: UP.navy, marginBottom: 4, display: 'flex', alignItems: 'center' }}>
+          <span>📣 캠페인(UTM) 유입</span>
+          <InfoTip text="광고·제휴 링크에 붙인 UTM 태그(?utm_source=kakao&utm_campaign=...)로 들어온 방문을 집계해요. 어느 채널·캠페인이 실제 방문을 데려왔는지 알 수 있습니다. 링크에 UTM을 붙여 홍보하면 여기 쌓입니다." />
+        </p>
+        <p className="text-a10" style={{ color: UP.caption, marginBottom: 14 }}>캠페인 유입 총 {data.utm_total.toLocaleString()} 페이지뷰</p>
+        {data.utm_total === 0 ? (
+          <div style={{ textAlign: 'center', padding: '18px 0' }}>
+            <p className="text-a13" style={{ color: UP.sub, fontWeight: 600, marginBottom: 4 }}>아직 캠페인(UTM) 유입이 없어요</p>
+            <p className="text-a10" style={{ color: UP.caption, lineHeight: 1.6 }}>
+              홍보 링크 끝에 <code style={{ background: UP.sunken, padding: '1px 5px', borderRadius: 4 }}>?utm_source=kakao&amp;utm_campaign=여름</code> 처럼 붙여 공유하면<br />여기에 채널·캠페인별로 집계됩니다.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div>
+              <p className="text-a11" style={{ fontWeight: 700, color: UP.sub, marginBottom: 8 }}>유입원(source)</p>
+              {data.utm_sources.map((u, i) => {
+                const c = CHART_SERIES[i % CHART_SERIES.length]
+                const mx = data.utm_sources[0]?.count || 1
+                return (
+                  <div key={u.source} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: c, flexShrink: 0 }} />
+                    <span className="text-a12" style={{ flex: 1, minWidth: 0, color: UP.body, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.source}</span>
+                    <div style={{ width: 60, height: 4, background: UP.hairSoft, borderRadius: 2, overflow: 'hidden', flexShrink: 0 }}>
+                      <div style={{ width: `${u.count / mx * 100}%`, height: '100%', background: c, borderRadius: 2 }} />
+                    </div>
+                    <span className="text-a11" style={{ fontWeight: 700, color: c, width: 44, textAlign: 'right', ...numeric }}>{u.count.toLocaleString()}</span>
+                  </div>
+                )
+              })}
+            </div>
+            <div>
+              <p className="text-a11" style={{ fontWeight: 700, color: UP.sub, marginBottom: 8 }}>캠페인(유입원 / 캠페인명)</p>
+              {data.campaigns.map((cp) => (
+                <div key={cp.campaign} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <span className="text-a12" style={{ flex: 1, minWidth: 0, color: UP.body, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={cp.campaign}>{cp.campaign}</span>
+                  <span className="text-a11" style={{ fontWeight: 700, color: UP.strong, width: 44, textAlign: 'right', ...numeric }}>{cp.count.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* 최근 방문 기록 테이블 (최근 50건) */}
       <div style={CARD_PAD}>
         <p className="text-a13" style={{ fontWeight: 700, color: UP.navy, marginBottom: 14 }}>최근 방문 기록 <span className="text-a10" style={{ color: UP.caption, fontWeight: 500 }}>(최근 50건)</span></p>
