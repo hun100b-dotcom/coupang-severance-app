@@ -1,5 +1,20 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 
+// ── axios 요청 설정 확장: 멱등(idempotent) 표시 플래그 ─────────────────────
+// 배경(2026-07-05 정밀계산 장애): 콜드스타트 재시도가 GET 에만 적용돼, 정작 핵심인
+//   계산 POST(퇴직금 정밀계산 등)는 Render 콜드스타트 502/네트워크 단절 한 번에
+//   재시도 없이 "서버에 연결할 수 없어요"로 즉시 실패했다.
+//   계산·PDF추출 엔드포인트는 서버에 아무 부작용(DB 쓰기 등)이 없는 '순수 계산'이라
+//   여러 번 호출해도 결과가 같다(=멱등). 따라서 이 플래그가 true 인 POST 는
+//   GET 과 동일하게 콜드스타트 재시도를 허용해도 안전하다(중복 실행 위험 없음).
+//   반대로 문의 등록/지원 등 부작용 있는 POST 는 이 플래그를 붙이지 않아 재시도 대상에서 제외된다.
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    /** true 면 부작용 없는 순수 계산 요청 — POST 여도 콜드스타트 재시도 허용 */
+    _idempotent?: boolean
+  }
+}
+
 const baseURL = typeof import.meta.env.VITE_API_URL === 'string' && import.meta.env.VITE_API_URL
   ? import.meta.env.VITE_API_URL.replace(/\/$/, '') // 끝 슬래시 제거
   : '/api'
@@ -32,10 +47,15 @@ const _RETRY_DELAYS_MS = [2000, 4000, 8000, 14000, 20000]
 
 function _isRetriable(error: AxiosError): boolean {
   // 쓰기(POST/PATCH/DELETE)는 서버가 이미 처리했을 수 있어(예: 504) 재시도 시 중복
-  // 실행 위험 → 멱등 메서드(GET/HEAD/OPTIONS)만 재시도한다. 어드민 "메뉴 로드 실패"
-  // 폭주는 거의 전부 GET 이므로 이 한정으로도 핵심 증상은 해소된다.
+  // 실행 위험 → 기본적으로 멱등 메서드(GET/HEAD/OPTIONS)만 재시도한다. 어드민 "메뉴
+  // 로드 실패" 폭주는 거의 전부 GET 이므로 이 한정으로도 그 증상은 해소된다.
+  // 예외: _idempotent 플래그가 붙은 POST(계산·PDF추출 등 부작용 없는 순수 계산)는
+  //   재시도해도 안전하므로 GET 과 동일하게 콜드스타트 재시도를 허용한다.
+  //   (2026-07-05 정밀계산 장애 수정 — 콜드스타트 502에 계산 POST 가 즉시 실패하던 공백 보완)
   const method = (error.config?.method ?? 'get').toLowerCase()
-  if (method !== 'get' && method !== 'head' && method !== 'options') return false
+  const isIdempotentPost = Boolean(error.config?._idempotent)
+  const retriableMethod = method === 'get' || method === 'head' || method === 'options'
+  if (!retriableMethod && !isIdempotentPost) return false
   if (!error.response) return true // 응답 없음 = 네트워크/타임아웃/콜드스타트
   return _RETRY_STATUSES.has(error.response.status)
 }
@@ -82,7 +102,9 @@ api.interceptors.response.use(
         cfg._retryCount += 1
         // 재시도 호출은 짧은 타임아웃으로 캡 — 진짜 무응답(콜드스타트 행) 시 매 시도가
         // 기본 90s 를 곱해 분 단위로 늘어나는 것을 막는다(최초 1회만 긴 타임아웃 허용).
-        cfg.timeout = 20000
+        // 단, 계산 POST(_idempotent)는 PDF 파싱이 무거워(웜 5~7초, 콜드 직후엔 더) 20초로는
+        // 부족할 수 있으므로 45초 헤드룸을 준다. GET(어드민 메뉴)은 가벼우니 20초 유지.
+        cfg.timeout = cfg._idempotent ? 45000 : 20000
         await _sleep(_RETRY_DELAYS_MS[cfg._retryCount - 1] ?? 20000) // 2→4→8→14→20s 백오프(5회)
         return api(cfg)
       }
@@ -158,14 +180,14 @@ export async function notifyNewInquiry(payload: {
 export const extractSeveranceCompanies = (file: File) => {
   const fd = new FormData()
   fd.append('file', file)
-  return api.post<{ companies: string[] }>('/severance/extract-companies', fd).then(r => r.data)
+  return api.post<{ companies: string[] }>('/severance/extract-companies', fd, { _idempotent: true }).then(r => r.data)
 }
 
 /** PDF에서 사업장 고유 리스트 추출 (실업급여 정밀 계산용) */
 export const extractUnemploymentCompanies = (file: File) => {
   const fd = new FormData()
   fd.append('file', file)
-  return api.post<{ companies: string[] }>('/unemployment/extract-companies', fd).then(r => r.data)
+  return api.post<{ companies: string[] }>('/unemployment/extract-companies', fd, { _idempotent: true }).then(r => r.data)
 }
 
 // ── 퇴직금 리포트 세부 타입 ───────────────────────
@@ -262,6 +284,7 @@ export const calcSeverancePrecise = (
 ): Promise<SeverancePreciseResult> =>
   api.post('/severance/precise', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    _idempotent: true, // 순수 계산(DB 부작용 없음) → 콜드스타트 재시도 허용
   }).then(r => r.data)
 
 export interface SeveranceSimpleResult {
@@ -277,7 +300,7 @@ export const calcSeveranceSimple = (
   work_days: number,
   avg_daily_wage: number
 ): Promise<SeveranceSimpleResult> =>
-  api.post('/severance/simple', { work_days, avg_daily_wage }).then(r => r.data)
+  api.post('/severance/simple', { work_days, avg_daily_wage }, { _idempotent: true }).then(r => r.data)
 
 // ── 실업급여 ─────────────────────────────────────
 export interface UBResult {
@@ -294,6 +317,7 @@ export interface UBResult {
 export const calcUBPrecise = (formData: FormData): Promise<UBResult> =>
   api.post('/unemployment/precise', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    _idempotent: true, // 순수 계산(DB 부작용 없음) → 콜드스타트 재시도 허용
   }).then(r => r.data)
 
 export const calcUBSimple = (
@@ -301,13 +325,13 @@ export const calcUBSimple = (
   avg_daily_wage: number,
   age_50: boolean
 ): Promise<UBResult> =>
-  api.post('/unemployment/simple', { insured_days, avg_daily_wage, age_50 }).then(r => r.data)
+  api.post('/unemployment/simple', { insured_days, avg_daily_wage, age_50 }, { _idempotent: true }).then(r => r.data)
 
 // ── 주휴수당 ─────────────────────────────────────────────
 export const extractWeeklyAllowanceCompanies = (file: File) => {
   const fd = new FormData()
   fd.append('file', file)
-  return api.post<{ companies: string[] }>('/weekly-allowance/extract-companies', fd).then(r => r.data)
+  return api.post<{ companies: string[] }>('/weekly-allowance/extract-companies', fd, { _idempotent: true }).then(r => r.data)
 }
 
 export interface WeeklyAllowanceWeekItem {
@@ -335,13 +359,14 @@ export interface WeeklyAllowancePreciseResult {
 export const calcWeeklyAllowancePrecise = (formData: FormData): Promise<WeeklyAllowancePreciseResult> =>
   api.post('/weekly-allowance/precise', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    _idempotent: true, // 순수 계산(DB 부작용 없음) → 콜드스타트 재시도 허용
   }).then(r => r.data)
 
 // ── 연차수당 ─────────────────────────────────────────────
 export const extractAnnualLeaveCompanies = (file: File) => {
   const fd = new FormData()
   fd.append('file', file)
-  return api.post<{ companies: string[] }>('/annual-leave/extract-companies', fd).then(r => r.data)
+  return api.post<{ companies: string[] }>('/annual-leave/extract-companies', fd, { _idempotent: true }).then(r => r.data)
 }
 
 export interface AnnualLeaveMonthItem {
@@ -371,6 +396,7 @@ export interface AnnualLeavePreciseResult {
 export const calcAnnualLeavePrecise = (formData: FormData): Promise<AnnualLeavePreciseResult> =>
   api.post('/annual-leave/precise', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    _idempotent: true, // 순수 계산(DB 부작용 없음) → 콜드스타트 재시도 허용
   }).then(r => r.data)
 
 // ── Admin OS API ──────────────────────────────────────────
