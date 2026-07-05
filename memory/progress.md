@@ -18,7 +18,15 @@
 
 **더블리뷰**: A(총괄) PASS 14/14. B(적대) 1차 FAIL(BLOCKER 2: session_id null크래시·엑셀50건회귀 + MINOR 3) → 전부 수정 + 페이지네이션 자체적출 → 재검증. **회귀**: 계산로직·index.css폰트 0 변경, tsc/py_compile/npm build 통과. ※ `3fccb6c`(실업급여 상·하한액)은 병렬 세션 커밋, 이 세션 무관.
 
-**다음(비차단)**: ①`20260706_visitor_utm.sql` DB 적용(종훈님 1클릭) 후 UTM 수집 파이프라인 ②로드맵 P1(어드민 JWT 인증·전환퍼널) 승인 시 별도세션 ③방문자탭 페이지네이션이 대용량 시 느려질 수 있어 추후 RPC/뷰 최적화 여지.
+**➕ 2차 진행(종훈님 "추천대로 최고결과" 승인, `348e7aa`·`d03f3c6` + Supabase MCP 3마이그레이션)**:
+- **UTM 마이그레이션 직접 적용**(Supabase MCP): visitor_logs에 utm_source/medium/campaign/landing_path 컬럼+인덱스. 종훈님께 안 시키고 직접.
+- **UTM 파이프라인 완성**: 프론트 useVisitorTracking이 첫 진입 URL utm_* 캡처→sessionStorage 귀속→전 방문 insert / 백엔드 visitor-stats utm_source(소문자정규화)·campaign 집계 / 어드민 "캠페인(UTM) 유입" 섹션(빈상태 안내). **엔드투엔드 실측**(테스트행 삽입→집계확인→삭제, `/guide?utm_source=..` 진입→DB저장확인→삭제, 오염0).
+- **전환 퍼널(P1)**: visitor-stats에 방문(순세션)→가입(profiles)→계산(reports) count + 어드민 3단계 카드(전환율 Math.min100 캡·툴팁, 단위상이 정직표기). count 실패 시 known=false(가짜0 방지).
+- **🔒 보안(RLS 실측 발견)**: visitor_logs SELECT가 라이브에서 **public 전체읽기(qual=true)** = anon 키로 방문로그 전량 노출(파일의도와 드리프트, 기존부터). 방문분석 백엔드 이전으로 클라읽기 불필요 → **is_admin() 전용 축소**(MCP 적용+파일). anon SELECT=[] 라이브확인, 백엔드 service-role 무영향(총4046·순1723).
+- **제거 보류**: `markTemplateUsed`는 죽은코드 아님(InquiryDetailPanel.tsx:154 실호출) → 유지.
+- **더블리뷰**: A PASS / B CONDITIONAL PASS(BLOCKER0, 권장5 전량 반영). `docs/dual_review/admin_utm_funnel_2026-07-06.md`.
+
+**다음(비차단)**: ①어드민 JWT 인증 전환(P1, 보류 — 잘못하면 어드민 잠김, X-Admin-Token 병행수용→점진전환 권장) ②anon visitor_logs insert rate-limit(캠페인 통계 스팸 방어) ③방문자탭 페이지네이션 대용량 시 keyset/RPC 최적화.
 
 ---
 
