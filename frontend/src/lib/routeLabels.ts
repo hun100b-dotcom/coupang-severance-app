@@ -53,18 +53,27 @@ const PREFIX_LABELS: [string, string][] = [
   ['/report/', '계산 리포트 상세'],
 ]
 
+// 경로 정규화: 쿼리스트링(?..)·해시(#..) 제거 + 끝 슬래시 정리(루트 '/'는 유지)
+function normalizePath(path: string): string {
+  let p = (path || '').split('?')[0].split('#')[0]
+  if (p.length > 1 && p.endsWith('/')) p = p.replace(/\/+$/, '')
+  return p || '/'
+}
+
 // 경로 → 한글 명칭(미매핑이면 빈 문자열)
 export function routeLabel(path: string): string {
-  if (ROUTE_LABELS[path]) return ROUTE_LABELS[path]
+  const p = normalizePath(path)
+  if (ROUTE_LABELS[p]) return ROUTE_LABELS[p]
   for (const [pre, label] of PREFIX_LABELS) {
-    if (path.startsWith(pre)) return label
+    if (p.startsWith(pre)) return label
   }
   return ''
 }
 
-// '명칭(/경로)' 형식으로 표기. 미매핑 경로는 경로만 그대로 노출.
-//   예) '/home' → '홈(/home)',  '/report/abc' → '계산 리포트 상세(/report/abc)'
+// '명칭(/경로)' 형식으로 표기. 미매핑 경로는 (정규화된) 경로만 그대로 노출.
+//   예) '/home' → '홈(/home)',  '/home?x=1' → '홈(/home)',  '/report/abc' → '계산 리포트 상세(/report/abc)'
 export function formatRoutePath(path: string): string {
-  const label = routeLabel(path)
-  return label ? `${label}(${path})` : path
+  const p = normalizePath(path)
+  const label = routeLabel(p)
+  return label ? `${label}(${p})` : p
 }

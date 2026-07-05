@@ -76,16 +76,29 @@ export default function VisitorTab() {
 
   useEffect(() => { load() }, [range]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleDownload = () => {
-    if (!data) return
-    exportXlsx(data.recent.map(r => ({
-      방문시각: (r.created_at ?? '').replace('T', ' ').slice(0, 19),
-      페이지: formatRoutePath(r.page_path),
-      유입경로: r.channel,
-      로그인여부: r.user_id ? '로그인' : '비로그인',
-      사용자이름: r.user_id ? (profileMap[r.user_id]?.full_name ?? '-') : '-',
-      이메일: r.user_id ? (profileMap[r.user_id]?.email ?? '-') : '-',
-    })), `visitor_stats_${range}일_${new Date().toISOString().slice(0, 10)}`)
+  const [downloading, setDownloading] = useState(false)
+  const handleDownload = async () => {
+    if (!data || downloading) return
+    setDownloading(true)
+    try {
+      // 엑셀은 화면 표시(50건)와 달리 전체 방문 기록을 받아 내보낸다(회귀 방지 — 기존 최대 1000건).
+      const full = await getVisitorStats(range, 5000)
+      const ids = [...new Set(full.recent.filter(r => r.user_id).map(r => r.user_id as string))]
+      let pm = profileMap
+      if (ids.length > 0) {
+        try { pm = await lookupMaskedProfiles(ids) } catch { /* 이름 없이 진행 */ }
+      }
+      exportXlsx(full.recent.map(r => ({
+        방문시각: (r.created_at ?? '').replace('T', ' ').slice(0, 19),
+        페이지: formatRoutePath(r.page_path),
+        유입경로: r.channel,
+        로그인여부: r.user_id ? '로그인' : '비로그인',
+        사용자이름: r.user_id ? (pm[r.user_id]?.full_name ?? '-') : '-',
+        이메일: r.user_id ? (pm[r.user_id]?.email ?? '-') : '-',
+      })), `visitor_stats_${range}일_${full.recent.length}건_${new Date().toISOString().slice(0, 10)}`)
+    } catch (e) {
+      console.warn('[VisitorTab] 엑셀 내보내기 실패:', e)
+    } finally { setDownloading(false) }
   }
 
   if (loading) return <AdminLoading label="방문자 데이터를 불러오는 중이에요…" />
@@ -140,7 +153,7 @@ export default function VisitorTab() {
               ))}
             </div>
             <button onClick={load} style={iconBtn}>↻</button>
-            <button onClick={handleDownload} style={excelBtn}>⬇ 엑셀</button>
+            <button onClick={handleDownload} disabled={downloading} style={{ ...excelBtn, opacity: downloading ? 0.6 : 1, cursor: downloading ? 'wait' : 'pointer' }}>{downloading ? '내보내는 중…' : '⬇ 엑셀'}</button>
           </>
         }
       />
@@ -234,7 +247,7 @@ export default function VisitorTab() {
               {data.recent.map((l, i) => {
                 const prof = l.user_id ? profileMap[l.user_id] : null
                 return (
-                  <tr key={`${l.session_id}-${i}`}
+                  <tr key={`${l.session_id || 'anon'}-${i}`}
                     style={{ background: i % 2 === 0 ? UP.surface : UP.sunken, borderBottom: `1px solid ${UP.hairSoft}` }}
                     onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = UP.brandBg }}
                     onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = i % 2 === 0 ? UP.surface : UP.sunken }}
@@ -255,7 +268,7 @@ export default function VisitorTab() {
                       ) : (
                         <div>
                           <div className="text-a11" style={{ color: UP.sub }}>비회원</div>
-                          <div className="text-a10" style={{ color: UP.caption, fontFamily: 'monospace', marginTop: 1 }}>({l.session_id.slice(0, 8)}…)</div>
+                          <div className="text-a10" style={{ color: UP.caption, fontFamily: 'monospace', marginTop: 1 }}>({(l.session_id ?? '').slice(0, 8) || '익명'}…)</div>
                         </div>
                       )}
                     </td>

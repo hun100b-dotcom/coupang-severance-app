@@ -452,31 +452,57 @@ def admin_analytics(
 #   프론트/백엔드가 같은 규칙을 써야 표기가 일관되므로 백엔드를 단일 기준으로 삼는다.
 # 앱 자체 도메인(현행·구 도메인 모두) — referrer 가 아래면 '앱 내 이동'으로 본다.
 #   catch-daily-worker: 현 프로덕션 / coupang-severance-app: 구 프론트·API 도메인(라이브 유입 확인)
-_APP_HOSTS = ("catch-daily-worker", "coupang-severance-app", "localhost", "127.0.0.1")
+_APP_DOMAINS = (
+    "catch-daily-worker.vercel.app", "coupang-severance-app.vercel.app",
+    "coupang-severance-app.onrender.com", "localhost", "127.0.0.1",
+)
+
+def _referrer_host(ref: str) -> str:
+    """referrer URL 에서 host 만 안전 추출(scheme·userinfo·포트·path 제거, 소문자)."""
+    h = ref.split("://", 1)[-1]   # scheme 제거
+    h = h.split("/", 1)[0]        # path 제거
+    h = h.split("@", 1)[-1]       # userinfo 제거
+    h = h.split(":", 1)[0]        # 포트 제거
+    return h.lower().strip()
+
+def _host_matches(host: str, domain: str) -> bool:
+    # 정확 매칭: host == domain 또는 진짜 서브도메인(*.domain). 부분문자열 스푸핑 차단.
+    #   예) 'a.vercel.app' 은 'vercel.app' 의 서브도메인이지만
+    #       'catch-daily-worker.vercel.app.evil.com' 은 어떤 앱 도메인의 서브도메인도 아님.
+    return host == domain or host.endswith("." + domain)
+
 def _classify_referrer(ref: Optional[str]) -> str:
     if not ref:
         return "직접 방문"          # referrer 없음 = 주소창 직접 입력/북마크/앱 등
     try:
-        # URL 파싱 없이 host 부분만 소문자로 추출(가벼움)
-        host = ref.split("//", 1)[-1].split("/", 1)[0].lower()
+        host = _referrer_host(ref)
     except Exception:
         return "알 수 없음"
-    if any(h in host for h in _APP_HOSTS):
+    if not host:
+        return "알 수 없음"
+    # 앱 자체 도메인 = 앱 내 이동(정확·서브도메인 매칭)
+    if any(_host_matches(host, d) for d in _APP_DOMAINS):
         return "앱 내 이동"
-    if "google" in host:      return "Google 검색"
-    if "naver" in host:       return "Naver 검색"
-    if "daum" in host or "kakao" in host: return "Daum·Kakao"
-    if "bing" in host:        return "Bing 검색"
-    if "instagram" in host:   return "인스타그램"
-    if "facebook" in host or "fb." in host: return "페이스북"
-    if "youtube" in host or "youtu.be" in host: return "유튜브"
-    if "t.co" in host or "twitter" in host or "x.com" in host: return "X(트위터)"
-    if "band.us" in host:     return "네이버 밴드"
-    return host or "기타 외부"       # 그 외는 도메인 그대로 노출
+    # 검색·SNS 는 host 의 '라벨'(점 구분 조각) 단위로 판정 — 부분문자열 오탐(notgoogle 등) 차단.
+    labels = set(host.split("."))
+    if "google" in labels:    return "Google 검색"
+    if "naver" in labels:     return "Naver 검색"
+    if "daum" in labels or "kakao" in labels: return "Daum·Kakao"
+    if "bing" in labels:      return "Bing 검색"
+    if "instagram" in labels: return "인스타그램"
+    if "facebook" in labels or "fb" in labels: return "페이스북"
+    if "youtube" in labels or host == "youtu.be": return "유튜브"
+    if "twitter" in labels or host in ("t.co", "x.com"): return "X(트위터)"
+    if _host_matches(host, "band.us"): return "네이버 밴드"
+    return host                     # 그 외는 host 그대로 노출(기타 외부)
 
 
 @router.get("/admin/visitor-stats")
-def visitor_stats(days: int = 30, x_admin_token: Optional[str] = Header(default=None)):
+def visitor_stats(
+    days: int = 30,
+    recent_limit: int = 50,   # 최근 기록/엑셀 내보내기 건수(표 표시=50, 엑셀=더 크게 요청 가능)
+    x_admin_token: Optional[str] = Header(default=None),
+):
     """방문자 정확 집계 — visitor_logs 를 service-role 로 전수 집계.
 
     ⚠️ 기존 문제(2026-07-06 수정): 프론트 VisitorTab 이 브라우저 세션으로 직접 조회하며
@@ -489,6 +515,7 @@ def visitor_stats(days: int = 30, x_admin_token: Optional[str] = Header(default=
     """
     _check_admin(x_admin_token)
     days = max(1, min(days, 365))
+    recent_limit = max(1, min(recent_limit, 5000))  # 표=50, 엑셀 전체=최대 5000 요청 허용
 
     # KST(한국시간, UTC+9) 기준 경계 — '오늘'은 한국 자정부터.
     KST = timezone(timedelta(hours=9))
@@ -497,12 +524,19 @@ def visitor_stats(days: int = 30, x_admin_token: Optional[str] = Header(default=
     today_start_utc = now_kst.replace(hour=0, minute=0, second=0, microsecond=0).astimezone(timezone.utc)
     range_gte = range_start_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
     today_gte = today_start_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+    # 오늘 판정용 문자열(행 created_at 과 lexicographic 비교 — 둘 다 UTC ISO8601 이라 안전)
+    today_cmp = today_start_utc.strftime("%Y-%m-%dT%H:%M:%S")
 
     # count=exact 로 '전 행 정확' 총량을 얻는다(행 본문은 limit=0 로 안 받음).
+    #   ⚠️ content-range 총량이 '*'(PostgREST count 실패)면 0 이 아니라 None 을 돌려
+    #      '0 이라는 새 거짓말'을 막는다(리뷰어 B 지적). 호출부가 행 기반으로 폴백.
     def count_exact(gte: str):
         try:
             res = _sb_get("visitor_logs", {"select": "id", "limit": "0", "created_at": f"gte.{gte}"}, count=True)
-            return _count_header(res) if res.status_code in (200, 206) else None
+            if res.status_code not in (200, 206):
+                return None
+            total = res.headers.get("content-range", "").rsplit("/", 1)[-1]
+            return int(total) if total.isdigit() else None
         except Exception:
             return None
 
@@ -534,6 +568,7 @@ def visitor_stats(days: int = 30, x_admin_token: Optional[str] = Header(default=
     sessions: set[str] = set()
     members: set[str] = set()
     logged_in_pv = 0
+    today_from_rows = 0
     page_counts: dict[str, int] = {}
     ref_counts: dict[str, int] = {}
     for r in rows:
@@ -544,6 +579,9 @@ def visitor_stats(days: int = 30, x_admin_token: Optional[str] = Header(default=
         if uid:
             members.add(uid)
             logged_in_pv += 1
+        # 오늘(KST) 여부 — 행 created_at 과 경계 문자열 lexicographic 비교(둘 다 UTC ISO)
+        if (r.get("created_at") or "")[:19] >= today_cmp:
+            today_from_rows += 1
         p = r.get("page_path") or "(경로없음)"
         page_counts[p] = page_counts.get(p, 0) + 1
         ch = _classify_referrer(r.get("referrer"))
@@ -557,17 +595,17 @@ def visitor_stats(days: int = 30, x_admin_token: Optional[str] = Header(default=
     )
     recent = [{
         "created_at": r.get("created_at"),
-        "page_path": r.get("page_path"),
+        "page_path": r.get("page_path") or "(경로없음)",
         "channel": _classify_referrer(r.get("referrer")),
-        "session_id": r.get("session_id"),
+        "session_id": r.get("session_id") or "",   # NOT NULL 이지만 방어적으로 빈문자 보정
         "user_id": r.get("user_id"),
-    } for r in rows[:50]]
+    } for r in rows[:recent_limit]]
 
     return {
         "range_days": days,
-        "total_pageviews": total_pv if total_pv is not None else len(rows),  # 전 행 정확
+        "total_pageviews": total_pv if total_pv is not None else len(rows),  # 전 행 정확(count 실패 시 행 수 폴백)
         "unique_visitors": len(sessions),        # 순 방문자 = distinct 세션
-        "today_pageviews": today_pv if today_pv is not None else 0,          # KST 오늘 정확
+        "today_pageviews": today_pv if today_pv is not None else today_from_rows,  # KST 오늘(count 실패 시 행 기반 폴백)
         "logged_in_pageviews": logged_in_pv,     # 회원 페이지뷰(방문 횟수)
         "logged_in_unique": len(members),        # 회원 순 인원(중복 제거)
         "top_pages": top_pages,

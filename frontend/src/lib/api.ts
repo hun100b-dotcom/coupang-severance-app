@@ -447,8 +447,12 @@ export interface VisitorStatsResponse {
   truncated: boolean            // true면 순방문자/회원수는 표시상한 기준(총량은 정확)
   generated_at: string
 }
-export const getVisitorStats = (days: number) =>
-  api.get<VisitorStatsResponse>('/admin/visitor-stats', { params: { days }, headers: H() }).then(r => r.data)
+// recentLimit: 표 표시는 50(기본), 엑셀 전체 내보내기 시 크게(최대 5000) 요청 가능
+export const getVisitorStats = (days: number, recentLimit?: number) =>
+  api.get<VisitorStatsResponse>('/admin/visitor-stats', {
+    params: recentLimit ? { days, recent_limit: recentLimit } : { days },
+    headers: H(),
+  }).then(r => r.data)
 
 export const getTargetInsights = () =>
   api.get('/admin/target/insights', { headers: H() }).then(r => r.data)
