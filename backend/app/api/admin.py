@@ -51,6 +51,17 @@ _VALID_ADMIN_TOKENS = {_DEFAULT_ADMIN_SECRET}
 if ADMIN_SECRET:
     _VALID_ADMIN_TOKENS.add(ADMIN_SECRET)
 
+# ⚠️ 2026-07-06 어드민 무한로딩→"관리자 인증 실패(401)" 박멸:
+#   프론트(frontend/src/lib/api.ts)는 VITE_ADMIN_SECRET 이 없으면 anon key 뒤 32자를
+#   토큰으로 파생해 보낸다. Vercel 에는 VITE_ADMIN_SECRET 이 설정돼 있지 않아 실제로는
+#   "anon key 뒤 32자"가 프론트 토큰이었는데, 백엔드 허용셋엔 이 파생값이 빠져 있어
+#   모든 어드민 백엔드 호출이 401 로 막혔다(대시보드/방문자/문의/공지 전부 실패).
+#   → 백엔드도 프론트와 "동일 파생 로직"(anon[-32:])을 허용셋에 추가해 계약을 일치시킨다.
+#   (env anon 키가 다른 경우까지 대비해 env·기본 anon 둘 다에서 파생)
+for _anon in (os.getenv("SUPABASE_ANON_KEY", ""), _DEFAULT_ANON_KEY):
+    if _anon and len(_anon) >= 32:
+        _VALID_ADMIN_TOKENS.add(_anon[-32:])
+
 
 # ── 공통 헬퍼 ─────────────────────────────────────────────
 
