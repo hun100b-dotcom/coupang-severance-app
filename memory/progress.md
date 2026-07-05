@@ -6,6 +6,20 @@
 
 ---
 
+## 🩹 정밀계산 "서버에 연결할 수 없어요" 박멸 (2026-07-05, main `e0fa918` 푸시·배포 완료)
+
+> 증상: 퇴직금 정밀계산기에서 저장 PDF(TalkFile_일용근로내역서_고용.pdf 93.1KB) 넣고 계산 시 빨간 배너 "서버에 연결할 수 없어요…쉬운 계산 이용". 4개 계산기 공통 잠복. 더블리뷰 `docs/dual_review/step_precise_fix.md`(A·B PASS).
+
+**근본원인(실측)**: axios 재시도 인터셉터(`api.ts` `_isRetriable`)가 **GET만 재시도**하고 POST는 제외 → 핵심 계산 호출(extract-companies/precise/simple, 전부 POST)은 Render 콜드스타트 502 한 번에 **재시도 0회로 즉시 실패**. 증상 메시지는 "HTTP 응답 없음"(콜드스타트/네트워크단절)일 때만 뜸. 백엔드·CORS·경로·계산로직은 전부 정상(실 PDF로 200 + 퇴직금 2,497,860원 확인).
+
+**수정(`e0fa918`, api.ts 단일)**: 계산/추출 엔드포인트는 DB 부작용 0인 순수계산(멱등, severance.py 확인)이므로 안전하게 재시도 허용. ①AxiosRequestConfig에 `_idempotent` 플래그(declare module) ②`_isRetriable`이 `_idempotent:true` POST도 재시도 ③4계산기 순수계산 10곳(extract4+precise4+simple2)에 플래그 ④멱등 재시도 timeout 20s→45s. 부작용 POST(문의/지원/어드민)엔 미부여 → 중복실행 위험 0.
+
+**재발방지**: (a·구현) 계산 POST 콜드스타트 자동복구(위 수정). (b·후속 태스크 `task_3e22e69b`) 로딩 오버레이 취소버튼(AbortController) — B의 MAJOR(무응답 hang 시 이론 최악 6분·취소불가) 대응. 재시도 횟수 축소는 콜드부팅 커버리지 훼손이라 불채택.
+
+**6-step 검증(전부 실측 PASS)**: ①push `30ab205..e0fa918` ②Vercel 새 번들 `api-DZ4zQzWo.js`(`_idempotent:!0` 포함 확인) ③Render health 200(백엔드 무변경) ④프로덕션 `/api/severance/precise` 200+**2,497,860원**(재확인 2회) ⑤**라이브 UI 계산하기 → 정밀결과 렌더**(예상퇴직금 2,497,860원·평균일당 49,335원·616일·차트, extract+precise 브라우저 200 실측) ⑥위저드 4단계 인터랙티브 스모크 통과. ※ 라이브 정밀렌더는 로그인 필수라 dev(5173, 프로덕션 백엔드 연결)+가짜세션 주입+실 PDF로 재현(프론트 코드 동일). GuestGate·CORS(5173만 허용)는 정상 동작 확인.
+
+---
+
 ## 🔗 어드민 기능·연동 전수조사 3차 (2026-07-04, main 4커밋 푸시)
 
 > 지시: 어드민 전 요소의 실사용 반영·실작동·사용자홈 양방향 연동 전수 체크 후 FIX. 보고서: `docs/audit/admin_link_audit_2026-07-04.md`. 듀얼리뷰 스텝별 아카이브 `docs/dual_review/adminlink_step{1,2,3_4}_*.md` (전부 PASS).
