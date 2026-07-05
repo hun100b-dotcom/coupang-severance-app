@@ -312,6 +312,9 @@ export interface UBResult {
   total_estimate: number
   days_last_month?: number
   company_found?: boolean
+  // 2026 상·하한 적용 투명성 (하한/상한 적용 여부 + 적용 전 원값)
+  daily_benefit_raw?: number
+  bound_applied?: 'lower' | 'upper' | null
 }
 
 export const calcUBPrecise = (formData: FormData): Promise<UBResult> =>
@@ -323,9 +326,10 @@ export const calcUBPrecise = (formData: FormData): Promise<UBResult> =>
 export const calcUBSimple = (
   insured_days: number,
   avg_daily_wage: number,
-  age_50: boolean
+  age_50: boolean,
+  daily_hours = 8, // 1일 소정근로시간(하한액 산정용, 기본 8시간)
 ): Promise<UBResult> =>
-  api.post('/unemployment/simple', { insured_days, avg_daily_wage, age_50 }, { _idempotent: true }).then(r => r.data)
+  api.post('/unemployment/simple', { insured_days, avg_daily_wage, age_50, daily_hours }, { _idempotent: true }).then(r => r.data)
 
 // ── 주휴수당 ─────────────────────────────────────────────
 export const extractWeeklyAllowanceCompanies = (file: File) => {
@@ -422,6 +426,29 @@ export const getAdminStats = () =>
 
 export const getAdminAnalytics = (start: string, end: string) =>
   api.get('/admin/analytics', { params: { start, end }, headers: H() }).then(r => r.data)
+
+// ── 방문자 정확 집계 (visitor_logs service-role 전수) ─────────────────────
+// 배경(2026-07-06): 기존 VisitorTab 은 브라우저 세션으로 visitor_logs 를 직접 조회하며
+//   `.limit(1000)` 이 걸려 있어, 방문이 1000건을 넘으면 총페이지뷰·순방문자·오늘방문·
+//   로그인방문이 전부 1000 부근에서 멈춰 '허수'처럼 보였다. 또 '오늘'을 UTC 기준으로
+//   판정해 한국시간과 최대 9시간 어긋났다. 백엔드가 count=exact(정확 총량) + KST(한국시간)
+//   경계로 진실값을 계산해 준다.
+export interface VisitorStatsResponse {
+  range_days: number
+  total_pageviews: number       // 총 페이지뷰(전 행 정확)
+  unique_visitors: number       // 순 방문자(distinct 세션)
+  today_pageviews: number       // 오늘 방문(KST 자정 기준)
+  logged_in_pageviews: number   // 회원 페이지뷰(방문 횟수)
+  logged_in_unique: number      // 회원 순 인원(중복 제거)
+  top_pages: { path: string; count: number }[]
+  referrers: { channel: string; count: number }[]
+  recent: { created_at: string; page_path: string; channel: string; session_id: string; user_id: string | null }[]
+  fetched: number
+  truncated: boolean            // true면 순방문자/회원수는 표시상한 기준(총량은 정확)
+  generated_at: string
+}
+export const getVisitorStats = (days: number) =>
+  api.get<VisitorStatsResponse>('/admin/visitor-stats', { params: { days }, headers: H() }).then(r => r.data)
 
 export const getTargetInsights = () =>
   api.get('/admin/target/insights', { headers: H() }).then(r => r.data)

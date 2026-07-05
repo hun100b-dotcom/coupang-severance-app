@@ -15,7 +15,7 @@ import hmac
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
 import httpx
@@ -445,6 +445,136 @@ def admin_analytics(
         cur += timedelta(days=1)
 
     return {"daily": daily}
+
+
+# ── 방문자 유입경로 분류 (referrer → 채널) ─────────────────────────────────
+# document.referrer(직전 페이지 URL)를 사람이 읽을 채널명으로 분류한다.
+#   프론트/백엔드가 같은 규칙을 써야 표기가 일관되므로 백엔드를 단일 기준으로 삼는다.
+_APP_HOSTS = ("catch-daily-worker", "localhost", "127.0.0.1")
+def _classify_referrer(ref: Optional[str]) -> str:
+    if not ref:
+        return "직접 방문"          # referrer 없음 = 주소창 직접 입력/북마크/앱 등
+    try:
+        # URL 파싱 없이 host 부분만 소문자로 추출(가벼움)
+        host = ref.split("//", 1)[-1].split("/", 1)[0].lower()
+    except Exception:
+        return "알 수 없음"
+    if any(h in host for h in _APP_HOSTS):
+        return "앱 내 이동"
+    if "google" in host:      return "Google 검색"
+    if "naver" in host:       return "Naver 검색"
+    if "daum" in host or "kakao" in host: return "Daum·Kakao"
+    if "bing" in host:        return "Bing 검색"
+    if "instagram" in host:   return "인스타그램"
+    if "facebook" in host or "fb." in host: return "페이스북"
+    if "youtube" in host or "youtu.be" in host: return "유튜브"
+    if "t.co" in host or "twitter" in host or "x.com" in host: return "X(트위터)"
+    if "band.us" in host:     return "네이버 밴드"
+    return host or "기타 외부"       # 그 외는 도메인 그대로 노출
+
+
+@router.get("/admin/visitor-stats")
+def visitor_stats(days: int = 30, x_admin_token: Optional[str] = Header(default=None)):
+    """방문자 정확 집계 — visitor_logs 를 service-role 로 전수 집계.
+
+    ⚠️ 기존 문제(2026-07-06 수정): 프론트 VisitorTab 이 브라우저 세션으로 직접 조회하며
+       `.limit(1000)` 이 걸려 있어, 실제 방문이 1000건을 넘으면 총페이지뷰·순방문자·
+       오늘방문·로그인방문이 전부 1000 부근에서 멈춰 '허수'처럼 보였다. 또 '오늘'을
+       UTC 자정 기준으로 판정해 한국시간과 최대 9시간 어긋났다(00~09시 방문이 어제로 샘).
+    → 처치: ① 총량은 count=exact 헤더로 '전 행 정확' 집계(조회 상한 무관)
+            ② '오늘'은 KST(한국시간) 자정 경계로 정확 판정
+            ③ 순방문자(세션)·회원 distinct 는 전 행을 받아 집계(상한 도달 시 truncated=true 로 정직히 표기)
+    """
+    _check_admin(x_admin_token)
+    days = max(1, min(days, 365))
+
+    # KST(한국시간, UTC+9) 기준 경계 — '오늘'은 한국 자정부터.
+    KST = timezone(timedelta(hours=9))
+    now_kst = datetime.now(KST)
+    range_start_utc = (now_kst - timedelta(days=days)).astimezone(timezone.utc)
+    today_start_utc = now_kst.replace(hour=0, minute=0, second=0, microsecond=0).astimezone(timezone.utc)
+    range_gte = range_start_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+    today_gte = today_start_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    # count=exact 로 '전 행 정확' 총량을 얻는다(행 본문은 limit=0 로 안 받음).
+    def count_exact(gte: str):
+        try:
+            res = _sb_get("visitor_logs", {"select": "id", "limit": "0", "created_at": f"gte.{gte}"}, count=True)
+            return _count_header(res) if res.status_code in (200, 206) else None
+        except Exception:
+            return None
+
+    # 상세 집계용 행(경로·유입·최근·세션/회원 distinct). 상한 5만(초기 볼륨엔 사실상 전수).
+    FETCH_CAP = 50000
+    def fetch_rows():
+        try:
+            return _sb_get("visitor_logs", {
+                "select": "session_id,user_id,page_path,referrer,created_at",
+                "created_at": f"gte.{range_gte}",
+                "order": "created_at.desc",
+                "limit": str(FETCH_CAP),
+            })
+        except Exception:
+            return None
+
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        total_fut = pool.submit(count_exact, range_gte)
+        today_fut = pool.submit(count_exact, today_gte)
+        rows_fut = pool.submit(fetch_rows)
+        total_pv, today_pv, rows_res = total_fut.result(), today_fut.result(), rows_fut.result()
+
+    # ★ 가짜 0 금지: 업스트림 장애 시 빈 0 이 아니라 명시적 502 로 알려 프론트가 에러를 띄운다.
+    if rows_res is None or rows_res.status_code not in (200, 206):
+        raise HTTPException(status_code=502, detail="방문자 로그 조회 실패(업스트림)")
+    rows = rows_res.json()
+    truncated = len(rows) >= FETCH_CAP
+
+    sessions: set[str] = set()
+    members: set[str] = set()
+    logged_in_pv = 0
+    page_counts: dict[str, int] = {}
+    ref_counts: dict[str, int] = {}
+    for r in rows:
+        sid = r.get("session_id")
+        if sid:
+            sessions.add(sid)
+        uid = r.get("user_id")
+        if uid:
+            members.add(uid)
+            logged_in_pv += 1
+        p = r.get("page_path") or "(경로없음)"
+        page_counts[p] = page_counts.get(p, 0) + 1
+        ch = _classify_referrer(r.get("referrer"))
+        ref_counts[ch] = ref_counts.get(ch, 0) + 1
+
+    top_pages = sorted(
+        [{"path": k, "count": v} for k, v in page_counts.items()], key=lambda x: -x["count"]
+    )[:10]
+    referrers = sorted(
+        [{"channel": k, "count": v} for k, v in ref_counts.items()], key=lambda x: -x["count"]
+    )
+    recent = [{
+        "created_at": r.get("created_at"),
+        "page_path": r.get("page_path"),
+        "channel": _classify_referrer(r.get("referrer")),
+        "session_id": r.get("session_id"),
+        "user_id": r.get("user_id"),
+    } for r in rows[:50]]
+
+    return {
+        "range_days": days,
+        "total_pageviews": total_pv if total_pv is not None else len(rows),  # 전 행 정확
+        "unique_visitors": len(sessions),        # 순 방문자 = distinct 세션
+        "today_pageviews": today_pv if today_pv is not None else 0,          # KST 오늘 정확
+        "logged_in_pageviews": logged_in_pv,     # 회원 페이지뷰(방문 횟수)
+        "logged_in_unique": len(members),        # 회원 순 인원(중복 제거)
+        "top_pages": top_pages,
+        "referrers": referrers,
+        "recent": recent,
+        "fetched": len(rows),
+        "truncated": truncated,                  # true면 순방문자/회원수는 표시상한 기준(총량은 정확)
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    }
 
 
 # ── Target ────────────────────────────────────────────────
