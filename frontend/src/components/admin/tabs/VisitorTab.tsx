@@ -119,24 +119,24 @@ export default function VisitorTab() {
   // KPI 4개 — 각 값은 백엔드 정확 집계. sub 에 보조 수치, ⓘ 에 집계기준 설명.
   const kpis = [
     {
-      label: '총 페이지뷰', value: data.total_pageviews, color: UP.brand, icon: '👁️',
-      sub: `실유저 · 최근 ${data.range_days}일`,
-      tip: '실제 사람이 앱 페이지를 연 총 횟수예요. 봇·크롤러·배포 시 자동 렌더(프리렌더)는 제외한 "실유저" 기준입니다. 같은 사람이 여러 페이지를 보면 각각 1회로 셉니다.',
-    },
-    {
       label: '순 방문자', value: data.unique_visitors, color: UP.green, icon: '👤',
-      sub: '실유저·중복 제거',
-      tip: '중복을 뺀 실제 방문자 수예요(봇 제외). 브라우저 탭 단위 세션 ID로 셉니다. 같은 사람이 여러 페이지를 봐도 1명(단, 다른 기기·탭이면 따로 셀 수 있어요).',
+      sub: `관리자 본인 ${data.admin_own_sessions.toLocaleString()} 제외`,
+      tip: `중복을 뺀 실제 외부 방문자 수예요. 브라우저 탭 단위 세션으로 셉니다. 봇/프리렌더/자동화 도구는 물론, 관리자(종훈님) 본인의 로그인 방문(${data.admin_own_sessions}건)도 빼고 순수 외부 방문자만 셉니다. 최근 ${data.range_days}일 · 추적시작 ${data.tracking_since}.`,
     },
     {
-      label: '오늘 방문', value: data.today_pageviews, color: UP.amber, icon: '📅',
-      sub: '실유저·한국시간(KST)',
-      tip: '오늘(한국시간 자정부터 지금까지) 실제 사람의 페이지뷰 수예요(봇 제외, 한국시간 기준).',
+      label: '오늘 방문', value: data.today_visitors, color: UP.amber, icon: '📅',
+      sub: '순 사람 수·KST',
+      tip: '오늘(한국시간 자정부터 지금까지) 방문한 "사람 수"(중복 제거·외부·봇제외)예요. 조회수가 아니라 실제 방문자 수입니다.',
     },
     {
-      label: '로그인 방문', value: data.logged_in_pageviews, color: UP.strong, icon: '🔐',
-      sub: `실인원 ${data.logged_in_unique.toLocaleString()}명`,
-      tip: '로그인한 회원이 페이지를 연 횟수(방문 횟수)예요. 아래 "실인원"은 중복을 뺀 실제 회원 수(명)입니다.',
+      label: '가입자', value: data.signups_total ?? 0, color: UP.brand, icon: '🙋',
+      sub: data.signups_total === null ? '집계 불가' : `오늘 +${(data.signups_today ?? 0).toLocaleString()} · 주 +${(data.signups_week ?? 0).toLocaleString()}`,
+      tip: '실제 회원가입한 총 인원(가장 확실한 하드넘버 — Supabase 인증 계정 수)이에요. 방문자와 달리 추정이 아닌 정확한 등록 수입니다. 아래는 오늘/최근 7일 신규가입.',
+    },
+    {
+      label: '총 페이지뷰', value: data.total_pageviews, color: UP.strong, icon: '👁️',
+      sub: `조회수 · 봇 ${data.bots_excluded.toLocaleString()} 제외`,
+      tip: `실제 사람이 페이지를 연 총 "조회수"예요(같은 사람이 여러 페이지 보면 각각 1). 방문자 수가 아니라 조회수입니다. 봇/프리렌더 ${data.bots_excluded}건은 제외했습니다.`,
     },
   ]
 
@@ -144,7 +144,7 @@ export default function VisitorTab() {
     <div style={{ padding: 'clamp(16px, 3vw, 28px)' }}>
       <PageHeader
         icon="👁️" title="방문자 분석"
-        subtitle={`실유저 기준 · ${data.total_pageviews.toLocaleString()} 페이지뷰 (봇 ${data.bots_excluded.toLocaleString()}건 제외)${lastUpdated ? ` · ${lastUpdated.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} 갱신` : ''}`}
+        subtitle={`외부 실유저 기준 · 봇 ${data.bots_excluded.toLocaleString()}건 + 관리자본인 ${data.admin_own_sessions.toLocaleString()}세션 제외 · 추적시작 ${data.tracking_since}${lastUpdated ? ` · ${lastUpdated.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} 갱신` : ''}`}
         actions={
           <>
             <div style={{ display: 'flex', gap: 4 }}>

@@ -44,3 +44,8 @@ DROP POLICY IF EXISTS "Admins can read feedback" ON public.calc_feedback;
 CREATE POLICY "Admins can read feedback"
   ON public.calc_feedback FOR SELECT
   USING (public.is_admin());
+
+-- ⚠️ RLS 정책과 별개로 테이블 GRANT 필요: anon/authenticated 에 INSERT 권한을 줘야
+--   비로그인/로그인 사용자가 폼을 제출할 수 있다(없으면 42501 RLS 위반).
+--   SELECT 는 부여하지 않음(백엔드 service-role 로만 조회 → 이중 차단).
+GRANT INSERT ON public.calc_feedback TO anon, authenticated;

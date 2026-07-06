@@ -55,7 +55,7 @@ function isBotClient(): boolean {
     if (navigator.webdriver) return true   // 프리렌더·Playwright·Puppeteer 등 자동화
     const ua = (navigator.userAgent || '').toLowerCase()
     if (!ua) return true                    // UA 없음 = 정상 브라우저 아님
-    return /headless|bot|crawler|spider|phantom|puppeteer|playwright|python|curl|wget|axios|node-fetch|go-http|java\/|http-client|monitor|uptime|pingdom|lighthouse|prerender/.test(ua)
+    return /headless|bot|crawler|spider|phantom|puppeteer|playwright|python|curl|wget|axios|node-fetch|go-http|java\/|http-client|monitor|uptime|pingdom|lighthouse|prerender|electron/.test(ua)
   } catch {
     return false
   }

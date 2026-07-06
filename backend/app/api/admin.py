@@ -504,7 +504,7 @@ def _classify_referrer(ref: Optional[str]) -> str:
 #   수집을 차단하지만(useVisitorTracking), 과거 누적분·놓친 봇을 여기서 한 번 더 걸러 정확값을 만든다.
 _BOT_UA_RE = re.compile(
     r"headless|bot|crawler|spider|phantom|puppeteer|playwright|python|curl|wget|"
-    r"axios|node-fetch|go-http|java/|http-client|monitor|uptime|pingdom|lighthouse|prerender",
+    r"axios|node-fetch|go-http|java/|http-client|monitor|uptime|pingdom|lighthouse|prerender|electron",
     re.IGNORECASE,
 )
 def _is_bot_ua(ua: Optional[str]) -> bool:
@@ -546,9 +546,15 @@ def visitor_stats(
     # count=exact 로 '전 행 정확' 총량을 얻는다(행 본문은 limit=0 로 안 받음).
     #   ⚠️ content-range 총량이 '*'(PostgREST count 실패)면 0 이 아니라 None 을 돌려
     #      '0 이라는 새 거짓말'을 막는다(리뷰어 B 지적). 호출부가 행 기반으로 폴백.
-    def count_table(table: str, gte: str):
+    # 이번주(최근 7일) KST 경계
+    week_gte = (now_kst - timedelta(days=7)).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    def count_table(table: str, gte: Optional[str] = None):
         try:
-            res = _sb_get(table, {"select": "id", "limit": "0", "created_at": f"gte.{gte}"}, count=True)
+            params = {"select": "id", "limit": "0"}
+            if gte:
+                params["created_at"] = f"gte.{gte}"
+            res = _sb_get(table, params, count=True)
             if res.status_code not in (200, 206):
                 return None
             total = res.headers.get("content-range", "").rsplit("/", 1)[-1]
@@ -556,15 +562,38 @@ def visitor_stats(
         except Exception:
             return None
 
-    # 원시 총량(봇 포함) + 전환 퍼널용 가입·계산 count 를 병렬로.
-    #   total_all_raw: 봇 포함 전체 행수(페이지네이션 조기종료 기준·봇 제외량 산출용).
-    #   퍼널(방문→가입→계산): 같은 기간의 신규 가입(profiles)·계산 리포트(reports) 수(봇 무관).
-    with ThreadPoolExecutor(max_workers=3) as pool:
+    # 관리자 본인 user_id 집합 — '실유저'에서 종훈님/관리자 본인 트래픽을 분리하기 위함.
+    #   admin_accounts(email) → profiles(email→id) 로 매핑. 실패해도 빈 집합(무영향).
+    def fetch_admin_uids() -> set[str]:
+        try:
+            ares = _sb_get("admin_accounts", {"select": "email"})
+            emails = [r["email"] for r in ares.json() if r.get("email")] if ares.status_code == 200 else []
+            if not emails:
+                return set()
+            in_list = ",".join('"' + e.replace('"', '') + '"' for e in emails)
+            pres = _sb_get("profiles", {"select": "id", "email": f"in.({in_list})"})
+            if pres.status_code != 200:
+                return set()
+            return {r["id"] for r in pres.json() if r.get("id")}
+        except Exception:
+            return set()
+
+    # 원시 총량(봇 포함) + 가입자(총/오늘/주/기간) + 계산 리포트 + 관리자 uid 를 병렬로.
+    with ThreadPoolExecutor(max_workers=7) as pool:
         total_raw_fut = pool.submit(count_table, "visitor_logs", range_gte)
-        signup_fut = pool.submit(count_table, "profiles", range_gte)
+        signup_total_fut = pool.submit(count_table, "profiles", None)       # 전체 가입자(하드넘버)
+        signup_today_fut = pool.submit(count_table, "profiles", today_gte)  # 오늘 신규가입(KST)
+        signup_week_fut = pool.submit(count_table, "profiles", week_gte)    # 최근7일 신규가입
+        signup_range_fut = pool.submit(count_table, "profiles", range_gte)  # 선택 기간 신규가입(퍼널용)
         report_fut = pool.submit(count_table, "reports", range_gte)
+        admin_fut = pool.submit(fetch_admin_uids)
         total_all_raw = total_raw_fut.result()
-        signups_in_range, reports_in_range = signup_fut.result(), report_fut.result()
+        signups_total = signup_total_fut.result()
+        signups_today = signup_today_fut.result()
+        signups_week = signup_week_fut.result()
+        signups_in_range = signup_range_fut.result()
+        reports_in_range = report_fut.result()
+        admin_uids = admin_fut.result()
 
     # 상세 집계용 행을 '페이지네이션'으로 전수 수집한다.
     #   ⚠️ 핵심: PostgREST(Supabase)는 요청당 최대 1000행만 반환한다(max-rows 기본값). 따라서
@@ -606,7 +635,9 @@ def visitor_stats(
     else:
         truncated = True                           # MAX_PAGES 소진 = 상한 도달(6만행 초과)
 
-    sessions: set[str] = set()
+    sessions: set[str] = set()               # 실유저 전체 세션(봇 제외)
+    admin_session_ids: set[str] = set()      # 그중 관리자 본인(로그인) 세션
+    today_session_ids: set[str] = set()      # 오늘(KST) 실유저 세션
     members: set[str] = set()
     logged_in_pv = 0
     human_pv = 0                             # 실유저 페이지뷰(봇 제외)
@@ -624,14 +655,18 @@ def visitor_stats(
             continue
         human_pv += 1
         sid = r.get("session_id")
+        uid = r.get("user_id")
+        is_today = (r.get("created_at") or "")[:19] >= today_cmp
         if sid:
             sessions.add(sid)
-        uid = r.get("user_id")
+            if uid and uid in admin_uids:
+                admin_session_ids.add(sid)   # 관리자 본인 세션 표시(외부 실유저에서 분리)
+            if is_today:
+                today_session_ids.add(sid)
         if uid:
             members.add(uid)
             logged_in_pv += 1
-        # 오늘(KST) 여부 — 행 created_at 과 경계 문자열 lexicographic 비교(둘 다 UTC ISO)
-        if (r.get("created_at") or "")[:19] >= today_cmp:
+        if is_today:
             today_from_rows += 1
         p = r.get("page_path") or "(경로없음)"
         page_counts[p] = page_counts.get(p, 0) + 1
@@ -660,10 +695,14 @@ def visitor_stats(
         [{"campaign": k, "count": v} for k, v in campaign_counts.items()], key=lambda x: -x["count"]
     )[:10]
 
-    # 전환 퍼널(방문→가입→계산): 같은 기간 순방문자 → 신규 가입 → 계산 리포트.
+    # 외부 실유저(관리자 본인 제외) 순 방문자 — 헤드라인 지표
+    external_unique = len(sessions - admin_session_ids)
+    today_visitors = len(today_session_ids - admin_session_ids)   # 오늘 순 사람 수(외부, KST)
+
+    # 전환 퍼널(방문→가입→계산): 외부 순방문자 → 신규 가입 → 계산 리포트.
     #   단위가 다르므로(세션/회원/리포트) 참고용 전환 흐름으로 표기(툴팁으로 안내).
     funnel = {
-        "visitors": len(sessions),
+        "visitors": external_unique,
         "signups": signups_in_range if signups_in_range is not None else 0,
         "calculations": reports_in_range if reports_in_range is not None else 0,
         "signups_known": signups_in_range is not None,       # count 실패 시 false(가짜 0 방지 표기)
@@ -680,14 +719,21 @@ def visitor_stats(
 
     return {
         "range_days": days,
-        # ★ 모든 방문 지표는 '실유저'(봇/헤드리스/프리렌더 제외) 기준이다.
-        "total_pageviews": human_pv,             # 실유저 페이지뷰(봇 제외)
-        "unique_visitors": len(sessions),        # 실유저 순 방문자 = distinct 세션(봇 제외)
-        "today_pageviews": today_from_rows,      # 실유저 오늘 방문(KST, 봇 제외)
+        # ★ 모든 방문 지표는 '실유저'(봇/헤드리스/프리렌더/Electron 제외) 기준이다.
+        "total_pageviews": human_pv,             # 실유저 페이지뷰(조회수, 봇 제외)
+        "unique_visitors": external_unique,      # 순 방문자 = 외부 실유저 세션(봇+관리자본인 제외) ← 헤드라인
+        "unique_visitors_incl_admin": len(sessions),  # 관리자 본인 포함 순 방문자(참고)
+        "admin_own_sessions": len(admin_session_ids), # 관리자 본인 세션(분리 표기)
+        "today_visitors": today_visitors,        # 오늘 순 방문자(사람 수, KST, 외부)
+        "today_pageviews": today_from_rows,      # 오늘 페이지뷰(조회수, 참고)
         "logged_in_pageviews": logged_in_pv,     # 회원 페이지뷰(방문 횟수)
-        "logged_in_unique": len(members),        # 회원 순 인원(중복 제거)
+        "logged_in_unique": len(members),        # 방문한 회원 순 인원(중복 제거)
+        "signups_total": signups_total,          # 전체 가입자(하드넘버, auth/profiles)
+        "signups_today": signups_today,          # 오늘 신규가입(KST)
+        "signups_week": signups_week,            # 최근 7일 신규가입
         "bots_excluded": bots_excluded,          # 집계에서 제외한 봇/자동화 행수(정직성)
         "raw_pageviews": total_all_raw if total_all_raw is not None else len(rows),  # 봇 포함 원시 총량(참고)
+        "tracking_since": "2026-04-18",          # 방문 추적 시작일(기간 해석 참고)
         "top_pages": top_pages,
         "referrers": referrers,
         "utm_sources": utm_sources,              # 캠페인 유입원 TOP

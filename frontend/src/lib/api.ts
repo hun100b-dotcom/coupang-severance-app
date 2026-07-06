@@ -435,13 +435,20 @@ export const getAdminAnalytics = (start: string, end: string) =>
 //   경계로 진실값을 계산해 준다.
 export interface VisitorStatsResponse {
   range_days: number
-  total_pageviews: number       // 총 페이지뷰(전 행 정확)
-  unique_visitors: number       // 순 방문자(distinct 세션)
-  today_pageviews: number       // 오늘 방문(KST 자정 기준)
+  total_pageviews: number       // 실유저 페이지뷰(조회수, 봇 제외)
+  unique_visitors: number       // 순 방문자 = 외부 실유저(봇+관리자본인 제외)
+  unique_visitors_incl_admin: number  // 관리자 본인 포함 순 방문자(참고)
+  admin_own_sessions: number    // 관리자 본인 세션(분리 표기)
+  today_visitors: number        // 오늘 순 방문자(사람 수, KST, 외부)
+  today_pageviews: number       // 오늘 페이지뷰(조회수, 참고)
   logged_in_pageviews: number   // 회원 페이지뷰(방문 횟수)
-  logged_in_unique: number      // 회원 순 인원(중복 제거)
-  bots_excluded: number         // 집계에서 제외한 봇/자동화(프리렌더·크롤러) 행수
+  logged_in_unique: number      // 방문한 회원 순 인원(중복 제거)
+  signups_total: number | null  // 전체 가입자(하드넘버)
+  signups_today: number | null  // 오늘 신규가입(KST)
+  signups_week: number | null   // 최근 7일 신규가입
+  bots_excluded: number         // 집계에서 제외한 봇/자동화(프리렌더·크롤러·Electron) 행수
   raw_pageviews: number         // 봇 포함 원시 총량(참고용)
+  tracking_since: string        // 방문 추적 시작일
   top_pages: { path: string; count: number }[]
   referrers: { channel: string; count: number }[]
   utm_sources: { source: string; count: number }[]      // 캠페인 유입원 TOP
