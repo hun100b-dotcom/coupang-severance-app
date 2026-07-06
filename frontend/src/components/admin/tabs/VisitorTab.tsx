@@ -120,18 +120,18 @@ export default function VisitorTab() {
   const kpis = [
     {
       label: '총 페이지뷰', value: data.total_pageviews, color: UP.brand, icon: '👁️',
-      sub: `최근 ${data.range_days}일`,
-      tip: '선택한 기간에 앱의 페이지가 열린 총 횟수예요(전체 정확 집계 — 예전 1,000건 상한을 없앴습니다). 같은 사람이 여러 페이지를 보면 각각 1회로 셉니다.',
+      sub: `실유저 · 최근 ${data.range_days}일`,
+      tip: '실제 사람이 앱 페이지를 연 총 횟수예요. 봇·크롤러·배포 시 자동 렌더(프리렌더)는 제외한 "실유저" 기준입니다. 같은 사람이 여러 페이지를 보면 각각 1회로 셉니다.',
     },
     {
       label: '순 방문자', value: data.unique_visitors, color: UP.green, icon: '👤',
-      sub: '중복 제거·세션 기준',
-      tip: '중복을 뺀 실제 방문자 수예요. 브라우저 탭 단위 세션 ID로 셉니다. 같은 사람이 여러 페이지를 봐도 1명(단, 다른 기기·탭이면 따로 셀 수 있어요).',
+      sub: '실유저·중복 제거',
+      tip: '중복을 뺀 실제 방문자 수예요(봇 제외). 브라우저 탭 단위 세션 ID로 셉니다. 같은 사람이 여러 페이지를 봐도 1명(단, 다른 기기·탭이면 따로 셀 수 있어요).',
     },
     {
       label: '오늘 방문', value: data.today_pageviews, color: UP.amber, icon: '📅',
-      sub: '한국시간(KST) 기준',
-      tip: '오늘(한국시간 자정부터 지금까지) 발생한 페이지뷰 수예요. 예전엔 세계표준시(UTC) 기준이라 최대 9시간 어긋났는데, 이제 한국시간 기준으로 정확합니다.',
+      sub: '실유저·한국시간(KST)',
+      tip: '오늘(한국시간 자정부터 지금까지) 실제 사람의 페이지뷰 수예요(봇 제외, 한국시간 기준).',
     },
     {
       label: '로그인 방문', value: data.logged_in_pageviews, color: UP.strong, icon: '🔐',
@@ -144,7 +144,7 @@ export default function VisitorTab() {
     <div style={{ padding: 'clamp(16px, 3vw, 28px)' }}>
       <PageHeader
         icon="👁️" title="방문자 분석"
-        subtitle={`visitor_logs 전수 집계 · ${data.total_pageviews.toLocaleString()} 페이지뷰${lastUpdated ? ` · ${lastUpdated.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} 갱신` : ''}`}
+        subtitle={`실유저 기준 · ${data.total_pageviews.toLocaleString()} 페이지뷰 (봇 ${data.bots_excluded.toLocaleString()}건 제외)${lastUpdated ? ` · ${lastUpdated.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} 갱신` : ''}`}
         actions={
           <>
             <div style={{ display: 'flex', gap: 4 }}>
@@ -164,8 +164,8 @@ export default function VisitorTab() {
           background: UP.brandBg, border: `1px solid ${UP.brandLine}`, borderRadius: 10,
           padding: '9px 12px', color: UP.strong, marginBottom: 12, fontWeight: 600,
         }}>
-          ℹ️ 방문 기록이 매우 많아 순 방문자·인기 페이지 등 상세 집계는 최근 {data.fetched.toLocaleString()}건 기준으로 표시됩니다.
-          (총 페이지뷰·오늘 방문은 전체 정확 집계)
+          ℹ️ 방문 기록이 표시 상한(최근 {data.fetched.toLocaleString()}건)에 도달해, 모든 지표가 그 범위 기준으로 표시됩니다.
+          기간을 좁히면 더 정확해집니다.
         </div>
       )}
 

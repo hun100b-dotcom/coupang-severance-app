@@ -14,6 +14,7 @@ import hashlib
 import hmac
 import logging
 import os
+import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
@@ -497,6 +498,21 @@ def _classify_referrer(ref: Optional[str]) -> str:
     return host                     # 그 외는 host 그대로 노출(기타 외부)
 
 
+# 봇/자동화 UA 판별 — 방문자 집계에서 제외(순방문자 부풀림 방지).
+#   핵심 오염원: Vercel prerender(헤드리스 크롬)가 배포마다 SEO 라우트를 렌더하며 방문 기록을
+#   남겼다(실측 30일 4131건 중 2482건=60%가 봇, 순방문자 1796→실유저 270). 프론트에서도
+#   수집을 차단하지만(useVisitorTracking), 과거 누적분·놓친 봇을 여기서 한 번 더 걸러 정확값을 만든다.
+_BOT_UA_RE = re.compile(
+    r"headless|bot|crawler|spider|phantom|puppeteer|playwright|python|curl|wget|"
+    r"axios|node-fetch|go-http|java/|http-client|monitor|uptime|pingdom|lighthouse|prerender",
+    re.IGNORECASE,
+)
+def _is_bot_ua(ua: Optional[str]) -> bool:
+    if not ua:
+        return True   # UA 없음 = 정상 브라우저 아님(봇/스크립트로 간주)
+    return bool(_BOT_UA_RE.search(ua))
+
+
 @router.get("/admin/visitor-stats")
 def visitor_stats(
     days: int = 30,
@@ -540,14 +556,14 @@ def visitor_stats(
         except Exception:
             return None
 
-    # 총량/오늘 + 전환 퍼널용 가입·계산 count 를 병렬로(정확 총량 확보).
-    #   퍼널(방문→가입→계산): 같은 기간의 신규 가입(profiles)·계산 리포트(reports) 수.
-    with ThreadPoolExecutor(max_workers=4) as pool:
-        total_fut = pool.submit(count_table, "visitor_logs", range_gte)
-        today_fut = pool.submit(count_table, "visitor_logs", today_gte)
+    # 원시 총량(봇 포함) + 전환 퍼널용 가입·계산 count 를 병렬로.
+    #   total_all_raw: 봇 포함 전체 행수(페이지네이션 조기종료 기준·봇 제외량 산출용).
+    #   퍼널(방문→가입→계산): 같은 기간의 신규 가입(profiles)·계산 리포트(reports) 수(봇 무관).
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        total_raw_fut = pool.submit(count_table, "visitor_logs", range_gte)
         signup_fut = pool.submit(count_table, "profiles", range_gte)
         report_fut = pool.submit(count_table, "reports", range_gte)
-        total_pv, today_pv = total_fut.result(), today_fut.result()
+        total_all_raw = total_raw_fut.result()
         signups_in_range, reports_in_range = signup_fut.result(), report_fut.result()
 
     # 상세 집계용 행을 '페이지네이션'으로 전수 수집한다.
@@ -558,7 +574,7 @@ def visitor_stats(
     MAX_PAGES = 60          # 안전 상한 6만 행(그 이상은 truncated 로 정직 표기)
     def fetch_page(offset: int):
         return _sb_get("visitor_logs", {
-            "select": "session_id,user_id,page_path,referrer,created_at,utm_source,utm_campaign",
+            "select": "session_id,user_id,page_path,referrer,created_at,utm_source,utm_campaign,user_agent",
             "created_at": f"gte.{range_gte}",
             "order": "created_at.desc,id.desc",   # 안정 정렬(동시각 페이지경계 흔들림 완화)
             "offset": str(offset),
@@ -585,21 +601,28 @@ def visitor_stats(
         rows.extend(batch)
         if len(batch) < PAGE:
             break                                  # 마지막 페이지 도달 = 전수 수집 완료
-        if total_pv is not None and len(rows) >= total_pv:
-            break                                  # 정확 총량만큼 모았으면 종료
+        if total_all_raw is not None and len(rows) >= total_all_raw:
+            break                                  # 원시 총량(봇 포함)만큼 모았으면 종료
     else:
         truncated = True                           # MAX_PAGES 소진 = 상한 도달(6만행 초과)
 
     sessions: set[str] = set()
     members: set[str] = set()
     logged_in_pv = 0
+    human_pv = 0                             # 실유저 페이지뷰(봇 제외)
     today_from_rows = 0
+    bots_excluded = 0                        # 집계에서 제외한 봇/자동화 행수(정직성 표기)
     page_counts: dict[str, int] = {}
     ref_counts: dict[str, int] = {}
     utm_source_counts: dict[str, int] = {}   # 캠페인 유입원(kakao/naver 등)별 방문
     campaign_counts: dict[str, int] = {}     # '유입원 / 캠페인명' 별 방문
     utm_total = 0                            # UTM 이 붙은 방문(캠페인 유입) 총 페이지뷰
     for r in rows:
+        # ── 봇/자동화(프리렌더·크롤러·모니터)는 실유저가 아니므로 전 지표에서 제외 ──
+        if _is_bot_ua(r.get("user_agent")):
+            bots_excluded += 1
+            continue
+        human_pv += 1
         sid = r.get("session_id")
         if sid:
             sessions.add(sid)
@@ -646,21 +669,25 @@ def visitor_stats(
         "signups_known": signups_in_range is not None,       # count 실패 시 false(가짜 0 방지 표기)
         "calculations_known": reports_in_range is not None,
     }
+    # 최근 방문 기록도 실유저만(봇 제외) — 최신순으로 recent_limit 건
     recent = [{
         "created_at": r.get("created_at"),
         "page_path": r.get("page_path") or "(경로없음)",
         "channel": _classify_referrer(r.get("referrer")),
         "session_id": r.get("session_id") or "",   # NOT NULL 이지만 방어적으로 빈문자 보정
         "user_id": r.get("user_id"),
-    } for r in rows[:recent_limit]]
+    } for r in rows if not _is_bot_ua(r.get("user_agent"))][:recent_limit]
 
     return {
         "range_days": days,
-        "total_pageviews": total_pv if total_pv is not None else len(rows),  # 전 행 정확(count 실패 시 행 수 폴백)
-        "unique_visitors": len(sessions),        # 순 방문자 = distinct 세션
-        "today_pageviews": today_pv if today_pv is not None else today_from_rows,  # KST 오늘(count 실패 시 행 기반 폴백)
+        # ★ 모든 방문 지표는 '실유저'(봇/헤드리스/프리렌더 제외) 기준이다.
+        "total_pageviews": human_pv,             # 실유저 페이지뷰(봇 제외)
+        "unique_visitors": len(sessions),        # 실유저 순 방문자 = distinct 세션(봇 제외)
+        "today_pageviews": today_from_rows,      # 실유저 오늘 방문(KST, 봇 제외)
         "logged_in_pageviews": logged_in_pv,     # 회원 페이지뷰(방문 횟수)
         "logged_in_unique": len(members),        # 회원 순 인원(중복 제거)
+        "bots_excluded": bots_excluded,          # 집계에서 제외한 봇/자동화 행수(정직성)
+        "raw_pageviews": total_all_raw if total_all_raw is not None else len(rows),  # 봇 포함 원시 총량(참고)
         "top_pages": top_pages,
         "referrers": referrers,
         "utm_sources": utm_sources,              # 캠페인 유입원 TOP
@@ -669,7 +696,7 @@ def visitor_stats(
         "funnel": funnel,                        # 방문→가입→계산 전환 퍼널
         "recent": recent,
         "fetched": len(rows),
-        "truncated": truncated,                  # true면 순방문자/회원수는 표시상한 기준(총량은 정확)
+        "truncated": truncated,                  # true면 순방문자 등은 표시상한 기준
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
 

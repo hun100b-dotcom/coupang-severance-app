@@ -440,6 +440,8 @@ export interface VisitorStatsResponse {
   today_pageviews: number       // 오늘 방문(KST 자정 기준)
   logged_in_pageviews: number   // 회원 페이지뷰(방문 횟수)
   logged_in_unique: number      // 회원 순 인원(중복 제거)
+  bots_excluded: number         // 집계에서 제외한 봇/자동화(프리렌더·크롤러) 행수
+  raw_pageviews: number         // 봇 포함 원시 총량(참고용)
   top_pages: { path: string; count: number }[]
   referrers: { channel: string; count: number }[]
   utm_sources: { source: string; count: number }[]      // 캠페인 유입원 TOP
