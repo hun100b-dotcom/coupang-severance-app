@@ -229,13 +229,13 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
           />
         </div>
 
+        {/* 계산 결과 하단 피드백/문의 폼 (일용직 권리 증진) — 종료 버튼 위에 배치해 잘 보이게 */}
+        <CalcFeedback calcType="unemployment" />
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <PrimaryButton onClick={onReset}>다시 계산하기</PrimaryButton>
           <SecondaryButton onClick={() => navigate('/home')}>← 홈으로</SecondaryButton>
         </div>
-
-        {/* 계산 결과 하단 피드백/문의 폼 (일용직 권리 증진) */}
-        <CalcFeedback calcType="unemployment" />
       </div>
 
       {/* 비로그인 게스트 → 저장하기 클릭 시 로그인 유도 모달 */}
