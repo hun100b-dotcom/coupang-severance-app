@@ -32,6 +32,18 @@
 
 ---
 
+## 📊 방문자 지표 신뢰성 재확정 + 계산기 피드백 폼 (2026-07-06, main `f069972`·`965c9eb`)
+
+> 종훈님 "270 못 믿겠다·다 엉망" → 숫자 정의 못박고 실 DB 교차검증. 듀얼리뷰 `docs/dual_review/admin_metrics_feedback_2026-07-06.md`.
+
+**A. 270 교차검증(실 DB 분해)**: 봇제외 271세션 = Electron/Claude(내 검증도구) 13 + 관리자 본인 로그인 32 + localhost 1 + **순수 외부 실유저 226**. 처치: ①Electron을 봇필터 추가(수집·집계) ②관리자 본인(admin_accounts→profiles→user_id) 세션 분리 → **순방문자=외부 실유저(봇+Electron+관리자본인 제외)로 재정의**, incl_admin 병기 ③**가입자 하드넘버 추가**(signups_total=auth/profiles 57 + 오늘/주 신규) ④**오늘 방문=순 사람 수**(distinct 세션,KST,외부)로 변경, 총페이지뷰=조회수 라벨 ⑤tracking_since(2026-04-18)·각 KPI 정의 툴팁. **라이브 before→after**: 순방문 1796→270→**226**, 총PV 4046→1649→**1384**, 가입자 **57**. 226=258−32 정확 일치(교차검증). 한계: 익명 개발트래픽은 IP 미저장으로 식별 불가(정직 표기).
+
+**B. 계산기 피드백 폼**: calc_feedback 테이블(프로덕션)+RLS+**GRANT INSERT anon/authenticated**(신규테이블 권한함정, 없으면 42501). CalcFeedback 공용 컴포넌트(지정문구·도움/오류/자유의견/이메일·제출후 감사·세션당1회) → 4개 결과화면 삽입(퇴직금·실업급여 + 주휴·연차 간편/PDF). 백엔드 GET /admin/feedback + 어드민 [소통]에 '계산기 피드백' 메뉴. **엔드투엔드 실측**: anon 제출 201→/admin/feedback 노출→삭제.
+
+**검증**: 종훈님 실도메인 CORS 200, tsc/py_compile/build 통과, 테스트데이터 삭제. 계산로직 무변경. [[admin-token-and-postgrest-cap]].
+
+---
+
 ## 🎨 어드민 폰트통일 + 봇제외 실유저 재산출 + UTM 견고화 (2026-07-06, main `9c6d5ef`·`a83f1bc`)
 
 > 종훈님 피드백 3건. 전부 라이브 실측·검증. 듀얼리뷰 `docs/dual_review/admin_font_bots_utm_2026-07-06.md`.
