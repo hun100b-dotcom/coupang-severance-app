@@ -32,6 +32,20 @@
 
 ---
 
+## 🎨 어드민 폰트통일 + 봇제외 실유저 재산출 + UTM 견고화 (2026-07-06, main `9c6d5ef`·`a83f1bc`)
+
+> 종훈님 피드백 3건. 전부 라이브 실측·검증. 듀얼리뷰 `docs/dual_review/admin_font_bots_utm_2026-07-06.md`.
+
+**#1 폰트 통일(`a83f1bc`, 27파일)**: 어드민 인라인 `fontSize:'0.6~1.6rem'` 19종(0.73/0.75/0.82/0.85 등 유사소형 난립)이 제각각 → AdminPage 루트에 Pretendard·기본13px 명시 + 인라인 rem을 기존 text-aN(10/11/12/13/14/16/20/24px) 스케일로 정규화(sed). clamp() 반응형·차트 tick 보존. 유저페이지 0변경. tsc+build 통과.
+
+**#2 지표 부풀림=봇(`9c6d5ef`)**: 실측 30일 4131건 중 **2482건(60%)=봇**. 주범=Vercel prerender 헤드리스크롬(배포마다 SEO 17라우트 렌더 시 방문훅 실행). **순방문자 1796→실유저 270**(6.6배 부풀림). 처치: 수집차단(navigator.webdriver·봇UA insert 스킵) + 백엔드 집계제외(_is_bot_ua, bots_excluded/raw_pageviews 투명). 과거 봇행 삭제안함(로우데이터 보존)·집계서만 제외. 라이브 before→after: 총 4046→1649, 순 1796→270.
+
+**#3 UTM 미반영 원인(`9c6d5ef`)**: ①배포시차(종훈님 테스트 때 라이브 번들에 캡처코드 없었음) ②first-touch 세션고착. 처치: getOrCaptureUtm이 URL에 UTM 있으면 세션도중에도 갱신캡처. **라이브 실증**: 종훈님 URL `/?utm_source=kakao&utm_campaign=여름` 실브라우저 재현→DB 저장(여름 한글 정상)→엔드포인트 `kakao/여름:2` 집계→테스트행 삭제. UTM 가치판단=유지권장(유지비~0, 마케팅 효과측정용; 로드맵 §3-a).
+
+**검증**: 6-step 종훈님 실도메인(coupang-severance-app.vercel.app) 기준 — CORS 200+allow-origin, 실유저수치, UTM 캡처 실증. 계산로직 무변경. [[admin-token-and-postgrest-cap]].
+
+---
+
 ## 🩹 정밀계산 "서버에 연결할 수 없어요" 박멸 (2026-07-05, main `e0fa918` 푸시·배포 완료)
 
 > 증상: 퇴직금 정밀계산기에서 저장 PDF(TalkFile_일용근로내역서_고용.pdf 93.1KB) 넣고 계산 시 빨간 배너 "서버에 연결할 수 없어요…쉬운 계산 이용". 4개 계산기 공통 잠복. 더블리뷰 `docs/dual_review/step_precise_fix.md`(A·B PASS).
