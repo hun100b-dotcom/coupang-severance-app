@@ -239,6 +239,12 @@ export default function AdminPage() {
       display: 'flex', flexDirection: 'column', minHeight: '100vh',
       background: CANVAS_BG, color: DS.body,
       position: 'fixed', inset: 0, zIndex: 100, overflow: 'auto',
+      // ── 어드민 전역 타이포 기준(2026-07-06 통일) ──
+      // 폰트 패밀리·기본 크기·렌더링을 루트에서 한 번 못 박아 모든 하위가 일관 상속.
+      // 크기 위계는 text-aN(10/11/12/13/14/16/20/24px) 스케일로 통일.
+      fontFamily: "'Pretendard', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontSize: 13, lineHeight: 1.5,
+      WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale',
     }}>
       {/* ═══ 상단 프라이머리 바 (프로스트 화이트) ═══ */}
       <header style={{ ...FROST_BAR, position: 'sticky', top: 0, zIndex: 20, flexShrink: 0 }}>
@@ -248,7 +254,7 @@ export default function AdminPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
             <span style={{
               width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'linear-gradient(135deg, #3182F6, #1B64DA)', color: '#fff', fontSize: '1.05rem',
+              background: 'linear-gradient(135deg, #3182F6, #1B64DA)', color: '#fff', fontSize: 16,
               boxShadow: '0 4px 14px rgba(49,130,246,0.35)',
             }}>⚡</span>
             <div style={{ lineHeight: 1 }} className="hidden sm:block">
@@ -274,7 +280,7 @@ export default function AdminPage() {
                   onMouseEnter={e => { if (!on) (e.currentTarget as HTMLButtonElement).style.color = DS.ink }}
                   onMouseLeave={e => { if (!on) (e.currentTarget as HTMLButtonElement).style.color = DS.sub }}
                 >
-                  <span style={{ fontSize: '1rem', opacity: on ? 1 : 0.8 }}>{core.icon}</span>
+                  <span style={{ fontSize: 16, opacity: on ? 1 : 0.8 }}>{core.icon}</span>
                   {core.label}
                   {on && <span style={{
                     position: 'absolute', left: 12, right: 12, bottom: 0, height: 3, borderRadius: '3px 3px 0 0',
@@ -364,10 +370,10 @@ function AccessDenied({ label }: { label: string }) {
         border: `1px solid ${UP.dangerLine}`,
         marginBottom: 16,
       }}>
-        <span style={{ fontSize: '1.6rem' }}>🔒</span>
+        <span style={{ fontSize: 24 }}>🔒</span>
       </div>
-      <div style={{ fontSize: '1rem', fontWeight: 700, color: UP.navy, marginBottom: 8 }}>접근 제한</div>
-      <div style={{ fontSize: '0.85rem', color: UP.sub, lineHeight: 1.6 }}>{label}</div>
+      <div style={{ fontSize: 16, fontWeight: 700, color: UP.navy, marginBottom: 8 }}>접근 제한</div>
+      <div style={{ fontSize: 13, color: UP.sub, lineHeight: 1.6 }}>{label}</div>
     </div>
   )
 }
@@ -387,7 +393,7 @@ function AdminGateLoading() {
           border: `3px solid ${UP.hair}`, borderTopColor: UP.brand,
         }}
       />
-      <div style={{ fontSize: '0.85rem', fontWeight: 600, color: UP.sub }}>관리자 권한 확인 중…</div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: UP.sub }}>관리자 권한 확인 중…</div>
     </div>
   )
 }
@@ -406,10 +412,10 @@ function AdminGateDenied({ loggedIn }: { loggedIn: boolean }) {
         width: 56, height: 56, borderRadius: '50%',
         background: UP.dangerBg, border: `1px solid ${UP.dangerLine}`, marginBottom: 4,
       }}>
-        <span style={{ fontSize: '1.6rem' }}>🔒</span>
+        <span style={{ fontSize: 24 }}>🔒</span>
       </div>
-      <div style={{ fontSize: '1rem', fontWeight: 700, color: UP.navy }}>접근 권한이 없습니다</div>
-      <div style={{ fontSize: '0.85rem', color: UP.sub, lineHeight: 1.6 }}>
+      <div style={{ fontSize: 16, fontWeight: 700, color: UP.navy }}>접근 권한이 없습니다</div>
+      <div style={{ fontSize: 13, color: UP.sub, lineHeight: 1.6 }}>
         등록된 관리자만 입장할 수 있습니다.<br />
         {loggedIn ? '홈으로 이동합니다…' : '로그인 페이지로 이동합니다…'}
       </div>

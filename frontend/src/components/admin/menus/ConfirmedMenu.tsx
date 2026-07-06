@@ -47,7 +47,7 @@ const filterSelectStyle: React.CSSProperties = {
   padding: '8px 14px', borderRadius: 10,
   border: `1px solid ${UP.hair}`,
   background: '#fff', color: UP.navy,
-  fontSize: '0.85rem', cursor: 'pointer', outline: 'none',
+  fontSize: 13, cursor: 'pointer', outline: 'none',
   flex: 1, minWidth: 160,
 }
 
@@ -343,7 +343,7 @@ export default function ConfirmedMenu() {
                     border: `1px solid ${UP.hair}`,
                     borderRadius: 10,
                     color: UP.navy,
-                    fontSize: '0.78rem',
+                    fontSize: 12,
                   }}
                   formatter={(value: number, name: string) => {
                     // 달성률 = 확정 / 지원 표시 (툴팁)

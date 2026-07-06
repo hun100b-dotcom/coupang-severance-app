@@ -196,11 +196,11 @@ export default function RecruitSummaryMenu() {
   const thStyle: React.CSSProperties = {
     padding: '10px 12px', borderBottom: `1px solid ${UP.hairSoft}`,
     color: UP.sub, fontWeight: 600,
-    fontSize: '0.75rem', textTransform: 'uppercase' as const, letterSpacing: '0.05em',
+    fontSize: 12, textTransform: 'uppercase' as const, letterSpacing: '0.05em',
   }
   const cellStyle: React.CSSProperties = {
     padding: '10px 12px', borderBottom: `1px solid ${UP.hairSoft}`,
-    fontSize: '0.83rem', color: UP.body, verticalAlign: 'middle',
+    fontSize: 13, color: UP.body, verticalAlign: 'middle',
   }
 
   return (
@@ -315,7 +315,7 @@ export default function RecruitSummaryMenu() {
                   <Tooltip
                     contentStyle={{ background: '#fff', border: `1px solid ${UP.hair}`, borderRadius: 8, fontSize: 12 }}
                   />
-                  <Legend wrapperStyle={{ fontSize: '0.72rem', color: UP.sub }} />
+                  <Legend wrapperStyle={{ fontSize: 11, color: UP.sub }} />
                   <Bar dataKey="지원" fill={UP.brand} radius={[4, 4, 0, 0]} />
                   <Bar dataKey="확정" fill={UP.green} radius={[4, 4, 0, 0]} />
                   <Bar dataKey="목표" fill={UP.caption} radius={[4, 4, 0, 0]} />

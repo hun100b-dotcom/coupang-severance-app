@@ -293,6 +293,6 @@ const panelBox: React.CSSProperties = {
 }
 const selectStyle: React.CSSProperties = {
   background: DS.sunken, border: `1px solid ${DS.line}`,
-  borderRadius: 999, padding: '8px 14px', fontSize: '0.82rem',
+  borderRadius: 999, padding: '8px 14px', fontSize: 13,
   color: DS.body, outline: 'none', cursor: 'pointer',
 }

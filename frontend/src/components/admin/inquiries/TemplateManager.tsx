@@ -153,7 +153,7 @@ const inputStyle: React.CSSProperties = {
   border: `1px solid ${UP.hair}`,
   borderRadius: 8,
   padding: '8px 12px',
-  fontSize: '0.85rem',
+  fontSize: 13,
   color: UP.navy,
   outline: 'none',
   fontFamily: 'inherit',
@@ -164,11 +164,11 @@ const inputStyle: React.CSSProperties = {
 const btnPrimaryStyle: React.CSSProperties = {
   ...btnPrimary,
   padding: '7px 16px',
-  fontSize: '0.82rem',
+  fontSize: 13,
 }
 
 const btnSecondaryStyle: React.CSSProperties = {
   ...btnSecondary,
   padding: '7px 16px',
-  fontSize: '0.82rem',
+  fontSize: 13,
 }

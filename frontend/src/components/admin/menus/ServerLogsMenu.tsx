@@ -459,12 +459,12 @@ export default function ServerLogsMenu() {
 // 보조 버튼(새로고침·초기화·페이지네이션·상세보기) — 공용 btnSecondary 기반 + 조밀한 사이즈 유지
 const outlineBtn: React.CSSProperties = {
   ...btnSecondary,
-  padding: '6px 12px', fontSize: '0.78rem', fontWeight: 600,
+  padding: '6px 12px', fontSize: 12, fontWeight: 600,
 }
 const selectSt: React.CSSProperties = {
   background: UP.sunken,
   border: `1px solid ${UP.hair}`,
   borderRadius: 8, padding: '6px 10px',
-  fontSize: '0.82rem', color: UP.body,
+  fontSize: 13, color: UP.body,
   outline: 'none', cursor: 'pointer',
 }

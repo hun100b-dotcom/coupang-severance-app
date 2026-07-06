@@ -133,5 +133,5 @@ export default function AuditLogTable({ logs, total, page, onPageChange }: Props
 const exportBtn: React.CSSProperties = {
   padding: '5px 12px', borderRadius: 7, border: `1px solid ${UP.hair}`,
   background: UP.sunken, color: UP.body,
-  fontSize: '0.75rem', cursor: 'pointer',
+  fontSize: 12, cursor: 'pointer',
 }

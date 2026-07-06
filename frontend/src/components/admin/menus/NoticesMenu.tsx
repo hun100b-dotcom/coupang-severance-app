@@ -131,7 +131,7 @@ export default function NoticesMenu() {
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '10px 12px', borderRadius: 10,
     border: `1px solid ${DS.line}`, background: DS.panel, color: DS.ink,
-    fontSize: '0.88rem', boxSizing: 'border-box', outline: 'none',
+    fontSize: 14, boxSizing: 'border-box', outline: 'none',
   }
 
   return (

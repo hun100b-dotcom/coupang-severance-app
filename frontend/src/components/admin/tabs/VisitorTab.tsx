@@ -28,7 +28,7 @@ function InfoTip({ text }: { text: string }) {
         onBlur={() => setOpen(false)}
         style={{
           width: 15, height: 15, borderRadius: '50%', border: `1px solid ${UP.hair}`,
-          background: UP.surface, color: UP.sub, fontSize: '0.6rem', fontWeight: 800,
+          background: UP.surface, color: UP.sub, fontSize: 10, fontWeight: 800,
           lineHeight: 1, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         }}
       >i</button>
@@ -39,7 +39,7 @@ function InfoTip({ text }: { text: string }) {
             position: 'absolute', top: 20, left: 0, zIndex: 30, width: 240,
             background: '#fff', border: `1px solid ${UP.hair}`, borderRadius: 10,
             boxShadow: '0 8px 24px rgba(20,30,50,0.14)', padding: '10px 12px',
-            fontSize: '0.72rem', lineHeight: 1.55, color: UP.body, fontWeight: 500,
+            fontSize: 11, lineHeight: 1.55, color: UP.body, fontWeight: 500,
             textTransform: 'none', letterSpacing: 0, whiteSpace: 'normal',
           }}
         >{text}</span>
@@ -380,22 +380,22 @@ function rangeBtn(active: boolean): React.CSSProperties {
     border: `1px solid ${active ? UP.brand : UP.hair}`,
     background: active ? UP.brandBg : UP.surface,
     color: active ? UP.strong : UP.sub,
-    fontSize: '0.73rem', fontWeight: 700, cursor: 'pointer',
+    fontSize: 11, fontWeight: 700, cursor: 'pointer',
   }
 }
 
 const iconBtn: React.CSSProperties = {
   padding: '5px 10px', borderRadius: 8, border: `1px solid ${UP.hair}`,
-  background: UP.surface, color: UP.sub, fontSize: '0.82rem', cursor: 'pointer',
+  background: UP.surface, color: UP.sub, fontSize: 13, cursor: 'pointer',
 }
 
 const excelBtn: React.CSSProperties = {
   padding: '5px 12px', borderRadius: 8, border: `1px solid ${UP.greenLine}`,
-  background: UP.greenBg, color: UP.green, fontSize: '0.73rem', fontWeight: 700, cursor: 'pointer',
+  background: UP.greenBg, color: UP.green, fontSize: 11, fontWeight: 700, cursor: 'pointer',
 }
 
 const btnPrimary: React.CSSProperties = {
   padding: '8px 20px', borderRadius: 8, border: 'none',
   background: UP.brand, color: '#fff',
-  fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700,
+  fontSize: 13, cursor: 'pointer', fontWeight: 700,
 }

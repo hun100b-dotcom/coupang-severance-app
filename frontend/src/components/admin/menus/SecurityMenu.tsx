@@ -309,8 +309,8 @@ export default function SecurityMenu() {
 }
 
 const sectionTitle: React.CSSProperties = {
-  fontSize: '0.92rem', fontWeight: 700, color: UP.navy, margin: 0,
+  fontSize: 14, fontWeight: 700, color: UP.navy, margin: 0,
 }
 const emptyText: React.CSSProperties = {
-  fontSize: '0.82rem', color: UP.sub, textAlign: 'center', padding: '20px 0', margin: 0,
+  fontSize: 13, color: UP.sub, textAlign: 'center', padding: '20px 0', margin: 0,
 }

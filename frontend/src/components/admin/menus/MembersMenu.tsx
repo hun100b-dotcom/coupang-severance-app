@@ -425,13 +425,13 @@ const revealBtn: React.CSSProperties = {
   padding: '4px 9px', borderRadius: 7,
   border: '1px solid rgba(34,197,94,0.3)',
   background: 'rgba(34,197,94,0.08)', color: UP.green,
-  fontSize: '0.66rem', cursor: 'pointer', fontWeight: 700,
+  fontSize: 10, cursor: 'pointer', fontWeight: 700,
 }
 const filterInput: React.CSSProperties = {
   padding: '8px 12px', borderRadius: 8,
   border: `1px solid ${UP.hair}`,
   background: '#fff', color: UP.navy,
-  fontSize: '0.82rem', outline: 'none',
+  fontSize: 13, outline: 'none',
 }
 const overlayStyle: React.CSSProperties = {
   position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',

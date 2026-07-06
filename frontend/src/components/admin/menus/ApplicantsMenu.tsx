@@ -46,13 +46,13 @@ const filterSelectStyle: React.CSSProperties = {
   padding: '6px 10px', borderRadius: 8,
   border: `1px solid ${UP.hair}`,
   background: '#fff', color: UP.navy,
-  fontSize: '0.82rem', cursor: 'pointer', outline: 'none',
+  fontSize: 13, cursor: 'pointer', outline: 'none',
 }
 const filterInputStyle: React.CSSProperties = {
   padding: '6px 10px', borderRadius: 8,
   border: `1px solid ${UP.hair}`,
   background: '#fff', color: UP.navy,
-  fontSize: '0.82rem', outline: 'none',
+  fontSize: 13, outline: 'none',
   minWidth: 110,
 }
 
@@ -321,17 +321,17 @@ export default function ApplicantsMenu() {
   // 테이블 스타일 상수 (라이트 모드)
   const cellStyle: React.CSSProperties = {
     padding: '10px 12px', borderBottom: `1px solid ${UP.hairSoft}`,
-    fontSize: '0.83rem', color: UP.body, verticalAlign: 'middle',
+    fontSize: 13, color: UP.body, verticalAlign: 'middle',
   }
   const thStyle: React.CSSProperties = {
     ...cellStyle, color: UP.sub, fontWeight: 600,
-    fontSize: '0.75rem', textTransform: 'uppercase' as const, letterSpacing: '0.05em',
+    fontSize: 12, textTransform: 'uppercase' as const, letterSpacing: '0.05em',
   }
   const revealBtn: React.CSSProperties = {
     padding: '3px 8px', borderRadius: 7,
     border: '1px solid rgba(34,197,94,0.3)',
     background: 'rgba(34,197,94,0.08)', color: UP.green,
-    fontSize: '0.66rem', cursor: 'pointer', fontWeight: 700, marginTop: 4,
+    fontSize: 10, cursor: 'pointer', fontWeight: 700, marginTop: 4,
   }
 
   return (

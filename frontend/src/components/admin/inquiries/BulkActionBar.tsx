@@ -55,10 +55,10 @@ export default function BulkActionBar({ selectedIds, onBulkStatus, onDone }: Pro
       marginBottom: 12,
       border: `1px solid ${UP.brandLine}`,
     }}>
-      <span style={{ fontSize: '0.82rem', color: UP.strong, fontWeight: 700 }}>
+      <span style={{ fontSize: 13, color: UP.strong, fontWeight: 700 }}>
         {selectedIds.length}건 선택됨
       </span>
-      <span style={{ marginLeft: 8, fontSize: '0.78rem', color: UP.sub }}>일괄 변경:</span>
+      <span style={{ marginLeft: 8, fontSize: 12, color: UP.sub }}>일괄 변경:</span>
       {ACTIONS.map(a => (
         <button
           key={a.status}
@@ -76,7 +76,7 @@ export default function BulkActionBar({ selectedIds, onBulkStatus, onDone }: Pro
         </button>
       ))}
       {err && (
-        <span style={{ marginLeft: 8, fontSize: '0.76rem', color: UP.danger, fontWeight: 600 }}>
+        <span style={{ marginLeft: 8, fontSize: 12, color: UP.danger, fontWeight: 600 }}>
           ⚠️ {err}
         </span>
       )}

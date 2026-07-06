@@ -96,7 +96,7 @@ export const cardBox: CSSProperties = {
 export const btnPrimary: CSSProperties = {
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
   padding: '9px 16px', borderRadius: RADIUS.btn, border: 'none',
-  background: UP.brand, color: '#fff', fontSize: '0.85rem', fontWeight: 700,
+  background: UP.brand, color: '#fff', fontSize: 13, fontWeight: 700,
   letterSpacing: '-0.01em', cursor: 'pointer',
   boxShadow: '0 4px 14px rgba(49,130,246,0.30)',
 }
@@ -104,13 +104,13 @@ export const btnSecondary: CSSProperties = {
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
   padding: '9px 16px', borderRadius: RADIUS.btn,
   background: UP.surface, color: UP.strong, border: `1px solid ${UP.brandLine}`,
-  fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
+  fontSize: 13, fontWeight: 700, cursor: 'pointer',
 }
 export const btnGhost: CSSProperties = {
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
   padding: '9px 14px', borderRadius: RADIUS.btn,
   background: 'transparent', color: UP.body, border: `1px solid ${UP.hair}`,
-  fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+  fontSize: 13, fontWeight: 600, cursor: 'pointer',
 }
 
 // ── 배지 헬퍼 — 사용자앱 ui<Badge> 와 동일(알약형 + 옅은 배경 + 진한 텍스트) ──
@@ -126,7 +126,7 @@ export function badge(tone: BadgeTone = 'brand'): CSSProperties {
   return {
     display: 'inline-flex', alignItems: 'center', gap: 4,
     padding: '2px 8px', borderRadius: RADIUS.pill,
-    fontSize: '0.66rem', fontWeight: 700, lineHeight: 1.4, ...map[tone],
+    fontSize: 10, fontWeight: 700, lineHeight: 1.4, ...map[tone],
   }
 }
 

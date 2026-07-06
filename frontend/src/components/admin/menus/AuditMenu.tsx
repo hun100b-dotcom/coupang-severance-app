@@ -434,5 +434,5 @@ export default function AuditMenu() {
 
 const filterInput: React.CSSProperties = {
   padding: '8px 12px', borderRadius: 8, border: `1px solid ${UP.hair}`,
-  background: '#fff', color: UP.navy, fontSize: '0.82rem', outline: 'none',
+  background: '#fff', color: UP.navy, fontSize: 13, outline: 'none',
 }

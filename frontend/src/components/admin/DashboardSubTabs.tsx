@@ -35,7 +35,7 @@ export default function DashboardSubTabs({ activeTab, onTabChange }: Props) {
               boxShadow: on ? '0 1px 4px rgba(49,130,246,0.15)' : 'none', transition: 'all 0.12s',
             }}
           >
-            <span style={{ fontSize: '0.95rem' }}>{tab.icon}</span>
+            <span style={{ fontSize: 14 }}>{tab.icon}</span>
             {tab.label}
           </button>
         )

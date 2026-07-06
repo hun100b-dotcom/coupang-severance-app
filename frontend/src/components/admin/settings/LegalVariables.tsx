@@ -132,13 +132,13 @@ const cardStyle: React.CSSProperties = {
   borderRadius: RADIUS.card, padding: '20px', marginBottom: 16,
 }
 const titleStyle: React.CSSProperties = {
-  fontSize: '0.88rem', fontWeight: 700, color: UP.body, marginBottom: 6,
+  fontSize: 14, fontWeight: 700, color: UP.body, marginBottom: 6,
 }
 const labelStyle: React.CSSProperties = {
-  fontSize: '0.75rem', color: UP.sub, display: 'block', marginBottom: 6,
+  fontSize: 12, color: UP.sub, display: 'block', marginBottom: 6,
 }
 const inputStyle: React.CSSProperties = {
   width: '100%', background: UP.sunken, border: `1px solid ${UP.hair}`,
-  borderRadius: 8, padding: '8px 12px', fontSize: '0.85rem', color: UP.navy,
+  borderRadius: 8, padding: '8px 12px', fontSize: 13, color: UP.navy,
   outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
 }

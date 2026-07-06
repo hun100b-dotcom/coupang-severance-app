@@ -435,10 +435,10 @@ export default function JobPostingsMenu() {
     width: '100%', padding: '10px 14px', borderRadius: 10,
     border: `1px solid ${UP.hair}`,
     background: '#fff', color: UP.navy,
-    fontSize: '0.9rem', boxSizing: 'border-box', outline: 'none',
+    fontSize: 14, boxSizing: 'border-box', outline: 'none',
   }
   const labelSpan: React.CSSProperties = {
-    fontSize: '0.8rem', color: UP.sub,
+    fontSize: 13, color: UP.sub,
     display: 'block', marginBottom: 6, fontWeight: 600,
   }
 

@@ -205,16 +205,16 @@ const CARD_PAD: React.CSSProperties = { ...CARD, padding: 'clamp(14px, 3vw, 20px
 
 const iconBtn: React.CSSProperties = {
   padding: '5px 10px', borderRadius: 8, border: `1px solid ${UP.hair}`,
-  background: UP.surface, color: UP.sub, fontSize: '0.82rem', cursor: 'pointer',
+  background: UP.surface, color: UP.sub, fontSize: 13, cursor: 'pointer',
 }
 
 const excelBtn: React.CSSProperties = {
   padding: '5px 12px', borderRadius: 8, border: `1px solid ${UP.greenLine}`,
-  background: UP.greenBg, color: UP.green, fontSize: '0.73rem', fontWeight: 700, cursor: 'pointer',
+  background: UP.greenBg, color: UP.green, fontSize: 11, fontWeight: 700, cursor: 'pointer',
 }
 
 const btnPrimary: React.CSSProperties = {
   padding: '8px 20px', borderRadius: 8, border: 'none',
   background: UP.brand, color: '#fff',
-  fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700,
+  fontSize: 13, cursor: 'pointer', fontWeight: 700,
 }

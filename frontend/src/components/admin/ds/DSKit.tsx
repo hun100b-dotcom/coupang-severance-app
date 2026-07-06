@@ -12,7 +12,7 @@ export function PageHead({ icon, title, subtitle, actions }: { icon?: ReactNode;
     <div className="animate-staggered-fade" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', margin: '0 0 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
         {icon != null && (
-          <span style={{ width: 44, height: 44, borderRadius: 14, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: DS.accentSoft, border: `1px solid ${DS.accentLine}`, fontSize: '1.3rem' }}>{icon}</span>
+          <span style={{ width: 44, height: 44, borderRadius: 14, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: DS.accentSoft, border: `1px solid ${DS.accentLine}`, fontSize: 20 }}>{icon}</span>
         )}
         <div style={{ minWidth: 0 }}>
           <h1 className="text-a24" style={{ fontWeight: 900, color: DS.ink, letterSpacing: '-0.02em', margin: 0 }}>{title}</h1>

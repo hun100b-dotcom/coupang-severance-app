@@ -360,8 +360,8 @@ export default function AccountsMenu({ isSuperAdmin }: Props) {
   )
 }
 
-const smallDangerBtn: React.CSSProperties = { padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(240,68,82,0.25)', background: 'rgba(240,68,82,0.08)', color: UP.danger, fontSize: '0.75rem', cursor: 'pointer' }
+const smallDangerBtn: React.CSSProperties = { padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(240,68,82,0.25)', background: 'rgba(240,68,82,0.08)', color: UP.danger, fontSize: 12, cursor: 'pointer' }
 const overlayStyle: React.CSSProperties = { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 16 }
 const modalStyle: React.CSSProperties = { background: '#fff', border: `1px solid ${UP.hair}`, borderRadius: 16, padding: '26px 22px', width: '100%', maxWidth: 440, maxHeight: '90vh', overflowY: 'auto' }
-const labelSt: React.CSSProperties = { display: 'block', fontSize: '0.75rem', fontWeight: 600, color: UP.sub, marginBottom: 6, marginTop: 14 }
-const inputSt: React.CSSProperties = { width: '100%', padding: '10px 12px', borderRadius: 10, border: `1px solid ${UP.hair}`, background: '#fff', color: UP.navy, fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box' }
+const labelSt: React.CSSProperties = { display: 'block', fontSize: 12, fontWeight: 600, color: UP.sub, marginBottom: 6, marginTop: 14 }
+const inputSt: React.CSSProperties = { width: '100%', padding: '10px 12px', borderRadius: 10, border: `1px solid ${UP.hair}`, background: '#fff', color: UP.navy, fontSize: 14, outline: 'none', boxSizing: 'border-box' }
