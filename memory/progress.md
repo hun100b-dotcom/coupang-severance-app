@@ -26,6 +26,8 @@
 - **제거 보류**: `markTemplateUsed`는 죽은코드 아님(InquiryDetailPanel.tsx:154 실호출) → 유지.
 - **더블리뷰**: A PASS / B CONDITIONAL PASS(BLOCKER0, 권장5 전량 반영). `docs/dual_review/admin_utm_funnel_2026-07-06.md`.
 
+**➕ 3차 — 어드민 "백엔드 연결 실패" 재신고 진짜원인=CORS(`0af3b6a`)**: 토큰 수정 후에도 슈퍼관리자가 `coupang-severance-app.vercel.app`/ADMIN에서 "백엔드 연결 실패". 실측: 앱이 **두 Vercel 별칭 도메인**을 서빙하는데 백엔드 CORS `allow_origins`엔 `catch-daily-worker`만 있어, 종훈님이 쓰는 `coupang-severance-app.vercel.app` 오리진이 브라우저 CORS 차단(프리플라이트 400·allow-origin 헤더 없음)→axios `!error.response`→"연결 실패" 문구. **curl은 CORS 미강제라 200이라 백엔드 정상으로 오판했던 함정**. 처치: 별칭 도메인 추가 + `allow_origin_regex`로 두 프로젝트 별칭·프리뷰 커버(무관 vercel.app 차단). 라이브검증: coupang 오리진 GET 200+allow-origin 헤더 O, evil-site 차단 O. 재시도는 CORS 못 고침(매 재시도 차단)—CORS 허용이 해결. [[admin-token-and-postgrest-cap]].
+
 **다음(비차단)**: ①어드민 JWT 인증 전환(P1, 보류 — 잘못하면 어드민 잠김, X-Admin-Token 병행수용→점진전환 권장) ②anon visitor_logs insert rate-limit(캠페인 통계 스팸 방어) ③방문자탭 페이지네이션 대용량 시 keyset/RPC 최적화.
 
 ---

@@ -39,6 +39,19 @@
 env·기본 anon 둘 다에서 파생해 넣어 env 드리프트에도 견고.
 → 프론트 토큰 = 백엔드 허용 토큰 계약 일치. `git push`만으로 Render 자동 재배포(외부 클릭 불필요).
 
+### A-2. 후속 재발 신고 — "백엔드 연결 실패"의 진짜 원인은 CORS (2026-07-06, 커밋 `0af3b6a`)
+토큰 수정 후에도 슈퍼관리자(dfc5238@naver.com)가 **`coupang-severance-app.vercel.app`/ADMIN** 에서
+"백엔드 서버에 연결할 수 없습니다" 에러. 라이브 실측으로 근본원인 확정:
+- 앱은 **두 Vercel 별칭 도메인**(`catch-daily-worker.vercel.app`·`coupang-severance-app.vercel.app`)이
+  같은 배포를 서빙. 그런데 백엔드 CORS `allow_origins` 에는 **`catch-daily-worker` 만** 있었다.
+- 종훈님이 접속한 `coupang-severance-app.vercel.app` 오리진은 CORS 미허용 → 브라우저가 요청 차단
+  (프리플라이트 **400**, `access-control-allow-origin` 헤더 없음). axios 는 `!error.response` 로
+  받아 "백엔드 연결 실패" 문구 표시. **curl 은 CORS 를 강제 안 해 200** → 백엔드는 정상으로 보였음(함정).
+- 실측 대조: `catch-daily-worker` 오리진=프리플라이트 200+allow-origin 헤더 O / `coupang-severance-app`=400+헤더 X.
+- **수정**: `coupang-severance-app.vercel.app` 을 허용목록에 추가 + 두 프로젝트의 별칭·프리뷰 배포를
+  `allow_origin_regex` 로 커버(재발 방지). 무관 도메인(`evil-site.vercel.app`)은 정규식이 차단(실측).
+- 재시도(_idempotent/GET)는 콜드스타트엔 유효하나 **CORS 차단은 재시도해도 매번 막혀** 못 고침 → CORS 허용이 해결책.
+
 ### 보안 메모 (고도화 로드맵 P1로 이관)
 `X-Admin-Token` 방식은 값이 `VITE_` 접두(=번들에 구워짐) 또는 공개 anon 키 파생이라 **본질적으로
 클라이언트에 노출**된다. 즉 이 토큰은 "비밀"이 아니라 소프트 게이트다. 실질 보안 경계는
