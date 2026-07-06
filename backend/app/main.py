@@ -71,10 +71,17 @@ app.add_middleware(
     # 브라우저가 보안 정책(CORS)을 위반으로 판단해 요청을 거부할 수 있습니다.
     # 따라서 실제 서비스 도메인과 개발 서버 주소를 명시적으로 지정해야 합니다.
     allow_origins=[
-        "https://catch-daily-worker.vercel.app",  # Vercel 프로덕션 배포 도메인
+        "https://catch-daily-worker.vercel.app",      # Vercel 프로덕션 배포 도메인
+        "https://coupang-severance-app.vercel.app",   # 같은 배포의 별칭 도메인(2026-07-06 CORS 차단 사고 원인)
         "http://localhost:5173",                      # Vite 개발 서버 기본 포트
         "http://localhost:3000",                      # 대안 개발 서버 포트
     ],
+    # ⚠️ 2026-07-06 어드민 "백엔드 연결 실패" 근본원인: 허용목록에 catch-daily-worker 만 있어
+    #    같은 앱의 별칭 도메인 coupang-severance-app.vercel.app 에서 접속 시 브라우저가 CORS 로
+    #    차단(프리플라이트 400, allow-origin 헤더 없음) → 프론트는 "연결 실패"로 표시.
+    #    재발 방지: 두 Vercel 프로젝트(별칭·프리뷰 배포 포함)를 정규식으로도 허용한다.
+    #    (allow_origin_regex 는 allow_credentials=True 와 함께 사용 가능 — "*" 와 달리 안전)
+    allow_origin_regex=r"^https://(catch-daily-worker|coupang-severance-app)[a-z0-9-]*\.vercel\.app$",
     allow_credentials=True,   # 쿠키/인증 헤더 전달 허용 (Supabase 세션 쿠키에 필요)
     allow_methods=["*"],      # GET, POST, PATCH, DELETE 등 모든 HTTP 메서드 허용
     allow_headers=["*"],      # Authorization, Content-Type 등 모든 헤더 허용
