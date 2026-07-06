@@ -6,6 +6,7 @@ export type AdminMenu =
   | 'job_postings' | 'applicants' | 'confirmed' | 'recruit_summary'
   | 'inquiries' | 'notices' | 'members' | 'accounts'
   | 'settings' | 'audit_logs' | 'server_logs' | 'security'
+  | 'feedback'
 
 // ── 대시보드 ────────────────────────────────────────────
 export interface AdminStats {

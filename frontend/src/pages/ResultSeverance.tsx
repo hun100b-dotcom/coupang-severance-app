@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import CalcFeedback from '../components/feedback/CalcFeedback'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line,
 } from 'recharts'
@@ -772,6 +773,9 @@ export default function ResultSeverance({ result, resultType, company, onReset }
           <PrimaryButton onClick={onReset}>다시 계산하기</PrimaryButton>
           <SecondaryButton onClick={() => navigate('/home')}>← 홈으로</SecondaryButton>
         </div>
+
+        {/* 계산 결과 하단 피드백/문의 폼 (일용직 권리 증진) */}
+        <CalcFeedback calcType="severance" />
 
         {/* 비로그인 게스트 → 저장하기 클릭 시 로그인 유도 모달 */}
         <GuestGateModal />

@@ -701,6 +701,37 @@ def visitor_stats(
     }
 
 
+# ── 계산기 피드백 (소통) ───────────────────────────────────────────────────
+# 4개 계산기 결과 화면 하단 폼(calc_feedback)을 어드민에서 조회. service-role 로 전체 조회.
+@router.get("/admin/feedback")
+def list_feedback(
+    calc_type: str = "",
+    limit: int = 100,
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    _check_admin(x_admin_token)
+    limit = max(1, min(limit, 1000))
+    params: dict = {"select": "*", "order": "created_at.desc", "limit": str(limit)}
+    if calc_type:
+        params["calc_type"] = f"eq.{calc_type}"
+    try:
+        res = _sb_get("calc_feedback", params, count=True)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"피드백 조회 실패(업스트림): {type(e).__name__}")
+    if res.status_code not in (200, 206):
+        raise HTTPException(status_code=502, detail=f"피드백 조회 실패(업스트림 HTTP {res.status_code})")
+    rows = res.json()
+    # 요약 지표(도움됨/오류/총계) — 어드민 카드용
+    helpful_yes = sum(1 for r in rows if r.get("helpful") is True)
+    helpful_no = sum(1 for r in rows if r.get("helpful") is False)
+    error_cnt = sum(1 for r in rows if r.get("has_error") is True)
+    return {
+        "feedback": rows,
+        "total": _count_header(res),
+        "summary": {"helpful_yes": helpful_yes, "helpful_no": helpful_no, "has_error": error_cnt},
+    }
+
+
 # ── Target ────────────────────────────────────────────────
 
 @router.get("/admin/target/companies")

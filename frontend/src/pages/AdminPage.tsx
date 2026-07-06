@@ -21,6 +21,7 @@ import ApplicantsMenu from '../components/admin/menus/ApplicantsMenu'
 import ConfirmedMenu from '../components/admin/menus/ConfirmedMenu'
 import RecruitSummaryMenu from '../components/admin/menus/RecruitSummaryMenu'
 import SecurityMenu from '../components/admin/menus/SecurityMenu'
+import FeedbackMenu from '../components/admin/menus/FeedbackMenu'
 
 interface PermLevel { label: string; color: string; permissions: Record<string, boolean> }
 
@@ -31,7 +32,7 @@ const DEFAULT_PERMS: Record<string, PermLevel> = {
       dashboard: true, target: true,
       job_postings: true, applicants: true, confirmed: true, recruit_summary: true,
       inquiries: true, notices: true, members: true, accounts: true,
-      settings: true, audit_logs: true, server_logs: true, security: true,
+      settings: true, audit_logs: true, server_logs: true, security: true, feedback: true,
     },
   },
   admin: {
@@ -40,7 +41,7 @@ const DEFAULT_PERMS: Record<string, PermLevel> = {
       dashboard: true, target: true,
       job_postings: true, applicants: true, confirmed: true, recruit_summary: true,
       inquiries: true, notices: true, members: true, accounts: false,
-      settings: false, audit_logs: false, server_logs: false, security: false,
+      settings: false, audit_logs: false, server_logs: false, security: false, feedback: true,
     },
   },
   viewer: {
@@ -49,7 +50,7 @@ const DEFAULT_PERMS: Record<string, PermLevel> = {
       dashboard: true, target: false,
       job_postings: false, applicants: false, confirmed: false, recruit_summary: false,
       inquiries: true, notices: false, members: false, accounts: false,
-      settings: false, audit_logs: false, server_logs: false, security: false,
+      settings: false, audit_logs: false, server_logs: false, security: false, feedback: true,
     },
   },
 }
@@ -64,6 +65,7 @@ const MENU_META: Record<AdminMenu, { title: string; icon: string }> = {
   recruit_summary: { title: '채용 Summary',    icon: '📊' },
   notices:         { title: '공지사항',        icon: '📢' },
   inquiries:       { title: '문의',           icon: '💬' },
+  feedback:        { title: '계산기 피드백',    icon: '📝' },
   members:         { title: '회원 관리',       icon: '👥' },
   accounts:        { title: '관리자 계정',     icon: '🔑' },
   security:        { title: '보안 현황',       icon: '🛡️' },
@@ -86,7 +88,7 @@ const CORES: CoreGroup[] = [
     { menu: 'confirmed', label: '현황' }, { menu: 'recruit_summary', label: '분석' },
   ] },
   { key: 'support', label: '소통',   icon: '💬', items: [
-    { menu: 'inquiries', label: '문의' }, { menu: 'notices', label: '공지' },
+    { menu: 'inquiries', label: '문의' }, { menu: 'feedback', label: '피드백' }, { menu: 'notices', label: '공지' },
   ] },
   { key: 'people',  label: '인원',   icon: '👥', items: [
     { menu: 'members', label: '회원' }, { menu: 'accounts', label: '관리자' },
@@ -217,6 +219,7 @@ export default function AdminPage() {
       case 'confirmed':       return <ConfirmedMenu />
       case 'recruit_summary': return <RecruitSummaryMenu />
       case 'inquiries':       return <InquiriesMenu />
+      case 'feedback':        return <FeedbackMenu />
       case 'notices':         return <NoticesMenu />
       case 'members':         return <MembersMenu isSuperAdmin={isSuperAdmin} />
       case 'accounts':        return <AccountsMenu isSuperAdmin={isSuperAdmin} />

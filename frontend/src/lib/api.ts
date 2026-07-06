@@ -571,6 +571,25 @@ export const patchInquiryAnswer = (id: string | number, answer: string) =>
 export const bulkInquiryStatus = (ids: Array<string | number>, status: string) =>
   api.post('/admin/inquiries/bulk-status', { ids: ids.map(String), status }, { headers: H() }).then(r => r.data)
 
+// ── 계산기 피드백 (소통) — 4계산기 결과화면 폼 수집분 조회 ──────────────
+export interface CalcFeedbackRow {
+  id: string
+  calc_type: string
+  helpful: boolean | null
+  has_error: boolean
+  error_detail: string | null
+  message: string | null
+  email: string | null
+  user_id: string | null
+  session_id: string | null
+  status: string
+  created_at: string
+}
+export const getAdminFeedback = (calcType = '', limit = 100) =>
+  api.get<{ feedback: CalcFeedbackRow[]; total: number; summary: { helpful_yes: number; helpful_no: number; has_error: number } }>(
+    '/admin/feedback', { params: { calc_type: calcType, limit }, headers: H() },
+  ).then(r => r.data)
+
 // ── Notices — 백엔드 경로(경로 B)로 이관 (P4) ─────────────────────────
 //   과거: NoticesMenu 가 supabase 직접 CRUD(RLS is_admin 의존) → 미등록/비-admin 은 쓰기 0행,
 //         비활성 공지 조회 누락 가능. 현재: X-Admin-Token 게이트 + service-role 로 통일.

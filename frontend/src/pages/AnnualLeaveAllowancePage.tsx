@@ -81,6 +81,7 @@ import {
 } from '../components/calc/CalcLayout'
 import PdfSourceSelector from '../components/calc/PdfSourceSelector'
 import PdfGuide from '../components/PdfGuide'
+import CalcFeedback from '../components/feedback/CalcFeedback'
 import {
   calcAnnualLeavePrecise,
   extractAnnualLeaveCompanies,
@@ -847,6 +848,8 @@ export default function AnnualLeaveAllowancePage() {
                   <FileText className="w-4 h-4" />PDF로 정밀 계산하기
                 </button>
               </div>
+              {/* 계산 결과 하단 피드백/문의 폼 (일용직 권리 증진) */}
+              <CalcFeedback calcType="annual" />
             </motion.div>
           )}
 
@@ -1002,6 +1005,8 @@ export default function AnnualLeaveAllowancePage() {
                   <p className="text-[10px] text-up-sub text-center leading-relaxed">
                     이 결과는 참고용입니다. 정확한 금액은 노무사 상담을 받으세요.
                   </p>
+                  {/* 계산 결과 하단 피드백/문의 폼 (일용직 권리 증진) */}
+                  <CalcFeedback calcType="annual" />
                 </motion.div>
               )}
             </motion.div>
