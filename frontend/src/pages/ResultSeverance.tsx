@@ -22,6 +22,8 @@ interface Props {
   resultType: 'precise' | 'simple'
   company: string
   onReset: () => void
+  /** 쉬운 계산 산출근거(하루 일당·월평균 근무일수) — 평균임금 환산 과정 투명 표시용 */
+  simpleBasis?: { dailyWage: number; monthlyDays: number } | null
 }
 
 function isPrecise(r: SeverancePreciseResult | SeveranceSimpleResult): r is SeverancePreciseResult {
@@ -462,7 +464,7 @@ function Section5AIAnalysis({ comment }: { comment: string }) {
 
 
 // ── 메인 결과 화면 ─────────────────────────────────────────
-export default function ResultSeverance({ result, resultType, company, onReset }: Props) {
+export default function ResultSeverance({ result, resultType, company, onReset, simpleBasis }: Props) {
   const navigate = useNavigate()
   const [reportOpen, setReportOpen] = useState(false)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'login_required' | 'error'>('idle')
@@ -553,7 +555,14 @@ export default function ResultSeverance({ result, resultType, company, onReset }
         <GlassCard className="p-6" style={{ marginBottom: 16 }}>
           <h3 className="heading-md" style={{ marginBottom: 14 }}>상세 내역</h3>
           {[
-            { label: '평균 일당 (세전)', value: fmt(Math.round(avgWage)) },
+            // 쉬운 계산: 하루 일당 → 월평균 근무일수 → 환산 평균임금 순으로 투명하게 표시
+            ...(resultType === 'simple' && simpleBasis
+              ? [
+                  { label: '하루 일당 (세전)', value: fmt(Math.round(simpleBasis.dailyWage)) },
+                  { label: '한 달 평균 근무일수', value: `${simpleBasis.monthlyDays}일` },
+                  { label: '1일 평균임금 (환산)', value: fmt(Math.round(avgWage)) },
+                ]
+              : [{ label: '평균 일당 (세전)', value: fmt(Math.round(avgWage)) }]),
             {
               label: '계속 근로 기간',
               value: `약 ${Math.floor(workDays / 365)}년 ${Math.floor((workDays % 365) / 30)}개월`,
@@ -569,6 +578,18 @@ export default function ResultSeverance({ result, resultType, company, onReset }
               <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--toss-text)' }}>{row.value}</span>
             </div>
           ))}
+
+          {/* 쉬운 계산 산출근거 1줄 투명 표시 — 평균임금이 어떻게 환산됐는지 명시 */}
+          {resultType === 'simple' && simpleBasis && (
+            <div style={{
+              marginTop: 12, padding: '10px 14px',
+              background: 'rgba(49,130,246,0.06)', borderRadius: 10,
+              fontSize: '0.8rem', color: '#1e3a5f', fontWeight: 600, lineHeight: 1.5,
+            }}>
+              🧮 하루 일당 {fmt(Math.round(simpleBasis.dailyWage))} × 월 {simpleBasis.monthlyDays}일 → 1일 평균임금{' '}
+              {fmt(Math.round(avgWage))} 기준으로 계산했어요.
+            </div>
+          )}
         </GlassCard>
 
         {/* ── 주별 근무 차트 ──────────────────────────── */}

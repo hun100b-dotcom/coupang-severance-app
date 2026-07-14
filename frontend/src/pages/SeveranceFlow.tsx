@@ -109,6 +109,8 @@ interface State {
   failed: boolean
   result: SeverancePreciseResult | SeveranceSimpleResult | null
   resultType: CalcMode | null
+  /** 쉬운 계산 산출근거 표시용 — 하루 일당·월평균 근무일수(평균임금 환산 전 원본 입력) */
+  simpleBasis?: { dailyWage: number; monthlyDays: number } | null
 }
 
 const INIT: State = {
@@ -138,7 +140,8 @@ export default function SeveranceFlow() {
 
   // 간편계산 입력값
   const [workDays, setWorkDays] = useState('')
-  const [avgWage, setAvgWage] = useState('')
+  const [avgWage, setAvgWage] = useState('')       // 하루 일당(일한 날 기준 1일 지급액)
+  const [monthlyWorkDays, setMonthlyWorkDays] = useState('') // 한 달 평균 근무일수(출근일)
 
   const go = (step: Step) => setS(p => ({ ...p, step, failed: false }))
   const reset = () => {
@@ -147,6 +150,7 @@ export default function SeveranceFlow() {
     setEndDate('')
     setWorkDays('')
     setAvgWage('')
+    setMonthlyWorkDays('')
     setError('')
     setPdfCompanies([])
     setSelectedPdfCompany(null)
@@ -161,6 +165,7 @@ export default function SeveranceFlow() {
         resultType={s.resultType!}
         company={companyLabel}
         onReset={reset}
+        simpleBasis={s.simpleBasis}
       />
     )
   }
@@ -227,17 +232,45 @@ export default function SeveranceFlow() {
   }
 
   async function runSimple() {
-    const days = parseInt(workDays)
-    const wage = parseFloat(avgWage.replace(/,/g, ''))
-    if (!days || !wage) { setError('근무일수와 평균 일당을 모두 입력해 주세요.'); return }
+    const days = parseInt(workDays)                       // 전체 근무일수(재직 달력일수)
+    const dailyWage = parseFloat(avgWage.replace(/,/g, '')) // 하루 일당(일한 날 기준)
+    const monthlyDays = parseInt(monthlyWorkDays)          // 한 달 평균 근무일수(출근일)
+    // 미입력(빈칸) 판정은 원본 문자열로 — "0" 을 미입력으로 오판하지 않게 함(리뷰어 B)
+    if (!workDays.trim() || !avgWage.trim() || !monthlyWorkDays.trim()) {
+      setError('전체 근무일수·하루 일당·한 달 평균 근무일수를 모두 입력해 주세요.'); return
+    }
+    if (Number.isNaN(days) || Number.isNaN(dailyWage) || Number.isNaN(monthlyDays)) {
+      setError('숫자를 올바르게 입력해 주세요.'); return
+    }
+    // 음수 방어(리뷰어 A) — 근무일수·하루 일당은 0보다 커야 함
+    if (days <= 0 || dailyWage <= 0) {
+      setError('근무일수와 하루 일당은 0보다 큰 값을 입력해 주세요.'); return
+    }
+    // 한 달 평균 근무일수는 1~30일만 허용(리뷰어 B: 상한 30).
+    //  분모가 30 고정이므로 31 이상이면 환산 평균임금 > 하루 일당이 되는 불변식 위반 → 과다.
+    //  월 30일(매 달력일 출근) = 평균임금이 하루 일당과 같아지는 이론적 최대치.
+    if (monthlyDays < 1 || monthlyDays > 30) {
+      setError('한 달 평균 근무일수는 1~30일 사이로 입력해 주세요.'); return
+    }
+    // ── 법정 평균임금 환산 (과다 산정 버그 수정의 핵심) ──────────────────────
+    //  법정 평균임금 = 최근 3개월 임금총액 ÷ 그 기간의 '달력일수'(약 90일).
+    //  일용직은 '일한 날'에만 급여가 있어, 하루 일당을 그대로 평균임금으로 쓰면
+    //  달력일수(쉬는 날 포함)보다 적은 날로 나눈 셈이 되어 과다 산정된다.
+    //  → 한 달(30일) 중 실제 출근 비율(월평균근무일수/30)만큼 희석해 평균임금을 만든다.
+    //  예) 하루 13만원 × (20일/30) = 1일 평균임금 약 86,667원.
+    //  백엔드 공식(평균임금 × 30 × 근속일수/365)은 그대로 두고, 투입값만 올바르게 환산.
+    const avgWageConverted = dailyWage * (monthlyDays / 30)
     setError(''); setLoading(true)
     const [res] = await Promise.allSettled([
-      calcSeveranceSimple(days, wage),
+      calcSeveranceSimple(days, avgWageConverted),
       new Promise(r => setTimeout(r, 2000)),
     ])
     setLoading(false)
     if (res.status === 'fulfilled') {
-      setS(p => ({ ...p, result: res.value, resultType: 'simple', step: 4 }))
+      setS(p => ({
+        ...p, result: res.value, resultType: 'simple', step: 4,
+        simpleBasis: { dailyWage, monthlyDays }, // 결과 화면 산출근거 표시용
+      }))
     } else {
       setError('계산 중 오류가 발생했어요.')
     }
@@ -532,11 +565,12 @@ export default function SeveranceFlow() {
                 icon={<Briefcase className="w-7 h-7" />}
                 accentColor="blue"
                 title="직접 입력해서 계산하기"
-                subtitle="근무일수와 평균 일당을 입력하면 예상 퇴직금을 바로 알 수 있어요"
+                subtitle="근무일수 · 하루 일당 · 한 달 근무일수를 입력하면 예상 퇴직금을 바로 알 수 있어요"
               />
 
               <CalcInputCard>
                 <div className="flex flex-col gap-5">
+                  {/* ① 전체 근무일수 (재직 달력일수) — 기존 유지 */}
                   <div>
                     <label className="block text-[14px] font-semibold text-ink-900 mb-2">전체 근무일수 (일)</label>
                     <input
@@ -548,23 +582,38 @@ export default function SeveranceFlow() {
                     />
                     <p className="text-[12px] text-up-sub mt-1.5">첫 출근 ~ 마지막 퇴근까지의 총 일수</p>
                   </div>
+                  {/* ② 하루 일당 (일한 날 기준 1일 지급액) */}
                   <div>
-                    <label className="block text-[14px] font-semibold text-ink-900 mb-2">평균 일당 (원)</label>
+                    <label className="block text-[14px] font-semibold text-ink-900 mb-2">하루 일당 (원)</label>
                     <input
                       type="number"
-                      placeholder="예: 150000"
+                      placeholder="예: 130000"
                       value={avgWage}
                       onChange={e => setAvgWage(e.target.value)}
                       className="w-full px-4 py-4 rounded-xl border border-up-hair bg-white text-lg font-bold text-up-navy focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                     />
-                    <p className="text-[12px] text-up-sub mt-1.5">최근 3개월 총 지급액 ÷ 근무일수</p>
+                    <p className="text-[12px] text-up-sub mt-1.5">쿠팡 앱 급여내역의 1일 지급액</p>
+                  </div>
+                  {/* ③ [신규] 한 달 평균 근무일수 — 평균임금 정확 환산용 */}
+                  <div>
+                    <label className="block text-[14px] font-semibold text-ink-900 mb-2">한 달 평균 근무일수 (일)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="30"
+                      placeholder="예: 20"
+                      value={monthlyWorkDays}
+                      onChange={e => setMonthlyWorkDays(e.target.value)}
+                      className="w-full px-4 py-4 rounded-xl border border-up-hair bg-white text-lg font-bold text-up-navy focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
+                    />
+                    <p className="text-[12px] text-up-sub mt-1.5">최근 3개월 기준 한 달 평균 출근일수</p>
                   </div>
                 </div>
               </CalcInputCard>
 
               {error && <CalcErrorMsg message={error} />}
 
-              <CalcNextButton disabled={!workDays || !avgWage} accentColor="blue" onClick={runSimple}>
+              <CalcNextButton disabled={!workDays || !avgWage || !monthlyWorkDays} accentColor="blue" onClick={runSimple}>
                 계산하기
               </CalcNextButton>
               <CalcBackButton onClick={() => go(3)} />
