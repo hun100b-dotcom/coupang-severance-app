@@ -676,7 +676,7 @@ export default function JobPostingsMenu() {
                                     const v = Math.max(0, parseInt(e.target.value.replace(/,/g, '')) || 0)
                                     setForm(f => ({ ...f, shift_wages: { ...f.shift_wages, [shift]: { ...wages, hourly: v } } }))
                                   }}
-                                  placeholder="예: 10,030" style={inputStyle} />
+                                  placeholder="예: 10,320" style={inputStyle} />
                               </label>
                               <label>
                                 <span style={labelSpan}>{shiftLabel} 일급 (원)</span>

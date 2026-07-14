@@ -43,7 +43,7 @@ const FAQ_SCHEMA = {
       name: '주휴수당 계산 공식이 어떻게 되나요?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '주휴수당 = (1주 소정근로시간 ÷ 40시간) × 8시간 × 시급. 예: 주 40시간 근무, 시급 10,030원 → 주휴수당 약 80,240원/주. CATCH 계산기에 시급과 근무시간을 입력하면 즉시 계산됩니다.',
+        text: '주휴수당 = (1주 소정근로시간 ÷ 40시간) × 8시간 × 시급. 예: 주 40시간 근무, 시급 10,320원 → 주휴수당 약 82,560원/주. CATCH 계산기에 시급과 근무시간을 입력하면 즉시 계산됩니다.',
       },
     },
     {
@@ -488,7 +488,7 @@ export default function WeeklyAllowancePage() {
                     <div className="relative">
                       <input type="number" value={survey.hourlyWage} autoFocus
                         onChange={e => setSurvey(s => ({ ...s, hourlyWage: e.target.value }))}
-                        placeholder="10030" min={0}
+                        placeholder="10320" min={0}
                         className="w-full px-4 py-4 pr-10 rounded-2xl border border-line bg-white text-[24px] font-extrabold text-ink-900 placeholder:text-ink-400 placeholder:text-[18px] focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40 text-center"
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-up-sub font-semibold">원</span>
@@ -499,7 +499,7 @@ export default function WeeklyAllowancePage() {
                         <p className="text-[12px] text-[#B45309] font-semibold">2026년 최저시급(10,320원) 미만이에요</p>
                       </div>
                     )}
-                    {wage >= 10030 && (
+                    {wage >= 10320 && (
                       <div className="mt-2 flex items-center justify-center gap-1">
                         <CheckCircle2 className="w-4 h-4 text-accent-700" />
                         <p className="text-[12px] text-accent-700 font-semibold">시급 {formatWon(wage)}</p>

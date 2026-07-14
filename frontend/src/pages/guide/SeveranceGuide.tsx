@@ -432,8 +432,8 @@ export default function SeveranceGuide() {
             기본급 외에도 시간외수당, 야간수당, 휴일수당 등 정기적으로 받은 수당도 포함합니다.
           </p>
           <InfoBox title="2026년 최저임금 기준 최저 평균임금" variant="tip">
-            <p className="text-xs">2026년 최저임금: 시간당 10,030원 (2026년 고용노동부 고시 — 공식 확인 권장)</p>
-            <p className="text-xs mt-1">1일 8시간 기준 일급: 약 80,240원</p>
+            <p className="text-xs">2026년 최저임금: 시간당 10,320원 (2026년 고용노동부 고시 — 공식 확인 권장)</p>
+            <p className="text-xs mt-1">1일 8시간 기준 일급: 약 82,560원</p>
           </InfoBox>
         </motion.section>
 

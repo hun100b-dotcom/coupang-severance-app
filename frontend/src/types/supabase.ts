@@ -123,7 +123,7 @@ export interface JobPosting {
   work_dates?: string[]
   // 근무조별 시급/일급 — 20260419 추가 { morning: { hourly, daily }, night: { hourly, daily } }
   shift_wages?: Record<string, { hourly: number; daily: number }>
-  // 업무별 시급 — 20260419 추가 { 피킹: 10030, 패킹: 10500 }
+  // 업무별 시급 — 20260419 추가 { 피킹: 10320, 패킹: 10500 }
   task_wages?: Record<string, number>
   created_by: string | null
   created_at: string
