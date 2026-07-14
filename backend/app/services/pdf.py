@@ -86,8 +86,14 @@ def filter_df_by_company(df: pd.DataFrame, company: str, company_other: str = ""
             if mask.any():
                 return df.loc[mask].reset_index(drop=True)
 
-            # 3차: 역방향 포함 (선택된 이름이 저장된 사업장명을 포함)
-            mask = site_norm.apply(lambda x: norm_target in x or x in norm_target)
+            # 3차: 역방향 포함 (선택한 이름이 저장된 사업장명을 포함) — 과매칭 방지
+            #   · (norm_target in x) 방향은 2차(str.contains)가 이미 커버하므로 여기선 제외.
+            #   · 남는 위험은 (x in norm_target): 저장 사업장명 x 가 선택명의 부분문자열이면
+            #     매칭 → '쿠팡' 같은 짧은 이름이 '쿠팡풀필먼트…' 선택 시 다른 회사 행을 끌어옴.
+            #   → 4자 미만 짧은 사업장명은 우연한 부분일치를 유발하므로 제외한다.
+            _MIN_FUZZY_LEN = 4
+            mask = site_norm.apply(lambda x: len(x) >= _MIN_FUZZY_LEN and x in norm_target)
+            # 매칭 실패 시 빈 결과 반환(잘못된 과매칭보다 '못 찾음'이 안전 — 상위에서 422 안내)
             return df.loc[mask].reset_index(drop=True)
         else:
             return df
