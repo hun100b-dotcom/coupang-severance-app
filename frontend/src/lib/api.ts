@@ -327,9 +327,10 @@ export const calcUBSimple = (
   insured_days: number,
   avg_daily_wage: number,
   age_50: boolean,
-  daily_hours = 8, // 1일 소정근로시간(하한액 산정용, 기본 8시간)
+  daily_hours = 8,        // 1일 소정근로시간(하한액 산정용, 기본 8시간)
+  insured_years?: number, // 전체 고용보험 가입기간(년) — 소정급여일수 tier 판정용
 ): Promise<UBResult> =>
-  api.post('/unemployment/simple', { insured_days, avg_daily_wage, age_50, daily_hours }, { _idempotent: true }).then(r => r.data)
+  api.post('/unemployment/simple', { insured_days, avg_daily_wage, age_50, daily_hours, insured_years }, { _idempotent: true }).then(r => r.data)
 
 // ── 주휴수당 ─────────────────────────────────────────────
 export const extractWeeklyAllowanceCompanies = (file: File) => {

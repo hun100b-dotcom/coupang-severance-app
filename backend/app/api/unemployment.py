@@ -69,15 +69,29 @@ async def ub_precise(
         except ValueError:
             end_dt = None
 
-    insured_days = compute_insured_days_from_df(filtered, end_dt)
+    insured_days = compute_insured_days_from_df(filtered, end_dt)  # 18개월 창(수급자격 180일 판정용)
     daily_check  = check_ub_eligibility_daily(filtered, end_dt)
 
-    # 평균 일당 계산 (최근 3개월)
+    # ── 소정급여일수용 전체 피보험기간(년) 산정 (과소 버그 수정) ──────────────
+    #  소정급여일수 tier 는 18개월 창이 아니라 PDF **전체 기간**(첫 근무일~마지막 근무일)으로
+    #  판정해야 한다. (18개월 창은 위 수급자격 180일 판정에만 사용)
+    total_insured_years: float | None = None
+    if not filtered.empty and "근무일" in filtered.columns:
+        first_dt = filtered["근무일"].min()
+        last_dt  = end_dt if end_dt is not None else filtered["근무일"].max()
+        if isinstance(first_dt, pd.Timestamp):
+            first_dt = first_dt.to_pydatetime()
+        if isinstance(last_dt, pd.Timestamp):
+            last_dt = last_dt.to_pydatetime()
+        span_days = (last_dt - first_dt).days
+        total_insured_years = max(0.0, span_days / 365.0)
+
+    # 평균 일당 계산 (최근 3개월) — 정밀계산은 달력일수 기준이라 기초일액 과다 버그 없음
     from ..services.severance import compute_average_wage
     avg_res = compute_average_wage(filtered, end_dt)
     avg_daily = float(avg_res.get("average_wage", 0))
 
-    result = compute_unemployment_estimate(avg_daily, insured_days, age_50, daily_hours)
+    result = compute_unemployment_estimate(avg_daily, insured_days, age_50, daily_hours, total_insured_years)
 
     return UBPreciseResponse(
         eligible_180        = result["eligible_180"],
@@ -95,7 +109,7 @@ async def ub_precise(
 
 @router.post("/simple", response_model=UBSimpleResponse)
 async def ub_simple(req: UBSimpleRequest):
-    result = compute_unemployment_estimate(req.avg_daily_wage, req.insured_days, req.age_50, req.daily_hours)
+    result = compute_unemployment_estimate(req.avg_daily_wage, req.insured_days, req.age_50, req.daily_hours, req.insured_years)
     return UBSimpleResponse(
         eligible_180        = result["eligible_180"],
         insured_days_in_18m = result["insured_days_in_18m"],

@@ -184,7 +184,9 @@ export default function WeeklyAllowancePage() {
         reason: `주 소정근로시간이 ${weeklyHours}시간으로 15시간 미만이므로 주휴수당 적용 대상이 아닙니다.\n(근로기준법 제18조: 4주 평균 주 15시간 미만 단시간 근로자는 적용 제외)` })
       return
     }
-    const allowance = Math.round((weeklyHours / 40) * 8 * wage)
+    // 주휴수당 = (주 소정근로시간 / 40) × 8 × 시급, 단 주 40시간 상한(8시간분 최대).
+    //  8시간 상한 누락 버그 수정: 40 초과분(주48h 등)은 min(…,40)으로 캡 → 정확히 8시간분.
+    const allowance = Math.round((Math.min(weeklyHours, 40) / 40) * 8 * wage)
     setSimpleResult({ weeklyHours, eligible: true, allowance,
       reason: `주 ${weeklyHours}시간 근무 + 소정근로일 개근 → 주휴수당 발생` })
   }

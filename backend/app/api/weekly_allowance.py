@@ -83,8 +83,11 @@ async def weekly_allowance_precise(
 
         weekly_groups["weekly_hours"]  = weekly_groups["work_days"] * daily_hours
         weekly_groups["eligible"]      = weekly_groups["weekly_hours"] >= 15
+        # 주휴수당 = (주 소정근로시간 / 40) × 8 × 시급, 단 주 40시간 상한(8시간분이 최대).
+        #  ⚠️ 8시간 상한 누락 버그 수정: 40시간 초과분(예 주48h)은 min(…,40)으로 캡해
+        #     9.6시간분(20% 과다)이 아니라 정확히 8시간분이 지급되도록 한다.
         weekly_groups["allowance"]     = weekly_groups.apply(
-            lambda r: round((r["weekly_hours"] / 40) * 8 * hourly_wage) if r["eligible"] else 0,
+            lambda r: round((min(r["weekly_hours"], 40) / 40) * 8 * hourly_wage) if r["eligible"] else 0,
             axis=1,
         )
         weekly_groups["week_end"]      = weekly_groups["week_monday"] + timedelta(days=6)

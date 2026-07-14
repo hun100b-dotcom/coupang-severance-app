@@ -86,6 +86,8 @@ interface State {
   failReason: string
   result: UBResult | null
   age50: boolean
+  /** 쉬운 계산 산출근거 표시용 — 하루 일당·월평균 근무일수(기초일액 환산 전 원본 입력) */
+  simpleBasis?: { dailyWage: number; monthlyDays: number } | null
 }
 
 const INIT: State = {
@@ -116,8 +118,10 @@ export default function UnemploymentFlow() {
   const [pdfGuideOpen, setPdfGuideOpen] = useState(false)
   const [extractLoading, setExtractLoading] = useState(false)
 
-  const [insuredDays, setInsuredDays] = useState('')
-  const [avgWage, setAvgWage] = useState('')
+  const [insuredDays, setInsuredDays] = useState('')  // 최근 18개월 가입일수(수급자격 180일 판정)
+  const [avgWage, setAvgWage] = useState('')          // 하루 일당(일한 날 기준 1일 지급액)
+  const [monthlyWorkDays, setMonthlyWorkDays] = useState('') // 한 달 평균 근무일수(기초일액 환산)
+  const [totalYears, setTotalYears] = useState('')    // 전체 고용보험 가입기간(년) — 소정급여일수 tier
   // 1일 소정근로시간 — 실업급여 하한액(최저구직급여일액) 산정용. 기본 8시간(일용직 표준 근무일).
   const [dailyHours, setDailyHours] = useState('8')
 
@@ -128,6 +132,8 @@ export default function UnemploymentFlow() {
     setEndDate('')
     setInsuredDays('')
     setAvgWage('')
+    setMonthlyWorkDays('')
+    setTotalYears('')
     setDailyHours('8')
     setError('')
     setPdfCompanies([])
@@ -137,7 +143,7 @@ export default function UnemploymentFlow() {
   // ── 결과 화면 ──
   if (s.result) {
     const companyLabel = s.displayCompany || (s.company === '기타' ? s.companyOther : s.company) || ''
-    return <ResultUnemployment result={s.result} company={companyLabel} onReset={reset} />
+    return <ResultUnemployment result={s.result} company={companyLabel} onReset={reset} simpleBasis={s.simpleBasis} />
   }
 
   // ── 실패 화면 ──
@@ -243,18 +249,37 @@ export default function UnemploymentFlow() {
   }
 
   async function runSimple() {
-    const days = parseInt(insuredDays)
-    const wage = parseFloat(avgWage.replace(/,/g, ''))
-    if (!days || !wage) { setError('가입일수와 평균 일당을 모두 입력해 주세요.'); return }
+    const days = parseInt(insuredDays)                     // 18개월 가입일수(수급자격)
+    const dailyWage = parseFloat(avgWage.replace(/,/g, '')) // 하루 일당(일한 날 기준)
+    const monthlyDays = parseInt(monthlyWorkDays)          // 한 달 평균 근무일수
+    const years = parseFloat(totalYears)                   // 전체 가입기간(년)
+    if (!insuredDays.trim() || !avgWage.trim() || !monthlyWorkDays.trim() || !totalYears.trim()) {
+      setError('가입일수·하루 일당·한 달 평균 근무일수·전체 가입기간을 모두 입력해 주세요.'); return
+    }
+    if (Number.isNaN(days) || Number.isNaN(dailyWage) || Number.isNaN(monthlyDays) || Number.isNaN(years)) {
+      setError('숫자를 올바르게 입력해 주세요.'); return
+    }
+    if (days <= 0 || dailyWage <= 0 || years <= 0) {
+      setError('가입일수·하루 일당·전체 가입기간은 0보다 큰 값을 입력해 주세요.'); return
+    }
+    // 한 달 평균 근무일수 1~30 (분모 30 고정 — 초과 시 기초일액 > 하루 일당 불변식 위반)
+    if (monthlyDays < 1 || monthlyDays > 30) {
+      setError('한 달 평균 근무일수는 1~30일 사이로 입력해 주세요.'); return
+    }
+    // ── 기초일액 환산 (과다 산정 버그 수정) ─────────────────────────────
+    //  기초일액(=평균임금)은 3개월 임금총액 ÷ 달력일수. 일용직은 일한 날만 급여라
+    //  하루 일당을 그대로 쓰면 과다 → 월 출근 비율(월평균근무일수/30)만큼 희석한다.
+    //  예) 하루 15만 × (20/30) = 기초일액 10만.
+    const baseDailyWage = dailyWage * (monthlyDays / 30)
     setError(''); setLoading(true)
     const hours = parseFloat(dailyHours) > 0 ? parseFloat(dailyHours) : 8
     const [res] = await Promise.allSettled([
-      calcUBSimple(days, wage, s.age50, hours),
+      calcUBSimple(days, baseDailyWage, s.age50, hours, years),  // 전체 가입기간(년) → 소정급여일수 tier
       new Promise(r => setTimeout(r, 2000)),
     ])
     setLoading(false)
     if (res.status === 'fulfilled') {
-      setS(p => ({ ...p, result: res.value }))
+      setS(p => ({ ...p, result: res.value, simpleBasis: { dailyWage, monthlyDays } }))
     } else {
       setError('계산 중 오류가 발생했어요.')
     }
@@ -543,11 +568,12 @@ export default function UnemploymentFlow() {
                 icon={<ShieldCheck className="w-7 h-7" />}
                 accentColor="sky"
                 title="직접 입력해서 계산하기"
-                subtitle="가입일수와 평균 일당을 입력하면 예상 실업급여를 바로 알 수 있어요"
+                subtitle="가입일수 · 하루 일당 · 근무일수 · 가입기간을 입력하면 예상 실업급여를 바로 알 수 있어요"
               />
 
               <CalcInputCard>
                 <div className="flex flex-col gap-5">
+                  {/* 최근 18개월 가입일수 — 수급자격 180일 판정용(기존 유지) */}
                   <div>
                     <label className="block text-[14px] font-semibold text-ink-900 mb-2">최근 18개월 고용보험 가입일수</label>
                     <input
@@ -557,9 +583,11 @@ export default function UnemploymentFlow() {
                       onChange={e => setInsuredDays(e.target.value)}
                       className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                     />
+                    <p className="text-[12px] text-ink-500 mt-1.5">수급 자격(180일 이상) 판정에 쓰여요</p>
                   </div>
+                  {/* 하루 일당 — 일한 날 기준 1일 지급액(기초일액 환산 전) */}
                   <div>
-                    <label className="block text-[14px] font-semibold text-ink-900 mb-2">평균 일당 (원)</label>
+                    <label className="block text-[14px] font-semibold text-ink-900 mb-2">하루 일당 (원)</label>
                     <input
                       type="number"
                       placeholder="예: 150000"
@@ -567,6 +595,31 @@ export default function UnemploymentFlow() {
                       onChange={e => setAvgWage(e.target.value)}
                       className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                     />
+                    <p className="text-[12px] text-ink-500 mt-1.5">쿠팡 앱 급여내역의 1일 지급액</p>
+                  </div>
+                  {/* [신규] 한 달 평균 근무일수 — 기초일액 정확 환산용 */}
+                  <div>
+                    <label className="block text-[14px] font-semibold text-ink-900 mb-2">한 달 평균 근무일수 (일)</label>
+                    <input
+                      type="number" min="1" max="30"
+                      placeholder="예: 20"
+                      value={monthlyWorkDays}
+                      onChange={e => setMonthlyWorkDays(e.target.value)}
+                      className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
+                    />
+                    <p className="text-[12px] text-ink-500 mt-1.5">최근 3개월 기준 한 달 평균 출근일수</p>
+                  </div>
+                  {/* [신규] 전체 고용보험 가입기간(년) — 소정급여일수(며칠 받나) tier 판정용 */}
+                  <div>
+                    <label className="block text-[14px] font-semibold text-ink-900 mb-2">전체 고용보험 가입기간 (년)</label>
+                    <input
+                      type="number" min="0" step="0.5"
+                      placeholder="예: 3"
+                      value={totalYears}
+                      onChange={e => setTotalYears(e.target.value)}
+                      className="w-full px-4 py-4 rounded-2xl border border-line bg-white text-lg font-bold text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
+                    />
+                    <p className="text-[12px] text-ink-500 mt-1.5">지금까지 고용보험에 든 총 기간 — 받는 일수가 길어져요</p>
                   </div>
                 </div>
               </CalcInputCard>
@@ -589,7 +642,7 @@ export default function UnemploymentFlow() {
 
               {error && <CalcErrorMsg message={error} />}
 
-              <CalcNextButton disabled={!insuredDays || !avgWage} accentColor="sky" onClick={runSimple}>
+              <CalcNextButton disabled={!insuredDays || !avgWage || !monthlyWorkDays || !totalYears} accentColor="sky" onClick={runSimple}>
                 계산하기
               </CalcNextButton>
               <CalcBackButton onClick={() => go(3)} />

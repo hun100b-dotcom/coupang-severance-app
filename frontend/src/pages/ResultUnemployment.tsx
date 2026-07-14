@@ -17,11 +17,13 @@ interface Props {
   result: UBResult
   company: string
   onReset: () => void
+  /** 쉬운 계산 산출근거(하루 일당·월평균 근무일수) — 기초일액 환산 과정 투명 표시용 */
+  simpleBasis?: { dailyWage: number; monthlyDays: number } | null
 }
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'login_required' | 'error'
 
-export default function ResultUnemployment({ result, company, onReset }: Props) {
+export default function ResultUnemployment({ result, company, onReset, simpleBasis }: Props) {
   const navigate = useNavigate()
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const { eligible_180, insured_days_in_18m, avg_daily_wage, daily_benefit, days, total_estimate, days_last_month, bound_applied } = result
@@ -137,7 +139,14 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
         <GlassCard className="p-6" style={{ marginBottom: 16 }}>
           <h3 className="heading-md" style={{ marginBottom: 16 }}>상세 내역</h3>
           {[
-            { label: '평균 일당 (세전)', value: fmt(Math.round(avg_daily_wage)) },
+            // 쉬운 계산: 하루 일당 → 월평균 근무일수 → 환산 기초일액(평균임금) 순 투명 표시
+            ...(simpleBasis
+              ? [
+                  { label: '하루 일당 (세전)', value: fmt(Math.round(simpleBasis.dailyWage)) },
+                  { label: '한 달 평균 근무일수', value: `${simpleBasis.monthlyDays}일` },
+                  { label: '1일 평균임금 (기초일액, 환산)', value: fmt(Math.round(avg_daily_wage)) },
+                ]
+              : [{ label: '평균 일당 (세전)', value: fmt(Math.round(avg_daily_wage)) }]),
             { label: benefitLabel, value: fmt(Math.round(daily_benefit)) },
             { label: '수급 가능 일수', value: `${days}일` },
             { label: '18개월 내 가입일수', value: `${insured_days_in_18m}일` },
@@ -148,6 +157,12 @@ export default function ResultUnemployment({ result, company, onReset }: Props) 
               <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--toss-text)' }}>{row.value}</span>
             </div>
           ))}
+          {/* 쉬운 계산 기초일액 산출근거 1줄 투명 표시 */}
+          {simpleBasis && (
+            <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(49,130,246,0.06)', borderRadius: 10, fontSize: '0.8rem', color: '#1e3a5f', fontWeight: 600, lineHeight: 1.5 }}>
+              🧮 하루 일당 {fmt(Math.round(simpleBasis.dailyWage))} × 월 {simpleBasis.monthlyDays}일 → 1일 평균임금(기초일액) {fmt(Math.round(avg_daily_wage))} 기준으로 계산했어요.
+            </div>
+          )}
           {/* 상·하한 적용 안내 (해당 시에만) */}
           {eligible && boundNote && (
             <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(49,130,246,0.06)', borderRadius: 10, fontSize: '0.8rem', color: '#1e3a5f', fontWeight: 600, lineHeight: 1.5 }}>

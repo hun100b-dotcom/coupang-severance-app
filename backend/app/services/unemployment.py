@@ -38,9 +38,13 @@ def compute_ub_daily_lower_bound(daily_hours: float = UB_STD_HOURS_CAP) -> float
     return UB_MIN_HOURLY_WAGE * hours * UB_LOWER_RATE
 
 
-def get_unemployment_days(insured_days: int, age_50_or_over: bool) -> int:
-    """고용보험 가입일수와 50세 이상 여부로 수급 가능 일수 반환"""
-    years = insured_days / 365.0 if insured_days else 0
+def get_unemployment_days_by_years(insured_years: float, age_50_or_over: bool) -> int:
+    """소정급여일수(며칠 받나) = 전체 피보험기간(년) + 50세이상 여부 (고용보험법 별표1).
+
+    ⚠️ 여기서 '피보험기간'은 최근 18개월 창이 아니라 **전체 고용보험 가입기간**이다.
+       (18개월 창은 '수급자격 180일' 판정에만 쓰고, 소정급여일수 tier와 분리한다.)
+    """
+    years = insured_years if (insured_years and insured_years > 0) else 0
     if years < 1:
         return 120
     if years < 3:
@@ -52,11 +56,17 @@ def get_unemployment_days(insured_days: int, age_50_or_over: bool) -> int:
     return 270 if age_50_or_over else 240
 
 
+def get_unemployment_days(insured_days: int, age_50_or_over: bool) -> int:
+    """(하위호환) 가입일수 → 년 환산 후 소정급여일수. 신규 호출은 _by_years 사용 권장."""
+    return get_unemployment_days_by_years(insured_days / 365.0 if insured_days else 0, age_50_or_over)
+
+
 def compute_unemployment_estimate(
     avg_daily_wage: float,
     insured_days_in_18m: int,
     age_50_or_over: bool,
     daily_hours: float = UB_STD_HOURS_CAP,
+    insured_years: float | None = None,
 ) -> dict:
     """실업급여: 180일 충족 여부, 구직급여일액(상·하한 적용), 수급일수, 총 예상액.
 
@@ -65,6 +75,11 @@ def compute_unemployment_estimate(
       · 하한액: 1일 소정근로시간(최대 8h) × 최저임금 × 80%  → daily_hours 반영
       · 상한액: 2026년 68,100원/일
     bound_applied 로 어느 한도가 적용됐는지(lower/upper/None) 함께 반환한다.
+
+    ⚠️ 두 개념 분리 (소정급여일수 과소 버그 수정):
+      · 수급자격(180일): 최근 18개월 창 가입일수(insured_days_in_18m) 기준 — 불변.
+      · 소정급여일수 tier: **전체 피보험기간**(insured_years, 년) 기준.
+        insured_years 가 None 이면 18개월 창으로 폴백(하위호환)하되, 이는 근사치다.
     """
     eligible_180 = insured_days_in_18m >= 180
 
@@ -90,7 +105,9 @@ def compute_unemployment_estimate(
             daily_benefit = upper
             bound_applied = "upper"
 
-    days           = get_unemployment_days(insured_days_in_18m, age_50_or_over) if eligible_180 else 0
+    # 소정급여일수: 전체 피보험기간(년) 기준. insured_years 없으면 18개월 창으로 폴백(근사).
+    tier_years     = insured_years if insured_years is not None else (insured_days_in_18m / 365.0)
+    days           = get_unemployment_days_by_years(tier_years, age_50_or_over) if eligible_180 else 0
     total_estimate = daily_benefit * days if days else 0.0
     return {
         "eligible_180":        eligible_180,
@@ -101,6 +118,7 @@ def compute_unemployment_estimate(
         "lower_bound":         lower,
         "upper_bound":         upper,
         "days":                days,
+        "insured_years_used":  round(tier_years, 2),  # 소정급여일수 tier 판정에 쓴 전체 피보험기간(년)
         "total_estimate":      total_estimate,
         "avg_daily_wage":      avg_daily_wage,
     }

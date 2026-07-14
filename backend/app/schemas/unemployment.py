@@ -32,6 +32,8 @@ class UBSimpleRequest(BaseModel):
     avg_daily_wage: float
     age_50: bool = False
     daily_hours: float = 8.0  # 1일 소정근로시간(하한액 산정용, 기본 8시간)
+    # 전체 고용보험 가입기간(년) — 소정급여일수 tier 판정용(18개월 창과 분리). None이면 근사 폴백.
+    insured_years: Optional[float] = None
 
 
 class UBSimpleResponse(BaseModel):
