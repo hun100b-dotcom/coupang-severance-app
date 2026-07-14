@@ -50,7 +50,8 @@
 - 공격8 저장/회귀: UBResult 구조 불변(저장 payload 영향 없음), 정밀 기초일액(compute_average_wage)·주휴 나머지 무변경. **방어확인**
 - MINOR: insured_years NaN 방어는 `get_unemployment_days_by_years`의 `and >0` 단락으로 0 처리(안전) — 명시 가드는 아니나 실동작 안전.
 
-## 통합 결정: **PASS → 커밋·배포**
-- A·B 합의 PASS, BLOCKER/MAJOR 0. 이견 없음.
-- MINOR(precise span 장기공백 과대·A 근사)는 추정 도구 특성상 허용·기존 대비 대폭 개선, 후속 세그먼트 정밀화 여지로 기록.
+## 통합 결정: **PASS → 커밋·배포 (B의 MAJOR 반영 완료)**
+- A·B 합의 PASS, BLOCKER 0.
+- **B의 MAJOR(precise span 장기공백 과대평가) 즉시 반영**: 첫~마지막 단순 span → **90일 초과 공백 제외 실효 피보험기간 합산**(CLAUDE.md 3개월 세그먼트 개념 재사용)으로 개선. 재검증: 연속10년→~10년(240), 2020+2025(5년공백)→0.25년(과대 아님), 단일일→0. A도 동일 항목 MINOR로 지적 → 해소.
+- MINOR 잔존(비차단): Bug A /30 근사(환산 라벨·정밀경로 정식), 하한 66,048 표시 시 raw 6만 병기(라벨·boundNote로 설명). insured_years=inf(API 직접호출) 최대tier — 실사용 무관.
 - 정밀 통상/평균임금·상하한·저장·폰트 무변경 확정.

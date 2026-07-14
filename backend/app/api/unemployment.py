@@ -73,18 +73,30 @@ async def ub_precise(
     daily_check  = check_ub_eligibility_daily(filtered, end_dt)
 
     # ── 소정급여일수용 전체 피보험기간(년) 산정 (과소 버그 수정) ──────────────
-    #  소정급여일수 tier 는 18개월 창이 아니라 PDF **전체 기간**(첫 근무일~마지막 근무일)으로
-    #  판정해야 한다. (18개월 창은 위 수급자격 180일 판정에만 사용)
+    #  소정급여일수 tier 는 18개월 창이 아니라 PDF **전체 기간**으로 판정해야 한다.
+    #  (18개월 창은 위 수급자격 180일 판정에만 사용)
+    #  ⚠️ 단순 첫~마지막 span 은 장기 공백(예: 2020년 근무 후 2025년 재근무)이 있는
+    #     일용직에서 피보험기간을 과대 추정한다(리뷰어 A·B 지적). 그래서 계산로직의
+    #     '3개월(90일) 공백 = 세그먼트 분리' 개념을 재사용해, 90일 초과 공백은 제외한
+    #     **실효 피보험기간**(각 연속 근무 구간의 span 합)으로 산정한다.
     total_insured_years: float | None = None
     if not filtered.empty and "근무일" in filtered.columns:
-        first_dt = filtered["근무일"].min()
-        last_dt  = end_dt if end_dt is not None else filtered["근무일"].max()
-        if isinstance(first_dt, pd.Timestamp):
-            first_dt = first_dt.to_pydatetime()
-        if isinstance(last_dt, pd.Timestamp):
-            last_dt = last_dt.to_pydatetime()
-        span_days = (last_dt - first_dt).days
-        total_insured_years = max(0.0, span_days / 365.0)
+        dates = sorted(pd.to_datetime(filtered["근무일"].dropna().unique()))
+        if dates:
+            GAP_DAYS = 90  # 3개월 초과 공백 → 피보험기간에서 제외(세그먼트 분리)
+            effective_days = 0
+            seg_start = prev = dates[0]
+            for d in dates[1:]:
+                if (d - prev).days > GAP_DAYS:
+                    effective_days += (prev - seg_start).days
+                    seg_start = d
+                prev = d
+            # 마지막 세그먼트 — 퇴직일(end_dt)이 마지막 근무일보다 뒤면 그날까지 반영
+            seg_end = prev
+            if end_dt is not None and pd.Timestamp(end_dt) > prev:
+                seg_end = pd.Timestamp(end_dt)
+            effective_days += (seg_end - seg_start).days
+            total_insured_years = max(0.0, effective_days / 365.0)
 
     # 평균 일당 계산 (최근 3개월) — 정밀계산은 달력일수 기준이라 기초일액 과다 버그 없음
     from ..services.severance import compute_average_wage
