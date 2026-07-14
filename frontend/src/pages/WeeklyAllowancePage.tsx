@@ -839,6 +839,15 @@ export default function WeeklyAllowancePage() {
                     </div>
                   </div>
 
+                  {/* 개근 가정 안내 — PDF엔 주별 개근(결근) 정보가 없어, 주 15시간 이상 주는
+                      소정근로일 '개근'으로 가정해 산정합니다(무음 과대 방지). */}
+                  <div className="rounded-xl bg-[#FFF7ED] border border-[#FED7AA] px-4 py-3">
+                    <p className="text-[12px] text-[#B45309] font-semibold leading-relaxed">
+                      ⓘ 개근 가정: 근로내역서에는 주별 결근 정보가 없어, 주 15시간 이상인 주는
+                      소정근로일을 <b>개근</b>한 것으로 가정해 계산했어요. 결근한 주가 있으면 그 주 주휴수당은 실제로 발생하지 않습니다.
+                    </p>
+                  </div>
+
                   <div className="rounded-xl bg-white border border-line shadow-[0_8px_32px_rgba(49,130,246,0.06)] px-4 py-4">
                     <p className="text-sm font-extrabold text-ink-900 mb-3">주차별 상세</p>
                     <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
