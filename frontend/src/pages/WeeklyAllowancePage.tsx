@@ -671,9 +671,15 @@ export default function WeeklyAllowancePage() {
                     <div className="flex justify-between text-xs">
                       <span className="text-up-sub">계산식</span>
                       <span className="font-semibold text-ink-700">
-                        ({simpleResult.weeklyHours}h ÷ 40h) × 8h × {formatWon(wage)}
+                        {/* 주 40시간 상한 반영 — 40h 초과분은 캡(8시간분이 최대) */}
+                        ({Math.min(simpleResult.weeklyHours, 40)}h ÷ 40h) × 8h × {formatWon(wage)}
                       </span>
                     </div>
+                  )}
+                  {simpleResult.eligible && simpleResult.weeklyHours > 40 && (
+                    <p className="text-[11px] text-accent-700 font-semibold">
+                      ⓘ 주 40시간 상한 적용 (실근무 {simpleResult.weeklyHours}h → 8시간분이 최대)
+                    </p>
                   )}
                   <p className="text-[12px] text-ink-700 leading-relaxed whitespace-pre-line">{simpleResult.reason}</p>
                 </div>
