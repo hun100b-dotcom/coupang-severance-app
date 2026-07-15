@@ -6,6 +6,17 @@
 
 ---
 
+## 💰 평균임금 분모 "마지막 근무일 기준 3개월 고정" (2026-07-15, main `cd1d11a` 푸시·배포·라이브검증)
+
+> 오너 확정: 평균임금 분모를 사유발생일(마지막 근무일) 이전 3개월 달력일수로 고정. 앞서 보류했던 [높음] 분모 축소 버그.
+
+**버그**: `backend/app/services/severance.py` `compute_average_wage` 가 3개월 창 안의 **첫 근무일**로 분모를 축소 → 창 초반 공백 크면 분모↓ → 평균임금 과다. 퇴직금·실업급여 정밀 공통함수라 양쪽 과대추정.
+**수정**: 근로기준법 제2조 원칙 — `period_start=(end_date-relativedelta(months=3))+1일`, `calendar_days=(end_date-period_start)+1`(월/윤년따라 89~92일 자연변동), 분자=그 창 지급액 합. 첫근무일 축소 제거. end_date 판정·쉬운계산(simple) 불변. 반환 start_date=창시작·end_date=사유발생일(산출근거 span==calendar_days 일치).
+**검산**: 90일창·첫근무30일째·20일 300만원 → 49,180원(버그)→**33,333원**(정상). 꾸준근무자 값 불변(회귀0). 픽스처 PDF 전체파이프라인 분모=91 확인.
+**더블리뷰**: A·B PASS(`docs/dual_review/avg_wage_denominator_3month_fixed.md`). B MINOR반영: dateutil 직접import 위해 requirements.txt에 `python-dateutil>=2.8.2` 명시. B MAJOR(벡터7: 이직일≫마지막근무→기초일액0)는 **기존 latent·신규회귀 아님**→별도티켓 분리(spawn_task task_71fbe164).
+
+---
+
 ## 🧭 어드민 무한로딩 박멸 + 방문자 애널리틱스 정확도 개편 (2026-07-06, main `3c35ad8`~`e121b6d` 5커밋 푸시·배포·라이브검증)
 
 > 지시: ①어드민 접속 무한로딩→백엔드에러 즉시수정 ②어드민 전수조사 ③방문자 4지표 실제값화+유입경로+경로한글표기+툴팁 ④고도화 로드맵. 보고서 `docs/audit/admin_audit_2026-07.md`, 로드맵 `docs/admin_enhancement_roadmap_2026-07.md`, 듀얼리뷰 `docs/dual_review/admin_visitor_analytics_2026-07-06.md`.
