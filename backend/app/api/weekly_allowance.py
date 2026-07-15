@@ -67,7 +67,8 @@ async def weekly_allowance_precise(
             return {"error": "PDF 파싱 실패 또는 데이터 없음", "weeks": [], "total_allowance": 0}
 
         target = company_other.strip() if company == "기타" and company_other.strip() else company
-        df = filter_df_by_company(df_raw, target)
+        # ⚠️ company+company_other 를 모두 전달해야 '기타' 분기 필터가 동작(과거 우회 버그, 리뷰어 B BLOCKER)
+        df = filter_df_by_company(df_raw, company, company_other)
         if df.empty:
             return {"error": f"'{target}' 근무 기록이 없습니다.", "weeks": [], "total_allowance": 0}
 

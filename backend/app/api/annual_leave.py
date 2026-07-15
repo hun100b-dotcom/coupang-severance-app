@@ -64,10 +64,12 @@ def _calc_annual_leave_days(hire_date: date, ref_date: date, attended_months: Op
             grants.append((y * 12, d))                  # y년차 연차는 만 y년 시점 발생
 
     # 현재 진행 중인 연차(부분) — 다음 연차의 rem_months/12 비율
+    #  ⚠️ 반올림 규약: 프론트(JS Math.round=반올림 올림)와 일치시키기 위해 int(x+0.5) 사용.
+    #     파이썬 기본 round()는 은행가 반올림(2.5→2)이라 .5 경계에서 프론트와 1일 달라진다(리뷰어 B MAJOR).
     partial = 0
     if years_worked >= 1 and rem_months > 0:
         next_rate = 15 if (years_worked + 1) < 3 else min(15 + years_worked // 2, 25)
-        partial = round(next_rate * rem_months / 12)
+        partial = int(next_rate * rem_months / 12 + 0.5)
 
     total_entitlement = sum(d for _, d in grants) + partial
     # (a) 소멸시효: 발생 시점이 최근 36개월 이내인 연차 + 진행분만 청구 대상
@@ -135,7 +137,9 @@ async def annual_leave_precise(
             return {"error": "PDF 파싱 실패 또는 데이터 없음"}
 
         target = company_other.strip() if company == "기타" and company_other.strip() else company
-        df = filter_df_by_company(df_raw, target)
+        # ⚠️ company+company_other 를 모두 전달해야 '기타' 분기(정확·포함·역방향 폴백)가 동작한다.
+        #   과거 target 만 넘겨(company 자리) '기타'가 아니게 되어 필터가 우회(전체 반환)됐다(리뷰어 B BLOCKER).
+        df = filter_df_by_company(df_raw, company, company_other)
         if df.empty:
             return {"error": f"'{target}' 근무 기록이 없습니다."}
 
