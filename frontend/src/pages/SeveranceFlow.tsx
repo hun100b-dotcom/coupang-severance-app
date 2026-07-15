@@ -523,7 +523,7 @@ export default function SeveranceFlow() {
                             : <span className="w-3.5 h-3.5 rounded-full border-[1.5px] border-up-hair inline-block" />
                           }
                         </span>
-                        <span className="text-[14px] font-medium text-up-navy">{name}</span>
+                        <span className="text-[14px] font-medium text-up-navy min-w-0 break-words leading-snug">{name}</span>
                       </button>
                     ))}
                   </div>
@@ -536,10 +536,12 @@ export default function SeveranceFlow() {
                   마지막 근무일 (선택)
                 </label>
                 <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
+                  max={new Date().toISOString().slice(0, 10)}
                   className="w-full px-4 py-4 rounded-xl border border-up-hair bg-white text-lg font-bold text-up-navy focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-center"
                 />
-                <p className="text-[12px] text-up-sub mt-2">
-                  비워두면 PDF의 마지막 근무일을 사용해요
+                <p className="text-[12px] text-up-sub mt-2 leading-relaxed">
+                  이 날짜까지의 근무를 기준으로 계산해요. 비워두면 PDF의 마지막 근무일을 사용해요.
+                  {endDate && <span className="block text-brand-strong font-semibold mt-1">→ {endDate.replace(/-/g, '.')} 기준으로 계산</span>}
                 </p>
               </CalcInputCard>
 

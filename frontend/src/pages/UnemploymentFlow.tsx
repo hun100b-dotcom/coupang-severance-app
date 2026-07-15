@@ -513,7 +513,7 @@ export default function UnemploymentFlow() {
                             : <span className="w-3.5 h-3.5 rounded-full border-[1.5px] border-up-hair inline-block" />
                           }
                         </span>
-                        <span className="text-[14px] font-medium text-ink-900">{name}</span>
+                        <span className="text-[14px] font-medium text-ink-900 min-w-0 break-words leading-snug">{name}</span>
                       </button>
                     ))}
                   </div>

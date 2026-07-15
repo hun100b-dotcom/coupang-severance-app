@@ -37,8 +37,14 @@ export default function PdfGuide({ onClose }: PdfGuideProps) {
             <div>
               <h3 className="text-base font-bold text-up-navy mb-1">1. 토탈서비스 접속 및 로그인</h3>
               <p className="text-sm text-up-sub leading-relaxed">
-                PC 또는 모바일에서 <span className="font-semibold text-brand-strong">근로복지공단 토탈서비스</span>에 접속 후, 카카오/네이버 등 간편인증으로 개인 로그인을 해주세요.
+                <span className="font-semibold text-brand-strong">근로복지공단 토탈서비스</span>에 접속 후, 카카오/네이버 등 간편인증으로 개인 로그인을 해주세요.
               </p>
+              <div className="mt-2 flex items-start space-x-1.5 text-xs bg-[#FFF7ED] border border-[#FED7AA] p-2.5 rounded-xl">
+                <CircleAlert className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#B45309]" />
+                <p className="text-[#B45309] font-medium leading-relaxed">
+                  로그인을 해야 상단 메뉴가 나타나요. 로그인 전에는 상단바가 보이지 않아 다음 단계로 못 넘어갈 수 있어요.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -50,7 +56,7 @@ export default function PdfGuide({ onClose }: PdfGuideProps) {
             <div>
               <h3 className="text-base font-bold text-up-navy mb-1">2. 발급 메뉴 이동</h3>
               <p className="text-sm text-up-sub leading-relaxed">
-                상단 메뉴 <span className="font-semibold text-up-body bg-up-sunken px-1.5 py-0.5 rounded">증명원 신청/발급</span> ➔ 좌측 <span className="font-semibold text-up-body bg-up-sunken px-1.5 py-0.5 rounded">증명원 신청/발급</span> ➔ 화면에서 <span className="font-semibold text-up-body bg-up-sunken px-1.5 py-0.5 rounded">고용·산재보험 자격 이력 내역서</span> 를 클릭하세요.
+                <span className="font-semibold text-brand-strong">로그인 후 나타난</span> 상단 메뉴 <span className="font-semibold text-up-body bg-up-sunken px-1.5 py-0.5 rounded">증명원 신청/발급</span> ➔ 좌측 <span className="font-semibold text-up-body bg-up-sunken px-1.5 py-0.5 rounded">증명원 신청/발급</span> ➔ 화면에서 <span className="font-semibold text-up-body bg-up-sunken px-1.5 py-0.5 rounded">고용·산재보험 자격 이력 내역서</span> 를 클릭하세요. (상단 메뉴가 안 보이면 로그인 상태를 먼저 확인하세요.)
               </p>
             </div>
           </div>
@@ -83,6 +89,9 @@ export default function PdfGuide({ onClose }: PdfGuideProps) {
               <h3 className="text-base font-bold text-up-navy mb-1">4. PDF 파일로 저장</h3>
               <p className="text-sm text-up-sub leading-relaxed">
                 화면 우측 상단의 [🖨️ 인쇄] 아이콘 또는 하단 버튼을 누른 후, 인쇄 창이 뜨면 대상을 <span className="font-semibold text-brand-strong bg-brand-bg px-1.5 py-0.5 rounded">PDF로 저장</span>으로 변경하고 저장해 주세요.
+              </p>
+              <p className="text-[12px] text-up-sub mt-2 leading-relaxed">
+                📱 모바일에서도 발급·저장이 가능하지만 화면이 작아 번거로울 수 있어요. 어려우면 <span className="font-semibold text-up-body">PC에서 진행하는 것을 권장</span>해요.
               </p>
             </div>
           </div>
