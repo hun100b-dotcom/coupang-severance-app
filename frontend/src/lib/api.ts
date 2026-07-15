@@ -390,9 +390,11 @@ export interface AnnualLeavePreciseResult {
   first_year_days: number
   annual_days: number
   total_entitlement: number
+  claimable_entitlement?: number   // 소멸시효 3년 내 청구 대상 연차
   used_days: number
   remaining_days: number
   avg_daily_wage: number
+  wage_basis?: string              // 단가 기준(ordinary=통상임금)
   unpaid_allowance: number | null
   monthly_detail: AnnualLeaveMonthItem[]
   error?: string

@@ -115,7 +115,8 @@ interface SimpleResult {
   monthsWorked: number
   firstYearDays: number
   annualDays: number
-  totalEntitlement: number
+  totalEntitlement: number       // 총 발생(표시용)
+  claimableEntitlement: number   // 소멸시효 3년 내 청구 대상
   usedDays: number
   remainingDays: number
   unpaidAllowance: number | null
@@ -131,33 +132,40 @@ function calcSimpleAnnualLeave(survey: Survey): SimpleResult {
   const totalDays   = diffMs / (1000 * 60 * 60 * 24)
   const totalMonths = Math.floor(totalDays / 30.44)
   const yearsWorked  = Math.floor(totalMonths / 12)
-  const monthsWorked = totalMonths
 
+  const remMonths = totalMonths % 12
   const firstYearDays = Math.min(totalMonths, 11)
 
   let annualDays = 0
   if (yearsWorked >= 3) annualDays = Math.min(15 + Math.floor((yearsWorked - 1) / 2), 25)
   else if (yearsWorked >= 1) annualDays = 15
 
-  let total = 0
+  // 연도별 발생 연차 + 발생 시점(개월) — 백엔드 _calc_annual_leave_days와 동일 로직
+  const CLAIM_MONTHS = 36 // 소멸시효 3년
+  const grants: [number, number][] = [] // [발생시점(개월), 일수]
   if (yearsWorked === 0) {
-    total = firstYearDays
+    grants.push([totalMonths, firstYearDays])
   } else {
-    total = 11
+    grants.push([12, firstYearDays])
     for (let y = 1; y <= yearsWorked; y++) {
-      if (y < 3) total += 15
-      else total += Math.min(15 + Math.floor((y - 1) / 2), 25)
+      grants.push([y * 12, y < 3 ? 15 : Math.min(15 + Math.floor((y - 1) / 2), 25)])
     }
-    const remMonths = totalMonths % 12
-    total += Math.round(annualDays * remMonths / 12)
   }
+  let partial = 0
+  if (yearsWorked >= 1 && remMonths > 0) {
+    const nextRate = (yearsWorked + 1) < 3 ? 15 : Math.min(15 + Math.floor(yearsWorked / 2), 25)
+    partial = Math.round(nextRate * remMonths / 12)
+  }
+  const total = grants.reduce((s, [, d]) => s + d, 0) + partial
+  // (a) 소멸시효 3년: 발생 시점이 최근 36개월 이내인 연차 + 진행분만 청구 대상
+  const claimable = Math.max(0, grants.reduce((s, [gm, d]) => s + ((totalMonths - gm) < CLAIM_MONTHS ? d : 0), 0) + partial)
 
   const used      = Number(survey.usedDays) || 0
-  const remaining = Math.max(total - used, 0)
-  const wage      = Number(survey.avgDailyWage.replace(/,/g, '')) || 0
+  const remaining = Math.max(claimable - used, 0) // 청구가능(3년) - 사용
+  const wage      = Number(survey.avgDailyWage.replace(/,/g, '')) || 0 // 1일 통상임금(간주)
   const unpaid    = wage > 0 ? Math.round(remaining * wage) : null
 
-  return { yearsWorked, monthsWorked, firstYearDays, annualDays, totalEntitlement: total, usedDays: used, remainingDays: remaining, unpaidAllowance: unpaid }
+  return { yearsWorked, monthsWorked: totalMonths, firstYearDays, annualDays, totalEntitlement: total, claimableEntitlement: claimable, usedDays: used, remainingDays: remaining, unpaidAllowance: unpaid }
 }
 
 const PURPOSES: { value: Purpose; label: string; sub: string; icon: string }[] = [
@@ -674,9 +682,10 @@ export default function AnnualLeaveAllowancePage() {
                       <span className="text-2xl font-extrabold text-accent-700">₩</span>
                     </div>
                     <p className="text-[clamp(21px,5.5vw,26px)] font-extrabold text-up-navy tracking-tight leading-tight">
-                      평균 일급은 얼마인가요?
+                      1일 통상임금은 얼마인가요?
                     </p>
-                    <p className="text-[13px] text-up-sub mt-1.5">연차수당 = 남은 연차일수 × 평균 일급</p>
+                    <p className="text-[13px] text-up-sub mt-1.5">연차수당 = 미사용 연차 × 1일 통상임금</p>
+                    <p className="text-[12px] text-up-sub mt-1">하루 통상임금 = 시급 × 8시간 (일용직은 하루 지급액)</p>
                   </div>
                   <div className="rounded-xl bg-white border border-line shadow-[0_12px_40px_rgba(49,130,246,0.08)] px-5 py-6">
                     <div className="relative">
@@ -690,7 +699,7 @@ export default function AnnualLeaveAllowancePage() {
                     {wage > 0 && (
                       <div className="mt-2 flex items-center justify-center gap-1">
                         <CheckCircle2 className="w-4 h-4 text-accent-700" />
-                        <p className="text-[12px] text-accent-700 font-semibold">일급 {formatWon(wage)}</p>
+                        <p className="text-[12px] text-accent-700 font-semibold">1일 통상임금 {formatWon(wage)}</p>
                       </div>
                     )}
                   </div>
@@ -725,7 +734,7 @@ export default function AnnualLeaveAllowancePage() {
                     { label: '목적', value: survey.purpose ?? '미선택' },
                     { label: '사용 연차', value: `${survey.usedDays || '0'}일` },
                     ...((survey.purpose === '미지급청구' || survey.purpose === '남은일수') && wage > 0
-                      ? [{ label: '평균 일급', value: formatWon(wage) }] : []),
+                      ? [{ label: '1일 통상임금', value: formatWon(wage) }] : []),
                   ].map(({ label, value }) => (
                     <div key={label} className="rounded-xl bg-white border border-line px-3 py-2">
                       <p className="text-[10px] text-up-sub">{label}</p>
@@ -792,7 +801,7 @@ export default function AnnualLeaveAllowancePage() {
                       {formatWon(simpleResult.unpaidAllowance)}
                     </p>
                     <p className="text-[11px] text-accent-700 mt-1">
-                      남은 {simpleResult.remainingDays}일 × 일급 {formatWon(wage)}
+                      청구가능 {simpleResult.remainingDays}일 × 1일 통상임금 {formatWon(wage)}
                     </p>
                   </div>
                 )}
@@ -800,9 +809,10 @@ export default function AnnualLeaveAllowancePage() {
                 <div className="space-y-2">
                   {[
                     ['근속 기간', `${simpleResult.yearsWorked}년 ${simpleResult.monthsWorked % 12}개월`],
-                    ['총 발생 연차', `${simpleResult.totalEntitlement}일`],
+                    ['총 발생 연차 (전 기간)', `${simpleResult.totalEntitlement}일`],
+                    ['청구 가능 연차 (최근 3년)', `${simpleResult.claimableEntitlement}일`],
                     ['사용한 연차', `${simpleResult.usedDays}일`],
-                    ['남은 연차', `${simpleResult.remainingDays}일`],
+                    ['청구 가능 잔여 연차', `${simpleResult.remainingDays}일`],
                     ...(simpleResult.yearsWorked === 0
                       ? [['1년 미만 발생 (개근 기준)', `${simpleResult.firstYearDays}일`]]
                       : [['연간 발생 연차 (현재 연도)', `${simpleResult.annualDays}일`]]),
@@ -814,8 +824,18 @@ export default function AnnualLeaveAllowancePage() {
                   ))}
                 </div>
 
+                {/* 소멸시효 안내 — 미지급수당은 최근 3년 발생분만 청구 대상 */}
+                {simpleResult.totalEntitlement > simpleResult.claimableEntitlement && (
+                  <div className="rounded-xl bg-[#FFF7ED] border border-[#FED7AA] px-4 py-3">
+                    <p className="text-[12px] text-[#B45309] font-semibold leading-relaxed">
+                      ⓘ 연차수당 청구권 소멸시효는 3년이에요. 총 {simpleResult.totalEntitlement}일 중
+                      <b> 최근 3년 발생분 {simpleResult.claimableEntitlement}일</b>만 청구 대상으로 계산했어요(그 이전 발생분은 시효 경과).
+                    </p>
+                  </div>
+                )}
+
                 <p className="text-[10px] text-up-sub text-center leading-relaxed">
-                  이 결과는 참고용입니다. 정확한 금액은 노무사 상담을 받으세요.
+                  이 결과는 참고용이며, 단가는 1일 통상임금(시급×8h) 기준 가정입니다. 정확한 금액은 노무사 상담을 받으세요.
                 </p>
 
                 {/* 저장 버튼 */}
@@ -951,7 +971,7 @@ export default function AnnualLeaveAllowancePage() {
                           {formatWon(pdfResult.unpaid_allowance)}
                         </p>
                         <p className="text-[11px] text-accent-700 mt-1">
-                          남은 {pdfResult.remaining_days}일 × 일급 {formatWon(pdfResult.avg_daily_wage)}
+                          청구가능 {pdfResult.remaining_days}일 × 1일 통상임금 {formatWon(pdfResult.avg_daily_wage)}
                         </p>
                       </div>
                     )}
@@ -961,9 +981,11 @@ export default function AnnualLeaveAllowancePage() {
                         ['분석 기간', `${pdfResult.hire_date} ~ ${pdfResult.ref_date}`],
                         ['근속 기간', `${pdfResult.years_worked}년 ${pdfResult.months_worked % 12}개월`],
                         ['개근 확인 개월 수', `${pdfResult.attended_months}개월`],
-                        ['총 발생 연차', `${pdfResult.total_entitlement}일`],
+                        ['총 발생 연차 (전 기간)', `${pdfResult.total_entitlement}일`],
+                        ...(pdfResult.claimable_entitlement !== undefined
+                          ? [['청구 가능 연차 (최근 3년)', `${pdfResult.claimable_entitlement}일`]] : []),
                         ['사용한 연차', `${pdfResult.used_days}일`],
-                        ['남은 연차', `${pdfResult.remaining_days}일`],
+                        ['청구 가능 잔여 연차', `${pdfResult.remaining_days}일`],
                       ].map(([label, value]) => (
                         <div key={label} className="flex justify-between items-center px-4 py-2.5 rounded-xl bg-white border border-line">
                           <span className="text-[12px] text-ink-700">{label}</span>
@@ -971,6 +993,16 @@ export default function AnnualLeaveAllowancePage() {
                         </div>
                       ))}
                     </div>
+
+                    {/* 소멸시효 안내 — 최근 3년 발생분만 청구 대상 */}
+                    {pdfResult.claimable_entitlement !== undefined && pdfResult.total_entitlement > pdfResult.claimable_entitlement && (
+                      <div className="rounded-xl bg-[#FFF7ED] border border-[#FED7AA] px-4 py-3 mt-2">
+                        <p className="text-[12px] text-[#B45309] font-semibold leading-relaxed">
+                          ⓘ 연차수당 청구권 소멸시효는 3년이에요. 총 {pdfResult.total_entitlement}일 중
+                          <b> 최근 3년 발생분 {pdfResult.claimable_entitlement}일</b>만 청구 대상으로 계산했어요.
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {pdfResult.monthly_detail.length > 0 && (

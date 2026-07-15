@@ -18,28 +18,34 @@ from ..services.pdf import extract_unique_companies, filter_df_by_company, parse
 router = APIRouter()
 
 
-def _calc_annual_leave_days(hire_date: date, ref_date: date) -> dict:
+# 연차수당(미사용수당) 청구 소멸시효 (개월). 근로기준법상 임금채권 소멸시효 3년.
+ANNUAL_LEAVE_CLAIM_MONTHS = 36
+
+
+def _calc_annual_leave_days(hire_date: date, ref_date: date, attended_months: Optional[int] = None) -> dict:
     """
-    연차 발생일수 계산 (근로기준법 제60조).
+    연차 발생일수 + 청구 가능(소멸시효 3년) 연차 계산 (근로기준법 제60조).
 
     Returns:
-      {
-        years_worked: int,        # 만 근속연수
-        months_worked: int,       # 총 근속 개월 수
-        first_year_days: int,     # 1년 미만 연차 발생 (1개월=1일, max 11)
-        annual_days: int,         # 현재 연도 기준 발생 연차
-        total_entitlement: int,   # 총 발생 연차 (근속 기간 누적)
-      }
+      years_worked / months_worked / first_year_days / annual_days
+      total_entitlement       : 총 발생 연차(전 근속기간 누적, 표시용)
+      claimable_entitlement   : 소멸시효 3년 내 발생분만(미지급수당 청구 대상)
+
+    ⚠️ 버그 수정:
+      (a) 미지급수당을 전 기간 누적 연차로 곱하던 과다 → **최근 3년 발생분(claimable)** 으로 제한.
+      (c) 1년 미만 연차를 항상 11일로 보던 것 → attended_months(실제 개근 개월) 반영.
     """
     delta = ref_date - hire_date
     total_months = int(delta.days / 30.44)
     years_worked = total_months // 12
     rem_months   = total_months % 12
 
-    # 1년 미만 기간: 개월당 1일
-    first_year_days = min(total_months, 11)
+    # (c) 1년 미만 연차: 개근 정보가 있으면 실제 개근 개월, 없으면 근속 개월 (최대 11일)
+    if attended_months is not None:
+        first_year_days = min(max(attended_months, 0), 11)
+    else:
+        first_year_days = min(total_months, 11)
 
-    # 1년 이상 시 연도별 연차
     if years_worked == 0:
         annual_days = 0
     elif years_worked < 3:
@@ -47,27 +53,33 @@ def _calc_annual_leave_days(hire_date: date, ref_date: date) -> dict:
     else:
         annual_days = min(15 + (years_worked - 1) // 2, 25)
 
-    # 총 발생 연차 (간이 추정 — 실무상 연도별 갱신이 맞지만 여기선 대표값)
+    # 연도별 발생 연차 + 발생 시점(입사 후 개월). 소멸시효 판정을 위해 시점을 함께 기록.
+    grants: list[tuple[int, int]] = []
     if years_worked == 0:
-        total_entitlement = first_year_days
+        grants.append((total_months, first_year_days))  # 1년 미만: 현재 시점(전액 청구 가능)
     else:
-        # 1년차 11일 + 이후 연도별 합산
-        total = 11  # 첫 해 max
+        grants.append((12, first_year_days))            # 1년 미만분은 만 1년 시점 확정
         for y in range(1, years_worked + 1):
-            if y < 3:
-                total += 15
-            else:
-                total += min(15 + (y - 1) // 2, 25)
-        # 현재 연도 잔여 기간 (rem_months / 12) 비율로 추가
-        total += round(annual_days * rem_months / 12)
-        total_entitlement = total
+            d = 15 if y < 3 else min(15 + (y - 1) // 2, 25)
+            grants.append((y * 12, d))                  # y년차 연차는 만 y년 시점 발생
+
+    # 현재 진행 중인 연차(부분) — 다음 연차의 rem_months/12 비율
+    partial = 0
+    if years_worked >= 1 and rem_months > 0:
+        next_rate = 15 if (years_worked + 1) < 3 else min(15 + years_worked // 2, 25)
+        partial = round(next_rate * rem_months / 12)
+
+    total_entitlement = sum(d for _, d in grants) + partial
+    # (a) 소멸시효: 발생 시점이 최근 36개월 이내인 연차 + 진행분만 청구 대상
+    claimable = sum(d for gm, d in grants if (total_months - gm) < ANNUAL_LEAVE_CLAIM_MONTHS) + partial
 
     return {
-        "years_worked":       years_worked,
-        "months_worked":      total_months,
-        "first_year_days":    first_year_days,
-        "annual_days":        annual_days,
-        "total_entitlement":  total_entitlement,
+        "years_worked":          years_worked,
+        "months_worked":         total_months,
+        "first_year_days":       first_year_days,
+        "annual_days":           annual_days,
+        "total_entitlement":     total_entitlement,
+        "claimable_entitlement": max(0, claimable),
     }
 
 
@@ -137,17 +149,16 @@ async def annual_leave_precise(
         monthly_work.columns = ["period", "work_days"]
         attended_months = int((monthly_work["work_days"] >= 1).sum())
 
-        # 연차 계산
-        leave_info = _calc_annual_leave_days(hire_date, ref_date)
+        # 연차 계산 — 개근 개월(attended_months) 반영, 소멸시효 3년 청구분 산출
+        leave_info = _calc_annual_leave_days(hire_date, ref_date, attended_months)
 
-        # 실제 개근 개월수 기준으로 1년 미만 연차 재계산
-        first_year_days_actual = min(attended_months, 11)
+        entitlement = leave_info["total_entitlement"]        # 총 발생(표시용)
+        claimable   = leave_info["claimable_entitlement"]    # 최근 3년 청구 대상
 
-        # 남은 연차 = 발생 연차 - 사용 연차
-        entitlement = leave_info["total_entitlement"]
-        remaining   = max(entitlement - used_days, 0)
+        # (a) 미지급수당 청구는 소멸시효 3년 내 발생분만 대상 — 사용 연차를 차감
+        remaining   = max(claimable - used_days, 0)
 
-        # 미지급 연차수당
+        # (b) 단가는 '1일 통상임금' 기준(입력값을 1일 통상임금으로 간주). 프론트 문구도 통일.
         unpaid_allowance = round(remaining * avg_daily_wage) if avg_daily_wage > 0 else None
 
         # 월별 상세 (최대 24개월만 반환)
@@ -166,12 +177,14 @@ async def annual_leave_precise(
             "years_worked":           leave_info["years_worked"],
             "months_worked":          leave_info["months_worked"],
             "attended_months":        attended_months,
-            "first_year_days":        first_year_days_actual,
+            "first_year_days":        leave_info["first_year_days"],  # 개근 개월 반영
             "annual_days":            leave_info["annual_days"],
-            "total_entitlement":      entitlement,
+            "total_entitlement":      entitlement,                    # 총 발생(표시용)
+            "claimable_entitlement":  claimable,                      # 최근 3년 청구 대상
             "used_days":              used_days,
-            "remaining_days":         remaining,
-            "avg_daily_wage":         avg_daily_wage,
+            "remaining_days":         remaining,                      # 청구가능 - 사용
+            "avg_daily_wage":         avg_daily_wage,                 # 1일 통상임금(간주)
+            "wage_basis":             "ordinary",                     # 단가 기준: 통상임금
             "unpaid_allowance":       unpaid_allowance,
             "monthly_detail":         monthly_detail,
         }
