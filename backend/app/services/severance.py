@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """퇴직금 계산 서비스 — 28일 역산 블록 기반 법적 기준 적용"""
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta  # 정확한 '3개월' 역산(월 길이 자동 보정)
 import pandas as pd
 
 
@@ -27,14 +28,21 @@ def compute_average_wage(df: pd.DataFrame, end_date: datetime = None) -> dict:
         end_date = df["근무일"].max()
     if isinstance(end_date, pd.Timestamp):
         end_date = end_date.to_pydatetime()
-    lookback_start = end_date - timedelta(days=90)
-    mask = (df["근무일"] >= pd.Timestamp(lookback_start)) & (df["근무일"] <= pd.Timestamp(end_date))
+    # ── 평균임금 분모 = 사유발생일(마지막 근무일 end_date) 이전 '3개월 달력일수' 고정 ──────
+    #  근로기준법 제2조: 평균임금 = 산정사유 발생일 이전 3개월간 임금총액 ÷ 그 기간의 총일수.
+    #  ⚠️ (버그 수정) 과거에는 3개월 창 안의 '첫 근무일'로 분모를 축소해, 초반에 공백이 크면
+    #     분모가 작아져 평균임금이 과다 산정됐다(오너 확정 = 법정 원칙 위배). → 첫 근무일 기준
+    #     축소 로직을 제거하고, 3개월 전체 달력일수로 분모를 고정한다.
+    #  period_start = end_date 에서 정확히 3개월 역산 + 1일 (그 날부터 end_date 까지가 딱 3개월).
+    #     예) end_date=2025-03-31 → period_start=2025-01-01 → 90일. 월 길이·윤년에 따라
+    #        89~92일로 자연 변동하며, 이것이 '그 기간의 총일수' 법정 정의에 정확히 부합한다.
+    #     (relativedelta 는 2/30·2/31 같은 존재하지 않는 날짜를 그 달 말일로 자동 보정한다.)
+    period_start = (end_date - relativedelta(months=3)) + timedelta(days=1)
+    mask = (df["근무일"] >= pd.Timestamp(period_start)) & (df["근무일"] <= pd.Timestamp(end_date))
     period_df = df.loc[mask].copy()
     total_pay = period_df["지급액"].sum()
-    # 일용직 실무에서는 3개월 조회창 안에서 실제 마지막 근무와 연결되는 구간의 총일수로
-    # 평균임금을 산정하는 경우가 많아, 고정 91일이 아닌 기간 내 첫 근무일~퇴직일로 계산한다.
-    actual_period_start = period_df["근무일"].min().to_pydatetime() if not period_df.empty else lookback_start
-    calendar_days = (end_date - actual_period_start).days + 1 if not period_df.empty else 0
+    # 분모는 근무 유무와 무관하게 3개월 달력일수로 고정 (창 전체가 공백이면 total_pay=0 → 평균 0).
+    calendar_days = (end_date - period_start).days + 1
     average_wage = (total_pay / calendar_days) if calendar_days > 0 else 0.0
     # total_days: 해당 기간 내 실제 근로 일수 (표시용)
     total_days = int(period_df["근무일"].dt.normalize().nunique()) if not period_df.empty else 0
@@ -43,8 +51,10 @@ def compute_average_wage(df: pd.DataFrame, end_date: datetime = None) -> dict:
         "total_pay": total_pay,
         "total_days": total_days,
         "calendar_days": calendar_days,
-        "start_date": period_df["근무일"].min() if not period_df.empty else None,
-        "end_date":   period_df["근무일"].max() if not period_df.empty else None,
+        # 산출근거 일관성: 표시 기간(start~end)이 분모(calendar_days)와 정확히 일치하도록
+        #   실제 근무 범위가 아닌 '3개월 산정창'(period_start ~ end_date)을 반환한다.
+        "start_date": pd.Timestamp(period_start),
+        "end_date":   pd.Timestamp(end_date),
         "period_df":  period_df,
     }
 
