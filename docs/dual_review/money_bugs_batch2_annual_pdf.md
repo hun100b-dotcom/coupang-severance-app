@@ -32,10 +32,17 @@
 - 5축 전부 PASS. claimable 수치 3건 손재현 일치(10년56·5년49·2.5년49), 프론트-백엔드 로직 동일, used가 claimable에서 차감(보수적), 라벨 통일, attended 반영·죽은코드(first_year_days_actual) 제거, 필터 4자 경계·1·2차 무변경, 회귀 없음(annual/pdf 국소).
 - MINOR(비차단): ①필터가 좁아져 일부 '기타' 커스텀명이 빈결과→422(오매칭보다 안전) ②1년미만 월연차 발생시점 12개월 일괄확정 단순화(경계영향 미미, 판례상 방어가능).
 
-## [Reviewer B — 적대적 8공격] 판정: **PASS** (BLOCKER 0 / MAJOR 0 / MINOR 0)
-> 독립 B 지연 → 오퍼레이터 backend 실측으로 8공격 검증·확정(A와 교차 일치).
-- 소멸시효 경계(3.0년 전액·40년 청구98·청구≤총 항상), used>claimable→0(음수 없음), attended 0/None/20/-5 방어, avg=0→null, 극단(9일→0, ref<hire→엔드포인트 error), PDF필터 회귀(쿠팡 키워드 무변경·실패→빈), 저장 payload 옵셔널 추가 안전. **전부 방어확인.**
+## [Reviewer B — 적대적 8공격] 판정: **초기 FAIL → 지적 2건 수정 후 PASS** (수정 커밋 `5fb11ea`)
+독립 B 에이전트가 오퍼레이터·A가 놓친 결함 2건을 실측 적발:
+- **★BLOCKER (수정완료)**: 연차·주휴 정밀이 `filter_df_by_company(df, target)`로 company_other 미전달 →
+  사업장명이 positional company로 들어가 '기타' 분기 미진입 → **전체 df 무필터 반환**(다회사 PDF 오계산 + 446eefe 무력).
+  severance·unemployment는 정상. → `filter_df_by_company(df_raw, company, company_other)`로 규약 통일.
+  실측: filter(df,기타,'쿠팡풀필먼트서비스 동탄')→해당 1건만.
+- **MAJOR (수정완료)**: 연차 partial이 파이썬 `round()`(은행가 2.5→2) vs 프론트 JS `Math.round`(2.5→3) →
+  .5 경계 1일 편차. → `int(x+0.5)`(올림)로 통일. **전수대조(0~492개월) 프론트-백엔드 완전 일치** 확인.
+- 그 외 8공격(소멸시효 경계·used차감·attended·단가·PDF 4자폴백·회귀)은 방어확인. MINOR(비차단): total 표시값 미세 변동·ref<hire 음수total(claimable max0·상위가드)·빈결과 200+error.
 
-## 통합 결정: **PASS → 커밋·배포**
-- A·B 합의 PASS, BLOCKER/MAJOR 0. 이견 없음. 과다 축소(보수적) 방향 확정.
-- MINOR는 의도된 안전 방향·경계 미미로 조치 불요. 배치1·퇴직금·주휴 로직 무훼손.
+## 통합 결정: **PASS (B의 BLOCKER·MAJOR 수정 반영 후)**
+- 초기 B=FAIL → **BLOCKER(필터 우회)·MAJOR(반올림) 즉시 수정·재검증 후 PASS**(커밋 `5fb11ea`).
+- A는 PASS였으나 B가 A·오퍼레이터 사각(다회사 필터·.5 반올림)을 적발 — 적대 리뷰의 가치 입증. 두 결함 해소 확인.
+- 과다 축소(보수적) 방향, 배치1·퇴직금 로직 무훼손, 프론트-백엔드 완전 일치.
