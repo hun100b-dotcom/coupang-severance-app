@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "gptaku-plugins": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/fivetaku/gptaku_plugins.git"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "insane-search@gptaku-plugins": true
+  }
+}
