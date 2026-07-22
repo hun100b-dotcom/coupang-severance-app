@@ -15,7 +15,7 @@ const SOFTWARE_SCHEMA = {
   operatingSystem: 'Any',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
   description: '쿠팡·CFS·마켓컬리 일용직 근로자 퇴직금 무료 자동 계산기. PDF 급여명세서 업로드 지원, 28일 블록 알고리즘 적용.',
-  url: 'https://catch-daily-worker.vercel.app/severance',
+  url: 'https://coucatch.com/severance',
 }
 
 // ── 퇴직금 계산기 — FAQPage JSON-LD (구글 FAQ 리치 스니펫용) ──
@@ -322,7 +322,7 @@ export default function SeveranceFlow() {
       <PageMeta
         title="쿠팡·CFS 일용직 퇴직금 계산기 무료 | CATCH — 3분 자동 계산"
         description="쿠팡·CFS·마켓컬리 일용직 퇴직금을 PDF 업로드 한 번으로 자동 계산. 28일 블록 알고리즘 적용, 평균 수령액 250만원, 3분 완성."
-        canonical="https://catch-daily-worker.vercel.app/severance"
+        canonical="https://coucatch.com/severance"
         jsonLd={[SOFTWARE_SCHEMA, FAQ_SCHEMA, HOWTO_SCHEMA]}
       />
 

@@ -8,19 +8,16 @@ import { GoogleLogin, CredentialResponse } from '@react-oauth/google'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { extractRefCodeFromUrl, savePendingRefCode } from '../lib/referral'
+import { authCallbackUrl } from '../config/site'
 
 type Provider = 'kakao' | 'google'
 
-// 배포 환경과 로컬 개발 환경 모두 지원하는 콜백 URL
+// 배포·로컬 개발 환경 모두 지원하는 콜백 URL
+// ★현재 접속한 도메인 기준으로 되돌아옵니다(신·구 도메인 전환기 로그인 안 깨짐).
+//   - coucatch.com / catch-daily-worker.vercel.app / localhost 어디서든 그 도메인으로 복귀
+//   - Supabase "Redirect URLs" 허용목록에 해당 도메인들이 등록돼 있어야 함
 function getRedirectUrl(): string {
-  if (typeof window !== 'undefined') {
-    // 로컬 개발 환경에서는 localhost 사용
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      return `${window.location.origin}/auth/callback`
-    }
-  }
-  // 프로덕션 환경
-  return 'https://catch-daily-worker.vercel.app/auth/callback'
+  return authCallbackUrl()
 }
 
 export default function LoginPage() {

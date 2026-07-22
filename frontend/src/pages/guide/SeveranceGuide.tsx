@@ -15,11 +15,11 @@ const ARTICLE_SCHEMA = {
   publisher: {
     '@type': 'Organization',
     name: 'CATCH',
-    logo: { '@type': 'ImageObject', url: 'https://catch-daily-worker.vercel.app/catch-logo.png' },
+    logo: { '@type': 'ImageObject', url: 'https://coucatch.com/catch-logo.png' },
   },
   datePublished: '2026-04-10',
   dateModified: '2026-04-10',
-  mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://catch-daily-worker.vercel.app/guide/severance' },
+  mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://coucatch.com/guide/severance' },
 }
 
 // ── HowTo JSON-LD (단계별 계산 방법) ──
@@ -145,9 +145,9 @@ const BREADCRUMB_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://catch-daily-worker.vercel.app/home' },
-    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://catch-daily-worker.vercel.app/guide' },
-    { '@type': 'ListItem', position: 3, name: '퇴직금 가이드', item: 'https://catch-daily-worker.vercel.app/guide/severance' },
+    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://coucatch.com/home' },
+    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://coucatch.com/guide' },
+    { '@type': 'ListItem', position: 3, name: '퇴직금 가이드', item: 'https://coucatch.com/guide/severance' },
   ],
 }
 
@@ -269,7 +269,7 @@ export default function SeveranceGuide() {
       <PageMeta
         title="쿠팡 일용직 퇴직금 계산기 | 2026년 최신 기준 완전정복 | CATCH"
         description="쿠팡·CFS(쿠팡풀필먼트서비스) 일용직 퇴직금 수급 조건, 28일 블록 계산법, 청구 절차까지 2026년 기준으로 완전 정리. 평균 수령액 250만원, 미청구율 70% — 지금 바로 확인하세요."
-        canonical="https://catch-daily-worker.vercel.app/guide/severance"
+        canonical="https://coucatch.com/guide/severance"
         jsonLd={[ARTICLE_SCHEMA, HOW_TO_SCHEMA, FAQ_SCHEMA, BREADCRUMB_SCHEMA]}
       />
 

@@ -1,8 +1,8 @@
 import { Helmet } from 'react-helmet-async'
+import { OG_IMAGE } from '../config/site'
 
-// ── 프로덕션 기본값 상수 ──
-const BASE_URL = 'https://catch-daily-worker.vercel.app'
-const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`
+// ── 프로덕션 기본값 상수 (도메인 기준값은 config/site.ts 에서 관리) ──
+const DEFAULT_OG_IMAGE = OG_IMAGE
 const SITE_NAME = 'CATCH - 일용직 근로의 동반자'
 
 interface PageMetaProps {
@@ -37,7 +37,7 @@ interface PageMetaProps {
  *   <PageMeta
  *     title="퇴직금 가이드 | CATCH"
  *     description="쿠팡 일용직 퇴직금 조건과 계산 방법을 안내합니다"
- *     canonical="https://catch-daily-worker.vercel.app/guide/severance"
+ *     canonical="https://coucatch.com/guide/severance"
  *     jsonLd={[faqSchema, breadcrumbSchema]}
  *   />
  */

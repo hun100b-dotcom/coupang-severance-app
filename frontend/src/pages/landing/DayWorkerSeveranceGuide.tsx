@@ -74,11 +74,11 @@ const ARTICLE_SCHEMA = {
   publisher: {
     '@type': 'Organization',
     name: 'CATCH',
-    logo: { '@type': 'ImageObject', url: 'https://catch-daily-worker.vercel.app/catch-logo.png' },
+    logo: { '@type': 'ImageObject', url: 'https://coucatch.com/catch-logo.png' },
   },
   datePublished: '2026-05-10',
   dateModified: '2026-05-10',
-  mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://catch-daily-worker.vercel.app/day-worker-severance-guide' },
+  mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://coucatch.com/day-worker-severance-guide' },
 }
 
 // ── 4대 권리 카드 ────────────────────────────────────────────
@@ -142,7 +142,7 @@ export default function DayWorkerSeveranceGuide() {
       <PageMeta
         title="일용직 퇴직금 완전 가이드 2026 — 조건·계산·청구법 | CATCH"
         description="일용직 근로자의 퇴직금·실업급여·주휴수당·연차수당 권리를 2026년 기준으로 완전 정리했습니다. 쿠팡·컬리·CJ 알바생 필독. CATCH 무료 계산기 포함."
-        canonical="https://catch-daily-worker.vercel.app/day-worker-severance-guide"
+        canonical="https://coucatch.com/day-worker-severance-guide"
         jsonLd={[FAQ_SCHEMA, ARTICLE_SCHEMA]}
       />
 

@@ -13,7 +13,7 @@ const SOFTWARE_SCHEMA = {
   operatingSystem: 'Any',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
   description: '쿠팡·CFS·마켓컬리 일용직 근로자 실업급여 수급액 무료 자동 계산기. PDF 급여명세서 업로드 지원.',
-  url: 'https://catch-daily-worker.vercel.app/unemployment',
+  url: 'https://coucatch.com/unemployment',
 }
 
 // ── 실업급여 계산기 — FAQPage JSON-LD ──
@@ -321,7 +321,7 @@ export default function UnemploymentFlow() {
       <PageMeta
         title="쿠팡·CFS 일용직 실업급여 계산기 무료 | CATCH — 수급액 3분 확인"
         description="쿠팡·CFS·마켓컬리 일용직 실업급여 수급액과 기간을 3분 만에 자동 계산. PDF 업로드 지원, 2026년 상한액 68,100원/일 반영."
-        canonical="https://catch-daily-worker.vercel.app/unemployment"
+        canonical="https://coucatch.com/unemployment"
         jsonLd={[SOFTWARE_SCHEMA, FAQ_SCHEMA]}
       />
 

@@ -8,31 +8,31 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <!-- 랜딩 메인(SEO 최상위 진입점) -->
-  <url><loc>https://catch-daily-worker.vercel.app/</loc><lastmod>2026-07-03</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://coucatch.com/</loc><lastmod>2026-07-03</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
 
   <!-- ── 키워드 랜딩(공백시장 CFS·계산기 최우선) ── -->
-  <url><loc>https://catch-daily-worker.vercel.app/coupang-cfs-severance-calculation</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.95</priority></url>
-  <url><loc>https://catch-daily-worker.vercel.app/coupang-severance-calculator</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://catch-daily-worker.vercel.app/coupang-unemployment-calculator</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://catch-daily-worker.vercel.app/day-worker-severance-guide</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://catch-daily-worker.vercel.app/coupang-part-time-severance-method</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://catch-daily-worker.vercel.app/daily-worker-severance-28days</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://coucatch.com/coupang-cfs-severance-calculation</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://coucatch.com/coupang-severance-calculator</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://coucatch.com/coupang-unemployment-calculator</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://coucatch.com/day-worker-severance-guide</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://coucatch.com/coupang-part-time-severance-method</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://coucatch.com/daily-worker-severance-28days</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
 
   <!-- ── 계산기(핵심 기능) ── -->
-  <url><loc>https://catch-daily-worker.vercel.app/severance</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://catch-daily-worker.vercel.app/unemployment</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://catch-daily-worker.vercel.app/weekly-allowance</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://catch-daily-worker.vercel.app/annual-leave</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://catch-daily-worker.vercel.app/calculator</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://coucatch.com/severance</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://coucatch.com/unemployment</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://coucatch.com/weekly-allowance</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://coucatch.com/annual-leave</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://coucatch.com/calculator</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
 
   <!-- ── 가이드(블로그성 콘텐츠) ── -->
-  <url><loc>https://catch-daily-worker.vercel.app/guide</loc><lastmod>2026-07-03</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://catch-daily-worker.vercel.app/guide/severance</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://catch-daily-worker.vercel.app/guide/unemployment</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://catch-daily-worker.vercel.app/guide/weekly-allowance</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://catch-daily-worker.vercel.app/guide/annual-leave</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://coucatch.com/guide</loc><lastmod>2026-07-03</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://coucatch.com/guide/severance</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://coucatch.com/guide/unemployment</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://coucatch.com/guide/weekly-allowance</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://coucatch.com/guide/annual-leave</loc><lastmod>2026-07-03</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
 
   <!-- 공개 채용 피드 -->
-  <url><loc>https://catch-daily-worker.vercel.app/jobs</loc><lastmod>2026-07-03</lastmod><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://coucatch.com/jobs</loc><lastmod>2026-07-03</lastmod><changefreq>daily</changefreq><priority>0.6</priority></url>
 
 </urlset>

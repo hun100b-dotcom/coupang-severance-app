@@ -58,9 +58,9 @@ const BREADCRUMB_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://catch-daily-worker.vercel.app/home' },
-    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://catch-daily-worker.vercel.app/guide' },
-    { '@type': 'ListItem', position: 3, name: '연차수당 가이드', item: 'https://catch-daily-worker.vercel.app/guide/annual-leave' },
+    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://coucatch.com/home' },
+    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://coucatch.com/guide' },
+    { '@type': 'ListItem', position: 3, name: '연차수당 가이드', item: 'https://coucatch.com/guide/annual-leave' },
   ],
 }
 
@@ -182,7 +182,7 @@ export default function AnnualLeaveGuide() {
       <PageMeta
         title="연차수당 가이드 — 일용직 연차수당 조건·계산법 완전 정리 | CATCH"
         description="1년 이상 근무한 일용직 근로자도 연차수당을 받을 수 있습니다. 연차 발생 조건, 계산 방법, 미지급 대처법을 안내합니다."
-        canonical="https://catch-daily-worker.vercel.app/guide/annual-leave"
+        canonical="https://coucatch.com/guide/annual-leave"
         jsonLd={[FAQ_SCHEMA, BREADCRUMB_SCHEMA]}
       />
 

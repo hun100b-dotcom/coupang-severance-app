@@ -82,13 +82,13 @@ const ARTICLE_SCHEMA = {
   publisher: {
     '@type': 'Organization',
     name: 'CATCH',
-    logo: { '@type': 'ImageObject', url: 'https://catch-daily-worker.vercel.app/catch-logo.png' },
+    logo: { '@type': 'ImageObject', url: 'https://coucatch.com/catch-logo.png' },
   },
   datePublished: '2026-05-24',
   dateModified: '2026-05-24',
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': 'https://catch-daily-worker.vercel.app/coupang-cfs-severance-calculation',
+    '@id': 'https://coucatch.com/coupang-cfs-severance-calculation',
   },
 }
 
@@ -117,7 +117,7 @@ export default function CoupangCfsSeverance() {
       <PageMeta
         title="쿠팡 CFS 퇴직금 계산 방법 | 재판 이후 청구 완전 가이드 — CATCH"
         description="쿠팡풀필먼트서비스(CFS) 일용직 퇴직금 계산 방법을 안내합니다. 28일 블록 알고리즘 자동 적용, PDF 업로드 3분 계산. 재판 진행 중에도 퇴직금 청구 가능합니다."
-        canonical="https://catch-daily-worker.vercel.app/coupang-cfs-severance-calculation"
+        canonical="https://coucatch.com/coupang-cfs-severance-calculation"
         jsonLd={[FAQ_SCHEMA, ARTICLE_SCHEMA]}
       />
 

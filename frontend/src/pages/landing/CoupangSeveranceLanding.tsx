@@ -74,11 +74,11 @@ const ARTICLE_SCHEMA = {
   publisher: {
     '@type': 'Organization',
     name: 'CATCH',
-    logo: { '@type': 'ImageObject', url: 'https://catch-daily-worker.vercel.app/catch-logo.png' },
+    logo: { '@type': 'ImageObject', url: 'https://coucatch.com/catch-logo.png' },
   },
   datePublished: '2026-05-10',
   dateModified: '2026-05-10',
-  mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://catch-daily-worker.vercel.app/coupang-severance-calculator' },
+  mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://coucatch.com/coupang-severance-calculator' },
 }
 
 // ── 수급 조건 체크리스트 ────────────────────────────────────
@@ -106,7 +106,7 @@ export default function CoupangSeveranceLanding() {
       <PageMeta
         title="쿠팡 퇴직금 계산기 | 일용직·CFS 2026년 최신 기준 — CATCH"
         description="쿠팡·CFS(쿠팡풀필먼트서비스) 일용직 퇴직금 수급 조건, 28일 블록 계산법, 예상 금액을 무료로 확인하세요. PDF 업로드 시 3분 안에 정확한 금액이 나옵니다."
-        canonical="https://catch-daily-worker.vercel.app/coupang-severance-calculator"
+        canonical="https://coucatch.com/coupang-severance-calculator"
         jsonLd={[FAQ_SCHEMA, ARTICLE_SCHEMA]}
       />
 

@@ -14,7 +14,7 @@ const SOFTWARE_SCHEMA = {
   operatingSystem: 'Any',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
   description: '알바·일용직 주휴수당 무료 자동 계산기. 시급과 근무시간을 입력하면 즉시 계산.',
-  url: 'https://catch-daily-worker.vercel.app/weekly-allowance',
+  url: 'https://coucatch.com/weekly-allowance',
 }
 
 // ── 주휴수당 계산기 — FAQPage JSON-LD (구글 FAQ 리치 스니펫용) ──
@@ -320,7 +320,7 @@ export default function WeeklyAllowancePage() {
       <PageMeta
         title="주휴수당 계산기 — 알바·일용직 주휴수당 무료 자동 계산 | CATCH"
         description="주 15시간 이상 근무 시 받을 수 있는 주휴수당을 자동 계산합니다. 시급과 근무시간 입력, 즉시 계산."
-        canonical="https://catch-daily-worker.vercel.app/weekly-allowance"
+        canonical="https://coucatch.com/weekly-allowance"
         jsonLd={[SOFTWARE_SCHEMA, FAQ_SCHEMA]}
       />
 

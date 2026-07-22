@@ -19,4 +19,4 @@ Disallow: /login
 Disallow: /report
 
 # sitemap 위치
-Sitemap: https://catch-daily-worker.vercel.app/sitemap.xml
+Sitemap: https://coucatch.com/sitemap.xml

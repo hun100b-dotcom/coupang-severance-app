@@ -9,8 +9,8 @@ const BREADCRUMB_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://catch-daily-worker.vercel.app/home' },
-    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://catch-daily-worker.vercel.app/guide' },
+    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://coucatch.com/home' },
+    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://coucatch.com/guide' },
   ],
 }
 
@@ -68,7 +68,7 @@ export default function GuideHub() {
       <PageMeta
         title="노동법 가이드 — 퇴직금·실업급여·주휴수당·연차수당 완전 정리 | CATCH"
         description="쿠팡·컬리 일용직 근로자를 위한 노동법 가이드. 퇴직금, 실업급여, 주휴수당, 연차수당 조건과 계산 방법을 한 곳에서 확인하세요."
-        canonical="https://catch-daily-worker.vercel.app/guide"
+        canonical="https://coucatch.com/guide"
         jsonLd={BREADCRUMB_SCHEMA}
       />
 

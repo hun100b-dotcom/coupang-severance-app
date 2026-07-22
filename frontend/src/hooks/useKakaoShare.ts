@@ -8,10 +8,11 @@
  */
 
 import { useEffect, useRef, useCallback } from 'react'
+import { SITE_URL, OG_IMAGE as SITE_OG_IMAGE } from '../config/site'
 
-// ── 앱 기본 정보 상수 ─────────────────────────────────────────
-const APP_URL = 'https://catch-daily-worker.vercel.app'
-const OG_IMAGE = `${APP_URL}/og-image.png`
+// ── 앱 기본 정보 상수 (도메인 기준값은 config/site.ts 에서 관리) ──
+const APP_URL = SITE_URL
+const OG_IMAGE = SITE_OG_IMAGE
 const OG_IMAGE_WIDTH = 1200
 const OG_IMAGE_HEIGHT = 630
 

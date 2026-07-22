@@ -15,11 +15,11 @@ const ARTICLE_SCHEMA = {
   publisher: {
     '@type': 'Organization',
     name: 'CATCH',
-    logo: { '@type': 'ImageObject', url: 'https://catch-daily-worker.vercel.app/catch-logo.png' },
+    logo: { '@type': 'ImageObject', url: 'https://coucatch.com/catch-logo.png' },
   },
   datePublished: '2026-04-10',
   dateModified: '2026-04-10',
-  mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://catch-daily-worker.vercel.app/guide/unemployment' },
+  mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://coucatch.com/guide/unemployment' },
 }
 
 // ── HowTo JSON-LD (단계별 신청 방법) ──
@@ -145,9 +145,9 @@ const BREADCRUMB_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://catch-daily-worker.vercel.app/home' },
-    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://catch-daily-worker.vercel.app/guide' },
-    { '@type': 'ListItem', position: 3, name: '실업급여 가이드', item: 'https://catch-daily-worker.vercel.app/guide/unemployment' },
+    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://coucatch.com/home' },
+    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://coucatch.com/guide' },
+    { '@type': 'ListItem', position: 3, name: '실업급여 가이드', item: 'https://coucatch.com/guide/unemployment' },
   ],
 }
 
@@ -269,7 +269,7 @@ export default function UnemploymentGuide() {
       <PageMeta
         title="쿠팡 일용직 실업급여 계산기 | 2026년 최신 기준 완전정복 | CATCH"
         description="쿠팡·CFS 일용직 실업급여 수급 조건(180일), 2026년 상한액 68,100원/일, 신청 절차까지 단계별로 완전 정리. 퇴직 후 12개월 이내 신청 필수."
-        canonical="https://catch-daily-worker.vercel.app/guide/unemployment"
+        canonical="https://coucatch.com/guide/unemployment"
         jsonLd={[ARTICLE_SCHEMA, HOW_TO_SCHEMA, FAQ_SCHEMA, BREADCRUMB_SCHEMA]}
       />
 

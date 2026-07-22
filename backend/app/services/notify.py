@@ -101,7 +101,7 @@ async def notify_new_inquiry(
     # ── 3단계: Discord Embed 발송 ─────────────────────────────
     # 개인정보보호법 준수: 개인정보를 Discord로 전송하지 않음
     # 관리자는 Discord 알림을 클릭하여 관리자 페이지에서 문의 내용 확인
-    admin_url = "https://catch-daily-worker.vercel.app/admin"
+    admin_url = "https://coucatch.com/admin"
 
     payload = {
         "content": f"[CATCH] 새로운 문의가 접수되었습니다 (#{inquiry_id[:8]})",

@@ -14,7 +14,7 @@ const SOFTWARE_SCHEMA = {
   operatingSystem: 'Any',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
   description: '일용직·정규직 미사용 연차수당 무료 자동 계산기. 근무 기간과 급여를 입력하면 즉시 계산.',
-  url: 'https://catch-daily-worker.vercel.app/annual-leave',
+  url: 'https://coucatch.com/annual-leave',
 }
 
 // ── 연차수당 계산기 — FAQPage JSON-LD (구글 FAQ 리치 스니펫용) ──
@@ -450,7 +450,7 @@ export default function AnnualLeaveAllowancePage() {
       <PageMeta
         title="연차수당 계산기 — 일용직 미사용 연차수당 무료 자동 계산 | CATCH"
         description="미사용 연차수당을 자동 계산합니다. 근무 기간, 시급, 미사용 연차 일수를 입력하면 즉시 계산."
-        canonical="https://catch-daily-worker.vercel.app/annual-leave"
+        canonical="https://coucatch.com/annual-leave"
         jsonLd={[SOFTWARE_SCHEMA, FAQ_SCHEMA]}
       />
 

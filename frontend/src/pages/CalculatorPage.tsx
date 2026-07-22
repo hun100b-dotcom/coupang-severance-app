@@ -90,7 +90,7 @@ export default function CalculatorPage() {
       <PageMeta
         title="일용직 계산기 허브 — 퇴직금·실업급여·주휴수당·연차수당 | CATCH"
         description="퇴직금, 실업급여, 주휴수당, 연차수당 4가지 계산기를 한 곳에서. 쿠팡·컬리 일용직 근로자 전용 무료 계산 서비스."
-        canonical="https://catch-daily-worker.vercel.app/calculator"
+        canonical="https://coucatch.com/calculator"
       />
 
       <Container className="flex flex-col gap-7 md:gap-9 pt-4 pb-8">

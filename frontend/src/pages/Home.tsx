@@ -264,7 +264,7 @@ export default function Home() {
         <PageMeta
           title="쿠팡 일용직 퇴직금·실업급여 계산기 | CATCH — CFS·컬리 무료 자동 계산"
           description="쿠팡·CFS·마켓컬리·CJ대한통운 일용직 퇴직금, 실업급여, 주휴수당, 연차수당 무료 자동 계산기. PDF 업로드 한 번, 3분 안에 내 권리 확인."
-          canonical="https://catch-daily-worker.vercel.app/"
+          canonical="https://coucatch.com/"
           noIndex={true}
           jsonLd={{
             '@context': 'https://schema.org',

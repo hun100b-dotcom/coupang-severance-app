@@ -74,11 +74,11 @@ const ARTICLE_SCHEMA = {
   publisher: {
     '@type': 'Organization',
     name: 'CATCH',
-    logo: { '@type': 'ImageObject', url: 'https://catch-daily-worker.vercel.app/catch-logo.png' },
+    logo: { '@type': 'ImageObject', url: 'https://coucatch.com/catch-logo.png' },
   },
   datePublished: '2026-05-10',
   dateModified: '2026-05-10',
-  mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://catch-daily-worker.vercel.app/coupang-unemployment-calculator' },
+  mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://coucatch.com/coupang-unemployment-calculator' },
 }
 
 // ── 수급 조건 ───────────────────────────────────────────────
@@ -113,7 +113,7 @@ export default function CoupangUnemploymentLanding() {
       <PageMeta
         title="쿠팡 일용직 실업급여 — 조건·금액·신청법 2026 | CATCH"
         description="쿠팡·CFS 일용직 실업급여 수급 조건(180일 이상), 예상 금액, 신청 절차를 쉽게 정리했습니다. CATCH 실업급여 계산기로 내 예상 금액을 3분 만에 확인하세요."
-        canonical="https://catch-daily-worker.vercel.app/coupang-unemployment-calculator"
+        canonical="https://coucatch.com/coupang-unemployment-calculator"
         jsonLd={[FAQ_SCHEMA, ARTICLE_SCHEMA]}
       />
 

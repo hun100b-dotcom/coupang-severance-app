@@ -452,8 +452,9 @@ def admin_analytics(
 # document.referrer(직전 페이지 URL)를 사람이 읽을 채널명으로 분류한다.
 #   프론트/백엔드가 같은 규칙을 써야 표기가 일관되므로 백엔드를 단일 기준으로 삼는다.
 # 앱 자체 도메인(현행·구 도메인 모두) — referrer 가 아래면 '앱 내 이동'으로 본다.
-#   catch-daily-worker: 현 프로덕션 / coupang-severance-app: 구 프론트·API 도메인(라이브 유입 확인)
+#   coucatch.com: 정식 도메인(현 프로덕션) / catch-daily-worker·coupang-severance-app: 구 도메인(전환기 병행)
 _APP_DOMAINS = (
+    "coucatch.com",
     "catch-daily-worker.vercel.app", "coupang-severance-app.vercel.app",
     "coupang-severance-app.onrender.com", "localhost", "127.0.0.1",
 )

@@ -8,12 +8,13 @@
 // ──────────────────────────────────────────────────────────────────────────
 
 import { supabase } from './supabase'
+import { SITE_URL } from '../config/site'
 
 // localStorage 키 상수
 export const PENDING_REF_CODE_KEY = 'pending_ref_code'
 
-// 앱 기본 URL
-const APP_BASE_URL = 'https://catch-daily-worker.vercel.app'
+// 앱 기본 URL (도메인 기준값은 config/site.ts 에서 관리)
+const APP_BASE_URL = SITE_URL
 
 // ── 추천 링크 생성 ──────────────────────────────────────────────────────────
 // 코드를 받아 공유 가능한 전체 URL로 변환

@@ -50,9 +50,9 @@ const BREADCRUMB_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://catch-daily-worker.vercel.app/home' },
-    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://catch-daily-worker.vercel.app/guide' },
-    { '@type': 'ListItem', position: 3, name: '주휴수당 가이드', item: 'https://catch-daily-worker.vercel.app/guide/weekly-allowance' },
+    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://coucatch.com/home' },
+    { '@type': 'ListItem', position: 2, name: '가이드', item: 'https://coucatch.com/guide' },
+    { '@type': 'ListItem', position: 3, name: '주휴수당 가이드', item: 'https://coucatch.com/guide/weekly-allowance' },
   ],
 }
 
@@ -174,7 +174,7 @@ export default function WeeklyAllowanceGuide() {
       <PageMeta
         title="주휴수당 가이드 — 알바·일용직 주휴수당 조건·계산법 완전 정리 | CATCH"
         description="주 15시간 이상 근무하면 주휴수당을 받을 수 있습니다. 쿠팡·컬리 일용직·알바 주휴수당 발생 조건과 계산 방법을 안내합니다."
-        canonical="https://catch-daily-worker.vercel.app/guide/weekly-allowance"
+        canonical="https://coucatch.com/guide/weekly-allowance"
         jsonLd={[FAQ_SCHEMA, BREADCRUMB_SCHEMA]}
       />
 

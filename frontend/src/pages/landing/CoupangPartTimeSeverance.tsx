@@ -82,13 +82,13 @@ const ARTICLE_SCHEMA = {
   publisher: {
     '@type': 'Organization',
     name: 'CATCH',
-    logo: { '@type': 'ImageObject', url: 'https://catch-daily-worker.vercel.app/catch-logo.png' },
+    logo: { '@type': 'ImageObject', url: 'https://coucatch.com/catch-logo.png' },
   },
   datePublished: '2026-05-24',
   dateModified: '2026-05-24',
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': 'https://catch-daily-worker.vercel.app/coupang-part-time-severance-method',
+    '@id': 'https://coucatch.com/coupang-part-time-severance-method',
   },
 }
 
@@ -117,7 +117,7 @@ export default function CoupangPartTimeSeverance() {
       <PageMeta
         title="쿠팡 알바 퇴직금 받는 법 | 2026년 신청 완전 가이드 — CATCH"
         description="쿠팡·CFS 알바·일용직 퇴직금 수급 조건(1년 이상·주 15시간), 계산 방법, 신청 절차를 단계별로 안내합니다. 무료 계산기로 내 퇴직금을 3분 안에 확인하세요."
-        canonical="https://catch-daily-worker.vercel.app/coupang-part-time-severance-method"
+        canonical="https://coucatch.com/coupang-part-time-severance-method"
         jsonLd={[FAQ_SCHEMA, ARTICLE_SCHEMA]}
       />
 

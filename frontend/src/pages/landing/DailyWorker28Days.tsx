@@ -82,13 +82,13 @@ const ARTICLE_SCHEMA = {
   publisher: {
     '@type': 'Organization',
     name: 'CATCH',
-    logo: { '@type': 'ImageObject', url: 'https://catch-daily-worker.vercel.app/catch-logo.png' },
+    logo: { '@type': 'ImageObject', url: 'https://coucatch.com/catch-logo.png' },
   },
   datePublished: '2026-05-24',
   dateModified: '2026-05-24',
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': 'https://catch-daily-worker.vercel.app/daily-worker-severance-28days',
+    '@id': 'https://coucatch.com/daily-worker-severance-28days',
   },
 }
 
@@ -109,7 +109,7 @@ export default function DailyWorker28Days() {
       <PageMeta
         title="일용직 퇴직금 28일 계산 | 블록 알고리즘 완전 해석 — CATCH"
         description="쿠팡·CFS 일용직 퇴직금의 핵심 '28일 블록 알고리즘'을 쉽게 설명합니다. 적격 블록 기준, 계산 공식, CATCH 무료 자동계산기로 3분 안에 확인하세요."
-        canonical="https://catch-daily-worker.vercel.app/daily-worker-severance-28days"
+        canonical="https://coucatch.com/daily-worker-severance-28days"
         jsonLd={[FAQ_SCHEMA, ARTICLE_SCHEMA]}
       />
 
