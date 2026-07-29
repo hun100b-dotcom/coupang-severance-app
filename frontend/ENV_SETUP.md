@@ -51,7 +51,7 @@ VITE_SUPABASE_ANON_KEY=여기에_anon_public_키_긴_문자열
 
 # ===== 백엔드 API (선택) =====
 # 배포 시 API 서버 주소. 비워두면 로컬 개발 시 /api → localhost:8000 으로 연결돼요.
-# VITE_API_URL=https://coupang-severance-api.onrender.com/api
+# VITE_API_URL=https://coupang-severance-app.onrender.com/api   ← 호스트는 "-app"("-api"는 옛 오타)
 VITE_API_URL=
 ```
 
