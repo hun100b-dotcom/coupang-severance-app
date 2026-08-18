@@ -4,6 +4,12 @@
   "outputDirectory": "frontend/dist",
   "framework": null,
   "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "catch-daily-worker.vercel.app" }],
+      "destination": "https://coucatch.com/$1",
+      "permanent": true
+    },
     { "source": "/home", "destination": "/", "permanent": false },
     { "source": "/landing", "destination": "/", "permanent": false }
   ],
