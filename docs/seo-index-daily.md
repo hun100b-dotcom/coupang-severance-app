@@ -28,3 +28,52 @@
 - 2026-08-15 | 측정 실패 (Claude in Chrome 확장 미연결 — 서치콘솔 접속 불가, 3일 연속)
 - 2026-08-16 | 측정 실패 (Claude in Chrome 확장 미연결 — 서치콘솔 접속 불가, 4일 연속)
 - 2026-08-17 | 색인 11 | 클릭 22 (색인 안됨 3건 / GSC 최종 업데이트 26.8.10 — 직전 측정 08-03 대비 색인 13→11 감소, 클릭 32→22 감소)
+
+---
+
+## 2026-09-12 — 근본 원인 규명 및 조치 (호스트 윈도우 세션)
+
+### 🚨 "색인 0건 153일"의 진짜 원인
+
+**Google Search Console에 coucatch.com 속성이 아예 존재하지 않았습니다.**
+
+| 확인 항목 | 실측 결과 |
+|----------|----------|
+| GSC 등록 속성 | `https://catch-daily-worker.vercel.app/` **단 1개** (구 도메인) |
+| `sc-domain:coucatch.com` | ❌ "이 속성에 액세스할 수 없습니다" = 미존재 |
+| `https://coucatch.com/` (URL 접두어) | ❌ 미존재 |
+| 정식 도메인 전환일 | 2026-07-23 (약 50일간 GSC 미등록 상태로 방치) |
+
+- 구 도메인은 모든 URL이 coucatch.com 으로 308 영구 리다이렉트 → 구 속성의 색인 수(11개)는
+  계속 감소할 수밖에 없는 구조였음. 그래서 "색인이 줄어든다"는 관측이 나왔던 것.
+- 새 도메인은 **sitemap이 구글에 제출된 적이 한 번도 없었음** → 크롤러가 하위 17개 페이지의
+  존재 자체를 몰랐음.
+
+### 실측으로 확인한 실제 색인 상태 (URL 검사 도구)
+
+| URL | 상태 |
+|-----|------|
+| `https://coucatch.com/` | ✅ 색인 생성됨 (최근 크롤링 2026-09-12 00:54) |
+| `https://coucatch.com/severance` | ✅ 색인 생성됨 |
+| 나머지 16개 (랜딩·가이드·계산기) | ❌ "Google에는 아직 알려지지 않은 URL" |
+
+→ 즉 색인이 **0건은 아니었고 2건**이었으며, 나머지는 **차단된 게 아니라 발견된 적이 없던** 것.
+
+### 조치 완료
+
+1. GSC에 `https://coucatch.com/` 속성 생성 + 소유권 확인 완료 (HTML 파일 방식)
+   - `frontend/public/googlee3d3bee8d80b08f1.html` 추가
+   - `frontend/index.html` 에 신규 인증 메타태그 추가 (구 태그도 유지)
+2. `sitemap.xml` 신규 속성에 제출 완료 (18개 URL) — 최초 읽기 대기 중
+3. `/jobs` 의 `noIndex={true}` 제거 + 프리렌더 대상 추가 (sitemap 등록 URL인데 noindex인 모순 해소)
+4. 우선순위 URL 색인 생성 수동 요청 (cfs-severance-calculation, coupang-severance-calculator,
+   coupang-unemployment-calculator, day-worker-severance-guide, coupang-part-time-severance-method,
+   daily-worker-severance-28days)
+
+### 다음 회차(19차) 확인 항목
+
+- [ ] GSC Sitemaps 상태가 "가져올 수 없음" → "성공"으로 바뀌었는지
+- [ ] `발견된 페이지` 가 0 → 18 로 올라갔는지
+- [ ] 색인 생성 페이지 수 2 → 증가 추이
+- [ ] 나머지 미요청 URL(guide 계열 5개, unemployment, weekly-allowance, annual-leave, calculator, jobs)
+      일일 할당량 범위에서 순차 색인 요청
