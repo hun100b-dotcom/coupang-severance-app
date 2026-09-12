@@ -325,7 +325,6 @@ export default function JobsPage() {
         title="쿠팡·컬리 일용직 채용정보 | CATCH"
         description="쿠팡, 쿠팡이츠, 마켓컬리, CJ대한통운 등 일용직 단기알바 최신 채용정보. 오늘 시작 가능한 급구 공고 확인하세요."
         canonical="https://coucatch.com/jobs"
-        noIndex={true}
       />
 
       {/* ── 인라인 토스트 배너 ── */}

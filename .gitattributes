@@ -1,0 +1,31 @@
+# ─────────────────────────────────────────────────────────────
+# 줄바꿈(개행) 문자 통일 규칙
+# 배경: Windows는 줄 끝을 CRLF(\r\n), Linux/Mac은 LF(\n)로 저장한다.
+#       이 차이 때문에 리눅스 환경(스케줄 에이전트 등)에서 git이
+#       "파일 전체가 수정됨"으로 오탐하는 문제가 있었다(278개 파일 오탐).
+# 해결: 저장소(git 내부)에는 항상 LF로 저장하도록 강제한다.
+# ─────────────────────────────────────────────────────────────
+
+# 기본값: 텍스트 파일은 자동 판별 후 저장소에 LF로 저장
+* text=auto eol=lf
+
+# Windows 전용 스크립트는 CRLF가 필수(LF면 실행이 깨질 수 있음)
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# 바이너리 파일은 줄바꿈 변환 금지
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.pdf  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
+*.xlsx binary
+*.docx binary
+*.zip  binary

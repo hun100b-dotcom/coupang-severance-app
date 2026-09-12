@@ -56,6 +56,8 @@ const ROUTES = [
   '/weekly-allowance',
   '/annual-leave',
   '/calculator',
+  // 공개 채용 피드 — sitemap 등록 URL이므로 프리렌더 대상에 포함(캐노니컬·타이틀 정상 노출)
+  '/jobs',
 ]
 
 const MIME = {
